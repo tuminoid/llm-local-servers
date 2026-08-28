@@ -1,0 +1,10 @@
+# Personal environment for this repository. Copy to .envrc and run
+# `direnv allow`, or export the same variables in your shell. Committed
+# files carry no personal values; this file is where they live.
+
+# Default remote GPU host for the vllm-remote-* and ollama-remote-*
+# targets. Without it every remote target requires HOST=<ssh-host>.
+#export HOST=my-gpu-host
+
+# Sibling llm-audit-bench checkout, when it is not ../llm-audit-bench.
+#export AUDIT_BENCH_DIR=/path/to/llm-audit-bench

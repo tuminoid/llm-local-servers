@@ -1,0 +1,11 @@
+# Personal environment (see .envrc.example)
+.envrc
+
+# Python bytecode
+__pycache__/
+
+# Editor and OS droppings
+*~
+*.tmp
+*.swp
+.DS_Store
