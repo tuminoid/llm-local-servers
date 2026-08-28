@@ -209,9 +209,8 @@ points, vLLM 0.27.1 and isolated Ollama 0.32.14.
 ### Raw artifacts
 
 Remote originals stay in the host's capability state directory; copies
-are archived locally under
-`~/.local/state/auditbench/a100-capability-20260826/`, including the
-retained identity-mismatch failures.
+are archived outside the repository, including the retained
+identity-mismatch failures.
 
 | Profile | Model identity | Artifact |
 | -- | -- | -- |

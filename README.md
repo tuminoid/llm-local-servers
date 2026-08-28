@@ -279,13 +279,14 @@ Measured with the finalized output-control prompt, comparable with the
 RTX and A100 canonical tables. Calls/hour includes prefill; admission
 at five slots omitted the 8x points. Peak-stream medians; each profile
 passed its near-context proof at 1x and its maximum fitting concurrency
-(qwen3.6: 245,752 x4 in 1,589.1 s; qwen3.8: 245,748 x4 in 4,707.3 s;
+(qwen3.6: 245,752 x4 in 1,499 s; qwen3.8: 245,748 x4 in 4,707.3 s;
 gemma4: 245,774 x2 in 5,528.4 s -- its pool holds 2.35 near-full
 contexts; lightning: 245,773 x1 in 127.4 s on the one-slot MLX runner).
 
 | Runtime | Model or profile | Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h |
 | -- | -- | --: | --: | --: | --: | --: | --: | --: |
-| vLLM-Metal | `qwen3.6-35b-a3b-4bit` util 0.46, seqs 5 | 262,144 | 1,410,584 | 2,803 / 1,655 / 1,080 | 96.7 / 159.5 / 247.1 | 110.8 @4x | 18.7 | 9.6 @4x |
+| vLLM-Metal | `qwen3.6-35b-a3b-4bit` cache-off, util 0.46, seqs 5 | 262,144 | 1,407,463 | 2,943 / 1,686 / 1,084 | 121.1 / 205.3 / 320.0 | 124.2 @1x | 19.6 | 10.1 @1x |
+| vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
 | vLLM-Metal | `qwen3.8-27b-4bit` util 0.91, seqs 5 | 262,144 | 1,264,961 | 496 / 429 / 304 | 33.1 / 59.3 / 92.3 | 40.1 @4x | 6.7 | 3.3 @1x |
 | vLLM-Metal | `gemma4-31b-4bit` util 0.91, seqs 5 | 262,144 | 617,308 | 364 / 247 / 150 | 26.5 / 47.8 / 71.8 | 14.3 @1x | 2.4 | 1.3 @2x |
 | Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |
@@ -313,6 +314,6 @@ half and deep targets are 65k and 114.7k -- shallower than the 262,144
 profiles' 131k and 229k; the parenthesized depths keep the columns
 honest. Both digests are rate-identical within a few percent. At the
 shared 32k depth one NVFP4 MLX stream (188.7/h) beats the vLLM-Metal
-4-bit profile's best four-stream rate by 1.7x; at matched ~115-131k
+4-bit profile's best rate (124.2/h) by 1.5x; at matched ~115-131k
 depth Lightning stays the host's depth leader (58.3 at 131k vs 47.7 at
 114.7k).

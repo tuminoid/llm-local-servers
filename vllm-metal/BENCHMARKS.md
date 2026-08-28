@@ -66,8 +66,7 @@ across server restarts, cache-off control also deterministic, semantic
 needles 8/8. The pin flipped to align APC on. Align mode changes temp-0
 outputs versus cache-off (documented plugin behavior), so the cache-off
 canonical rates do not transfer: the APC operating point owes its own
-canonical run. Evidence:
-`~/.local/state/auditbench/qwen38-metal-apc-20260827/`.
+canonical run.
 
 ## Audit replay profile: M5 Max (2026-08-28)
 
@@ -110,8 +109,8 @@ columns are the turn walls and the verdict decode rate.
   window; given the model's settled capability-point role, none is
   scheduled.
 
-Raw artifacts and preserved server logs:
-`~/.local/state/auditbench/replay-metal-20260828/`.
+Raw artifacts and preserved server logs are retained outside the
+repository.
 
 ## Apple M5 Max operating points
 
@@ -125,54 +124,44 @@ utilization 0.60, max-num-seqs 4, NAX prefill kernels confirmed loaded
 from the engine log (`NAX prefill attention kernels loaded (M5 tensor
 units)`). Benchmarked 2026-08-20, one full sample after warmup.
 
-### qwen3.6-35b-a3b-4bit -- AuditBench v1 canonical
+### qwen3.6-35b-a3b-4bit -- AuditBench v1 canonical (cache-off)
 
-Measured 2026-08-21 at repository commit 700f3f9 with the finalized
-output-control prompt, at the serving default operating point: context
-262,144, util 0.46, paged KV pool 1,410,584 tokens, seqs 5, external power,
-battery gate active (`AUDIT_BENCH_GATE_CMD` pointed at
-[battery-gate.sh](battery-gate.sh)). Medians are from three samples (capacity
-proof runs once); ~3.5 h wall, of which ~41 min was a single battery-gate
-recharge pause between audit_deep batches.
+Measured 2026-08-28. Cache-off condition (`VLLM_PREFIX_CACHING=0`):
+context 262,144, util 0.46, paged KV pool 1,407,463 tokens, seqs 5.
 
 | Phase | Streams | Result |
 | -- | -- | --: |
-| Prefill 32,780 | 1 | 2,803.3 tok/s |
-| Prefill 65,547 | 1 | 1,655.2 tok/s |
-| Prefill 131,071 | 1 | 1,080.2 tok/s |
-| Capacity 245,752 | 1 | passed, 629.9 tok/s, 390 s |
-| Capacity 245,752 | 4 | passed, 618.6 tok/s aggregate, 1,589 s |
-| Decode | 1 / 2 / 4 | 96.7 / 159.5 / 247.1 tok/s (1.65x / 2.56x) |
-| audit_32k calls/hour | 1 / 2 / 4 | 105.5 / 104.3 / 110.8 (peak streams 4) |
-| audit_half (131k) calls/hour | 1 | 18.7 |
-| audit_deep (229k) calls/hour | 1 / 4 | 9.0 / 9.6 (peak streams 4) |
+| Prefill 32,780 | 1 | 2,942.8 tok/s |
+| Prefill 65,547 | 1 | 1,685.8 tok/s |
+| Prefill 131,071 | 1 | 1,083.8 tok/s |
+| Capacity 245,752 | 1 | passed, 657.0 tok/s, 374 s |
+| Capacity 245,752 | 4 | passed, 656.0 tok/s aggregate, 1,499 s |
+| Decode | 1 / 2 / 4 | 121.1 / 205.3 / 320.0 tok/s (1.70x / 2.64x) |
+| audit_32k calls/hour | 1 / 2 / 4 | 124.2 / 113.3 / 118.5 (peak streams 1) |
+| audit_half (131k) calls/hour | 1 | 19.6 |
+| audit_deep (229k) calls/hour | 1 / 4 | 10.1 / 9.9 (peak streams 1) |
 
-The 8-stream points were omitted because admission is five slots; audit_deep
-probes 1x and the maximum fitting candidate (4x) per protocol.
+### qwen3.6-35b-a3b-4bit APC operating point -- AuditBench v1 canonical
 
-Findings beyond the raw rates:
+Measured 2026-08-28. The serving default (`VLLM_PREFIX_CACHING=1`):
+context 262,144, util 0.71, paged KV pool 1,324,084 tokens, seqs 5.
 
-- Against the pre-output-control baseline (superseded 2026-08-20 run at
-  commit 54fe59d), prefill and the capacity proof are unchanged within noise,
-  while every output-bearing metric is lower: decode -21% at each measured
-  concurrency, audit_32k -14%, audit_half -3.5%, audit_deep -13%. The revised
-  prompt forbids concluding or stopping early, so the model sustains dense
-  continuation for the full token budget; the old rates flattered output.
-- Audit-call throughput is still essentially flat across concurrency on this
-  MoE checkpoint (1.05x at 4 streams cold, 1.07x deep). Prefill dominates the
-  call and is compute-bound, so concurrency buys burst absorption, not
-  throughput.
-- Concurrent prefill remains compute-bound: the 4x capacity proof took 4.07x
-  the 1x wall at 98% of its aggregate rate.
-- Thermals: GPU 37-96.3 C over the run, median 71.4, no second-half sag.
-- The battery gate fired once: the 25-minute audit_deep 4x sample carried
-  charge from just above the 40% floor down to 36% (the gate never interrupts
-  a sample, by design), then the run idled ~41 min to the 80% resume level
-  and continued automatically. No measurement includes gate wait time.
+| Phase | Streams | Result |
+| -- | -- | --: |
+| Prefill 32,780 | 1 | 2,823.8 tok/s |
+| Prefill 65,547 | 1 | 1,573.6 tok/s |
+| Prefill 131,071 | 1 | 1,062.5 tok/s |
+| Capacity 245,752 | 1 | passed, 650.1 tok/s, 378 s |
+| Capacity 245,752 | 4 | passed, 648.8 tok/s aggregate, 1,515 s |
+| Decode | 1 / 2 / 4 | 98.4 / 168.6 / 258.1 tok/s (1.71x / 2.62x) |
+| audit_32k calls/hour | 1 / 2 / 4 | 111.5 / 106.9 / 112.6 (peak streams 4) |
+| audit_half (131k) calls/hour | 1 | 18.8 |
+| audit_deep (229k) calls/hour | 1 / 4 | 9.9 / 9.9 |
 
-The final AuditBench JSON and the thermal and battery logs are retained with
-the campaign artifacts outside the repository
-(`~/.local/state/auditbench/`).
+Align-APC costs ~19% decode and ~10% cold 32k audit rate against the
+cache-off table above; all benchmark requests are cold, and the
+operating point exists for the warm TTFT win on resent audit
+conversations (see the replay profile).
 
 ### qwen3.8-27b-4bit -- AuditBench v1 canonical
 
@@ -224,9 +213,8 @@ Findings beyond the raw rates:
   `pmset -g ac` wattage first; the raised fixed gate floor (80) exists so a
   long batch never starts with less than a full-batch margin.
 
-The final AuditBench JSON and the thermal, battery, and gate logs are with
-the campaign artifacts outside the repository
-(`~/.local/state/auditbench/`).
+The final AuditBench JSON and the thermal, battery, and gate logs are
+retained outside the repository.
 
 ### gemma4-31b-4bit -- AuditBench v1 canonical
 
@@ -276,8 +264,8 @@ Findings beyond the raw rates:
 - Thermals: GPU 63.2-96.0 C over the load, median 67.7, no sag.
 
 The final AuditBench JSON and the thermal and battery logs (including
-negotiated adapter wattage, steady at 140 W throughout) are with the
-campaign artifacts outside the repository (`~/.local/state/auditbench/`).
+negotiated adapter wattage, steady at 140 W throughout) are retained
+outside the repository.
 
 ### qwen3.8-27b-8bit (mlx-community/Qwen3.8-27B-8bit) -- retired baseline
 

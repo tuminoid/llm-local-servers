@@ -211,9 +211,8 @@ near-full ingest completes in 127.4 s against that profile's 274 s. The
 audit cadence (212.8 / 58.3 / 31.1 calls/hour) leads every canonical
 profile on this host at every depth, single-stream against their best
 measured concurrency. Capability gating for this artifact is recorded in
-[../CAPABILITIES.md](../CAPABILITIES.md); the run JSON is retained with
-the campaign artifacts
-(`~/.local/state/auditbench/audit-v1-lightning-mlx.json`).
+[../CAPABILITIES.md](../CAPABILITIES.md); the run JSON is retained
+outside the repository.
 
 ### Qwen3.6 35B-A3B NVFP4 base and coding -- AuditBench v1 canonical
 
@@ -249,8 +248,7 @@ canonical at the same 32k depth, one NVFP4 MLX stream (188.7/h) beats
 that profile's best four-stream rate (110.8/h) by 1.7x. At matched
 ~115-131k depth Lightning remains the host's depth leader: 58.3
 calls/hour at 131k versus 47.7 at 114.7k here. Run JSONs and preserved
-server logs:
-`~/.local/state/auditbench/canonical-qwen36-nvfp4-20260828/`.
+server logs are retained outside the repository.
 
 ### The native-262k hard reset
 
@@ -472,8 +470,7 @@ That matches the MLX runner's documented prefix-trie snapshot retention
 at the large 184,320 allocation (see the hard-reset mechanism above):
 the runtime now fails gracefully where it once took down the host, but
 it cannot serve consecutive deep audit conversations at this pin. The
-500's runner-side cause is preserved in
-`~/.local/state/auditbench/conv-20260826/qwen38-mlx-500-server.log`.
+500's runner-side cause is preserved in the retained server log.
 
 Remote A100 profiles (16-file/~165k shape, isolated Ollama 0.32.14):
 
@@ -526,8 +523,8 @@ layer then returned 500 with nothing logged. The allocation is fine
 (202,752 per slot, and this host's canonical near-context proof pushed
 8 x 190,092-token prompts through the native `/api` endpoint on the
 same model), so the wall is specific to the OpenAI-compat chat path at
-exactly 128Ki prompt tokens. Diagnosed and recorded locally; evidence
-in `~/.local/state/auditbench/replay-20260827/glm-retry-server.log`.
+exactly 128Ki prompt tokens. Diagnosed and recorded locally in the
+retained server log.
 
 ## A100-SXM4-80GB
 
