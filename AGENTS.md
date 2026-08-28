@@ -60,8 +60,7 @@ remain the sources of measurement detail.
 host inventory, and the retained cross-host result matrix; raw JSON remains
 outside the repository under the capability state directory.
 [docs/INTRODUCTION.md](docs/INTRODUCTION.md) is the newcomer-facing primer on
-local serving concepts. Candidate runtime and model investigations are
-recorded in `docs/*-HANDOFF.md`.
+local serving concepts.
 
 ## The shared harness
 
