@@ -279,7 +279,8 @@ Measured with the finalized output-control prompt, comparable with the
 RTX and A100 canonical tables. Calls/hour includes prefill; admission
 at five slots omitted the 8x points. Peak-stream medians; each profile
 passed its near-context proof at 1x and its maximum fitting concurrency
-(qwen3.6: 245,752 x4 in 1,499 s; qwen3.8: 245,748 x4 in 4,707.3 s;
+(qwen3.6: 245,752 x4 in 1,499 s; qwen3.8: 245,748 x4 in 4,707.3 s,
+APC x2 in 2,353 s;
 gemma4: 245,774 x2 in 5,528.4 s -- its pool holds 2.35 near-full
 contexts; lightning: 245,773 x1 in 127.4 s on the one-slot MLX runner).
 
@@ -287,7 +288,8 @@ contexts; lightning: 245,773 x1 in 127.4 s on the one-slot MLX runner).
 | -- | -- | --: | --: | --: | --: | --: | --: | --: |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` cache-off, util 0.46, seqs 5 | 262,144 | 1,407,463 | 2,943 / 1,686 / 1,084 | 121.1 / 205.3 / 320.0 | 124.2 @1x | 19.6 | 10.1 @1x |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
-| vLLM-Metal | `qwen3.8-27b-4bit` util 0.91, seqs 5 | 262,144 | 1,264,961 | 496 / 429 / 304 | 33.1 / 59.3 / 92.3 | 40.1 @4x | 6.7 | 3.3 @1x |
+| vLLM-Metal | `qwen3.8-27b-4bit` cache-off, util 0.91, seqs 5 | 262,144 | 1,264,961 | 496 / 429 / 304 | 33.1 / 59.3 / 92.3 | 40.1 @4x | 6.7 | 3.3 @1x |
+| vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
 | vLLM-Metal | `gemma4-31b-4bit` util 0.91, seqs 5 | 262,144 | 617,308 | 364 / 247 / 150 | 26.5 / 47.8 / 71.8 | 14.3 @1x | 2.4 | 1.3 @2x |
 | Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |
 | Ollama | `qwen3.6:35b-a3b-nvfp4` (base MLX) | 131,072 | one slot | 3,190 / 2,224 / - | 140.8 / - / - | 188.7 @1x | 91.2 (65k) | 47.7 (114.7k) |

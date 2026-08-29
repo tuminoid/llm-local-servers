@@ -216,6 +216,29 @@ Findings beyond the raw rates:
 The final AuditBench JSON and the thermal, battery, and gate logs are
 retained outside the repository.
 
+### qwen3.8-27b-4bit APC operating point -- AuditBench v1 canonical
+
+Measured 2026-08-29. The serving default (`VLLM_PREFIX_CACHING=1`):
+context 262,144, util 0.91, paged KV pool 611,156 tokens, seqs 5. The
+APC pool holds 2.33 near-full contexts, so capacity and audit_deep
+probe 1x and 2x.
+
+| Phase | Streams | Result |
+| -- | -- | --: |
+| Prefill 32,784 | 1 | 569.9 tok/s |
+| Prefill 65,551 | 1 | 457.6 tok/s |
+| Prefill 131,075 | 1 | 317.8 tok/s |
+| Capacity 245,748 | 1 | passed, 208.9 tok/s, 1,176 s |
+| Capacity 245,748 | 2 | passed, 208.9 tok/s aggregate, 2,353 s |
+| Decode | 1 / 2 / 4 | 28.6 / 53.4 / 83.3 tok/s (1.87x / 2.92x) |
+| audit_32k calls/hour | 1 / 2 / 4 | 34.7 / 38.4 / 39.4 (peak streams 4) |
+| audit_half (131k) calls/hour | 1 | 6.7 |
+| audit_deep (229k) calls/hour | 1 / 2 | 3.3 / 3.3 |
+
+Against the cache-off table above, APC costs ~10-14% decode and halves
+the token pool while audit calls/hour stay flat; the operating point
+exists for the warm TTFT win on resent audit conversations.
+
 ### gemma4-31b-4bit -- AuditBench v1 canonical
 
 Measured 2026-08-22 at repository commit a7bc624 with the finalized
