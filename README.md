@@ -172,6 +172,18 @@ inside the 7,200 s request timeout at all: its 2.1 tok/s depth decode
 puts the verdict alone at ~2.1 h. Server-side health was clean on all
 three; the ceilings are model decode physics.
 
+### Concurrent audit replay: multi-agent contention
+
+The M5 Max vLLM-Metal set ran the replay-concurrent profile
+canonically (details in vllm-metal/BENCHMARKS.md): N agents share the
+32k evidence prefix and every turn decodes a full 1,024-token agent
+turn. Two concurrent agents are the knee on both hybrids -- qwen3.6
+goes 1.56 -> 1.98 replays/h at 2x while 4x adds nothing (1.95) at
+quadruple per-agent latency, and qwen3.8 (pool-limited to 2x) goes
+1.83 -> 2.19. Shared-prefix caching is real but minor at audit depth
+(cached fraction 0.897 -> 0.916 with stream count); the binding
+constraint is aggregate decode bandwidth at depth.
+
 ### RTX PRO 3000 Blackwell laptop GPU
 
 Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM.

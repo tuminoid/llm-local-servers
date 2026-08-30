@@ -112,6 +112,52 @@ columns are the turn walls and the verdict decode rate.
 Raw artifacts and preserved server logs are retained outside the
 repository.
 
+## Concurrent audit replay profile: M5 Max (2026-08-29)
+
+Canonical replay-concurrent runs (AuditBench protocol) at the
+serving-default align-APC pins, Dell brick at the 140 W contract,
+dedicated server lifecycle per model. The profile is the multi-agent
+audit shape: N scripted replays at once share the 32k evidence prefix
+(same repository, distinct per-agent file chains) and every probe turn
+decodes a 1,024-token agent turn, so aggregate decode contention is
+part of the number. Replays/hour here is not comparable to the 1x
+replay profile above (32-token probes), and not across these two
+models either: qwen3.6 decodes every turn to the full 1,024 cap while
+qwen3.8 stops at ~790 median.
+
+### qwen3.6-35b-a3b-4bit APC -- concurrent replay canonical
+
+Context 262,144, pool 1,324,084 tokens; streams 1, 2, and 4 fit; peak
+2 streams.
+
+| Streams | Batch wall | Replays/h | Scaling | Turn walls first -> final | Verdict decode | Cached |
+| --: | --: | --: | --: | -- | --: | --: |
+| 1 | 2,310 s | 1.56 | 1.00 | 28.3 -> 92.7 s | 12.2 tok/s | 0.897 |
+| 2 | 3,632 s | 1.98 | 1.27 | 40.6 -> 165.0 s | 7.1 tok/s | 0.906 |
+| 4 | 7,372 s | 1.95 | 1.25 | 55.2 -> 298.0 s | 3.9 tok/s | 0.916 |
+
+Two concurrent agents are the knee: 4x matches 2x aggregate while
+quadrupling per-agent latency, and the shared prefix helps (cached
+fraction rises with streams) but stays minor against a ~167k final
+conversation. The 2x median-of-3 carries a wide sample range
+(2,792-3,755 s).
+
+### qwen3.8-27b-4bit APC -- concurrent replay canonical
+
+Context 262,144, pool 611,156 tokens; the 184,320-token per-stream
+demand fits streams 1 and 2 only; peak 2 streams.
+
+| Streams | Batch wall | Replays/h | Scaling | Turn walls first -> final | Verdict decode | Cached |
+| --: | --: | --: | --: | -- | --: | --: |
+| 1 | 1,965 s | 1.83 | 1.00 | 88.7 -> 57.8 s | 5.6 tok/s | 0.898 |
+| 2 | 3,283 s | 2.19 | 1.20 | 100.3 -> 63.3 s | 3.6 tok/s | 0.908 |
+
+qwen3.8 under-decodes the per-turn control (~790 of 1,024 median), so
+its replays/hour buys less work per replay than qwen3.6's.
+
+Raw artifacts and preserved server logs are retained outside the
+repository.
+
 ## Apple M5 Max operating points
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU cores, 128 GB unified
