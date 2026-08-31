@@ -41,10 +41,15 @@ VLLM_DIR := vllm
 # launched the wrong vLLM model remotely in a way run.sh could not see, costing
 # a full readiness timeout before it gave up.
 MODEL           ?=
-VLLM_VERSION    ?= 0.27.1
-# Transformers 5.15 made Gemma 4 head dimensions explicitly per-layer, but
-# vLLM 0.27.1 predates the corresponding fix (vllm-project/vllm#49797).
-VLLM_TRANSFORMERS_VERSION ?= 5.14.1
+# vLLM 0.28.0 ships DFlash 2 speculative decoding (vllm-project/vllm#52816),
+# adopted for the A100 qwen3.8 profile; the pin bump was re-baselined
+# rate-neutral against the 0.27.1 canonicals before adoption. 0.28.0 also
+# carries the Gemma 4 per-layer head-dim fix (vllm-project/vllm#49797), so
+# the transformers pin moves to 5.15.1 with it. ninja is a real runtime
+# dependency: the DFlash draft head is torch.compiled at engine init and
+# inductor shells out to it.
+VLLM_VERSION    ?= 0.28.0
+VLLM_TRANSFORMERS_VERSION ?= 5.15.1
 VLLM_REMOTE_DIR ?= tmp/vllm
 VLLM_REMOTE_PORT ?= 8000
 VLLM_TUNNEL_PORT ?= 8001
@@ -575,12 +580,16 @@ vllm-remote-check:
 		echo "error: set HOST=<ssh-host> (see .envrc.example)" >&2; \
 		exit 1; }
 
+# The venv is created and populated with uv (falling back to the user
+# install location when it is not on the non-interactive PATH). An existing
+# venv is upgraded in place; recreate by removing it on the host first.
 vllm-remote-bootstrap: vllm-remote-check
 	@ssh $(HOST) 'set -e; mkdir -p $(VLLM_REMOTE_DIR); cd $(VLLM_REMOTE_DIR); \
-		python3 -m venv venv; \
-		./venv/bin/pip install --quiet --upgrade pip wheel; \
-		./venv/bin/pip install --quiet vllm==$(VLLM_VERSION) \
-			transformers==$(VLLM_TRANSFORMERS_VERSION); \
+		UV="$$(command -v uv || echo "$$HOME/.local/bin/uv")"; \
+		test -x venv/bin/python || "$$UV" venv venv; \
+		"$$UV" pip install --python venv/bin/python --quiet \
+			vllm==$(VLLM_VERSION) \
+			transformers==$(VLLM_TRANSFORMERS_VERSION) ninja; \
 		./venv/bin/python -c "import transformers, vllm; \
 			print(\"vllm\", vllm.__version__, \"transformers\", transformers.__version__)"'
 

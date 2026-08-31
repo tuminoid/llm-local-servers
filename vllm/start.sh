@@ -56,6 +56,7 @@ VLLM_KV_DTYPE="${VLLM_KV_DTYPE:-}"
 # on a core bump. Environment wins over the conf; empty passes no flag
 # and keeps the engine default.
 VLLM_PREFIX_CACHING="${VLLM_PREFIX_CACHING:-}"
+VLLM_SPECULATIVE_CONFIG="${VLLM_SPECULATIVE_CONFIG:-}"
 VLLM_ATTN_AUTO="${VLLM_ATTN_AUTO:-}"
 VLLM_MLA="${VLLM_MLA:-}"
 VLLM_MAX_SEQS="${VLLM_MAX_SEQS:-}"
@@ -302,6 +303,15 @@ if [[ "${VLLM_PREFIX_CACHING}" == "1" ]]; then
 elif [[ "${VLLM_PREFIX_CACHING}" == "0" ]]; then
     args+=(--no-enable-prefix-caching)
 fi
+# Speculative decoding is a model fact: a drafter is trained for one exact
+# target checkpoint, so the JSON (draft model, its pinned revision,
+# num_speculative_tokens) lives in the model conf and travels with it. Keep
+# it one argv element; vLLM validates the shape. num_speculative_tokens is
+# mandatory when a draft model is named -- nothing derives it from the
+# drafter's block size.
+if [[ -n "${VLLM_SPECULATIVE_CONFIG}" ]]; then
+    args+=(--speculative-config "${VLLM_SPECULATIVE_CONFIG}")
+fi
 if [[ -n "${VLLM_REASONING_PARSER}" ]]; then
     # The engine subprocess imports reasoning plugins independently. Loading
     # the same file as a tool plugin in the API process is not sufficient.
@@ -366,5 +376,9 @@ printf 'starting %s@%s as "%s" on %s:%s\n' \
 printf 'host: sm_%s, %s MiB VRAM -> backend %s, kv %s, util %s, seqs %s, batched %s\n' \
     "${VLLM_CAP}" "${VLLM_VRAM_MIB}" "${VLLM_ATTN_BACKEND:-vllm-selected}" "${VLLM_KV_DTYPE:-auto}" \
     "${VLLM_GPU_UTIL}" "${VLLM_MAX_SEQS}" "${VLLM_MAX_BATCHED}"
+# A separate line: the host line's format is parsed by the bench harness.
+if [[ -n "${VLLM_SPECULATIVE_CONFIG}" ]]; then
+    printf 'speculative: %s\n' "${VLLM_SPECULATIVE_CONFIG}"
+fi
 
 exec "${VLLM_EXE}" "${args[@]}"
