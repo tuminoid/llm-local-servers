@@ -23,7 +23,7 @@ rows within one host table; do not compare a Blackwell row with an A100 row.
 ### Small card
 
 RTX PRO 3000 Blackwell laptop GPU (sm_120), 12,227 MiB VRAM. Canonical
-AuditBench v1 ran on 2026-08-20 with three measured samples, vLLM 0.27.1,
+AuditBench v1 ran with three measured samples, vLLM 0.27.1,
 Transformers 5.14.1, the full profile, and the proper power adapter. The host
 profile reserved 1,024 MiB, resolved to utilization 0.916, and admitted two
 sequences. Qwen used FlashInfer with fp8 KV; Gemma used vLLM-selected Triton
@@ -61,9 +61,9 @@ than queued.
 
 ### 80 GB A100
 
-A100-SXM4-80GB (sm_80), 81,920 MiB VRAM. Canonical AuditBench v1 ran from
-2026-08-20 through 2026-08-21 with three measured samples, vLLM 0.27.1,
-Transformers 5.14.1, and the full profile. The scheduler admitted eight
+A100-SXM4-80GB (sm_80), 81,920 MiB VRAM. Canonical AuditBench v1 ran with
+three measured samples, vLLM 0.27.1, Transformers 5.14.1, and the full
+profile. The scheduler admitted eight
 sequences; each phase automatically omitted stream counts that did not fit the
 raw KV pool.
 
@@ -136,7 +136,7 @@ prompt counts, raw samples, medians, ranges, and runtime metadata in its final
 JSON. Memory figures here are larger than minimum model footprints because
 vLLM expands the KV pool to fill its configured memory budget.
 
-## Audit conversation profile: A100 fleet (2026-08-26)
+## Audit conversation profile: A100 fleet
 
 The conversation profile (AuditBench protocol) is the production-shaped
 workload: 32k evidence, a 16-file sequential tool chain resent in full
@@ -181,8 +181,9 @@ Findings:
 - qwen3.8's cache-off pin costs it dearly on this workload: 4.1/h with
   ~877 s conversations, each re-prefilling ~1.69M tokens. Its own
   Ollama GGUF artifact on the same host reaches 14.5/h purely through
-  llama.cpp's implicit slot cache. An align-APC trial for qwen3.8 is
-  the obvious next experiment.
+  llama.cpp's implicit slot cache. (The align-APC trial in the replay
+  section below flipped the pin to APC on; this row
+  records the retired cache-off default.)
 - GLM 4.7 Flash is the one profile that cannot execute the shape: one
   sample think-ran-away without a single tool call (16,384 reasoning
   tokens, `finish_reason: length`), and the sample that completed all
@@ -192,9 +193,9 @@ Findings:
   16 files: it occasionally calls hallucinated file names, recovers on
   the "no such file" reply, and finishes within the turn budget.
 
-## Audit replay profile: A100 (2026-08-27)
+## Audit replay profile: A100
 
-The replay profile (AuditBench protocol, split 2026-08-27) scripts every
+The replay profile (AuditBench protocol) scripts every
 turn of the same audit-shaped conversation, so the server is measured
 with zero dependence on the model holding the tool-loop protocol.
 Harness commit `03b9b2c`, vLLM 0.27.1, serving-default cache pins unless
@@ -234,7 +235,7 @@ control, so it is CUDA baseline nondeterminism, not a cache defect;
 semantic needles 8/8 across all legs; shared-prefix TTFT 5.29 s cold vs
 0.15 s hit. Measured align pool cost -0.88% (742,613 vs 749,204
 tokens). On this evidence the conf pin flipped to
-`VLLM_PREFIX_CACHING=1` (2026-08-27). The fleet-table conversation row
+`VLLM_PREFIX_CACHING=1`. The fleet-table conversation row
 above (4.1 conv/h) documents the retired cache-off serving default.
 
 ### First GLM serving data, and the qwen3.6 anchor
@@ -251,11 +252,11 @@ above (4.1 conv/h) documents the retired cache-off serving default.
   replay: turns are nearly free and 85% of the 196.7 s wall is the
   forced verdict decode itself (167.0 s).
 
-## Audit conversation and replay: RTX PRO 3000 (2026-08-27)
+## Audit conversation and replay: RTX PRO 3000
 
 Canonical clean-fixture runs (finalized fixture, both profiles, both
 cache modes, conversation and replay; 9-step chain at the 131,072
-context, ~107k final depth). The 2026-08-26 overnight runs at `bf27151`
+context, ~107k final depth). The earlier overnight runs at `bf27151`
 predate fixture finalization and are superseded: their qwen3.5
 collapses were the planted decode-control, since fixed; those JSONs
 remain retained only as fixture-bug evidence.

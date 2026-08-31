@@ -9,15 +9,17 @@ recommendations.
 
 The RTX PRO 3000 and A100 rows use canonical
 [AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
-The Apple rows still use the retired
-runtime-specific harness. Retired A100 measurements remain clearly separated
+The Apple operating-point tables use the retired
+runtime-specific harness; the Apple AuditBench v1 sections (Nemotron,
+the qwen3.6 NVFP4 pair, and the conversation profile) are canonical and
+dated per section. Retired A100 measurements remain clearly separated
 later in this file and must not be combined with canonical rates.
 
 ## RTX PRO 3000 Blackwell laptop GPU operating points
 
 Host: RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, Intel Core Ultra
 9 285H, 62 GiB RAM, and no swap. All rows use Ollama 0.32.14, Flash Attention,
-and q8 KV. Canonical AuditBench v1 ran on 2026-08-20 and 2026-08-21 with the
+and q8 KV. Canonical AuditBench v1 ran with the
 full profile and three measured samples. Only retained operating points are
 shown: redundant Gemma slot counts, Nemotron, and native-context Qwen3.8 are
 not part of this inventory.
@@ -84,10 +86,10 @@ All Qwen profiles are forced to one slot by Ollama's `qwen35` or `qwen35moe`
 architecture guard. These recommendations describe serving performance and
 capacity only; they do not establish answer quality.
 
-### Audit conversation and replay (2026-08-27, clean fixture)
+### Audit conversation and replay (clean fixture)
 
 Canonical clean-fixture runs on the GPU-resident RTX profiles,
-conversation and replay. The 2026-08-26 overnight conversation runs at
+conversation and replay. The earlier overnight conversation runs at
 `bf27151` predate fixture finalization and are superseded: the qwen3.5
 variant collapses (number-sequence runaways, a 333 s think-then-quit)
 were the planted decode-control, since fixed; those JSONs remain
@@ -125,14 +127,14 @@ Per profile:
   read. Gemma 4 E2B reads a filename embedded in the evidence text
   instead of `file_001`, in both stacks. Both behaviors survive the
   corpus fix: genuine model limits, cleanly attributed.
-- Qwen3.6 35B-A3B ran on the finalized fixture 2026-08-27 after an
-  identity refusal was resolved: this host held an artifact pulled
-  2026-08-18 (`07d35212...`), older than the digest pin recorded
-  2026-08-25 (`096fdbd0...`). A re-pull fetched exactly the pinned
-  digest (the tag had not moved since the pin) and pruned the old
-  layers, so the canonical RTX rows above for this profile -- measured
-  2026-08-20/21 on the 08-18 artifact -- describe a digest no longer
-  present locally. On the pinned artifact the compliant variant ran
+- Qwen3.6 35B-A3B ran on the finalized fixture after an
+  identity refusal was resolved: this host held an artifact
+  (`07d35212...`) pulled before the digest pin was recorded
+  (`096fdbd0...`). A re-pull fetched exactly the pinned digest (the
+  tag had not moved since the pin) and pruned the old layers, so the
+  canonical RTX rows above for this profile -- measured on the older
+  artifact -- describe a digest no longer present locally. On the
+  pinned artifact the compliant variant ran
   the full 16-step chain with 16/16 recall at ~40 s per tool turn
   despite the 14.53 GiB CPU offload; the other variant produced a
   graceful near-miss (15/16, verdict one file early). Its replay and
@@ -149,8 +151,7 @@ official Ollama 0.32.14 (`ollama-darwin.tgz`), whose MLX runner loaded the
 `mlx_metal_v4` backend (MLX 0.32.0-213-gadf21de, device gpu) -- the Metal 4
 path on M5. Both models are safetensors NVFP4 registry artifacts dispatched
 to the MLX runner; KV cache is MLX-native model precision, not q8. Each
-operating point is one full sample after a warmup load, benchmarked
-2026-08-20.
+operating point is one full sample after a warmup load.
 
 The MLX runner serializes requests through a single slot, so all rows are
 jobs=1. Two concurrent clients measured 1.91x single-request wall time and
@@ -183,7 +184,7 @@ near the configured ceiling, all tokenizer-reported):
 
 ### Nemotron 3.5 Lightning 30B-A3B MLX -- AuditBench v1 canonical
 
-Measured 2026-08-25 at repository commit 446f840 with the finalized
+Measured at repository commit 446f840 with the finalized
 output-control prompt on the managed 0.32.14 MLX runner: context 262,144
 (the proven launch default), safetensors NVFP4 artifact at identity digest
 `8b1474be6e54`, 140 W adapter contract verified, battery 90%, battery gate
@@ -216,7 +217,7 @@ outside the repository.
 
 ### Qwen3.6 35B-A3B NVFP4 base and coding -- AuditBench v1 canonical
 
-Measured 2026-08-28 at repository commit `98f9b2c` with the finalized
+Measured at repository commit `98f9b2c` with the finalized
 output-control prompt on the managed 0.32.14 MLX runner, at the
 131,072-token operating point both confs pin since the native-262k hard
 reset below. Identity digests `e92a3e94bbca` (base) and `cd2692a833e6`
@@ -280,7 +281,7 @@ default is that kind of supervised experiment, per model -- on unified
 memory the failure mode is the whole machine, not an OOM-killed server
 process, and headroom never transfers between models.
 
-### The re-pulled manifest hard reset (2026-08-26)
+### The re-pulled manifest hard reset
 
 The same failure recurred on the CODING variant after its registry tag
 moved: the replacement manifest (digest `cd2692a833e6`), run unsupervised
@@ -297,7 +298,7 @@ outputs also died with the machine: they were written under /tmp, which
 macOS clears on boot -- benchmark output belongs under the retained
 campaign state directory, never /tmp.
 
-Same-day supervised probes (2026-08-26, memory watchdog armed, stepped
+Same-day supervised probes (memory watchdog armed, stepped
 needle prefills at 49k/90k/128k) proved the 131,072 operating point on
 BOTH current digests. The base artifact (`e92a3e94bbca`) completed a
 127,975-token prefill at a 26.6 GiB peak; the coding artifact
@@ -342,14 +343,15 @@ single tool calls on both models, and a multi-turn tool loop on Qwen3.8.
 Qwen3.6's NVFP4 manifest does not declare the `tools` capability, but
 structured tool calls work through the qwen3.5 parser.
 
-Registry identity update (2026-08-25): the
+Registry identity update: the
 `qwen3.6:35b-a3b-coding-nvfp4` tag moved from manifest
 `e839e5321a76` to `cd2692a833e6`. The replacement remains safetensors NVFP4
-at native 262,144 context and passed Capability Check v1, including tools, but
-the performance and memory rates above remain evidence for the earlier
-artifact until the current digest is benchmarked.
+at native 262,144 context and passed Capability Check v1, including tools.
+The 262,144-context operating-point rates above remain evidence for the
+earlier artifact only; the current digests carry their own canonical
+rates at the 131,072 operating point (canonical section above).
 
-### Muse Glimmer 30B MLX smoke (2026-08-23)
+### Muse Glimmer 30B MLX smoke
 
 `muse-glimmer:30b-mlx` (safetensors mixed-precision, ~21 GiB, dispatched to
 the MLX runner) passed its three-gate smoke on the managed 0.32.14 pin:
@@ -358,7 +360,7 @@ under a `Reasoning strength: low` system prompt, and a clean structured
 `get_weather` tool call through the OpenAI-compatible API. Full lifecycle
 verified including stop with an empty process group.
 
-That smoke predates the tag's current manifest. On 2026-08-25 the registry
+That smoke predates the tag's current manifest. The registry has since
 moved `muse-glimmer:30b-mlx` from `3d5c4b80e60b` to `ef32a55b4976`; the new
 NVFP4 manifest packages DFlash assistant weights and passed Capability Check
 v1. No performance or DFlash speedup number transfers from the earlier smoke.
@@ -402,7 +404,7 @@ degrades gently (-16%) -- so at audit depths the per-stream rates approach
 parity and the GGUF's real slots decide throughput. Single probes, not
 medians.
 
-#### AuditBench verdict: protocol-incompatible (2026-08-23)
+#### AuditBench verdict: protocol-incompatible
 
 Two canonical attempts on the MLX artifact aborted in the decode-ceiling
 phase: the model refuses the output-control workload. At default effort it
@@ -439,7 +441,7 @@ never-conclude output, which is an alignment property, not a serving
 fault. Audit-shaped calls/hour for Glimmer therefore have no canonical
 number on this runtime.
 
-## Audit conversation profile (2026-08-26)
+## Audit conversation profile
 
 The conversation profile (AuditBench protocol) measures the production
 audit shape: growing conversation resent every turn, tool results
@@ -489,9 +491,9 @@ to 85.9. Cache policy, not model speed, dominates this workload.
 GLM think-runs-away or paraphrases the ledger on both runtimes; gemma4
 alternates between hallucinated file names and clean completions.
 
-## Audit replay profile: A100 remote (2026-08-27)
+## Audit replay profile: A100 remote
 
-The replay profile (AuditBench protocol, split 2026-08-27) scripts every
+The replay profile (AuditBench protocol) scripts every
 turn, so it measures the server with no dependence on model protocol
 compliance. Harness commit `03b9b2c`, isolated Ollama 0.32.14,
 16-file/~165k shape. Replays/hour is not comparable to
@@ -529,7 +531,7 @@ retained server log.
 ## A100-SXM4-80GB
 
 Host: A100-SXM4-80GB with 81,920 MiB VRAM and 211 GiB RAM. Canonical
-AuditBench v1 ran from 2026-08-20 through 2026-08-21 with the full profile,
+AuditBench v1 ran with the full profile,
 three measured samples, isolated Ollama 0.32.14, Flash Attention, and q8 KV.
 The server was stopped after every operating point and the GPU returned to
 0 MiB.

@@ -103,7 +103,7 @@ in [README.md](README.md); shared server conventions live in
   Qwen3.8 is capped at 184320 (173,041-token proof, 92.78 GiB peak, ~123 GB
   system-wide -- no headroom above). Qwen3.8 at native 262,144 exhausted the
   M5 Max's 128 GB unified memory ~192k tokens into a 246k prefill and
-  hard-reset the machine (2026-08-20): the MLX runner wires only the model
+  hard-reset the machine: the MLX runner wires only the model
   and nothing bounds KV growth before the OS dies. Raising any MLX context
   is a supervised experiment with a memory watchdog, never a config default,
   and Qwen3.8 near its ceiling needs an otherwise quiet host (override down

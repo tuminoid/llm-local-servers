@@ -77,7 +77,7 @@ Serving measurements follow
   `VLLM_PREFIX_CACHING` explicitly, because vLLM main resolves supported
   hybrids to align-mode APC ON and an unset knob would flip silently on
   a core bump. Dense models pin `1` (their measured default). qwen3.6
-  pins `1`: align-mode APC was adopted 2026-08-26 after the plugin pin
+  pins `1`: align-mode APC was adopted after the plugin pin
   moved to dev20260826100011, whose PR #634 fixed the decode decay that
   blocked it (gates re-passed on the pinned venv: byte-identical
   cold-vs-hit correctness, 0/12 same-instant bails, capability-v1).

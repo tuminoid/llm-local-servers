@@ -39,7 +39,7 @@ What this means in practice:
 - Repeated-prefix reuse matters because audit clients resend the whole
   growing conversation every step. Trading a flat decode percentage for
   a large warm-prefix prefill win is the correct trade for this
-  workload (see the qwen3.6 vLLM-Metal APC decision, 2026-08-26).
+  workload (see the qwen3.6 vLLM-Metal APC decision).
 - Linear context filling, small-context benchmarks, and synthetic
   decode-only leaderboards are diagnostics at best. Do not tune for
   them, do not select models by them, and do not present them as

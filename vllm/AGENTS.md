@@ -287,7 +287,7 @@ decide what fits; use the baselines to see what a run actually consumed.
 | `qwen3-coder-30b` | 28.4 | 24.0 @256k | 54.9 | no | yes |
 
 Qwen3.8 serves only its native-context config: the 160k/320k/720k context
-profiles were retired 2026-08-26 as unused variants (measured capacity
+profiles were retired as unused variants (measured capacity
 ratios and the YaRN overrides remain in git history; see
 [README.md](README.md#qwen38-context-profiles)).
 

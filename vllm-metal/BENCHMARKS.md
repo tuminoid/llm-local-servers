@@ -5,12 +5,14 @@ Silicon. The cross-runtime summary is [../README.md](../README.md); the
 same-host Ollama MLX baselines are in
 [../ollama/BENCHMARKS.md](../ollama/BENCHMARKS.md).
 
-The qwen3.6, qwen3.8, and gemma4-31b AuditBench v1 sections below are
-canonical under the finalized output-control prompt (2026-08-21/22). The
-other sections use the retired vLLM-Metal bring-up harness or the earlier
-prompt. Do not combine those legacy rates with canonical results.
+The AuditBench v1 sections below (operating-point, conversation, replay,
+and concurrent-replay profiles) are
+canonical under the finalized output-control prompt; each states its
+plugin pin and cache condition. The other sections use the retired
+vLLM-Metal bring-up harness or the earlier prompt. Do not combine those
+legacy rates with canonical results.
 
-## Audit conversation profile (2026-08-26)
+## Audit conversation profile
 
 The conversation profile (AuditBench protocol) is the production-shaped
 workload: 32k evidence, a sequential 16-file tool chain resent in full
@@ -33,12 +35,12 @@ Findings:
 - qwen3.8 cache-off pays the full quadratic resend: 5,117-5,139 s per
   conversation, re-prefilling ~1.69M tokens at ~495 tok/s. It completes
   with perfect recall -- the model is fine, the operating point is not
-  serving this shape. (Superseded 2026-08-27: the align-APC trial below
+  serving this shape. (Superseded: the align-APC trial below
   flipped the pin, so this row records the retired cache-off default.)
 - gemma4 completes with perfect recall but at 1,500 s per conversation
   (decode-bound); it stays a capability point, not an audit choice.
 
-### qwen3.8 align-APC trial and adoption (2026-08-27)
+### qwen3.8 align-APC trial and adoption
 
 The align-mode budget math for qwen3.8: one GDN layer's state is
 3,207,168 B (48 v-heads x 128 x 128 fp32 recurrent + 3 x 10,240 bf16
@@ -68,7 +70,7 @@ outputs versus cache-off (documented plugin behavior), so the cache-off
 canonical rates do not transfer: the APC operating point owes its own
 canonical run.
 
-## Audit replay profile: M5 Max (2026-08-28)
+## Audit replay profile: M5 Max
 
 Canonical replay runs (AuditBench protocol) at the
 serving-default cache pins (align APC on for both hybrids), repo commit
@@ -112,11 +114,11 @@ columns are the turn walls and the verdict decode rate.
 Raw artifacts and preserved server logs are retained outside the
 repository.
 
-## Concurrent audit replay profile: M5 Max (2026-08-29)
+## Concurrent audit replay profile: M5 Max
 
 Canonical replay-concurrent runs (AuditBench protocol) at the
-serving-default align-APC pins, Dell brick at the 140 W contract,
-dedicated server lifecycle per model. The profile is the multi-agent
+serving-default align-APC pins, plugin dev20260826100011, Dell brick at
+the 140 W contract, dedicated server lifecycle per model. The profile is the multi-agent
 audit shape: N scripted replays at once share the 32k evidence prefix
 (same repository, distinct per-agent file chains) and every probe turn
 decodes a 1,024-token agent turn, so aggregate decode contention is
@@ -161,18 +163,17 @@ repository.
 ## Apple M5 Max operating points
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU cores, 128 GB unified
-memory, macOS 26.6.2 (25G83), on external power. The plugin pin moved to
-0.3.0.dev20260826100011 on 2026-08-26 (PR #634 APC decay fix; qwen3.6 now
-serves with align-mode APC on); every rate in this document predates that
-bump and was measured cache-off at the pin stated with it. Runtime:
-0.3.0.dev20260819180958 on vLLM 0.27.1 and MLX 0.32.0, paged KV path,
-utilization 0.60, max-num-seqs 4, NAX prefill kernels confirmed loaded
-from the engine log (`NAX prefill attention kernels loaded (M5 tensor
-units)`). Benchmarked 2026-08-20, one full sample after warmup.
+memory, macOS 26.6.2 (25G83), on external power. The plugin pin moved
+from 0.3.0.dev20260819180958 to 0.3.0.dev20260826100011 (PR #634 APC
+decay fix); each canonical subsection below names its pin. The legacy
+bring-up rows ran on the earlier pin, vLLM 0.27.1 and MLX 0.32.0, paged
+KV path, utilization 0.60, max-num-seqs 4, NAX prefill kernels
+confirmed loaded from the engine log (`NAX prefill attention kernels
+loaded (M5 tensor units)`), one full sample after warmup.
 
 ### qwen3.6-35b-a3b-4bit -- AuditBench v1 canonical (cache-off)
 
-Measured 2026-08-28. Cache-off condition (`VLLM_PREFIX_CACHING=0`):
+Measured at plugin 0.3.0.dev20260826100011. Cache-off condition (`VLLM_PREFIX_CACHING=0`):
 context 262,144, util 0.46, paged KV pool 1,407,463 tokens, seqs 5.
 
 | Phase | Streams | Result |
@@ -189,7 +190,7 @@ context 262,144, util 0.46, paged KV pool 1,407,463 tokens, seqs 5.
 
 ### qwen3.6-35b-a3b-4bit APC operating point -- AuditBench v1 canonical
 
-Measured 2026-08-28. The serving default (`VLLM_PREFIX_CACHING=1`):
+Measured at plugin 0.3.0.dev20260826100011. The serving default (`VLLM_PREFIX_CACHING=1`):
 context 262,144, util 0.71, paged KV pool 1,324,084 tokens, seqs 5.
 
 | Phase | Streams | Result |
@@ -211,8 +212,9 @@ conversations (see the replay profile).
 
 ### qwen3.8-27b-4bit -- AuditBench v1 canonical
 
-Measured 2026-08-21/22 at repository commit 623565d with the finalized
-output-control prompt, at the serving default operating point: context
+Measured at plugin 0.3.0.dev20260819180958, repository commit 623565d,
+with the finalized output-control prompt, at the serving default
+operating point: context
 262,144, util 0.91, paged KV pool 1,264,961 tokens, seqs 5, external power,
 battery gate at its fixed 80/90 levels. Medians are from three samples
 (capacity proof runs once); ~12.2 h wall, of which roughly 4 h was eight
@@ -264,7 +266,7 @@ retained outside the repository.
 
 ### qwen3.8-27b-4bit APC operating point -- AuditBench v1 canonical
 
-Measured 2026-08-29. The serving default (`VLLM_PREFIX_CACHING=1`):
+Measured at plugin 0.3.0.dev20260826100011. The serving default (`VLLM_PREFIX_CACHING=1`):
 context 262,144, util 0.91, paged KV pool 611,156 tokens, seqs 5. The
 APC pool holds 2.33 near-full contexts, so capacity and audit_deep
 probe 1x and 2x.
@@ -287,8 +289,9 @@ exists for the warm TTFT win on resent audit conversations.
 
 ### gemma4-31b-4bit -- AuditBench v1 canonical
 
-Measured 2026-08-22 at repository commit a7bc624 with the finalized
-output-control prompt at the serving default operating point: context
+Measured at plugin 0.3.0.dev20260819180958, repository commit a7bc624,
+with the finalized output-control prompt at the serving default
+operating point: context
 262,144, util 0.91 (the 160 KiB/token KV cost computes past the cap), paged
 KV pool 617,308 tokens (2.35 native contexts), seqs 5, external power.
 Medians are from three samples (capacity proof runs once); ~13 h wall with
@@ -530,7 +533,7 @@ architecture. The verdict transfers to `nvidia/Qwen3.6-35B-A3B-NVFP4`
 Ollama registry remains the only NVFP4 path on this host. Re-test on an
 mlx-lm bump rather than assuming this is permanent.
 
-### Candidate smoke verdicts (2026-08-21)
+### Candidate smoke verdicts
 
 Five downloaded mlx-community candidates were smoke-tested (start, chat,
 structured tool call, verified teardown) at plugin 0.3.0.dev20260819180958,
@@ -561,32 +564,32 @@ vLLM 0.27.1, mlx-lm 0.31.3, mlx-vlm 0.6.4, transformers 5.12.1:
 Weights for all five remain in the managed models directory for cheap
 retests. Failing configs were removed per the fail-loudly convention.
 
+### History: qwen3.6 align-APC adoption (resolved)
+
+The path to the APC serving default above, retained as diagnosis
+evidence. The divergent-conversation correctness gate passed first
+(align mode, `VLLM_PREFIX_CACHING=1`): cold and cache-hit
+outputs byte-identical in both directions across restarts and across
+32k/262k max-len configs; TTFT on a 15k shared prefix 4.09 s cold vs
+0.11 s hot. Adoption was then blocked by the same-day decode smoke at
+plugin 0.3.0.dev20260819180958: align-mode decode started at
+93.6/149.0/214.7 tok/s (1/2/4), ~21% under the flat cache-off control
+at 117/200/310, and degraded deterministically with requests served
+per process -- 65/88/149 by sample 3, 26/45/82 after ~35 requests,
+identical curve on every restart, no recovery without one, not thermal
+(cooled rerun continued degraded). Root cause was upstream: full
+recurrent-state-pool copies per update, fixed by plugin PR #634.
+(since merged). A trial retest on
+v0.3.0.dev20260826100011 measured APC-on decode flat at 101/171/257
+then 99/167/255 tok/s across ~28 requests, cache-off control
+119.6/202.0/316.1 -- decay fixed, a flat ~15-19% align cost remaining.
+The pin then moved, the gates re-passed on the pinned venv, and the
+APC canonical ran (table above). The smoke's cache-off
+control (117/200/310) had also sat above the earlier canonical
+decode (96.7/159.5/247.1); the newer cache-off canonical
+(121.1/205.3/320.0) confirmed the higher rates and superseded that
+row's decode figures.
+
 ### Not yet measured
 
-- Prefix caching under AuditBench: the divergent-conversation correctness
-  gate PASSED for qwen3.6-35b-a3b-4bit on 2026-08-24 (align mode,
-  `VLLM_PREFIX_CACHING=1`): cold and cache-hit outputs byte-identical in
-  both directions across restarts and across 32k/262k max-len configs;
-  TTFT on a 15k shared prefix 4.09 s cold vs 0.11 s hot. The operating
-  point is util 0.71, 1,325,112-token pool, five full native sequences
-  (per-block cost 45,236,224 B, see the model conf). The canonical APC
-  run is BLOCKED by the same-day decode smoke (non-canonical,
-  profile=decode, plugin 0.3.0.dev20260819180958): align-mode decode
-  starts at 93.6/149.0/214.7 tok/s (1/2/4), ~21% under the flat
-  cache-off control at 117/200/310, and degrades deterministically with
-  requests served per process -- 65/88/149 by sample 3, 26/45/82 after
-  ~35 requests, identical curve on every restart, no recovery without
-  one, not thermal (cooled rerun continued degraded). Root cause was
-  upstream: full recurrent-state-pool copies per update, fixed in place
-  by plugin PR #634 (merged 2026-08-21). A 2026-08-26 trial retest on
-  v0.3.0.dev20260826100011 (trial venv, same vLLM/MLX pins) measured
-  APC-on decode flat at 101/171/257 then 99/167/255 tok/s (1/2/4)
-  across ~28 requests on one process, with the same-build cache-off
-  control at 119.6/202.0/316.1 -- decay fixed, flat ~15-19% align cost
-  remains. Do not serve or benchmark APC on the PINNED venv; a pin
-  bump, correctness-gate re-run, and APC canonical are the unblock
-  sequence. Retained observation:
-  the cache-off control measured 117/200/310 against the 2026-08-21
-  canonical 96.7/159.5/247.1 on the same phase; the canonical stays
-  authoritative until a full rerun explains the delta.
 - TurboQuant KV compression (phase scope item 6).

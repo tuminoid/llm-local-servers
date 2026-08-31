@@ -62,14 +62,14 @@ file.
 
 A digest mismatch distinguishes two cases, and only one is drift. The
 Ollama adapters consult the registry's manifest header (a few KB, no
-download) before deciding (added 2026-08-27):
+download) before deciding:
 
 - **Stale local store**: the registry still serves the pinned digest --
   the local tag simply predates an upstream tag move. The adapter pulls
   through the managed server automatically, landing exactly the
   already-reviewed artifact, and validates again. No pin changes, no
-  human decision consumed. (This recovered the A100 store twice on
-  2026-08-26 and blocked the RTX campaign, all manually, before it was
+  human decision consumed. (This recovered the A100 store twice
+  and blocked the RTX campaign, all manually, before it was
   automated.)
 - **True drift**: the registry serves something other than the pin. The
   refusal stands and names all three digests (registry, pin, local).
@@ -171,16 +171,16 @@ one exact structured tool call, a tool-result continuation, and direct JSON.
   Capability success proves response semantics only; it does not prove a
   DFlash speedup.
 - Nemotron 3.5 Lightning (`nemotron-3.5-lightning:30b-a3b-mlx`, pulled and
-  onboarded 2026-08-25 after the initial campaign rows) passed every check
+  onboarded after the initial campaign rows) passed every check
   on its first run, including thinking off via `think: false` -- no parser
   or prompt accommodation was needed, unlike the Nemotron Nano `<TOOLCALL>`
   history on CUDA vLLM. No AuditBench numbers exist for it yet.
-- The three vLLM-Metal rows were re-run 2026-08-26 on the new plugin pin
+- The three vLLM-Metal rows were re-run on the new plugin pin
   0.3.0.dev20260826100011 (PR #634 APC decay fix): clean sweeps on all
   three, with qwen3.6 checked at its new serving default of align-mode
   APC on. The raw-artifact table lists the re-run artifacts; the
-  2026-08-25 artifacts from the old pin remain retained on disk.
-- The base Qwen3.6 NVFP4 (`qwen3.6:35b-a3b-nvfp4`, checked 2026-08-26 after
+  artifacts from the old pin remain retained on disk.
+- The base Qwen3.6 NVFP4 (`qwen3.6:35b-a3b-nvfp4`, checked after
   the initial campaign rows) passed every check at its reduced 131,072
   launch context. Capability success says nothing about survivable context
   depth; the same-day supervised depth probes that proved 131,072 on both
