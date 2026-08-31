@@ -110,9 +110,10 @@ Dense:
 
 | Rank | Host / runtime / best profile | Cache | Conv/hour |
 | --: | -- | -- | --: |
-| 1 | A100 Ollama `qwen3.8-27b-native` | slot cache | 14.5 |
-| 2 | RTX Ollama `qwen3.5:9b` | slot cache | 9.8 |
-| 3 | M5 vLLM-Metal `gemma4-31b-4bit` | APC | 2.4 |
+| 1 | A100 vLLM `qwen3.8-27b` | align APC | 21.9 |
+| 2 | A100 Ollama `qwen3.8-27b-native` | slot cache | 14.5 |
+| 3 | RTX Ollama `qwen3.5:9b` | slot cache | 9.8 |
+| 4 | M5 vLLM-Metal `gemma4-31b-4bit` | APC | 2.4 |
 
 The qwen3.5-4b profiles are excluded despite leading the RTX rates:
 their fixture compliance is variant-split and cache-mode sensitive, and
@@ -121,8 +122,9 @@ the RTX host has no Capability Check v1 record yet (see
 RTX table below and the runtime BENCHMARKS.
 
 Cache policy, not model speed, dominates the spread behind each row:
-on the A100 alone the same qwen3.8 weights span 4.1 to 14.5 conv/hour
-purely by cache mode. Profiles that deviated from the fixture (GLM 4.7
+on the A100 alone the same qwen3.8 weights span 4.1 (vLLM cache-off,
+retired) through 14.5 (Ollama slot cache) to 21.9 conv/hour (vLLM
+align APC) purely by cache mode. Profiles that deviated from the fixture (GLM 4.7
 Flash on both A100 runtimes, among others) are excluded here, not slow;
 the per-case stories are in the runtime BENCHMARKS, and the replay
 profile below still measures server performance for them.
@@ -133,14 +135,17 @@ The replay profiles resend recorded audit conversations, so they price
 the server without model cooperation; full trials and gates are in each
 runtime's BENCHMARKS.md. Conclusions so far: on the A100, align APC is
 worth 6.1x end to end on qwen3.8 (its conf now pins APC on after the
-same-day correctness gate), and GLM 4.7 Flash -- conversation-
-non-compliant everywhere -- serves the shape well on vLLM. On the RTX,
+same-day correctness gate) and roughly 2x over Ollama's implicit slot
+cache on qwen3.6 (18.3 vs 9.92 replays/hour, same fixture), and GLM 4.7
+Flash -- conversation-non-compliant everywhere -- serves the shape well
+on vLLM. On the RTX,
 replay prices APC at 1.32-1.73x end to end, and verdict decode at depth
 is the ceiling. On the M5, the audit gap against the A100 is
 single-stream decode bandwidth at depth, not caching (cached fractions
 identical); the concurrent-replay profile puts the knee at two agents
 on both hybrids, with shared-prefix caching real but minor at audit
-depth.
+depth, while the A100 is still scaling at four concurrent agents on
+qwen3.6 (2.28x aggregate).
 
 ### RTX PRO 3000 Blackwell laptop GPU
 

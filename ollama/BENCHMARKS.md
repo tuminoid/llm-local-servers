@@ -335,7 +335,11 @@ equally. The old manifest's config is unrecoverable (registry dropped
 the digest-addressed manifest, the local copy was overwritten, and the
 crash-era server log was truncated on restart), so why the OLD digest
 served 262k to 246k tokens remains open; the retest hook is the next
-Ollama pin bump.
+Ollama pin bump. (A 0.33.2 trial ran part of that retest: the 131,072
+point stayed bounded there too, but the same trial regressed the
+184,320 consecutive-conversation failure from a graceful 500 into a
+memory runaway -- see the conversation-profile section -- so the pin
+stayed at 0.32.14 and the 262,144 retest was not attempted.)
 
 API correctness was verified at the operating points: streaming reasoning
 (separate `thinking`/`reasoning` fields, native and OpenAI APIs), structured
@@ -474,6 +478,22 @@ the runtime now fails gracefully where it once took down the host, but
 it cannot serve consecutive deep audit conversations at this pin. The
 500's runner-side cause is preserved in the retained server log.
 
+A supervised 0.33.2 trial made this failure WORSE, and the finding
+drove the decision to keep the fleet pin at 0.32.14: on 0.33.2 the
+same shape (first conversation completes cleanly and compliant at
+397 s, second conversation's fresh 33k evidence prefill starts as a
+cache miss with the full 156,670-token prior conversation still
+resident in the trie) no longer returns the graceful 500 -- the
+prefill runs to completion and then memory demand goes vertical at the
+snapshot commit, free memory falling from 34.6 GiB to 56 MiB in under
+2.5 minutes with kernel pressure still reporting normal. The armed
+memory watchdog killed the process group; unsupervised this is the
+hard-reset shape again. The qwen3.6 131,072 operating point stayed
+bounded on the same trial runtime (two consecutive deep conversations,
+free-memory floor 27.8 GiB), so the regression bites at the large
+allocation, not everywhere. Preserved server log and bench output are
+in the retained campaign state.
+
 Remote A100 profiles (16-file/~165k shape, isolated Ollama 0.32.14):
 
 | Profile | Compliant | Conversations/hour | Recall |
@@ -484,10 +504,11 @@ Remote A100 profiles (16-file/~165k shape, isolated Ollama 0.32.14):
 | `gemma4-26b` | NO | -- | mixed |
 | `glm4.7-flash` | NO | -- | -- |
 
-The cross-runtime headline: Ollama's implicit slot cache carries
-qwen3.8 GGUF to 14.5 conversations/hour on the same host where
-cache-off CUDA vLLM manages 4.1 -- and align-APC vLLM carries qwen3.6
-to 85.9. Cache policy, not model speed, dominates this workload.
+The cross-runtime headline: cache policy, not model speed, dominates
+this workload. On the same host the same qwen3.8 weights run 4.1
+conversations/hour on cache-off CUDA vLLM (since retired), 14.5 here
+through Ollama's implicit slot cache, and 21.9 on vLLM's adopted
+align-APC pin -- and align-APC vLLM carries qwen3.6 to 85.9.
 GLM think-runs-away or paraphrases the ledger on both runtimes; gemma4
 alternates between hallucinated file names and clean completions.
 
@@ -495,15 +516,37 @@ alternates between hallucinated file names and clean completions.
 
 The replay profile (AuditBench protocol) scripts every
 turn, so it measures the server with no dependence on model protocol
-compliance. Harness commit `03b9b2c`, isolated Ollama 0.32.14,
-16-file/~165k shape. Replays/hour is not comparable to
-conversations/hour (probe turns decode almost nothing; the verdict
-decode is pushed toward the 16,384 cap).
+compliance. Gemma and GLM ran at harness commit `03b9b2c`, the three
+Qwen rows at `8425d08` (the replay workload is unchanged between the
+two); isolated Ollama 0.32.14, 16-file/~165k shape. Replays/hour is not
+comparable to conversations/hour (probe turns decode almost nothing;
+the verdict decode is pushed toward the 16,384 cap).
 
 | Profile | Replays/h | Turn walls | Verdict | Note |
 | -- | --: | -- | -- | -- |
+| `qwen3.6-35b-a3b` | 9.92 | 11.9 s cold, 3.7 -> 6.7 s | 16,384 tok @ 59.4 tok/s | slot cache behavioral |
+| `qwen3.8-27b-native` | 6.66* | 31.6 s cold, 9.5 -> 15.4 s | 2 of 3 fill cap @ ~49 tok/s | mixed verdict lengths |
+| `qwen3-coder-30b` | 3.39 | 8.6 s cold, 3.9 -> 10.9 s | 16,384 tok @ 17.4 tok/s | depth-decode bound |
 | `gemma4-26b` | 30.0 | flat 10.4 -> 6.9 s | 1.6-2.6k tok, stops early | slot cache confirmed behaviorally |
-| `glm4.7-flash` | -- | 12 turns clean, then HTTP 500 | never reached | /v1 128Ki wall, below |
+| `glm4.7-flash` | -- | 12 turns clean, then HTTP 500 | never reached | truncated tool-call 500, below |
+
+The three Qwen rows complete the cross-runtime replay comparison on
+this host:
+
+- The llama.cpp slot cache engages behaviorally on all three (first
+  turn pays the 33k evidence prefill, later turns only the ~8.2k
+  suffix), but at depth it is no match for align APC: qwen3.6 runs
+  9.92 replays/h against vLLM's 18.3 on the same fixture, and the gap
+  is at both ends -- growing turn walls (3.7 -> 6.7 s vs flat 2.3-2.5 s)
+  and verdict decode at ~165k depth (59.4 vs 98.0 tok/s).
+- qwen3.8's median (6.66*) rides on mixed verdict lengths: one sample
+  obeyed its own stop instinct at 926 tokens (14.34 replays/h), the
+  other two filled the 16,384 cap (6.51-6.66). The same
+  variant-dependent never-conclude compliance was recorded on its vLLM
+  legs; compare turn walls and verdict rate, not the starred median.
+- qwen3-coder is depth-decode bound: 17.4 tok/s verdict decode at 164k
+  makes the verdict 89% of its 1,061 s replay wall, the same
+  context-loaded decode collapse its conversation profile shows.
 
 Gemma finally has audit-shaped serving numbers despite its mixed
 conversation compliance: turn walls stay flat across 16 turns, proving
@@ -513,20 +556,37 @@ tokens in ~120 s. Its verdicts ignore the never-conclude control
 (1,599-2,594 tokens, `finish_reason: stop`), so its 30.0 replays/hour
 is not comparable against a cap-filling model.
 
-GLM cannot complete the shape, and the failure is a serving bug with a
-crisp boundary, reproduced three times (twice in the slate run, once in
-a dedicated retry with the server log preserved): the first turn whose
-prompt crosses 131,072 tokens returns HTTP 500 from
-`/v1/chat/completions` -- after the runner has done all the work. The
-preserved log shows task 663 hit the slot cache at 126,382 tokens,
-prefilled the remaining ~8k at 330 tok/s, generated the 32-token probe,
-and released cleanly (`n_tokens = 131553, truncated = 0`); the GIN
-layer then returned 500 with nothing logged. The allocation is fine
-(202,752 per slot, and this host's canonical near-context proof pushed
-8 x 190,092-token prompts through the native `/api` endpoint on the
-same model), so the wall is specific to the OpenAI-compat chat path at
-exactly 128Ki prompt tokens. Diagnosed and recorded locally in the
-retained server log.
+GLM cannot complete the shape, and the failure is root-caused: a
+truncated tool call trips the runtime's GLM tool-call parser, and the
+earlier "128Ki wall" reading was a coincidence of depth. The observed
+shape stands -- three times, the first turn whose prompt crossed
+131,072 tokens returned HTTP 500 after the runner had done all the
+work (the preserved log shows task 663 hit the slot cache at 126,382
+tokens, prefilled the remaining ~8k at 330 tok/s, generated the
+32-token probe, and released cleanly with `truncated = 0`, and the GIN
+layer then returned 500 with nothing logged). The mechanism: at that
+turn the deterministic temperature-0 output opens a `<tool_call>`
+inside the 32-token probe window, the cap slices the XML mid-call, and
+on stream end the builtin glm4.7 parser's finalize step fails to parse
+the fragment; the server converts that parser error into the 500 after
+generation, through an error path that writes nothing to the log. A
+minimal repro at 230 prompt tokens (tools declared, thinking disabled,
+`max_tokens` 6-12 slicing the call) returns the same 500 from both
+`/v1/chat/completions` and native `/api/chat`, with the error body
+naming the cause: `incomplete GLM tool call: XML syntax error on line
+1: element <arg_value> closed by </tool_call>`. Earlier turns pass
+because their 32 probe tokens stay inside thinking or content, never
+entering the parser's tool-call state; prompt depth only decided when
+the model first reached for a tool that fast. Any client that caps
+completion tokens below a GLM tool call in flight trips this; the
+16,384-token conversation profile never does, which is why GLM's
+conversation samples completed all 17 turns. Retested on a 0.33.2
+trial: byte-identical 500 on both endpoints (the parser is unchanged
+there), though the runtime now recovers the runner cleanly after a
+mid-stream parser error where it previously wedged. The retest
+condition stays open for future releases: the fault is in the
+runtime's parser finalization, not in this deployment or the model
+artifact.
 
 ## A100-SXM4-80GB
 

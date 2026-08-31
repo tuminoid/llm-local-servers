@@ -171,19 +171,20 @@ Medians over compliant samples; cached fraction from engine counters.
 | `qwen3.6-35b-a3b-awq` | APC on | yes | 85.9 | 0.898 | 16/16 |
 | `qwen3-coder-30b` | APC on | yes | 45.2 | 0.902 | 16/16 |
 | `gemma4-26b-a4b-awq` | APC on | yes | 43.8 | 0.906 | 16/16 |
-| `qwen3.8-27b` | APC off | yes | 4.1 | -- | 16/16 |
+| `qwen3.8-27b` | APC on | yes | 21.9 | 0.898 | 16/16 |
 | `glm4.7-flash-awq` | APC on | NO | -- | 0.902 | 0/16 |
 
 Findings:
 
 - qwen3.6 at its APC serving default is the A100's audit workhorse:
   85.9 conversations/hour with perfect recall.
-- qwen3.8's cache-off pin costs it dearly on this workload: 4.1/h with
-  ~877 s conversations, each re-prefilling ~1.69M tokens. Its own
-  Ollama GGUF artifact on the same host reaches 14.5/h purely through
-  llama.cpp's implicit slot cache. (The align-APC trial in the replay
-  section below flipped the pin to APC on; this row
-  records the retired cache-off default.)
+- qwen3.8 at its adopted align-APC default reaches 21.9
+  conversations/hour (144-179 s conversations, 0.898 cached, perfect
+  recall on all three samples) -- 5.3x the retired cache-off default,
+  which measured 4.1/h with ~877 s conversations, each re-prefilling
+  ~1.69M tokens. It now also beats its own Ollama GGUF artifact on the
+  same host (14.5/h through llama.cpp's implicit slot cache). The pin
+  flip came from the align-APC trial in the replay section below.
 - GLM 4.7 Flash is the one profile that cannot execute the shape: one
   sample think-ran-away without a single tool call (16,384 reasoning
   tokens, `finish_reason: length`), and the sample that completed all
@@ -235,8 +236,9 @@ control, so it is CUDA baseline nondeterminism, not a cache defect;
 semantic needles 8/8 across all legs; shared-prefix TTFT 5.29 s cold vs
 0.15 s hit. Measured align pool cost -0.88% (742,613 vs 749,204
 tokens). On this evidence the conf pin flipped to
-`VLLM_PREFIX_CACHING=1`. The fleet-table conversation row
-above (4.1 conv/h) documents the retired cache-off serving default.
+`VLLM_PREFIX_CACHING=1`. The adopted operating point has since run its
+own conversation canonical -- the 21.9 conv/h fleet-table row above;
+the retired cache-off default measured 4.1 conv/h.
 
 ### First GLM serving data, and the qwen3.6 anchor
 
@@ -251,6 +253,42 @@ above (4.1 conv/h) documents the retired cache-off serving default.
 - The qwen3.6 anchor shows what a cache-friendly MoE looks like under
   replay: turns are nearly free and 85% of the 196.7 s wall is the
   forced verdict decode itself (167.0 s).
+
+## Concurrent audit replay profile: A100
+
+Canonical replay-concurrent run (AuditBench protocol) on the audit
+workhorse at its align-APC serving default, vLLM 0.27.1. The profile is
+the multi-agent audit shape: N scripted replays at once share the 32k
+evidence prefix (same repository, distinct per-agent file chains), every
+probe turn decodes a full 1,024-token agent turn, and the verdict decode
+is forced toward the 16,384-token cap. Replays/hour here is not
+comparable to the 1x replay profile above (32-token probes there).
+
+### qwen3.6-35b-a3b-awq APC -- concurrent replay canonical
+
+Context 262,144, APC-on pool 2,714,989 tokens, seqs 8; the 184,320-token
+per-stream demand fits all three candidate stream counts.
+
+| Streams | Batch wall | Replays/h | Scaling | Turn walls first -> final | Verdict decode | Cached |
+| --: | --: | --: | --: | -- | --: | --: |
+| 1 | 308 s | 11.70 | 1.00 | 9.6 -> 11.3 s | 109.9 tok/s | 0.897 |
+| 2 | 388 s | 18.57 | 1.59 | 10.3 -> 15.2 s | 87.6 tok/s | 0.906 |
+| 4 | 540 s | 26.67 | 2.28 | 11.6 -> 22.8 s | 63.1 tok/s | 0.915 |
+
+- The A100 is still scaling at four concurrent agents (2.28x aggregate,
+  per-agent latency 1.75x), where the same profile on the M5 vLLM-Metal
+  host knees at two. Every turn cap-filled its 1,024 tokens and every
+  verdict its 16,384 in all batches, so the rates buy full work.
+- Batch walls are byte-consistent across samples (ranges under one
+  second at every stream count) -- the fixture and scheduler are
+  deterministic at this operating point.
+- Shared-prefix seeding is visible per stream: in each batch one stream
+  prefills the 32k evidence cold and the others start with 32,736
+  cached tokens; cached fraction rises with streams (0.897 -> 0.915)
+  but stays minor against a ~167k final conversation, same as on the
+  M5.
+
+Raw artifacts are retained outside the repository.
 
 ## Audit conversation and replay: RTX PRO 3000
 
