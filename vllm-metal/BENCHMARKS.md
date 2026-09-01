@@ -427,11 +427,18 @@ same-bytes runtime isolation:
 | Memory at ceiling | 92.78 GiB peak, no bound | 66 GB, bounded up front |
 | Full native 262k | machine hard reset | completed |
 
-The single-stream decode gap (72 vs 18 tok/s) is expected for this
-checkpoint: 8-bit weights are ~1.8x the bytes of NVFP4 and weight
-dequantization dominates hybrid-GDN serving here (upstream measured no NAX
-serving change on this model for the same reason). Even four concurrent
-streams (65.7 aggregate) do not reach the Ollama runner's single stream.
+The single-stream decode gap (72 vs 18 tok/s) decomposes into two
+factors, only one of which is bytes: 8-bit weights are ~1.8x the bytes
+of NVFP4, and -- established later by a bandwidth audit -- the Ollama
+MLX runner silently runs the checkpoint's packaged MTP draft head
+(speculative decoding on by default whenever an artifact ships a head),
+worth ~1.5-1.6x on top. The 72.26 tok/s figure exceeds the plain-decode
+ceiling of the M5 Max's 614 GB/s memory bandwidth over ~14 GiB of
+weights (~44 tok/s), so it is not a plain rate at all. This profile's
+own decode is honest plain autoregressive at ~82-88% of the bandwidth
+roof -- the kernels are near-silicon, not deficient. Even four
+concurrent streams (65.7 aggregate) do not reach the Ollama runner's
+speculated single stream.
 What vLLM-Metal buys on this model is bounded memory, the full native
 context, and real multi-request semantics -- not raw decode speed. The
 4-bit checkpoint below closes most of that gap.

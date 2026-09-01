@@ -182,6 +182,20 @@ near the configured ceiling, all tokenizer-reported):
 | Qwen3.6 35B-A3B coding NVFP4 | 4,076.5 tok/s | 1,384.7 tok/s (130,920 tok) | 897.9 tok/s (246,096 tok) |
 | Qwen3.8-27B NVFP4 | 827.0 tok/s | 496.0 tok/s (92,058 tok) | 350.6 tok/s (173,041 tok) |
 
+Speculation provenance, established by a bandwidth audit: the MLX
+runner silently enables speculative decoding whenever an artifact
+packages a draft head -- there is no serving switch and no log line at
+default verbosity. The qwen3.8 NVFP4 registry artifact ships the
+checkpoint's MTP head, so every qwen3.8 MLX rate in this file is
+MTP-speculated. Its 72.26 tok/s decode exceeds the plain-decode ceiling
+implied by the M5 Max's 614 GB/s memory bandwidth over ~14 GiB of dense
+4-bit weights (~44 tok/s), and a live prose probe measured 54.7 tok/s
+-- both impossible without speculation. The qwen3.6 NVFP4 artifacts
+ship no draft head and decode plainly, which is why they sit at decode
+parity with the plain vLLM-Metal profile while qwen3.8 appears to lead
+its vLLM-Metal sibling. Cross-runtime comparisons must treat the
+qwen3.8 MLX rates as speculated, not plain.
+
 ### Nemotron 3.5 Lightning 30B-A3B MLX -- AuditBench v1 canonical
 
 Measured at repository commit 446f840 with the finalized

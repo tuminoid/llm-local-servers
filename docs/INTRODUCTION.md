@@ -95,7 +95,7 @@ bandwidth divided by active bytes:
 - A dense 123B at 4-bit (~65 GiB/token): single digits, on any runtime,
   because the silicon's bandwidth is the wall.
 
-Two corollaries that spec sheets hide:
+Three corollaries that spec sheets hide:
 
 - **Bits buy decode, never prefill.** Halving weight bits roughly doubles
   decode (Qwen3.8 went 18.1 -> 32.5 tok/s from 8-bit to 4-bit) while
@@ -105,6 +105,16 @@ Two corollaries that spec sheets hide:
   ~59 with 32k resident, ~16 with 131k resident. A "decode ceiling"
   benchmark flatters every real long-context workload -- which is why the
   audit benchmark's production metric is calls/hour, not tok/s.
+- **Speculation buys decode, never prefill.** During bandwidth-bound
+  decode the arithmetic units are mostly idle, so a small draft model
+  can propose several tokens and the target verifies them all in the
+  same weight sweep -- measured 2.4x on A100 qwen3.8 with its DFlash 2
+  drafter at one stream. The gain shrinks as batching or resident
+  context consume the idle margin (neutral by ~131k resident), prefill
+  is untouched, and greedy output stays byte-identical because the
+  target vetoes every wrong guess. Beware: some runtimes enable a
+  packaged draft head silently, so a published decode rate is not
+  always a plain rate.
 
 **Batching is where dense and MoE trade places.** Concurrent dense streams
 share one weight read per step, so concurrency is nearly free until the
@@ -325,7 +335,7 @@ The load-bearing distinctions:
 | | RTX PRO 3000 laptop | A100 80GB (remote) | M5 Max 128 GB |
 | -- | -- | -- | -- |
 | Memory | 12 GiB dedicated VRAM | 80 GiB HBM | ~106 GiB usable of 128 GiB unified |
-| Bandwidth | modest GDDR | ~2 TB/s | half-TB/s class, shared with CPU |
+| Bandwidth | modest GDDR | ~2 TB/s | 614 GB/s, shared with CPU |
 | Sweet spot | 4-9B AWQ, full GPU | 30B-class FP8/AWQ, huge KV pools, real concurrency | big-capacity / low-bandwidth cases: MoE, long context |
 
 The three hosts sample three different corners of the currency space:

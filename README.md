@@ -110,7 +110,7 @@ Dense:
 
 | Rank | Host / runtime / best profile | Cache | Conv/hour |
 | --: | -- | -- | --: |
-| 1 | A100 vLLM `qwen3.8-27b` | align APC | 21.9 |
+| 1 | A100 vLLM `qwen3.8-27b-dflash2` | align APC + DFlash 2 | 23.4 |
 | 2 | A100 Ollama `qwen3.8-27b-native` | slot cache | 14.5 |
 | 3 | RTX Ollama `qwen3.5:9b` | slot cache | 9.8 |
 | 4 | M5 vLLM-Metal `gemma4-31b-4bit` | APC | 2.4 |
@@ -121,10 +121,11 @@ the RTX host has no Capability Check v1 record yet (see
 [CAPABILITIES.md](CAPABILITIES.md)); their measured rates stay in the
 RTX table below and the runtime BENCHMARKS.
 
-Cache policy, not model speed, dominates the spread behind each row:
-on the A100 alone the same qwen3.8 weights span 4.1 (vLLM cache-off,
-retired) through 14.5 (Ollama slot cache) to 21.9 conv/hour (vLLM
-align APC) purely by cache mode. Profiles that deviated from the fixture (GLM 4.7
+Cache and speculation policy, not model speed, dominates the spread
+behind each row: on the A100 alone the same qwen3.8 weights span 4.1
+(vLLM cache-off, retired) through 14.5 (Ollama slot cache) and 20.2
+(vLLM align APC) to 23.4 conv/hour (align APC plus the DFlash 2
+drafter). Profiles that deviated from the fixture (GLM 4.7
 Flash on both A100 runtimes, among others) are excluded here, not slow;
 the per-case stories are in the runtime BENCHMARKS, and the replay
 profile below still measures server performance for them.
@@ -136,7 +137,10 @@ the server without model cooperation; full trials and gates are in each
 runtime's BENCHMARKS.md. Conclusions so far: on the A100, align APC is
 worth 6.1x end to end on qwen3.8 (its conf now pins APC on after the
 same-day correctness gate) and roughly 2x over Ollama's implicit slot
-cache on qwen3.6 (18.3 vs 9.92 replays/hour, same fixture), and GLM 4.7
+cache on qwen3.6 (18.3 vs 9.92 replays/hour, same fixture); DFlash 2
+speculation on qwen3.8 is depth-dependent -- 2.4x shallow decode and
++16% conversations, but neutral at verdict depth, with the crossover
+around 64-100k resident tokens; and GLM 4.7
 Flash -- conversation-non-compliant everywhere -- serves the shape well
 on vLLM. On the RTX,
 replay prices APC at 1.32-1.73x end to end, and verdict decode at depth
@@ -168,24 +172,30 @@ CPU-assisted qwen3.6 and qwen3.8 capability profiles) are in
 
 ### A100-SXM4-80GB
 
-Remote host: sm_80, 81,920 MiB VRAM. Ollama rows: isolated Ollama
-0.32.14, Flash Attention, q8 KV.
+Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.28.0, Transformers
+5.15.1 (re-canonicalized within ~2% of the earlier 0.27.1 rates).
+Ollama rows: isolated Ollama 0.32.14, Flash Attention, q8 KV.
 
 | Runtime and profile | Context | Slots | GPU KV / allocation | 32k prefill | Peak decode | Audit 32k | Audit half | Audit deep | Near-context proof |
 | -- | --: | --: | -- | --: | --: | --: | --: | --: | -- |
-| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,747,310 KV | 16,103.9 | 880.31 @8x | 1,003.11 @8x | 150.95 | 86.33 @1x | 8 x 245,752 in 350.22s |
+| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,714,989 KV | 15,558.4 | 867.22 @8x | 992.75 @8x | 148.07 | 84.59 @4x | 8 x 245,752 in 359.58s |
 | Ollama `qwen3.6:35b-a3b` | 262,144 | 1 | 0.00 / 25.34 GiB | 4,165.7 | 84.58 | 176.52 | 64.82 | 42.81 | 245,752 in 85.26s |
-| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,868,129 KV | 7,616.4 | 1,066.07 @8x | 594.09 @8x | 58.59 | 26.32 @4x | 4 x 245,774 in 624.84s |
+| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,867,456 KV | 7,603.9 | 1,072.38 @8x | 595.22 @8x | 58.53 | 26.22 @4x | 4 x 245,774 in 625.92s |
 | Ollama `gemma4:26b` | 262,144 | 8 | 0.00 / 25.32 GiB | 3,246.7 | 231.48 @8x | 222.32 @8x | 53.51 | 27.68 @4x | 8 x 245,777 in 1,030.85s |
-| vLLM `qwen3-coder-30b` | 262,144 | 8 | 512,864 KV | 8,461.3 | 1,020.30 @8x | 514.55 @8x | 61.66 | 27.07 @1x | 2 x 245,762 in 290.58s |
+| vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,152 KV | 8,551.3 | 1,019.74 @8x | 515.11 @8x | 61.55 | 27.20 @1x | 2 x 245,762 in 289.67s |
+| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 498,225 KV | 2,721.2 | 592.04 @8x | 227.99 @8x | 34.77 | 22.84 @1x | 2 x 245,748 in 322.29s |
 
 The A100 audit workhorse is vLLM Qwen3.6: it leads every prompt-heavy phase,
-reaches 1,003.11 cold-32k calls/hour, and proves eight simultaneous near-full
+reaches 992.75 cold-32k calls/hour, and proves eight simultaneous near-full
 contexts. vLLM Gemma and Qwen Coder lead pure aggregate decode, but their
-32k audit rates are only 59% and 51% of Qwen3.6; Gemma is also the best
-Ollama audit profile. The remaining measured profiles (both GLM 4.7 Flash
-stacks, both qwen3.8 stacks, and Ollama qwen3-coder) are in
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
+32k audit rates are only 60% and 52% of Qwen3.6; Gemma is also the best
+Ollama audit profile. The qwen3.8 DFlash 2 row is the dense model with its
+pinned speculative drafter: 2.4x plain decode and +27% cold-32k calls at
+one stream, fading with depth (its half/deep cells sit at or below the
+plain profile's; the crossover analysis is in
+[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md)). The remaining measured
+profiles (both GLM 4.7 Flash stacks, plain qwen3.8 on both runtimes, and
+Ollama qwen3-coder) are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ### Apple M5 Max (128 GB unified memory)
