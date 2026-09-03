@@ -13,6 +13,9 @@
 .PHONY: vllm-metal-model-check vllm-metal-install vllm-metal-pull
 .PHONY: vllm-metal-start vllm-metal-stop vllm-metal-status vllm-metal-logs
 .PHONY: vllm-metal-bench vllm-metal-capability
+.PHONY: lmstudio-model-check lmstudio-install lmstudio-pull
+.PHONY: lmstudio-start lmstudio-stop lmstudio-status lmstudio-logs
+.PHONY: lmstudio-bench lmstudio-capability
 
 # Every target here is phony, so GNU Make's built-in rules can only do harm.
 # Left on, a mistyped target matches the built-in `%: %.sh` rule and silently
@@ -112,6 +115,15 @@ VLLM_METAL_WHEEL_SHA256 ?= 61d7c410fe0f017b0268a306208582b23f1ac4e18e7ffd5472cf3
 VLLM_METAL_VLLM_VERSION ?= 0.28.0
 VLLM_METAL_VLLM_WHEEL_SHA256 ?= e8c5a3930367b740914a14420efcc3535da2c2dba5bb23d77221ff81094cc630
 
+LMSTUDIO_DIR := lmstudio
+# LM Studio ships the lms CLI and its inference runtimes inside an
+# auto-updating desktop app, so there is no pinned, checksum-verified release
+# tarball to fetch the way Ollama and vLLM-Metal have. install.sh verifies the
+# CLI is present and the service reachable; the version floor below is enforced
+# only when the CLI reports a semver, with the v1 REST API probe as the real
+# gate. See lmstudio/AGENTS.md for this and the other accepted deviations.
+LMSTUDIO_MIN_VERSION ?= 0.4.0
+
 OLLAMA_DIR := ollama
 # qwen3.8:27b requires Ollama 0.32.12 or newer. Keep a reviewed release and
 # its per-platform checksums together; ollama-install refuses an unverified
@@ -190,6 +202,16 @@ help:
 	@echo "  make vllm-metal-capability - Check reasoning, tools, and structured output"
 	@echo "  make vllm-metal-stop    - Stop and verify process-group release"
 	@echo ""
+	@echo "  LM Studio (loopback port 1234, MLX and GGUF, needs MODEL=<name>):"
+	@echo "  make lmstudio-install - Verify the lms CLI, service, and runtimes"
+	@echo "  make lmstudio-pull    - Download the model's pinned artifact (--mlx/--gguf)"
+	@echo "  make lmstudio-start   - Start the server and load the model"
+	@echo "  make lmstudio-status  - Show server, loaded identity, context, memory"
+	@echo "  make lmstudio-logs    - Follow the LM Studio server log"
+	@echo "  make lmstudio-bench   - Run AuditBench v1"
+	@echo "  make lmstudio-capability - Check reasoning, tools, and structured output"
+	@echo "  make lmstudio-stop    - Unload, stop the server, and verify release"
+	@echo ""
 	@echo "  Remote vLLM host (HOST=<ssh-host> required, needs MODEL=<name>):"
 	@echo "  make vllm-remote-bootstrap - Create the remote venv and install vllm"
 	@echo "  make vllm-remote-start     - Start on the remote host (syncs scripts first)"
@@ -220,6 +242,9 @@ help:
 	@echo "  Select the vLLM-Metal model with MODEL=<name> ($(VLLM_METAL_DIR)/models/<name>.conf):"
 	@echo "  $(patsubst $(VLLM_METAL_DIR)/models/%.conf,%,$(wildcard $(VLLM_METAL_DIR)/models/*.conf))"
 	@echo ""
+	@echo "  Select the LM Studio model with MODEL=<name> ($(LMSTUDIO_DIR)/models/<name>.conf):"
+	@echo "  $(patsubst $(LMSTUDIO_DIR)/models/%.conf,%,$(wildcard $(LMSTUDIO_DIR)/models/*.conf))"
+	@echo ""
 
 # --- llm-audit-bench checkout guard ---
 
@@ -245,7 +270,7 @@ markdownlint:
 	markdownlint-cli2
 
 pycompile:
-	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) tests
+	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(LMSTUDIO_DIR) tests
 
 # --- Test ---
 
@@ -558,6 +583,51 @@ vllm-metal-bench: vllm-metal-model-check audit-bench-check
 vllm-metal-capability: vllm-metal-model-check audit-bench-check
 	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		python3 ./$(VLLM_METAL_DIR)/capability.py $(MODEL)
+
+# --- Local LM Studio ---
+#
+# LM Studio is local-only here: its desktop-app dependency does not fit the
+# isolated-shared-host pattern the ollama-remote-* and vllm-remote-* targets
+# rely on, so there is no lmstudio-remote-* family. MODEL names a
+# models/<name>.conf, and the format (mlx or gguf) is a fact of that config.
+lmstudio-model-check:
+	@test -n "$(MODEL)" || { \
+		echo "error: set MODEL=<name>" >&2; \
+		echo "available:" >&2; \
+		echo "  $(patsubst $(LMSTUDIO_DIR)/models/%.conf,%,$(wildcard $(LMSTUDIO_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+	@test -f "$(LMSTUDIO_DIR)/models/$(MODEL).conf" || { \
+		echo "error: no such LM Studio model config: $(MODEL)" >&2; \
+		echo "MODEL names models/<name>.conf, not the lms model key" >&2; \
+		echo "available:" >&2; \
+		echo "  $(patsubst $(LMSTUDIO_DIR)/models/%.conf,%,$(wildcard $(LMSTUDIO_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+
+lmstudio-install:
+	@LMSTUDIO_MIN_VERSION=$(LMSTUDIO_MIN_VERSION) ./$(LMSTUDIO_DIR)/install.sh
+
+lmstudio-pull: lmstudio-model-check
+	@./$(LMSTUDIO_DIR)/pull.sh $(MODEL)
+
+lmstudio-start: lmstudio-model-check
+	@LMSTUDIO_MIN_VERSION=$(LMSTUDIO_MIN_VERSION) ./$(LMSTUDIO_DIR)/run.sh $(MODEL)
+
+lmstudio-stop:
+	@./$(LMSTUDIO_DIR)/stop.sh
+
+lmstudio-status:
+	@./$(LMSTUDIO_DIR)/status.sh
+
+lmstudio-logs:
+	@tail -f "$${XDG_STATE_HOME:-$${HOME}/.local/state}/lmstudio/server.log"
+
+lmstudio-bench: lmstudio-model-check audit-bench-check
+	@$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		./$(LMSTUDIO_DIR)/bench.py $(MODEL)
+
+lmstudio-capability: lmstudio-model-check audit-bench-check
+	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		python3 ./$(LMSTUDIO_DIR)/capability.py $(MODEL)
 
 # --- Remote vLLM host ---
 #
