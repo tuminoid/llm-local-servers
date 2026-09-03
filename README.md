@@ -27,8 +27,9 @@ adapters, model configs, and results.
 3. Install the runtime you intend to serve with; prerequisites and
    host-tuning rationale are per runtime in
    [vllm/README.md](vllm/README.md),
-   [ollama/README.md](ollama/README.md), and
-   [vllm-metal/README.md](vllm-metal/README.md).
+   [ollama/README.md](ollama/README.md),
+   [vllm-metal/README.md](vllm-metal/README.md), and
+   [lmstudio/README.md](lmstudio/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
 newer for `make lint` and `make test`.
@@ -47,11 +48,14 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-bench MODEL=<name>` | Run AuditBench v1 |
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v1 |
 
-where `<runtime>` is `vllm`, `ollama`, or `vllm-metal` (plus
-`ollama-install`, `vllm-metal-install`, and `vllm-metal-pull` for
-runtime and model installation). `MODEL` names a config file in that
-runtime's `models/` directory, never a served model ID or registry tag;
-there is deliberately no default model.
+where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, or `lmstudio` (plus
+`ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,
+`lmstudio-install`, and `lmstudio-pull` for runtime and model
+installation). `MODEL` names a config file in that runtime's `models/`
+directory, never a served model ID or registry tag; there is deliberately
+no default model. LM Studio is local-only and adds no `-remote-*` family
+(its desktop-app dependency does not fit the isolated-shared-host
+pattern).
 
 The vLLM and Ollama runtimes also run on a remote GPU host over ssh:
 `make vllm-remote-{bootstrap,start,stop,status,logs,bench,capability}`
@@ -78,6 +82,12 @@ decode are aggregate tok/s, audit columns are calls/hour, a `@Nx`
 suffix names the measured concurrency, and `GPU KV / allocation` is
 the raw vLLM pool or Ollama's measured CPU/GPU model allocation
 (Ollama exposes no fungible pool).
+
+The LM Studio runtime carries no rows yet: its llama.cpp and MLX engines
+are the same ones `ollama/` and `vllm-metal/` already measure, so a row is
+added only once a canonical AuditBench run proves it earns a place rather
+than duplicating those numbers. See
+[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md) for status.
 
 ### Audit conversations per hour, fleet-wide
 

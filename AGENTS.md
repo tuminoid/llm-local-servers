@@ -52,6 +52,7 @@ What this means in practice:
 | `ollama/` | Ollama native and OpenAI-compatible server | Local lifecycle plus isolated `ollama-remote-*` targets |
 | `vllm/` | vLLM OpenAI-compatible server | Local lifecycle, benchmark and capability targets, plus `vllm-remote-*` |
 | `vllm-metal/` | vLLM-Metal plugin server on Apple Silicon | `vllm-metal-{install,pull,start,stop,status,logs,bench,capability}` |
+| `lmstudio/` | LM Studio server (llama.cpp GGUF and Apple Silicon MLX), local only | `lmstudio-{install,pull,start,stop,status,logs,bench,capability}` |
 
 [README.md](README.md) is the front page and the cross-runtime, host-oriented
 executive summary of measured results. The per-runtime `BENCHMARKS.md` files
