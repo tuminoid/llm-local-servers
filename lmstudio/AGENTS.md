@@ -41,6 +41,12 @@ Script-managed LM Studio server. User-facing usage and rationale live in
 - One conf per artifact, format encoded in the config. Never switch format
   on an env var: the artifact decides the runner (llama.cpp for GGUF, MLX
   on Apple Silicon), exactly as ollama/ and vllm-metal/ split the two.
+- Load must run on this host. LM Studio's LM Link routes model resolution
+  across networked devices, so when a remote peer is the preferred device
+  `lms load` runs the model on that peer's GPU. `start.sh` reads
+  `lms link status --json` and refuses a remote-routed load by default,
+  the same "serve locally, remote is a deliberate act" stance as the
+  loopback-bind invariant. `LMSTUDIO_ALLOW_REMOTE_DEVICE=1` opts in.
 
 ## Accepted deviations (and why)
 
@@ -104,3 +110,19 @@ requested unload/stop.
 - The bench adapter must not synthesise a KV pool size from context length.
   LM Studio exposes no fungible pool metric, so, like the Ollama adapter,
   capacity is one active slot at the configured per-request context.
+- `/v1/models` lists every downloaded model, not just the loaded one, so
+  the harness's `openai_model_card` (which asserts a lone entry) cannot be
+  used. `bench.py` carries `_served_model_card`, which selects the served
+  id out of the list; the harness stays untouched. LM Studio's card also
+  omits `max_model_len`, so the loaded context is verified against
+  `lms ps`, not the card.
+- LM Link can route a load to a networked peer. When testing locally,
+  confirm the preferred device is this host (`lms link status`); the
+  guard in `start.sh` refuses a remote-routed load, but a change that
+  bypasses it would silently benchmark someone else's GPU. Restore any
+  `set-preferred-device` change you make for a local test.
+- AuditBench requires at least 131,072 configured context tokens
+  (`build_plan` rejects less). A small-VRAM host cannot hold that for a
+  27B, and only barely for a 9B with heavy CPU offload, so canonical rows
+  come from a host that fits the native context, not from trimming the
+  window below the harness floor.

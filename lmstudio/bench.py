@@ -7,6 +7,8 @@ import pathlib
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 # The shared harness modules (audit_bench, capability_check) resolve via
@@ -17,9 +19,34 @@ SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 from audit_bench import (
     OpenAIChatAdapter,
     openai_chat_fn,
-    openai_model_card,
     run_benchmark,
 )
+
+
+def _served_model_card(base_url: str, served: str, timeout: int) -> dict:
+    """Find the served model's card in LM Studio's /v1/models list.
+
+    The shared harness's openai_model_card expects exactly one model at
+    /v1/models, which holds for the single-model vLLM and Ollama servers. LM
+    Studio instead lists every downloaded model there regardless of what is
+    loaded, so this adapter must select the served id out of that list rather
+    than assert a lone entry. Identity beyond the id (format, quant,
+    architecture) is verified separately against lms ps.
+    """
+    url = f"{base_url.rstrip('/')}/v1/models"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as response:
+            data = json.load(response).get("data", [])
+    except urllib.error.HTTPError as exc:
+        message = exc.read().decode(errors="replace")
+        raise RuntimeError(f"{exc.code} from {url}: {message}") from exc
+    for card in data:
+        if card.get("id") == served:
+            return card
+    listed = ", ".join(sorted(c.get("id", "?") for c in data)) or "none"
+    raise RuntimeError(
+        f"served model {served} not found at {url}; listed: {listed}"
+    )
 
 
 def _config_value(conf: pathlib.Path, name: str) -> str:
@@ -307,15 +334,15 @@ def main() -> int:
             },
         )
 
-    card = openai_model_card(base, timeout)
-    if card.get("id") != served:
-        raise RuntimeError(
-            f"live model is {card.get('id')}, expected configured {served}"
-        )
-    live_context = card.get("max_model_len")
+    card = _served_model_card(base, served, timeout)
+    # LM Studio's card carries no max_model_len; the loaded context is
+    # authoritatively verified against lms ps in _model_identity below, and
+    # the launch profile records the configured value. Cross-check only when
+    # the card happens to expose it.
+    live_context = card.get("max_model_len") or card.get("max_context_length")
     if live_context is not None and int(live_context) != context:
         raise RuntimeError(
-            f"live max_model_len is {int(live_context):,}, "
+            f"live max context is {int(live_context):,}, "
             f"expected configured {context:,}; repeat the startup override"
         )
     identity = _model_identity(served, expectations)

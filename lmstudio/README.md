@@ -57,6 +57,19 @@ tree wants. `--gpu` defaults to `max` (offload all layers); override with
 whole model on the accelerator. Per-request context is `LMSTUDIO_CONTEXT_LENGTH`
 in the config; override it down for a small-VRAM host.
 
+## Local device guard (LM Link)
+
+LM Studio's LM Link lets one device use models loaded on another across the
+network, and a networked peer can be set as the preferred device for model
+resolution. When that happens, an unqualified `lms load` runs the model on
+the peer's GPU, not this host, which silently defeats a local benchmark.
+`start.sh` therefore reads `lms link status` and refuses a remote-routed
+load by default, matching the tree's serve-locally, remote-is-deliberate
+stance. Point the preferred device back at this machine
+(`lms link set-preferred-device <this-device-id>`, or `lms link disable`),
+or set `LMSTUDIO_ALLOW_REMOTE_DEVICE=1` to load on the remote device on
+purpose.
+
 ## Accepted deviations
 
 LM Studio is GUI-first, so three of the tree's conventions are met

@@ -93,6 +93,53 @@ print(state, port)
 '
 }
 
+# LM Link routes model resolution across devices on the network. When a remote
+# peer is set as the preferred device, `lms load` resolves there instead of
+# this machine -- the model runs on someone else's GPU. This tree serves models
+# locally, so the launcher must refuse a remote-routed load by default.
+#
+# Prints one of:
+#   local              LM Link off, or preferred device is this machine
+#   remote <name>      preferred device is a connected peer (load would route away)
+#   unknown            status could not be read (treat as non-fatal, warn only)
+# Reads `lms link status --json`: deviceIdentifier is this host,
+# preferredDeviceIdentifier is where an unqualified load resolves.
+lmstudio_link_target() {
+    local exe="$1"
+    local json
+    if ! json="$("${exe}" link status --json 2> /dev/null)"; then
+        printf 'unknown\n'
+        return 0
+    fi
+    printf '%s' "${json}" | python3 -c '
+import json
+import sys
+
+try:
+    data = json.load(sys.stdin)
+except (json.JSONDecodeError, ValueError):
+    print("unknown")
+    sys.exit(0)
+
+local_id = data.get("deviceIdentifier") or ""
+preferred = data.get("preferredDeviceIdentifier") or ""
+peers = data.get("peers") or []
+
+# No preference, or it points at this device: an unqualified load stays local.
+if not preferred or preferred == local_id:
+    print("local")
+    sys.exit(0)
+
+# Preferred is a peer. Name it if we can, so the refusal is actionable.
+name = preferred
+for peer in peers:
+    if peer.get("deviceIdentifier") == preferred:
+        name = peer.get("deviceName") or preferred
+        break
+print("remote", name)
+'
+}
+
 # Aggregate NVIDIA VRAM in MiB, or nothing on hosts without nvidia-smi. Apple
 # Silicon has no separate VRAM counter, so callers fall back to process
 # footprint there, matching the ollama and vllm-metal helpers.

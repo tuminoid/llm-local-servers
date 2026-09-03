@@ -157,6 +157,34 @@ printf 'host: bind=%s port=%s gpu=%s version=%s\n' \
 printf 'starting LM Studio server on %s:%s\n' "${LMSTUDIO_HOST}" "${LMSTUDIO_PORT}"
 "${LMSTUDIO_EXE}" server start --port "${LMSTUDIO_PORT}"
 
+# Guard against LM Link routing the load to a networked device. When a remote
+# peer is the preferred device, `lms load` resolves the model there and it runs
+# on that machine's GPU, not this one -- which silently defeats a local serving
+# benchmark. This tree serves locally, so refuse by default; set
+# LMSTUDIO_ALLOW_REMOTE_DEVICE=1 to opt into a remote-routed load deliberately.
+link_target="$(lmstudio_link_target "${LMSTUDIO_EXE}")"
+case "${link_target}" in
+    remote*)
+        remote_name="${link_target#remote }"
+        if [[ "${LMSTUDIO_ALLOW_REMOTE_DEVICE:-0}" != "1" ]]; then
+            printf 'error: LM Link preferred device is remote (%s)\n' "${remote_name}" >&2
+            printf 'lms load would run the model on that device, not this host\n' >&2
+            printf 'make it local: lms link set-preferred-device <this-device-id>\n' >&2
+            printf '  (or: lms link disable), then retry\n' >&2
+            printf 'to load on the remote device on purpose: LMSTUDIO_ALLOW_REMOTE_DEVICE=1\n' >&2
+            exit 1
+        fi
+        printf 'warning: LMSTUDIO_ALLOW_REMOTE_DEVICE=1; loading on remote device %s\n' \
+            "${remote_name}" >&2
+        ;;
+    unknown)
+        printf 'warning: could not read LM Link status; assuming local load\n' >&2
+        ;;
+    *)
+        # "local": LM Link off or preferred device is this host. Proceed.
+        ;;
+esac
+
 # Load the configured artifact with the pinned context and offload, assigning
 # the served identifier so /v1/models and lms ps report a stable name.
 printf 'loading %s as "%s" (context %s, gpu %s)\n' \
