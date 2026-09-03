@@ -328,7 +328,7 @@ host-adaptation change must be exercised on before it is done.
 | ssh host | `xd-ubuntu-gpu` (remote user `ubuntu`, hostname `tuomo-ubuntu-gpu`), the standing `HOST` value supplied by `.envrc` |
 | GPU | A100-SXM4-80GB, sm_80, 81920 MiB |
 | Scripts | `~/tmp/vllm/`, i.e. the Makefile's default `VLLM_REMOTE_DIR=tmp/vllm` |
-| venv | `~/tmp/vllm/venv`, vllm 0.27.1, created by `vllm-remote-bootstrap` |
+| venv | `~/tmp/vllm/venv`, the Makefile's pinned `VLLM_VERSION`, created by `vllm-remote-bootstrap` |
 | Runtime state | `~/.local/state/vllm/` on that host, never in the repo |
 
 Rules for working on it, all of them learned the hard way:

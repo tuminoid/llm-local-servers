@@ -68,14 +68,14 @@ effect.
 
 `VLLM_REMOTE_DIR` (default `tmp/vllm`, relative to the remote home) sets where
 the scripts land. `VLLM_VERSION` and `VLLM_TRANSFORMERS_VERSION` pin what
-bootstrap installs; their defaults are vLLM 0.27.1 and Transformers 5.14.1.
+bootstrap installs; their defaults are vLLM 0.28.0 and Transformers 5.15.1.
 
-The Transformers pin is deliberate. Version 5.15 made Gemma 4's 256/512 head
-dimensions explicitly per-layer, while vLLM 0.27.1 predates the matching fix
-in [vLLM PR #49797](https://github.com/vllm-project/vllm/pull/49797). Without
-the pin, a fresh environment resolves Transformers 5.15 and Gemma 4 fails
-during configuration. Remove it when the pinned vLLM release contains that
-fix.
+The Transformers pin moves with the vLLM pin. Transformers 5.15 made Gemma
+4's 256/512 head dimensions explicitly per-layer, and vLLM releases before
+0.28.0 predate the matching fix in
+[vLLM PR #49797](https://github.com/vllm-project/vllm/pull/49797) -- the
+earlier 0.27.1 pin therefore held Transformers at 5.14.1. The pinned 0.28.0
+contains the fix, so its paired default is 5.15.1.
 
 `HOST` comes from the environment (`.envrc`, where it points at the shared
 A100 test host), so omitting `HOST=` targets that machine -- the `gpu-box`

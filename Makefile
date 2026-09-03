@@ -88,20 +88,22 @@ CAPABILITY_ENV = CAPABILITY_TIMEOUT=$(CAPABILITY_TIMEOUT) \
 	CAPABILITY_REASONING_TOKENS=$(CAPABILITY_REASONING_TOKENS)
 
 VLLM_METAL_DIR := vllm-metal
-# vLLM-Metal runs on Apple Silicon only. NAX support exists only in the
-# v0.3.0.dev tags so far, so the pin is an exact dev release; both wheel
-# digests come from the GitHub release assets and are verified by install.sh.
+# vLLM-Metal runs on Apple Silicon only. 0.28.0 is the first stable plugin
+# release: upstream renumbered the plugin after its vLLM core version and
+# deleted the v0.3.0.dev* release channel, which is what forced this bump
+# (the previous dev20260826100011 pin's asset now 404s). Stable 0.28.0
+# carries everything that pin was chosen for: PR #634 (in-place align-state
+# updates: fixes the APC decode decay) and NAX prefill, previously dev-only
+# (PR #623). The nemotron_h ssm-mask seam diagnosed at the dev pin is
+# untested at 0.28.0; trial evidence in vllm-metal/BENCHMARKS.md.
 # The plugin's transitive pins (mlx==0.32.0, an mlx-lm git SHA) are declared
-# by its wheel and ABI-locked to that exact MLX.
-# dev20260826100011 carries PR #634 (in-place align-state updates: fixes
-# the APC decode decay) and no longer reproduces the same-instant bail
-# (0/12 vs 5/12); the nemotron_h ssm-mask seam is still broken. Trial
-# evidence in vllm-metal/BENCHMARKS.md. Wheel digest verified against the
-# GitHub release asset digest.
-VLLM_METAL_VERSION ?= 0.3.0.dev20260826100011
-VLLM_METAL_WHEEL_SHA256 ?= dfea5e7da3617431b49bfa87f409ebbcd33151839e9040954a155f0f207b029a
-VLLM_METAL_VLLM_VERSION ?= 0.27.1
-VLLM_METAL_VLLM_WHEEL_SHA256 ?= a3b537892ebc98e97132101aa2096210842b982e05f976fa337caa3f771f9f0c
+# by its wheel and ABI-locked to that exact MLX; the paired core is the
+# prebuilt vLLM 0.28.0 macOS arm64 wheel. Both digests match the GitHub
+# release asset digests and are verified by install.sh.
+VLLM_METAL_VERSION ?= 0.28.0
+VLLM_METAL_WHEEL_SHA256 ?= 61d7c410fe0f017b0268a306208582b23f1ac4e18e7ffd5472cf3631866d4b28
+VLLM_METAL_VLLM_VERSION ?= 0.28.0
+VLLM_METAL_VLLM_WHEEL_SHA256 ?= e8c5a3930367b740914a14420efcc3535da2c2dba5bb23d77221ff81094cc630
 
 OLLAMA_DIR := ollama
 # qwen3.8:27b requires Ollama 0.32.12 or newer. Keep a reviewed release and
@@ -496,7 +498,7 @@ vllm-capability: vllm-model-check audit-bench-check
 # --- vLLM-Metal (Apple Silicon) ---
 #
 # The official vLLM plugin serving MLX-format models on Metal, loopback port
-# 8021. Pinned dev release; see vllm-metal/AGENTS.md.
+# 8021. Pinned release; see vllm-metal/AGENTS.md.
 vllm-metal-model-check:
 	@test -n "$(MODEL)" || { \
 		echo "error: set MODEL=<name>" >&2; \

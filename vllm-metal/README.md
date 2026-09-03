@@ -49,13 +49,14 @@ Everything is pinned in the root Makefile and verified by `install.sh`:
 | Component | Pin |
 | -- | -- |
 | vllm-metal | `VLLM_METAL_VERSION`, wheel sha256 from the GitHub release |
-| vllm | 0.27.1, the prebuilt macOS arm64 wheel, sha256 verified |
+| vllm | `VLLM_METAL_VLLM_VERSION`, the prebuilt macOS arm64 wheel, sha256 verified |
 | mlx | 0.32.0 exact, declared by the plugin wheel (ABI-locked) |
 | mlx-lm | git SHA declared by the plugin wheel |
 | model weights | HF revision in `models/<name>.conf`, fetched by `pull.sh` |
 
-NAX support exists only in `v0.3.0.dev*` tags so far, which is why the pin
-is an exact dev release rather than a stable version. The venv lives at
+Since 0.28.0 upstream numbers the plugin after its vLLM core version and
+ships NAX prefill in stable releases (it was dev-only before, which is why
+earlier pins were exact `v0.3.0.dev*` builds). The venv lives at
 `~/.local/share/vllm-metal/venv` and is recreated from scratch on any pin
 change; upstream's `curl | bash` installer is deliberately not used.
 
@@ -94,8 +95,9 @@ memory budget derived from `sysctl hw.memsize`.
 
 `VLLM_PREFIX_CACHING` controls automatic prefix caching per run: `1`
 opts in, `0` forces off, empty keeps the engine default (on for dense
-models, off for hybrid GDN models at the 0.27.1 pin, where upstream
-ships align-mode caching as opt-in and experimental). Every model conf
+models; for hybrid GDN models the resolved default depends on the core
+version -- off at 0.27.1, where align-mode caching was opt-in and
+experimental). Every model conf
 pins its decided value explicitly so a core bump cannot silently change
 the resolved mode: dense models pin `1` (their measured default),
 qwen3.6 pins `1` (align-mode APC adopted 2026-08-26 for audit

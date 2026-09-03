@@ -30,9 +30,9 @@ Serving measurements follow
 - `vllm_metal_bin` accepts only the `VLLM_METAL_BIN` override or the managed
   venv. Never fall back to a PATH `vllm`: that is the CUDA install or the uv
   tool wrapper, and it would serve without the Metal plugin.
-- All pins live in the root Makefile: the exact `v0.3.0.dev*` plugin tag
-  (NAX exists only in dev tags), its wheel sha256, and the prebuilt vLLM
-  0.27.1 macOS arm64 wheel sha256. `install.sh` refuses unverified wheels
+- All pins live in the root Makefile: the exact plugin release tag, its
+  wheel sha256, and the sha256 of the prebuilt macOS arm64 wheel for the
+  matching vLLM core version. `install.sh` refuses unverified wheels
   and recreates the venv from scratch on any pin change. Do not use
   upstream's `curl | bash` installer; it writes an unpinned user-global
   venv.
