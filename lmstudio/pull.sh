@@ -86,10 +86,13 @@ import json
 import sys
 
 spec = sys.argv[1]
-fmt = sys.argv[2]
+fmt = sys.argv[2].lower()
 # Match on the repo/path stem before any @quant, case-insensitively: lms
 # reports the canonical key which may differ in case or carry the quant tag.
 stem = spec.split("@", 1)[0].lower()
+# lms reports an MLX artifact as the on-disk container "safetensors", never
+# "mlx"; accept either so the mlx confirmation does not warn spuriously.
+accepted = {"mlx", "safetensors"} if fmt == "mlx" else {fmt}
 try:
     models = json.load(sys.stdin)
 except (json.JSONDecodeError, ValueError):
@@ -99,7 +102,12 @@ if isinstance(models, dict):
 for model in models:
     path = str(model.get("path") or model.get("modelKey") or model.get("key") or "").lower()
     fmt_field = str(model.get("format") or model.get("type") or "").lower()
-    if stem in path and (not fmt_field or fmt in fmt_field or fmt == "gguf" and path.endswith(".gguf")):
+    fmt_ok = (
+        not fmt_field
+        or any(name in fmt_field for name in accepted)
+        or fmt == "gguf" and path.endswith(".gguf")
+    )
+    if stem in path and fmt_ok:
         sys.exit(0)
 sys.exit(1)
 ' "${LMSTUDIO_GET_SPEC}" "${LMSTUDIO_FORMAT}"; then

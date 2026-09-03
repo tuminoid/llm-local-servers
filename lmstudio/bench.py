@@ -99,6 +99,24 @@ def _select_loaded(models: list[dict], served_name: str) -> dict:
     return matches[0]
 
 
+def _format_matches(expected: str, actual: str) -> bool:
+    """Compare a config LMSTUDIO_FORMAT against the format lms reports.
+
+    LMSTUDIO_FORMAT names the artifact family the way `lms get --mlx/--gguf`
+    selects it (mlx or gguf), but `lms ls`/`lms ps` report the on-disk
+    container: an MLX artifact reports format "safetensors", not "mlx" (a
+    GGUF artifact reports "gguf"). So an mlx config expectation matches a
+    reported safetensors (or mlx) format; every other family matches on the
+    reported string directly. Without this, the identity check aborts every
+    MLX load even when the correct MLX artifact is resident.
+    """
+    expected = str(expected).lower()
+    actual = str(actual).lower()
+    if expected == "mlx":
+        return actual in {"mlx", "safetensors"}
+    return actual == expected
+
+
 def _model_identity(served_name: str, expectations: dict) -> dict:
     """Live identity from `lms ps`, keyed on served name plus artifact facts.
 
@@ -144,6 +162,13 @@ def _model_identity(served_name: str, expectations: dict) -> dict:
     for key, expected in expectations.items():
         actual = identity.get(key)
         if expected is None or actual is None:
+            continue
+        if key == "format":
+            # LMSTUDIO_FORMAT names the get-filter family (mlx/gguf); lms
+            # reports the on-disk container (mlx -> safetensors), so map
+            # rather than compare literally. See _format_matches.
+            if not _format_matches(expected, actual):
+                mismatches.append(f"{key}={actual!r}, expected {expected!r}")
             continue
         # Compare case-insensitively: lms reports Q4_K_M / gguf / Qwen3 with
         # inconsistent casing across fields and versions.
