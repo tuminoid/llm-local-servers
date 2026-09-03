@@ -190,9 +190,18 @@ esac
 printf 'loading %s as "%s" (context %s, gpu %s)\n' \
     "${LMSTUDIO_MODEL_KEY}" "${LMSTUDIO_SERVED_NAME}" \
     "${LMSTUDIO_CONTEXT_LENGTH}" "${LMSTUDIO_GPU}"
+# --yes is mandatory, not a convenience: `lms load` has no per-format key
+# (the @quant suffix is a `lms get` download filter only, and neither the
+# store path nor indexedModelIdentifier is a loadable key), so when a repo
+# key resolves to more than one artifact -- e.g. an MLX build local and a
+# GGUF build reachable over LM Link -- an interactive `lms load` blocks on a
+# TTY model picker forever under a non-interactive launcher. --yes resolves
+# it to the preferred/local device's match; a wrong pick is then caught by
+# the post-load identity check (bench.py _model_identity), never by a hang.
 "${LMSTUDIO_EXE}" load "${LMSTUDIO_MODEL_KEY}" \
     --context-length "${LMSTUDIO_CONTEXT_LENGTH}" \
     --gpu "${LMSTUDIO_GPU}" \
-    --identifier "${LMSTUDIO_SERVED_NAME}"
+    --identifier "${LMSTUDIO_SERVED_NAME}" \
+    --yes
 
 printf 'loaded; api %s (OpenAI-compatible at %s/v1)\n' "${base}" "${base}"
