@@ -149,6 +149,128 @@ the same arithmetic into a mid-request hard reset rather than a refused
 start. That difference is why this tree treats bounded memory as a
 selection criterion, not a nicety.
 
+## Context length: RoPE, and stretching it with YaRN
+
+The KV arithmetic above answers "how much context can I afford". A
+separate limit answers "how much context is the model allowed to use",
+and it is not a memory question at all: it is baked into the weights.
+
+**RoPE (rotary position embedding)** is how nearly every current model
+knows token order. Instead of adding a position vector, it *rotates*
+each query and key vector by an angle proportional to the token's
+position, across many frequency bands at once -- fast-rotating bands
+resolve neighbours, slow-rotating bands separate the far past. Attention
+compares two rotated vectors, so only their relative angle matters,
+which is what lets the same mechanism work anywhere in the sequence.
+
+The catch is that training only ever showed the model angles up to its
+**native context** (`max_position_embeddings` in `config.json`; 262,144
+for Qwen3.8-27B). Feed it token 400,000 and the rotations fall outside
+everything it has seen, attention scores degrade into noise, and output
+collapses -- not gracefully, and not always visibly at first. Serving
+past the native length therefore requires rescaling the angles, never
+just raising a limit.
+
+### What YaRN does
+
+YaRN (Yet another RoPE extensioN) *interpolates* positions so a longer
+sequence still lands inside the trained angular range. Its refinement
+over naive interpolation is that it treats frequency bands differently:
+high-frequency (local) bands are left nearly alone so neighbouring
+tokens stay distinguishable, while low-frequency (long-range) bands are
+compressed to cover the new length, plus a small attention-temperature
+correction for the entropy change at longer sequences.
+
+The knob is **factor** -- target divided by native. It is arithmetic,
+not a tuning dial:
+
+| Profile | Target context | Native | Factor |
+| -- | --: | --: | --: |
+| `qwen3.8-27b` | 262,144 | 262,144 | none |
+| retired 320k | 327,680 | 262,144 | 1.25 |
+| `qwen3.8-27b-512k` | 524,288 | 262,144 | 2.0 |
+| retired 720k | 737,280 | 262,144 | 2.8125 |
+
+Scaling here is **static**: configured at startup and applied to every
+request, including a 2,000-token one. That is the tax below -- some
+models instead ship dynamic scaling that engages only past the native
+length, but that is a model/engine property, not something to assume.
+
+### Configuring it in this tree
+
+Three settings, all in the model conf, because the extension is a
+property of the weights and must travel with them:
+
+```bash
+VLLM_MAX_LEN="${VLLM_MAX_LEN:-524288}"
+VLLM_ALLOW_LONG_MAX_MODEL_LEN="${VLLM_ALLOW_LONG_MAX_MODEL_LEN:-1}"
+VLLM_HF_OVERRIDES='{"text_config":{"rope_parameters":{...,"rope_type":"yarn","factor":2.0,"original_max_position_embeddings":262144}}}'
+```
+
+`VLLM_MAX_LEN` alone is the classic mistake: it raises the ceiling
+without rescaling anything, so the server accepts prompts it cannot
+position-encode. The override JSON is what actually enables YaRN, and
+`VLLM_ALLOW_LONG_MAX_MODEL_LEN` is the acknowledgement that the
+requested length exceeds the checkpoint's own declaration.
+
+The override must match the checkpoint's real config *shape*, which is
+architecture-specific -- for Qwen3.8 the fields are nested under
+`text_config.rope_parameters` (it is multimodal, with mrope sections and
+a partial rotary factor to preserve), not the flat `rope_scaling` many
+guides show. Read the model's `config.json`; a wrong shape is silently
+ignored or subtly wrong rather than a loud failure. Confirm at startup
+that the engine logged the override and resolved the intended
+`max_seq_len`.
+
+### Two things extension does not do
+
+**It does not add capacity.** The KV pool is fixed by GPU utilization
+minus weights -- roughly 742k-752k tokens for Qwen3.8 on the A100
+regardless of `max_model_len`. Raising the limit only permits a *single*
+sequence to grow past the native length; the aggregate stays put. At
+512k that means one ~512k conversation plus ~218k for everything else,
+not more total room. vLLM also requires KV for one whole `max_model_len`
+sequence or it refuses to start, so an aggressive factor can cost
+concurrency outright.
+
+**It does not make depth fast.** Prefill is compute-bound and decode
+slows as the cache grows: Qwen3.8 on the A100 prefills ~2.45k tok/s, so
+filling 400k costs ~165 s before the first token. Extension buys reach,
+never speed.
+
+### Pros, cons, and when to reach for it
+
+Good: no retraining, no new artifact, no extra memory for the mechanism
+itself, one config file, and reversible -- the native conf stays the
+control. Low factors are cheap; the retired 1.25 profile measured *no*
+short-context throughput penalty (BENCHMARKS.md).
+
+Bad: quality degrades as factor rises, and the degradation is in
+long-range attention -- exactly the faculty a deep audit needs. Static
+scaling taxes the whole early conversation, which is most tokens. Worst,
+the failure is quiet: a 512k config that parses, serves, and reasons
+slightly worse at depth looks fine on a throughput sweep. That is why
+any extended profile here is exploratory until a deep AuditBench run
+plus Capability Check v1 pass at the new depth, and why factor is kept
+as low as the workload allows rather than as high as the pool permits.
+
+Alternatives, roughly in order of preference for this fleet:
+
+1. **Pick a natively-long model.** Trained length beats interpolated
+   length at equal numbers, every time.
+2. **Stop resending everything.** Compaction, summarizing closed
+   threads, or retrieving evidence on demand attacks the cause. A
+   conversation that needs 400k because it re-sends its own history is
+   a client problem wearing a serving costume.
+3. **Cut the cost of depth instead of raising the ceiling.** Automatic
+   prefix caching does not extend context, but it makes a growing
+   conversation affordable -- worth 6.1x end to end on qwen3.8 (see
+   README).
+4. **Choose a cheaper KV architecture.** A model at 20 KiB/token
+   affords far more real depth than one at 64 KiB/token, with no
+   scaling at all.
+5. **Then** extend with YaRN, at the smallest factor that fits the job.
+
 ## Variants: same architecture, different upbringing
 
 A model family page lists a dozen artifacts -- Base, Instruct, Chat,
