@@ -336,9 +336,8 @@ def main() -> int:
 
     card = _served_model_card(base, served, timeout)
     # LM Studio's card carries no max_model_len; the loaded context is
-    # authoritatively verified against lms ps in _model_identity below, and
-    # the launch profile records the configured value. Cross-check only when
-    # the card happens to expose it.
+    # verified against lms ps below. Cross-check the card only when it
+    # happens to expose the field.
     live_context = card.get("max_model_len") or card.get("max_context_length")
     if live_context is not None and int(live_context) != context:
         raise RuntimeError(
@@ -346,6 +345,22 @@ def main() -> int:
             f"expected configured {context:,}; repeat the startup override"
         )
     identity = _model_identity(served, expectations)
+    # The served window must actually hold the configured context. LM Studio's
+    # MLX runtime ignores `lms load --context-length` and caps the load at a
+    # fit ceiling of its own (measured: this qwen3.6 MLX build loads at 208384
+    # regardless of the requested length, below its 262144 native max). If the
+    # configured context exceeds the loaded window, AuditBench's audit_half
+    # (15/16) and audit_deep (7/8) targets overflow it and the deep phases are
+    # silently truncated -- a corrupt measurement, so abort loudly instead.
+    loaded_context = int(identity.get("context_length") or 0)
+    if loaded_context and loaded_context < context:
+        raise RuntimeError(
+            f"loaded context window is {loaded_context:,} but configured "
+            f"context is {context:,}; the runtime capped the load below the "
+            f"configured value (LM Studio MLX ignores --context-length). "
+            f"Set LMSTUDIO_CONTEXT_LENGTH<={loaded_context:,} (and >=131072) "
+            f"so the AuditBench deep targets fit the served window."
+        )
     print(
         "identity: "
         f"{identity['served_name']} key {identity['model_key']} "
