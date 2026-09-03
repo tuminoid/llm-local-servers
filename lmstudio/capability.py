@@ -12,7 +12,6 @@ SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 # file.
 
 import bench as benchmark_adapter
-from audit_bench import openai_model_card
 from capability_check import (
     CapabilityConfig,
     OpenAIChatAdapter,
@@ -70,9 +69,11 @@ def main() -> int:
         port = os.environ.get("LMSTUDIO_PORT", "1234")
         base = os.environ.get("LMSTUDIO_CAPABILITY_BASE", f"http://{host}:{port}")
 
-        card = openai_model_card(base, timeout)
-        if card.get("id") != model:
-            raise RuntimeError(f"live model is {card.get('id')}, expected {model}")
+        # LM Studio lists every downloaded model at /v1/models, not just the
+        # loaded one, so select the served id rather than assert a lone card
+        # (the shared openai_model_card expects exactly one). Reuse the bench
+        # adapter's selector so both gates treat the endpoint the same way.
+        card = benchmark_adapter._served_model_card(base, model, timeout)
         live_context = card.get("max_model_len")
         if live_context is not None and int(live_context) != context:
             raise RuntimeError(
