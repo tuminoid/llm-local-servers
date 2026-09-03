@@ -112,7 +112,8 @@ context.
 
 Every model conf also pins `VLLM_PREFIX_CACHING` explicitly (regular
 attention `1`, hybrid GDN/Mamba `0`), matching the 0.27.1 engine default
-its benchmarked state was measured under. The pin exists because vLLM
+the operating points were first gated under; the pins carried unchanged
+through the 0.28.0 re-baseline. The pin exists because vLLM
 main resolves supported hybrids to align-mode APC ON, so an unset knob
 would silently flip those models on a core bump -- changing temp-0
 outputs from the first generated token and shrinking the engine-sized KV

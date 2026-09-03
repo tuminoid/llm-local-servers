@@ -73,8 +73,7 @@ copy canonical AuditBench v1 medians from
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md), which hold the
 evidence, memory analysis, ranges, per-model caveats, and history;
 missing values are never derived. Capability pass/fail records are in
-[CAPABILITIES.md](CAPABILITIES.md), and raw JSON stays outside the
-repository under `${XDG_STATE_HOME:-~/.local/state}/`. Prefill and
+[CAPABILITIES.md](CAPABILITIES.md). Prefill and
 decode are aggregate tok/s, audit columns are calls/hour, a `@Nx`
 suffix names the measured concurrency, and `GPU KV / allocation` is
 the raw vLLM pool or Ollama's measured CPU/GPU model allocation

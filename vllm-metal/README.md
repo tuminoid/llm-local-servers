@@ -161,16 +161,32 @@ profiles. qwen3.6 now serves with APC ON by default (its conf pins
 VLLM_PREFIX_CACHING=1): for audit workloads that resend the whole
 conversation each step, the warm-prefix TTFT win dominates the flat
 decode cost. The cache-off canonical rates stay authoritative for
-cache-off only; the APC operating point still owes its own canonical
-run.
+cache-off only; the APC operating point's own canonical run has since
+been recorded in BENCHMARKS.md.
 
-Two standing caveats besides the block. Enabling align mode changes the
+One standing caveat besides the block. Enabling align mode changes the
 hybrid compute path itself: temp-0 outputs diverge from the cache-off
 server starting at the first generated token (both variants are
-internally deterministic and answered the factual probe correctly). And
-the canonical AuditBench numbers for qwen3.6 were measured with caching
-off, so an APC operating point needs its own canonical run before its
-rates are quoted next to them.
+internally deterministic and answered the factual probe correctly).
+Because of it the cache-off and APC operating points each carry their
+own canonical AuditBench run in BENCHMARKS.md; never quote one
+condition's rates for the other.
+
+2026-09-03 re-gate at plugin 0.28.0 (the first stable release; upstream
+renumbered the plugin after its vLLM core version and deleted the dev
+channel; paired core vLLM 0.28.0, MLX 0.32.0 unchanged): decode smoke
+flat with no per-request decay -- qwen3.8 APC 28.7/51.9/81.5 tok/s and
+qwen3.6 APC 97.7/164.9/252.8 tok/s at 1/2/4 streams, both within ~2% of
+the dev-pin figures. The divergent-conversation correctness gate
+re-passed (byte-identical cold vs hit in both directions across a
+restart, TTFT 4.2 s cold vs 0.26 s hit), the same-instant pair probe
+passed 0/12, and capability-v1 passed on all three serving profiles.
+Cold 32k prefill spot-checks (the NAX path) also measured within ~3%
+of the canonical rows on all three profiles: qwen3.8 567-602 tok/s
+(canonical 569.9), qwen3.6 2,814-2,979 (2,823.8), gemma4 342-366
+(363.5); qwen3.8 additionally matched its 64k row at 445-461 (457.6).
+The dev-pin canonical tables in BENCHMARKS.md therefore carry over
+unchanged.
 
 ## Runtime state
 

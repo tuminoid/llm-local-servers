@@ -262,8 +262,7 @@ chain died in at 262,144). Against the vLLM-Metal qwen3.6 4-bit
 canonical at the same 32k depth, one NVFP4 MLX stream (188.7/h) beats
 that profile's best four-stream rate (110.8/h) by 1.7x. At matched
 ~115-131k depth Lightning remains the host's depth leader: 58.3
-calls/hour at 131k versus 47.7 at 114.7k here. Run JSONs and preserved
-server logs are retained outside the repository.
+calls/hour at 131k versus 47.7 at 114.7k here.
 
 ### The native-262k hard reset
 

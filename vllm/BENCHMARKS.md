@@ -335,8 +335,6 @@ per-stream demand fits all three candidate stream counts.
   but stays minor against a ~167k final conversation, same as on the
   M5.
 
-Raw artifacts are retained outside the repository.
-
 ## Audit conversation and replay: RTX PRO 3000
 
 Canonical clean-fixture runs (finalized fixture, both profiles, both

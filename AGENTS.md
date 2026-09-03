@@ -57,8 +57,7 @@ What this means in practice:
 executive summary of measured results. The per-runtime `BENCHMARKS.md` files
 remain the sources of measurement detail.
 [CAPABILITIES.md](CAPABILITIES.md) holds the capability campaign runbook,
-host inventory, and the retained cross-host result matrix; raw JSON remains
-outside the repository under the capability state directory.
+host inventory, and the retained cross-host result matrix.
 [docs/INTRODUCTION.md](docs/INTRODUCTION.md) is the newcomer-facing primer on
 local serving concepts.
 
@@ -262,8 +261,8 @@ continuation, and direct JSON output. Keep these pass/fail fixtures out of
 AuditBench: serving speed cannot compensate for malformed agent responses.
 
 Any run intended to update the serving inventory must follow
-[CAPABILITIES.md](CAPABILITIES.md) and update its host row and raw artifact
-reference in the same change. Do not improvise a campaign by running every
+[CAPABILITIES.md](CAPABILITIES.md) and update its host row in the same
+change. Do not improvise a campaign by running every
 config on a host, and do not promote older manual evidence to an automated
 pass.
 

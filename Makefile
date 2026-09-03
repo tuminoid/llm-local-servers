@@ -95,7 +95,8 @@ VLLM_METAL_DIR := vllm-metal
 # carries everything that pin was chosen for: PR #634 (in-place align-state
 # updates: fixes the APC decode decay) and NAX prefill, previously dev-only
 # (PR #623). The nemotron_h ssm-mask seam diagnosed at the dev pin is
-# untested at 0.28.0; trial evidence in vllm-metal/BENCHMARKS.md.
+# still broken at 0.28.0 (retested 2026-09-03, identical first-forward
+# TypeError); trial evidence in vllm-metal/BENCHMARKS.md.
 # The plugin's transitive pins (mlx==0.32.0, an mlx-lm git SHA) are declared
 # by its wheel and ABI-locked to that exact MLX; the paired core is the
 # prebuilt vLLM 0.28.0 macOS arm64 wheel. Both digests match the GitHub

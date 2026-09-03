@@ -79,8 +79,9 @@ Serving measurements follow
   a core bump. Dense models pin `1` (their measured default). qwen3.6
   pins `1`: align-mode APC was adopted after the plugin pin
   moved to dev20260826100011, whose PR #634 fixed the decode decay that
-  blocked it (gates re-passed on the pinned venv: byte-identical
-  cold-vs-hit correctness, 0/12 same-instant bails, capability-v1).
+  blocked it (gates re-passed on every pinned venv since, most recently
+  0.28.0: byte-identical cold-vs-hit correctness, 0/12 same-instant
+  bails, capability-v1).
   The other hybrids pin `0`. The environment still wins over the conf;
   `1` opts in, `0` forces off, empty (a conf without a pin) keeps the
   engine default. A hybrid conf that opts in must also declare
@@ -109,7 +110,9 @@ Serving measurements follow
   failed engine init with 937 unmapped parameters (mlx-lm has no NVFP4
   block-scale weight mapping), and the verdict transfers to
   nvidia/Qwen3.6-35B-A3B-NVFP4 -- same format. Do not re-add an NVFP4
-  profile without re-testing on an mlx-lm bump; the Ollama registry is
+  profile without re-testing on an mlx-lm bump; the 0.28.0 wheel still
+  pins the same-era mlx-lm 0.31.3 (commit dated 2026-08-05, predating
+  the failed trial), so no bump has occurred yet. The Ollama registry is
   the only NVFP4 path on this host. Expect and accept loud load failures;
   never paper over one with a dequantizing fallback.
 

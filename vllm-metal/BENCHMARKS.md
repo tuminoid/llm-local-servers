@@ -111,9 +111,6 @@ columns are the turn walls and the verdict decode rate.
   window; given the model's settled capability-point role, none is
   scheduled.
 
-Raw artifacts and preserved server logs are retained outside the
-repository.
-
 ## Concurrent audit replay profile: M5 Max
 
 Canonical replay-concurrent runs (AuditBench protocol) at the
@@ -157,15 +154,16 @@ demand fits streams 1 and 2 only; peak 2 streams.
 qwen3.8 under-decodes the per-turn control (~790 of 1,024 median), so
 its replays/hour buys less work per replay than qwen3.6's.
 
-Raw artifacts and preserved server logs are retained outside the
-repository.
-
 ## Apple M5 Max operating points
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU cores, 128 GB unified
 memory, macOS 26.6.2 (25G83), on external power. The plugin pin moved
 from 0.3.0.dev20260819180958 to 0.3.0.dev20260826100011 (PR #634 APC
-decay fix); each canonical subsection below names its pin. The legacy
+decay fix) and then to 0.28.0 stable; each canonical subsection below
+names its pin. The 2026-09-03 re-gate at 0.28.0 measured decode and
+cold 32k/64k prefill within ~3% of the dev-pin canonicals on all three
+serving profiles (numbers in README.md), so the dev-pin tables carry
+over unchanged. The legacy
 bring-up rows ran on the earlier pin, vLLM 0.27.1 and MLX 0.32.0, paged
 KV path, utilization 0.60, max-num-seqs 4, NAX prefill kernels
 confirmed loaded from the engine log (`NAX prefill attention kernels
@@ -260,9 +258,6 @@ Findings beyond the raw rates:
   the gate then recharged 13% -> 90%. On a drain anomaly, check
   `pmset -g ac` wattage first; the raised fixed gate floor (80) exists so a
   long batch never starts with less than a full-batch margin.
-
-The final AuditBench JSON and the thermal, battery, and gate logs are
-retained outside the repository.
 
 ### qwen3.8-27b-4bit APC operating point -- AuditBench v1 canonical
 
