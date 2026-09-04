@@ -89,8 +89,8 @@ Serving measurements follow
   GDN state, roughly doubling per-token cost) or the utilization
   inversion under-budgets the pool. Align mode changes hybrid temp-0
   outputs from the first token, so cache-off canonical benchmark rates
-  do not transfer to an APC profile -- qwen3.6's APC operating point
-  still owes its own canonical run; gate and math are in README.md.
+  do not transfer to an APC profile -- each condition carries its own
+  canonical run in BENCHMARKS.md; gate and math are in README.md.
   Rerun the decode smoke (AUDIT_BENCH_PROFILE=decode) on every plugin
   bump.
 - Parsers are explicit per model, as on the CUDA side: vLLM auto-detects

@@ -44,6 +44,7 @@ VLLM_REASONING_PARSER="${VLLM_REASONING_PARSER:-}"
 VLLM_TOOL_PARSER="${VLLM_TOOL_PARSER:-}"
 VLLM_KV_BYTES_PER_TOKEN="${VLLM_KV_BYTES_PER_TOKEN:-}"
 VLLM_KV_BYTES_PER_TOKEN_APC="${VLLM_KV_BYTES_PER_TOKEN_APC:-}"
+VLLM_HF_OVERRIDES="${VLLM_HF_OVERRIDES:-}"
 
 # shellcheck source=models/qwen3.8-27b-4bit.conf disable=SC1091
 source "${CONF_FILE}"
@@ -191,6 +192,11 @@ if [[ "${VLLM_PREFIX_CACHING}" == "1" ]]; then
     args+=(--enable-prefix-caching --enable-prompt-tokens-details)
 elif [[ "${VLLM_PREFIX_CACHING}" == "0" ]]; then
     args+=(--no-enable-prefix-caching)
+fi
+if [[ -n "${VLLM_HF_OVERRIDES}" ]]; then
+    # JSON config patch, e.g. a static YaRN rope_parameters block for a
+    # context-extended profile (same shape as the CUDA 512k conf).
+    args+=(--hf-overrides "${VLLM_HF_OVERRIDES}")
 fi
 
 mkdir -p "$(dirname "${VLLM_METAL_PIDFILE}")"

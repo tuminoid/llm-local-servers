@@ -30,6 +30,7 @@ fi
 
 VLLM_MODEL_REPO="${VLLM_MODEL_REPO:-}"
 VLLM_MODEL_REVISION="${VLLM_MODEL_REVISION:-}"
+VLLM_MODEL_INCLUDE="${VLLM_MODEL_INCLUDE:-}"
 # shellcheck source=models/qwen3.8-27b-4bit.conf disable=SC1091
 source "${CONF_FILE}"
 
@@ -50,9 +51,24 @@ mkdir -p "${MODEL_DIR}"
 
 printf 'downloading %s@%s to %s\n' \
     "${VLLM_MODEL_REPO}" "${VLLM_MODEL_REVISION}" "${MODEL_DIR}"
-hf download "${VLLM_MODEL_REPO}" \
-    --revision "${VLLM_MODEL_REVISION}" \
-    --local-dir "${MODEL_DIR}"
+# VLLM_MODEL_INCLUDE (optional, space-separated hf glob patterns) limits the
+# download to the files that constitute this operating point. Multi-quant
+# repos ship every quantization in one repo; without the filter a 15 GiB
+# serving artifact costs the full 80+ GiB repo. Patterns are matched against
+# the whole relative path, so anchor them (e.g. "model-*", "config.json") --
+# a bare "*.safetensors" would pull every subfolder quant too. Unset
+# downloads the whole repo, the prior behavior.
+download_args=("${VLLM_MODEL_REPO}"
+    --revision "${VLLM_MODEL_REVISION}"
+    --local-dir "${MODEL_DIR}")
+if [[ -n "${VLLM_MODEL_INCLUDE}" ]]; then
+    # One --include per pattern: the flag takes a single TEXT argument, and
+    # extra tokens would be parsed as positional filenames instead.
+    for pattern in ${VLLM_MODEL_INCLUDE}; do
+        download_args+=(--include "${pattern}")
+    done
+fi
+hf download "${download_args[@]}"
 
 if [[ ! -f "${MODEL_DIR}/config.json" ]]; then
     printf 'error: download completed but %s/config.json is missing\n' \
