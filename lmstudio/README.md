@@ -47,6 +47,16 @@ The benchmark follows the shared
 driving the OpenAI-compatible endpoint. Capability Check v1 gates the
 agent API surface (reasoning, tools, structured output) separately.
 
+The benchmark also sends the model-documented decode-compliance controls:
+`LMSTUDIO_BENCH_REASONING_EFFORT` and `LMSTUDIO_BENCH_SYSTEM_PROMPT` from
+the model config, environment wins, and the `AUDIT_BENCH_*` harness names
+work too. Both are passed to the request and chat adapters, so the model
+receives what the run's settings record. The Qwen configs default
+`reasoning_effort` to `none`: these models reason by default, and a budget
+burned in `reasoning_content` leaves the token-accounting probe nothing
+visible to confirm. Override per run with the environment, or set the
+config default to empty to send nothing.
+
 ## Host adaptation
 
 The launcher passes `--gpu` offload to LM Studio and lets its own

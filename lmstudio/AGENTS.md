@@ -18,7 +18,7 @@ Script-managed LM Studio server. User-facing usage and rationale live in
 | `bench.py` | LM Studio adapter for shared AuditBench v1, identity and resolved-profile provenance |
 | `capability.py` | OpenAI-compatible adapter for shared Capability Check v1 |
 | `stop.sh` | `lms unload --all` + `lms server stop` and release verification |
-| `models/*.conf` | Portable model facts: repo/quant spec, model key, format, context, capability expectations |
+| `models/*.conf` | Portable model facts: repo/quant spec, model key, format, context, capability expectations, bench decode-compliance controls |
 | `Makefile` | Guard with no runnable targets |
 
 ## Invariants
@@ -110,6 +110,13 @@ requested unload/stop.
 - The bench adapter must not synthesise a KV pool size from context length.
   LM Studio exposes no fungible pool metric, so, like the Ollama adapter,
   capacity is one active slot at the configured per-request context.
+- The bench adapters must receive the model-documented controls, not just
+  record them: `bench.py` passes `reasoning_effort` and `system_prompt` to
+  `OpenAIChatAdapter` and `openai_chat_fn`, sourced from `LMSTUDIO_BENCH_*`
+  env and config with the `AUDIT_BENCH_*` harness names as fallback. The
+  harness only records what its settings see; the adapters are what the
+  model receives, and a Qwen model that reasons by default burns every
+  budget in `reasoning_content` when the control is missing.
 - `/v1/models` lists every downloaded model, not just the loaded one, so
   the harness's `openai_model_card` (which asserts a lone entry) cannot be
   used. `bench.py` carries `_served_model_card`, which selects the served

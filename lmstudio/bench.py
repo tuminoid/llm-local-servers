@@ -294,6 +294,31 @@ def main() -> int:
     base = os.environ.get("LMSTUDIO_BENCH_BASE", f"http://{host}:{port}")
     dry_run = os.environ.get("AUDIT_BENCH_DRY_RUN", "0") == "1"
 
+    # Model-documented decode-compliance controls (AuditBench protocol):
+    # per-model values from the config, env wins, the AUDIT_BENCH_* harness
+    # names as fallback. Exported to the harness env names so the run's
+    # settings record exactly what the adapters send, and passed to the
+    # adapters so the model actually receives them. Without the pass-through
+    # a Qwen model that reasons by default burns every budget in
+    # reasoning_content, and the token-accounting probe fails closed on the
+    # missing visible content no matter what the run records.
+    effort = (
+        os.environ.get("LMSTUDIO_BENCH_REASONING_EFFORT")
+        or _config_optional(conf, "LMSTUDIO_BENCH_REASONING_EFFORT")
+        or os.environ.get("AUDIT_BENCH_REASONING_EFFORT")
+        or None
+    )
+    if effort:
+        os.environ["AUDIT_BENCH_REASONING_EFFORT"] = effort
+    system = (
+        os.environ.get("LMSTUDIO_BENCH_SYSTEM_PROMPT")
+        or _config_optional(conf, "LMSTUDIO_BENCH_SYSTEM_PROMPT")
+        or os.environ.get("AUDIT_BENCH_SYSTEM_PROMPT")
+        or None
+    )
+    if system:
+        os.environ["AUDIT_BENCH_SYSTEM_PROMPT"] = system
+
     # LM Studio's CLI-loaded single model is one served instance; it exposes no
     # fungible KV pool metric, so -- like the Ollama adapter -- capacity is one
     # active slot with the configured per-request context. Never synthesise a
@@ -380,8 +405,20 @@ def main() -> int:
         tag=tag,
         model=served,
         context=context,
-        request=OpenAIChatAdapter(base, served, timeout),
-        openai_chat=openai_chat_fn(f"{base}/v1", served, timeout),
+        request=OpenAIChatAdapter(
+            base,
+            served,
+            timeout,
+            reasoning_effort=effort,
+            system_prompt=system,
+        ),
+        openai_chat=openai_chat_fn(
+            f"{base}/v1",
+            served,
+            timeout,
+            reasoning_effort=effort,
+            system_prompt=system,
+        ),
         active_slots=active_slots,
         kv_pool_tokens=kv_pool_tokens,
         runtime_metadata=runtime_metadata,
