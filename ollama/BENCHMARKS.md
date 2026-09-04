@@ -346,13 +346,23 @@ tags share one config blob (hybrid GDN: 30 linear + 10 full-attention
 layers, fp32 SSM state), so the 262,144 ban applies to both digests
 equally. The old manifest's config is unrecoverable (registry dropped
 the digest-addressed manifest, the local copy was overwritten, and the
-crash-era server log was truncated on restart), so why the OLD digest
-served 262k to 246k tokens remains open; the retest hook is the next
-Ollama pin bump. (A 0.33.2 trial ran part of that retest: the 131,072
-point stayed bounded there too, but the same trial regressed the
-184,320 consecutive-conversation failure from a graceful 500 into a
-memory runaway -- see the conversation-profile section -- so the pin
-stayed at 0.32.14 and the 262,144 retest was not attempted.)
+crash-era server log was truncated on restart), but the question is
+closed by a supervised 2026-09-04 retest on the pinned 0.32.14: the
+CURRENT digest completed two consecutive single-shot needle prefills
+at 235,597 and 246,104 tokens under the 262,144 allocation (available
+memory never below 67 GiB; needle retrieved both times), and the third
+cache-busted deep request then detonated AFTER its prefill completed
+-- ~68 GiB of available memory allocated in ~2 s with kernel pressure
+still normal; the available-memory watchdog killed the process group
+and the host was unharmed. The old digest was never special: its 246k
+proof was the same single-shot shape the current digest passes, so the
+fatal variable is request REPETITION, not the manifest repin, and the
+detonation point is the post-prefill commit -- the same point where
+the 0.33.2 trial's conversation-profile regression fires (see that
+section). The 262,144 ban therefore holds on shape grounds for every
+digest and pin until three consecutive cache-busted near-ceiling
+prefills pass under a watchdog. (The 0.33.2 trial also left the
+131,072 point bounded, consistent with its immunity here.)
 
 API correctness was verified at the operating points: streaming reasoning
 (separate `thinking`/`reasoning` fields, native and OpenAI APIs), structured
@@ -458,6 +468,48 @@ never-conclude output, which is an alignment property, not a serving
 fault. Audit-shaped calls/hour for Glimmer therefore have no canonical
 number on this runtime.
 
+### Qwen3.8-Flash-Next GGUF -- AuditBench v1 canonical (M5 Max)
+
+The `qwen3.8-flash-next-gguf` profile (125B-A6B, locally imported
+UD-Q4_K_XL, digest `e6ead30bcebd`, llama.cpp runner on the split
+0.33.3 managed runtime, 2 x 262,144 slots, q8_0 KV, use_mmap=false
+baked into the model). Canonical full profile 2026-09-04, 140 W
+contract; Capability Check v1 passed the same day on this digest and
+operating point (all seven checks, schema enforcement verified).
+
+| Phase | Result |
+| -- | -- |
+| Prefill 32k / 64k / 128k | 632 / 518 / 406 tok/s |
+| Near-context capacity | 245,748 tokens at 1x (758.8 s) AND 2x (1,524.6 s, ~322 tok/s aggregate) |
+| Decode ceiling 1x / 2x | 38.69 / 57.17 tok/s (1.48x) |
+| Audit 32k 1x / 2x | 43.9 / 47.4 calls/h |
+| Audit half (131k) | 9.7 calls/h |
+| Audit deep (229k) 1x / 2x | 5.1 / 5.0 calls/h |
+
+Weights are fully GPU-resident (49/49 layers, ~81 GiB wired); q8_0 KV
+for the two-slot aggregate is ~9.0 GiB, gated by needle-exact
+retrieval at 131k and 246k at f16 rate parity. Operating notes: cold
+deep prefills serialize across slots (deep 2x adds nothing), a slot's
+decode starves during the sibling's deep cold fill, and the llama.cpp
+slot cache delivers ~36x identical-prefix resend with suffix-only
+prefill on growing conversations. The GGUF ships no MTP head and no
+YaRN parameters are reachable through Ollama, so the profile is
+native-262,144, plain-decode only.
+
+The replay and replay-concurrent profiles CANNOT run canonically on
+this model at this pin: their 32-token probe turns cap-truncate a tool
+call mid-arguments and Ollama 0.33.3 returns HTTP 500 ("invalid tool
+call arguments ... unexpected end of JSON input") on both endpoints.
+Minimal deterministic repro at temp 0: tools plus max_tokens 32 (16
+stops before the call opens, 200 completes it) -- the same
+truncated-tool-call parser class already documented for GLM 4.7
+Flash, now shown to affect the qwen4exp path too. Retest on a release
+whose parsers degrade truncation gracefully.
+
+The A100 sibling profile (`qwen3.8-flash-next-gguf-iq4xs`, 73 GB VRAM
+at the same 2 x 262,144 q8_0 shape) has supervised probe evidence in
+its conf and no canonical rates yet.
+
 ## Audit conversation profile
 
 The conversation profile (AuditBench protocol) measures the production
@@ -478,7 +530,14 @@ so not directly comparable across context tiers):
 | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | 131,072 | yes | 50.9 | 9/9 |
 | `qwen3.6-35b-a3b-mlx-nvfp4` | 131,072 | yes | 48.1 | 9/9 |
 | `nemotron-3.5-lightning-30b-mlx` | 262,144 | yes | 34.4 | 16/16 |
+| `qwen3.8-flash-next-gguf` | 262,144 | yes | 7.2 | 16/16 |
 | `qwen3.8-27b-mlx-nvfp4` | 184,320 | NO | (7.7 sample 1) | 15/15 |
+
+The flash-next row (canonical 2026-09-04, cached fraction 0.902, walls
+493/506 s) is the first M5 Ollama profile to serve consecutive deep
+audit conversations at a 262,144 allocation: the GGUF dispatches to
+the llama.cpp runner, which is immune to the MLX runner's repeated
+deep-request failures below.
 
 Lightning is the deep-context standout: full 16-file conversations at
 34.4/hour with perfect recall, three for three. The qwen3.8 NVFP4 row is
@@ -504,8 +563,7 @@ memory watchdog killed the process group; unsupervised this is the
 hard-reset shape again. The qwen3.6 131,072 operating point stayed
 bounded on the same trial runtime (two consecutive deep conversations,
 free-memory floor 27.8 GiB), so the regression bites at the large
-allocation, not everywhere. Preserved server log and bench output are
-in the retained campaign state.
+allocation, not everywhere.
 
 Remote A100 profiles (16-file/~165k shape, isolated Ollama 0.32.14):
 

@@ -31,9 +31,21 @@ OLLAMA_MODEL="${OLLAMA_MODEL:-}"
 OLLAMA_MIN_VERSION="${OLLAMA_MIN_VERSION:-}"
 OLLAMA_CONTEXT_LENGTH="${OLLAMA_CONTEXT_LENGTH:-}"
 OLLAMA_KV_CACHE_TYPE="${OLLAMA_KV_CACHE_TYPE:-}"
+OLLAMA_RUNTIME_VERSION="${OLLAMA_RUNTIME_VERSION:-}"
 
 # shellcheck source=models/qwen3.8-27b.conf disable=SC1091
 source "${CONF_FILE}"
+
+# Per-profile managed runtime pin. lib.sh defaults OLLAMA_VERSION before the
+# conf is read, so a profile that needs a newer runtime than the fleet default
+# declares OLLAMA_RUNTIME_VERSION; an explicit OLLAMA_RUNTIME_VERSION in the
+# environment still wins over the conf through the usual ${VAR:-default}
+# pattern. The binary and min-version checks below then resolve against the
+# selected runtime.
+if [[ -n "${OLLAMA_RUNTIME_VERSION}" ]]; then
+    # shellcheck disable=SC2034  # read by ollama_bin() in the sourced lib.sh
+    OLLAMA_VERSION="${OLLAMA_RUNTIME_VERSION}"
+fi
 
 OLLAMA_HOST="${OLLAMA_HOST:-127.0.0.1:11434}"
 OLLAMA_NUM_PARALLEL="${OLLAMA_NUM_PARALLEL:-1}"

@@ -20,8 +20,16 @@ if [[ ! -f "${CONF_FILE}" ]]; then
 fi
 
 OLLAMA_MODEL="${OLLAMA_MODEL:-}"
+OLLAMA_LOCAL_IMPORT="${OLLAMA_LOCAL_IMPORT:-}"
 # shellcheck source=models/qwen3.8-27b.conf disable=SC1091
 source "${CONF_FILE}"
+
+if [[ "${OLLAMA_LOCAL_IMPORT}" == "1" ]]; then
+    printf 'error: %s is a locally imported model, not a registry artifact\n' \
+        "${OLLAMA_MODEL}" >&2
+    printf 'import it with "ollama create" per the model conf comments\n' >&2
+    exit 1
+fi
 
 base="$(ollama_api_base)"
 managed_pid="$(ollama_pid)"

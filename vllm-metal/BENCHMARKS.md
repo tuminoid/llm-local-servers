@@ -592,6 +592,23 @@ decode (96.7/159.5/247.1); the newer cache-off canonical
 (121.1/205.3/320.0) confirmed the higher rates and superseded that
 row's decode figures.
 
-### Not yet measured
+### TurboQuant KV compression (2026-09-04): measured, not adopted
 
-- TurboQuant KV compression (phase scope item 6).
+q8_0 keys / q3_0 values (the plugin defaults) on `qwen3.8-27b-4bit` at
+plugin 0.28.0, cache-off, util 0.91. The capacity gain is real: the
+paged pool grew 1,264,961 -> 3,177,028 tokens at the same budget
+(packed SDPA page 1600 B/token vs 4096 fp16, engine-reported 2.56x),
+with decode rates (31.3-32.6 / 60.8 / 94.7 tok/s at 1x/2x/4x) and
+answer quality (temp-0 needle at ~10k depth, reasoning separation,
+tool calls) at parity. Not adopted because cold prefill collapses and
+keeps collapsing with depth -- 539 / 384 / 224 / 130 tok/s at
+3.7k / 7.3k / 14.6k / 31.3k prompt tokens against the plain path's
+flat ~570-600 -- and with NAX enabled a single cold prefill between
+~15k and ~29k tokens hangs the engine permanently (the Metal command
+buffer never completes; NAX on/off rates are identical at 14.6k, so
+the packed path does not use the NAX kernels at all; NAX-off
+completes). Prefill dominates audit cost and the plain pool already
+holds 4.83x native, so the trade is strictly negative here. Retest on
+a plugin release noting TurboQuant prefill performance or
+NAX-compatible TurboQuant kernels: cold prefill ladder first
+(2k-32k, NAX on), nothing deeper until it is flat and hang-free.

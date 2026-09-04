@@ -28,6 +28,21 @@ tags keep using llama.cpp. The MLX profiles are named for the artifact:
 GGUF profiles are unchanged and remain valid on this host for same-bytes
 comparisons.
 
+Two profiles run a split managed runtime: `qwen3.8-flash-next-gguf`
+(125B-A6B, locally imported UD-Q4_K_XL GGUF, M5) and its A100 sibling
+`qwen3.8-flash-next-gguf-iq4xs` (UD-IQ4_XS sized for the 80 GB card,
+locked to 2 x 262,144 with q8_0 KV; remote lifecycle calls additionally
+pass `OLLAMA_VERSION=0.33.3` at the make level). Both need the
+qwen4exp-capable llama.cpp vendored in Ollama 0.33.3 and declare
+`OLLAMA_RUNTIME_VERSION=0.33.3` in their confs, while the fleet default
+stays 0.32.14. GGUF manifests dispatch to the llama.cpp runner only, so the MLX
+runaway behind the default pin does not apply to it. The model is imported
+with `ollama create`, never pulled (`make ollama-pull` refuses it); the
+import recipe, mandatory `use_mmap false`, and the measured 2 x 262,144
+q8_0-KV operating point are documented in the conf. Install the secondary
+runtime with the reviewed digests recorded beside the pin in the root
+Makefile.
+
 The 0.32.14 MLX runner serializes requests through a single slot and keeps
 its KV cache at model precision. `OLLAMA_NUM_PARALLEL`,
 `OLLAMA_KV_CACHE_TYPE`, and `OLLAMA_FLASH_ATTENTION` are ignored on that

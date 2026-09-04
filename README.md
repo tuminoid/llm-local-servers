@@ -104,6 +104,7 @@ MoE and hybrid (sparse-active):
 | 5 | M5 Ollama `nemotron-3.5-lightning` | MLX trie | 34.4 |
 | 6 | A100 Ollama `qwen3.6-35b-a3b` GGUF | slot cache | 32.0 |
 | 7 | M5 vLLM-Metal `qwen3.6-35b-a3b-4bit` | align APC | 12.5 |
+| 8 | M5 Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | slot cache | 7.2 |
 
 Dense:
 
@@ -200,10 +201,12 @@ Ollama qwen3-coder) are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 26.6.2. Ollama
-rows: managed official Ollama 0.32.14, MLX runner on `mlx_metal_v4`,
-safetensors NVFP4 artifacts; the runner serializes requests to one
-slot. vLLM-Metal rows: pinned plugin venv, paged KV, NAX prefill
-active. Calls/hour includes prefill; each profile passed its
+MLX rows: managed official Ollama 0.32.14, MLX runner on
+`mlx_metal_v4`, safetensors NVFP4 artifacts; the runner serializes
+requests to one slot. The flash-next row runs the llama.cpp runner on
+the split 0.33.3 managed runtime with two real slots and q8 KV.
+vLLM-Metal rows: pinned plugin venv, paged KV, NAX prefill active.
+Calls/hour includes prefill; each profile passed its
 near-context proof at 1x and its maximum fitting concurrency
 (evidence in [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md) and
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md), alongside the bring-up
@@ -213,6 +216,7 @@ history, memory ceilings, and hard-reset analysis).
 | -- | -- | --: | --: | --: | --: | --: | --: | --: |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
 | vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
+| Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |
 | Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |
 | Ollama | `qwen3.6:35b-a3b-coding-nvfp4` (MLX) | 131,072 | one slot | 3,242 / 2,305 / - | 126.7 / - / - | 180.4 @1x | 88.5 (65k) | 48.7 (114.7k) |
 

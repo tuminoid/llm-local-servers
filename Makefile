@@ -123,6 +123,14 @@ OLLAMA_VERSION ?= 0.32.14
 OLLAMA_ARCHIVE_SHA256 ?= c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f
 OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 7802b739fbdc74df556600f1619f86457b69dce913301cf2d91f7f9d7f7a41b8
 OLLAMA_ARCHIVE_SHA256_DARWIN ?= c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3500366942dc50cd1
+# Secondary managed runtime for the qwen3.8-flash-next-gguf profile, which
+# needs the qwen4exp-capable llama.cpp (b10760) in 0.33.3 and dispatches to
+# the llama.cpp runner only -- the MLX-runner runaway behind the 0.32.14
+# default does not reach GGUF profiles. The profile selects it per start via
+# OLLAMA_RUNTIME_VERSION in its conf. Reviewed v0.33.3 digests; install with
+#   make ollama-install OLLAMA_VERSION=0.33.3 \
+#     OLLAMA_ARCHIVE_SHA256_DARWIN=342db03df80bb9db84ff64246031bd5f70c09b59ff52fa5cc9aaae3476cc4a9d \
+#     OLLAMA_ARCHIVE_SHA256=c13cea8f3389db4145f8a6cb88d1747242a48639d7c13e3bda7c1ebdc6eebb2f
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0
