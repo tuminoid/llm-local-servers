@@ -96,11 +96,13 @@ failure.
 ### Apple M5 Max
 
 - vLLM-Metal: `qwen3.6-35b-a3b-4bit`, `qwen3.8-27b-4bit`,
-  `gemma4-31b-4bit`
+  `gemma4-31b-4bit`, `qwen3.8-27b-uncensored-4bit`
 - Ollama MLX: `qwen3.6-35b-a3b-mlx-nvfp4`,
   `qwen3.6-35b-a3b-coding-mlx-nvfp4`,
   `qwen3.8-27b-mlx-nvfp4`, `muse-glimmer-30b-mlx`,
   `nemotron-3.5-lightning-30b-mlx`
+- Ollama GGUF (llama.cpp runner on the split 0.33.3 managed runtime):
+  `qwen3.8-flash-next-gguf`
 
 ### RTX PRO 3000 Blackwell
 
@@ -137,6 +139,8 @@ call, a tool-result continuation, and direct JSON.
 | Ollama MLX | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass |
 | Ollama MLX | `muse-glimmer-30b-mlx` | pass | pass | unsupported | pass | pass | pass | pass |
 | Ollama MLX | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass |
+| Ollama GGUF | `qwen3.8-flash-next-gguf` | pass | pass | pass | pass | pass | pass | pass |
+| vLLM-Metal | `qwen3.8-27b-uncensored-4bit` | pass | pass | pass | pass | pass | pass | pass |
 
 ### Findings
 
@@ -175,6 +179,18 @@ call, a tool-result continuation, and direct JSON.
   depth; the same-day supervised depth probes that proved 131,072 on both
   qwen3.6 NVFP4 digests are recorded in the model configs and
   `ollama/BENCHMARKS.md`.
+- `qwen3.8-flash-next-gguf` (checked 2026-09-04 on the split 0.33.3
+  runtime, locally imported artifact, identity by digest) passed all
+  seven checks with JSON-schema enforcement verified. The bare
+  `format: "json"` mode is separately unenforced on this model
+  (returns fenced JSON); the conf documents the distinction. Its
+  known runtime defect -- HTTP 500 on cap-truncated tool calls --
+  sits outside the capability checks, which never truncate a call.
+- `qwen3.8-27b-uncensored-4bit` (checked 2026-09-05 at plugin 0.28.0
+  on its 512k YaRN serving default, identity by pinned HF revision)
+  passed all seven checks. Capability proves response semantics only:
+  the abliteration behavior of the checkpoint is deliberately not
+  assessed by this gate.
 
 ## A100-SXM4-80GB campaign
 

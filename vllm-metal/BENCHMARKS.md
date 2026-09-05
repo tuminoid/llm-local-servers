@@ -282,7 +282,39 @@ Against the cache-off table above, APC costs ~10-14% decode and halves
 the token pool while audit calls/hour stay flat; the operating point
 exists for the warm TTFT win on resent audit conversations.
 
-### gemma4-31b-4bit -- AuditBench v1 canonical
+### qwen3.8-27b-uncensored-4bit (512k YaRN) -- AuditBench v1 canonical
+
+The abliterated affine 4-bit
+(`orcarouter/Qwen3.8-27B-Uncensored-MLX`, pinned revision in the conf)
+serving 524,288 exclusively via static YaRN factor 2.0. Measured at
+plugin 0.28.0 at the serving defaults: APC on, computed util, seqs 5,
+paged KV pool 617,494 tokens -- 1.18 near-full 512k contexts, so
+capacity and audit_deep are single-stream by pool. Capability Check v1
+passed the same run (2026-09-05) on the pinned artifact; capability
+proves API semantics only, and the abliteration behavior itself is
+deliberately not assessed here.
+
+| Phase | Streams | Result |
+| -- | -- | --: |
+| Prefill 32,784 | 1 | 519 tok/s |
+| Prefill 65,556 | 1 | 434 tok/s |
+| Prefill 131,075 | 1 | 313 tok/s |
+| Capacity 491,514 | 1 | passed, 119.1 tok/s, 4,125.6 s |
+| Decode | 1 / 2 / 4 | 28.6 / 53.6 / 85.1 tok/s (1.88x / 2.98x) |
+| audit_32k calls/hour | 1 / 2 / 4 | 34.4 / 38.3 / 39.6 (peak streams 4) |
+| audit_half (262k) calls/hour | 1 | 2.3 |
+| audit_deep (459k) calls/hour | 1 | 0.97 |
+
+The 491,514-token capacity proof is the fleet's first canonical
+completion beyond a native context window (the checkpoint's native
+262,144, extended 2.0x). Against the native `qwen3.8-27b-4bit` APC
+point above, the static-scaling tax shows only in prefill (519 vs 570
+at 32k, converging by 128k) and decode is identical -- but the audit
+targets double with the context (half is 262k here, deep is 459k), so
+calls/hour are not comparable across the two profiles. Deep audit
+calls pay a ~62-69 min prefill each; this is the single-stream
+maximum-depth quality profile by design, and the native profile
+remains the right choice for anything under 262k.
 
 Measured at plugin 0.3.0.dev20260819180958, repository commit a7bc624,
 with the finalized output-control prompt at the serving default

@@ -216,6 +216,7 @@ history, memory ceilings, and hard-reset analysis).
 | -- | -- | --: | --: | --: | --: | --: | --: | --: |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
 | vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
+| vLLM-Metal | `qwen3.8-27b-uncensored-4bit` 512k YaRN, APC | 524,288 | 617,494 | 519 / 434 / 313 | 28.6 / 53.6 / 85.1 | 39.6 @4x | 2.3 (262k) | 0.97 (459k) |
 | Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |
 | Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |
 | Ollama | `qwen3.6:35b-a3b-coding-nvfp4` (MLX) | 131,072 | one slot | 3,242 / 2,305 / - | 126.7 / - / - | 180.4 @1x | 88.5 (65k) | 48.7 (114.7k) |
@@ -230,7 +231,10 @@ on a plugin bug (see the model conf) -- and it has no secaudit quality
 record yet. The NVFP4 row runs the 131,072 operating point, so its half
 and deep targets are 65k and 114.7k (parenthesized to keep the columns
 honest); at the shared 32k depth that one MLX stream still beats the
-vLLM-Metal MoE serving profile 1.6x. NVFP4 safetensors do not load
+vLLM-Metal MoE serving profile 1.6x. The uncensored 512k row's targets
+run deeper for the same reason (262k half, 459k deep, parenthesized),
+and its 491,514-token capacity proof is the fleet's first canonical
+completion beyond a checkpoint's native window. NVFP4 safetensors do not load
 under mlx-lm at the current plugin pin, so the Ollama registry remains
 the only NVFP4 path on this host. The remaining measured profiles
 (the cache-off control rows, gemma4-31b, and the rate-identical base
