@@ -3,8 +3,8 @@
 Capability Check v1 is the pass/fail API compatibility gate for models in the
 serving inventory. It proves response semantics needed by coding agents;
 AuditBench separately measures serving performance and capacity. The protocol
--- fixed checks, model expectations, and the mapping from check output to the
-tables below -- is defined in
+-- fixed checks, model expectations, and the mapping from the retained JSON
+report to the tables below -- is defined in
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 (`docs/CAPABILITY.md`); this file holds the fleet's campaign inventory and
 retained results.
@@ -16,9 +16,12 @@ Capability results never rank model quality or serving performance.
 Follow the campaign procedure in the protocol document, driving the servers
 with this repository's targets. Use only the profiles listed for that host in
 the inventory below; model configs for another host are not an implied
-campaign. Update the host row mechanically from the check output per the
-protocol's mapping; record failures as failures, and never convert manual
-evidence into a Capability Check pass.
+campaign. Update the host row mechanically from the retained JSON report per
+the protocol's mapping, never from the verdict the check prints; record
+failures as failures, and never convert manual evidence into a Capability
+Check pass. `uv run capability-check --list` (in the llm-audit-bench
+checkout) names every retained report and
+`uv run capability-check --show FILE` re-prints one.
 
 Local lifecycle:
 

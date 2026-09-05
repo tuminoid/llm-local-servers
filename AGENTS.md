@@ -81,6 +81,15 @@ under `src/`. This repository consumes them and never carries copies:
   counts, validation, metrics, and the JSON schema -- lives only in the
   harness. Runtime adapters here own transport, model loading, capacity
   discovery, and identity evidence, nothing more.
+- Every run retains its complete JSON on disk before printing, under
+  `${XDG_STATE_HOME:-~/.local/state}/auditbench/` for benchmarks and
+  `.../capability-check/` for checks, on whichever host executed it. The
+  bench and capability targets print a human summary; the JSON is the
+  result. Find it with `uv run audit-bench --list` or
+  `uv run capability-check --list` (in the llm-audit-bench checkout)
+  and re-read one with `--show FILE`. `AUDIT_BENCH_OUTPUT_DIR` and
+  `CAPABILITY_OUTPUT_DIR` relocate retention and are forwarded to remote
+  runs. Never transcribe measured numbers from the printed summary.
 - Protocol changes happen in llm-audit-bench under its amendment rules. A
   change that would alter a canonical workload invalidates cross-host
   comparability; never fork the workload locally to avoid that
