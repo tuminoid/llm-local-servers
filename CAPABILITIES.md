@@ -11,6 +11,11 @@ retained results.
 
 Capability results never rank model quality or serving performance.
 
+Schema enforcement is gated because audit tooling consumes structured
+verdicts: an endpoint that accepts a JSON schema and returns prose
+corrupts them silently, with no error to catch, so the gate requires
+enforcement or an honest refusal of the parameter.
+
 ## Running a campaign
 
 Follow the campaign procedure in the protocol document, driving the servers
@@ -123,29 +128,35 @@ failure.
 ## Apple M5 Max campaign
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
-26.6.2. Run date: 2026-08-25.
+26.6.2. Initial run date: 2026-08-25; every row below re-run in full on
+2026-09-05 at protocol SCHEMA_VERSION 3, which added the gating
+schema-enforcement check and the recorded unaided-document outcome.
 
 Every passing row verified live model identity against the config's pinned
 revision or digest, streamed reasoning separation, one exact structured tool
-call, a tool-result continuation, and direct JSON.
+call, a tool-result continuation, direct JSON, and an honest answer to
+schema-constrained decoding: the endpoint enforced the fixture schema or
+refused the parameter. The unaided column records, without gating, what the
+model produces when the schema is stated in words instead of a grammar.
 
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Tool loop | JSON | Result |
-| -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass |
-| vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass |
-| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama MLX | `qwen3.6-35b-a3b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama MLX | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama MLX | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama MLX | `muse-glimmer-30b-mlx` | pass | pass | unsupported | pass | pass | pass | pass |
-| Ollama MLX | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama GGUF | `qwen3.8-flash-next-gguf` | pass | pass | pass | pass | pass | pass | pass |
-| vLLM-Metal | `qwen3.8-27b-uncensored-4bit` | pass | pass | pass | pass | pass | pass | pass |
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
+| Ollama MLX | `qwen3.6-35b-a3b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
+| Ollama MLX | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
+| Ollama MLX | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
+| Ollama MLX | `muse-glimmer-30b-mlx` | pass | pass | unsupported | pass | pass | pass | valid | ignored | fail |
+| Ollama MLX | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | json_only | ignored | fail |
+| Ollama GGUF | `qwen3.8-flash-next-gguf` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM-Metal | `qwen3.8-27b-uncensored-4bit` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 
 ### Findings
 
-- All current Apple MLX and vLLM-Metal serving profiles pass the automated
-  agent API gate.
+- All current Apple MLX and vLLM-Metal serving profiles pass the six
+  pre-SCHEMA_VERSION-3 checks; every 2026-09-05 result change is the new
+  schema-enforcement gate.
 - Qwen3.6, Qwen3.8, and Gemma 4 correctly separate reasoning from final
   content and honor their configured no-thinking controls.
 - Muse Glimmer passes under its documented `Reasoning strength: low` system
@@ -191,26 +202,52 @@ call, a tool-result continuation, and direct JSON.
   passed all seven checks. Capability proves response semantics only:
   the abliteration behavior of the checkpoint is deliberately not
   assessed by this gate.
+- 2026-09-05 full refresh at protocol SCHEMA_VERSION 3: the Ollama MLX
+  runner accepts a JSON schema in `format` and returns unconstrained
+  prose. All five MLX rows fail the enforcement gate as `ignored`,
+  while the llama.cpp runner enforces the same schema in the same
+  0.32.14 binary (`qwen3.8-flash-next-gguf` on the split 0.33.3 runtime
+  and the entire A100 Ollama side pass `enforced`). This is a runner
+  defect, not a model property: every MLX-row model except Nemotron
+  still produces a valid unaided document when asked in words.
+- Gemma4-31b under the vLLM-Metal grammar backend is
+  `whitespace_runaway`: the grammar permits structural whitespace and
+  the model emits it until the protocol's fixed 16,384-token budget
+  ends. Its 26B CUDA sibling fails identically, so this reads as a
+  Gemma 4 behavior under adversarial constrained decoding. The model
+  decodes slowly enough here that the default 600 s request timeout
+  cannot reach a verdict; the recorded row used `CAPABILITY_TIMEOUT=1500`
+  with the protocol token budget untouched.
+- Nemotron 3.5 Lightning MLX pairs `ignored` enforcement with an
+  `unaided` document that is `json_only`: the combination the protocol
+  singles out as unusable for structured work on this host.
+- The promotion rule's required checks are unchanged by the new gate;
+  the two new columns record which host-model pairs support
+  grammar-constrained structured output. No serving profile was demoted
+  on this evidence.
 
 ## A100-SXM4-80GB campaign
 
 Host: shared A100 test host (`tuomo-ubuntu-gpu`, ssh alias
-`xd-ubuntu-gpu`). Run date: 2026-08-26, all ten managed operating
-points, vLLM 0.27.1 and isolated Ollama 0.32.14.
+`xd-ubuntu-gpu`). Initial run date: 2026-08-26, all ten managed
+operating points, vLLM 0.27.1 and isolated Ollama 0.32.14. Every row
+below re-run in full on 2026-09-05 at protocol SCHEMA_VERSION 3 on the
+vLLM 0.28.0 venv and Ollama 0.32.14, retiring the last 0.27.1-era
+capability evidence.
 
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Tool loop | JSON | Result |
-| -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass |
-| vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass |
-| vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass |
-| vLLM | `glm4.7-flash-awq` | pass | pass | unsupported | pass | pass | pass | pass |
-| vLLM | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | pass |
-| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama | `qwen3.8-27b-native` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | pass |
-| Ollama | `glm4.7-flash` | pass | pass | pass | pass | pass | pass | pass |
-| Ollama | `gemma4-26b` | pass | pass | pass | pass | pass | pass | pass |
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM | `glm4.7-flash-awq` | pass | pass | unsupported | pass | pass | pass | valid | truncated | fail |
+| vLLM | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | valid | whitespace_runaway | fail |
+| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
+| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| Ollama | `qwen3.8-27b-native` | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| Ollama | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | valid | enforced | pass |
+| Ollama | `glm4.7-flash` | pass | pass | pass | pass | pass | pass | ignored | enforced | pass |
+| Ollama | `gemma4-26b` | pass | pass | pass | pass | pass | pass | valid | truncated | fail |
 
 Every passing row's live identity matched the revision or digest pinned in
 its model config.
@@ -235,8 +272,22 @@ its model config.
   bump, after the initial campaign rows) passed every check: same
   weights and revision as `qwen3.8-27b` plus the pinned DFlash 2
   drafter. `qwen3.6-35b-a3b-awq` was re-checked clean the same day on
-  the 0.28.0 venv. The remaining rows carry their 0.27.1 evidence; the
-  0.28.0 re-canonicalization measured serving only, not capability.
+  the 0.28.0 venv.
+- The 2026-09-05 SCHEMA_VERSION 3 refresh re-ran all eleven rows on the
+  0.28.0 venv, so no capability row rests on 0.27.1 evidence anymore.
+  The six pre-v3 checks stayed clean everywhere; the three failures are
+  the new enforcement gate.
+- vLLM's grammar backend permits structural whitespace between JSON
+  tokens: Qwen3 Coder and Gemma 4 emit it until the 16,384-token budget
+  ends (`whitespace_runaway`). Ollama's llama.cpp grammar bounds it, so
+  the same Coder checkpoint passes `enforced` there, and Gemma 4 fails
+  as plain `truncated` instead.
+- GLM 4.7 Flash on vLLM is `truncated`: with no thinking-disable
+  control, reasoning crowds the constrained document out of the fixed
+  budget. Its Ollama profile runs the check under its documented
+  disable mode and passes `enforced` -- while its unaided document is
+  `ignored`, so on that pairing the host carries the model for
+  structured work.
 
 ## Other hosts
 
