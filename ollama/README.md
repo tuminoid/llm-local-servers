@@ -38,8 +38,9 @@ qwen4exp-capable llama.cpp vendored in Ollama 0.33.3 and declare
 stays 0.32.14. GGUF manifests dispatch to the llama.cpp runner only, so the MLX
 runaway behind the default pin does not apply to it. The model is imported
 with `ollama create`, never pulled (`make ollama-pull` refuses it); the
-import recipe, mandatory `use_mmap false`, and the measured 2 x 262,144
-q8_0-KV operating point are documented in the conf. Install the secondary
+import recipe and the mandatory `use_mmap false` are documented in the
+conf, and the measured 2 x 262,144 q8_0-KV operating point in
+[BENCHMARKS.md](BENCHMARKS.md). Install the secondary
 runtime with the reviewed digests recorded beside the pin in the root
 Makefile.
 

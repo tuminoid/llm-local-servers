@@ -121,6 +121,13 @@ the RTX host has no Capability Check v1 record yet (see
 [CAPABILITIES.md](CAPABILITIES.md)); their measured rates stay in the
 RTX table below and the runtime BENCHMARKS.
 
+The A100 vLLM `qwen3-coder-30b` row keeps its measured rate but is not
+promotable for agent workloads: under automatic tool choice it returns
+two tool calls for a one-call fixture, streaming and non-streaming
+alike, which is a capability failure no throughput number overrides.
+Its Ollama pairing passes the same checks; the evidence is in
+[CAPABILITIES.md](CAPABILITIES.md) and the diagnosis in the model conf.
+
 Cache and speculation policy, not model speed, dominates the spread
 behind each row: on the A100 alone the same qwen3.8 weights span 4.1
 (vLLM cache-off, retired) through 14.5 (Ollama slot cache) and 20.2

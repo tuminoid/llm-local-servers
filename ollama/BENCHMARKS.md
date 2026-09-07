@@ -388,9 +388,15 @@ under a `Reasoning strength: low` system prompt, and a clean structured
 verified including stop with an empty process group.
 
 That smoke predates the tag's current manifest. The registry has since
-moved `muse-glimmer:30b-mlx` from `3d5c4b80e60b` to `ef32a55b4976`; the new
-NVFP4 manifest packages DFlash assistant weights and passed Capability Check
-v1. No performance or DFlash speedup number transfers from the earlier smoke.
+moved `muse-glimmer:30b-mlx` twice: to `ef32a55b4976` (reviewed
+2026-08-25) and then to `015fa21845be`, reviewed and pinned 2026-09-07
+after the identity guard refused it. No performance or DFlash speedup
+number transfers across either move, and the numbers below belong to the
+`ef32a55b4976` artifact. The current digest is ~3 GiB smaller and
+measured 17.72 GiB of GPU residency at the native 131,072 context during
+its capability check (an operating fact, not a benchmark); it passes
+every applicable capability check, failing only the MLX runner's
+schema-enforcement defect (see [CAPABILITIES.md](../CAPABILITIES.md)).
 
 Operating facts from the smoke, not a benchmark: 19.83 GiB GPU allocation
 at the native 131,072 context, 100% GPU; a single short probe measured
@@ -474,8 +480,9 @@ The `qwen3.8-flash-next-gguf` profile (125B-A6B, locally imported
 UD-Q4_K_XL, digest `e6ead30bcebd`, llama.cpp runner on the split
 0.33.3 managed runtime, 2 x 262,144 slots, q8_0 KV, use_mmap=false
 baked into the model). Canonical full profile 2026-09-04, 140 W
-contract; Capability Check v1 passed the same day on this digest and
-operating point (all seven checks, schema enforcement verified).
+contract; Capability Check v1 passed on this digest and operating point,
+re-run 2026-09-06 at protocol SCHEMA_VERSION 4 (all eight checks,
+including the streamed tool call, schema enforcement verified).
 
 | Phase | Result |
 | -- | -- |
@@ -507,8 +514,23 @@ Flash, now shown to affect the qwen4exp path too. Retest on a release
 whose parsers degrade truncation gracefully.
 
 The A100 sibling profile (`qwen3.8-flash-next-gguf-iq4xs`, 73 GB VRAM
-at the same 2 x 262,144 q8_0 shape) has supervised probe evidence in
-its conf and no canonical rates yet.
+at the same 2 x 262,144 q8_0 shape) has no canonical rates yet. Its
+supervised operating point, measured 2026-09-05 on the A100 (211 GB host
+RAM, 49/49 layers offloaded, 73.0-73.4 GB VRAM): needles exact at
+20k/131k/246k and in a dual concurrent 246k pair; prefill 1,087 / 829 /
+634 tok/s at those depths, roughly 1.75-2x the M5 Q4_K_XL point; decode
+35.5 / 20.7 / 13.8 tok/s, PLE-over-PCIe and QSA bound and only ~8% above
+the M5; 2-stream decode 58.2 tok/s aggregate (1.85x). Cold deep prefills
+serialize across slots and starve the sibling slot's decode, as on Metal.
+A measured 8 x 65,536 shape batched decode to 143.5 tok/s aggregate at
+only 63% GPU utilisation, which is why the 2 x 262,144 shape is locked:
+a big model on tiny windows serves no fleet need.
+
+It passed Capability Check v1 on 2026-09-07, and that run also found a
+harder defect than the truncation class above: an unconstrained
+long-document request reproducibly kills the runner with a CUDA illegal
+memory access, while the same document under a JSON schema completes.
+Details and the retest condition are in the conf.
 
 ## Audit conversation profile
 
