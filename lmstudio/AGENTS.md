@@ -117,6 +117,9 @@ requested unload/stop.
   harness only records what its settings see; the adapters are what the
   model receives, and a Qwen model that reasons by default burns every
   budget in `reasoning_content` when the control is missing.
+- `lmstudio-bench` defaults AUDIT_BENCH_TOLERATE_OFF_BY_ONE on: the current
+  server decodes one token short, the probe gates the -1 validation, and an
+  applied run self-marks canonical:false. `=0` forces strict.
 - `/v1/models` lists every downloaded model, not just the loaded one, so
   the harness's `openai_model_card` (which asserts a lone entry) cannot be
   used. `bench.py` carries `_served_model_card`, which selects the served

@@ -57,6 +57,16 @@ burned in `reasoning_content` leaves the token-accounting probe nothing
 visible to confirm. Override per run with the environment, or set the
 config default to empty to send nothing.
 
+The current LM Studio server decodes one token short of every length-
+capped request (the characterized, documented off-by-one), so
+`lmstudio-bench` defaults `AUDIT_BENCH_TOLERATE_OFF_BY_ONE` on. The run
+probes the backend first and applies the -1 gate only on the exact
+confirmed signature, and an applied run self-marks `canonical: false` /
+`publishable: false` with the probe evidence; once a fixed server build
+reports full counts, the probe stops confirming and runs return to
+canonical with no config change. Set
+`AUDIT_BENCH_TOLERATE_OFF_BY_ONE=0` to force strict validation.
+
 ## Host adaptation
 
 The launcher passes `--gpu` offload to LM Studio and lets its own

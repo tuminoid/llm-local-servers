@@ -626,6 +626,8 @@ lmstudio-status:
 lmstudio-logs:
 	@tail -f "$${XDG_STATE_HOME:-$${HOME}/.local/state}/lmstudio/server.log"
 
+# The off-by-one tolerance defaults on for LM Studio; bench.py carries the
+# default and the rationale (an explicit env value wins). =0 forces strict.
 lmstudio-bench: lmstudio-model-check audit-bench-check
 	@$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		./$(LMSTUDIO_DIR)/bench.py $(MODEL)

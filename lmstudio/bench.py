@@ -294,6 +294,16 @@ def main() -> int:
     base = os.environ.get("LMSTUDIO_BENCH_BASE", f"http://{host}:{port}")
     dry_run = os.environ.get("AUDIT_BENCH_DRY_RUN", "0") == "1"
 
+    # The current LM Studio server decodes one token short of every
+    # length-capped request (characterized, documented off-by-one), so the
+    # bench defaults the tolerance on; an explicit env value (including
+    # "0") wins, an unset variable becomes "1". The harness still probes
+    # first and applies the -1 gate only on the exact confirmed signature,
+    # and an applied run self-marks canonical:false with the probe
+    # evidence. A fixed server build stops confirming, and runs return to
+    # canonical with no config change.
+    os.environ.setdefault("AUDIT_BENCH_TOLERATE_OFF_BY_ONE", "1")
+
     # Model-documented decode-compliance controls (AuditBench protocol):
     # per-model values from the config, env wins, the AUDIT_BENCH_* harness
     # names as fallback. Exported to the harness env names so the run's
