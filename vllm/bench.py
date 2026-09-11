@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Run AuditBench v1 against the CUDA vLLM server."""
 
+import json
 import os
 import pathlib
 import re
 import subprocess
 import sys
+import urllib.request
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 # The shared harness modules (audit_bench, capability_check) resolve via
@@ -74,6 +76,28 @@ def _capacity(context: int, dry_run: bool) -> tuple[int, int, str]:
 def _last_match(pattern: str, text: str) -> str | None:
     matches = re.findall(pattern, text, re.MULTILINE)
     return matches[-1] if matches else None
+
+
+def _live_vllm_version(base: str, timeout: int) -> str:
+    """Engine version reported by the running server.
+
+    The environment's VLLM_VERSION is what the operator asked for, not what is
+    serving: locally nothing installs from it -- run.sh uses whatever `vllm`
+    resolves to -- so recording it as fact once let this host serve 0.27.1
+    while the Makefile default claimed 0.28.0. A measured artifact must name
+    the engine that produced it, so this probes and the caller refuses on
+    disagreement.
+    """
+    url = f"{base.rstrip('/')}/version"
+    try:
+        with urllib.request.urlopen(url, timeout=min(timeout, 30)) as response:
+            payload = json.load(response)
+    except (OSError, ValueError) as error:
+        raise RuntimeError(f"cannot read the live engine version from {url}: {error}")
+    version = payload.get("version")
+    if not version:
+        raise RuntimeError(f"{url} returned no version field: {payload!r}")
+    return str(version)
 
 
 def _runtime_profile(
@@ -226,8 +250,10 @@ def main() -> int:
         "base_url": base,
         "model_source": model_source,
         "model_revision": model_revision,
-        "vllm_version": os.environ.get("VLLM_VERSION"),
-        "transformers_version": os.environ.get("VLLM_TRANSFORMERS_VERSION"),
+        "vllm_version": None,
+        "transformers_version_declared": os.environ.get(
+            "VLLM_TRANSFORMERS_VERSION"
+        ),
         "capacity_source": capacity_source,
     }
     model_identity = {
@@ -239,6 +265,16 @@ def main() -> int:
         "matched": False,
     }
     if not dry_run:
+        live_vllm_version = _live_vllm_version(base, timeout)
+        declared_vllm_version = os.environ.get("VLLM_VERSION")
+        if declared_vllm_version and live_vllm_version != declared_vllm_version:
+            raise RuntimeError(
+                f"live engine is vLLM {live_vllm_version}, but VLLM_VERSION "
+                f"declares {declared_vllm_version}; the documented rates are "
+                "read per engine version, so align the installed vllm with "
+                "the pin or pass the version that is actually serving"
+            )
+        runtime_metadata["vllm_version"] = live_vllm_version
         card = openai_model_card(base, timeout)
         if card.get("id") != model:
             raise RuntimeError(

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Run AuditBench v1 against the vLLM-Metal server."""
 
+import json
 import os
 import pathlib
 import re
 import sys
+import urllib.request
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 # The shared harness modules (audit_bench, capability_check) resolve via
@@ -85,6 +87,54 @@ def _download_identity(model_dir: pathlib.Path) -> dict:
         "downloaded_revision": revisions.pop(),
         "verified_files": len(required),
     }
+
+
+def _live_vllm_version(base: str, timeout: int) -> str:
+    """vLLM core version reported by the running server.
+
+    The environment's VLLM_METAL_VLLM_VERSION is what the operator asked
+    install.sh for, not what is serving. Recording it as fact is how the CUDA
+    adapter once labelled 0.27.1 rates as 0.28.0, so a measured artifact
+    probes the engine instead and the caller refuses on disagreement.
+    """
+    url = f"{base.rstrip('/')}/version"
+    try:
+        with urllib.request.urlopen(url, timeout=min(timeout, 30)) as response:
+            payload = json.load(response)
+    except (OSError, ValueError) as error:
+        raise RuntimeError(f"cannot read the live engine version from {url}: {error}")
+    version = payload.get("version")
+    if not version:
+        raise RuntimeError(f"{url} returned no version field: {payload!r}")
+    return str(version)
+
+
+def _installed_pins() -> dict[str, str]:
+    """Plugin and core versions install.sh recorded in the managed venv.
+
+    The plugin version has no endpoint, but install.sh stamps what it actually
+    installed into `${VLLM_METAL_VENV}/.pins` as `vllm-metal=X vllm=Y`. That
+    file is this tree's own record, so it is evidence rather than a
+    declaration. A venv assembled by hand may not have it; the caller then
+    records no plugin version rather than echoing the request back.
+    """
+    data_root = pathlib.Path(
+        os.environ.get("XDG_DATA_HOME", pathlib.Path.home() / ".local" / "share")
+    )
+    data_dir = pathlib.Path(
+        os.environ.get("VLLM_METAL_DATA_DIR", data_root / "vllm-metal")
+    )
+    venv = pathlib.Path(os.environ.get("VLLM_METAL_VENV", data_dir / "venv"))
+    try:
+        stamp = (venv / ".pins").read_text(encoding="utf-8").strip()
+    except OSError:
+        return {}
+    pins: dict[str, str] = {}
+    for field in stamp.split():
+        name, separator, value = field.partition("=")
+        if separator and value:
+            pins[name] = value
+    return pins
 
 
 def _capacity(context: int, dry_run: bool) -> tuple[int, int, str]:
@@ -248,8 +298,8 @@ def main() -> int:
         "base_url": base,
         "model_source": model_source,
         "model_revision": model_revision,
-        "vllm_metal_version": os.environ.get("VLLM_METAL_VERSION"),
-        "vllm_version": os.environ.get("VLLM_METAL_VLLM_VERSION"),
+        "vllm_metal_version": None,
+        "vllm_version": None,
         "capacity_source": capacity_source,
         "prefix_caching": _prefix_caching(dry_run),
     }
@@ -262,6 +312,31 @@ def main() -> int:
         "matched": False,
     }
     if not dry_run:
+        live_vllm_version = _live_vllm_version(base, timeout)
+        declared_vllm_version = os.environ.get("VLLM_METAL_VLLM_VERSION")
+        if declared_vllm_version and live_vllm_version != declared_vllm_version:
+            raise RuntimeError(
+                f"live engine is vLLM {live_vllm_version}, but "
+                f"VLLM_METAL_VLLM_VERSION declares {declared_vllm_version}; "
+                "the documented rates are read per version, so reinstall the "
+                "venv at the pin or pass the version that is actually serving"
+            )
+        runtime_metadata["vllm_version"] = live_vllm_version
+        pins = _installed_pins()
+        installed_plugin_version = pins.get("vllm-metal")
+        declared_plugin_version = os.environ.get("VLLM_METAL_VERSION")
+        if (
+            installed_plugin_version
+            and declared_plugin_version
+            and installed_plugin_version != declared_plugin_version
+        ):
+            raise RuntimeError(
+                f"managed venv holds vllm-metal {installed_plugin_version}, but "
+                f"VLLM_METAL_VERSION declares {declared_plugin_version}; run "
+                "vllm-metal-install to match the pin, or pass the installed "
+                "version"
+            )
+        runtime_metadata["vllm_metal_version"] = installed_plugin_version
         download_identity = _download_identity(model_dir)
         if download_identity["downloaded_revision"] != model_revision:
             raise RuntimeError(
