@@ -116,10 +116,11 @@ Dense:
 | 4 | M5 vLLM-Metal `gemma4-31b-4bit` | APC | 2.4 |
 
 The qwen3.5-4b profiles are excluded despite leading the RTX rates:
-their fixture compliance is variant-split and cache-mode sensitive, and
-the RTX host has no Capability Check v1 record yet (see
-[CAPABILITIES.md](CAPABILITIES.md)); their measured rates stay in the
-RTX table below and the runtime BENCHMARKS.
+their fixture compliance is variant-split and cache-mode sensitive. Both
+pass Capability Check v1 on this host (see
+[CAPABILITIES.md](CAPABILITIES.md)), so the exclusion is a
+conversation-compliance judgement, not a missing gate; their measured
+rates stay in the RTX table below and the runtime BENCHMARKS.
 
 The A100 vLLM `qwen3-coder-30b` row keeps its measured rate but is not
 promotable for agent workloads: under automatic tool choice it returns
