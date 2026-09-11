@@ -395,10 +395,18 @@ first Capability Check v1 record; the partial manual parser and
 tool-call notes in the benchmark documents are superseded and were not
 promoted into it.
 
+Both vLLM rows were re-run on 2026-09-11 after the host's local vLLM
+pin was aligned to the fleet default, 0.28.0 with Transformers 5.15.1,
+and the table carries those results. `qwen3.5-4b-awq` is unchanged;
+`gemma4-e2b-awq` changed failure shape, which is the finding below. The
+Ollama rows are untouched by that bump, and the AuditBench rows in
+`vllm/BENCHMARKS.md` remain 0.27.1 measurements until re-canonicalized,
+so capability and throughput provenance differ on this host for now.
+
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | vLLM | `qwen3.5-4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM | `gemma4-e2b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
+| vLLM | `gemma4-e2b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
 | Ollama | `qwen3.5-4b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Ollama | `gemma4-e2b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Ollama | `qwen3.5-9b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
@@ -418,19 +426,35 @@ Both failures are enforcement failures after seven passing checks.
   continuation, and its configured reasoning semantics, so this host's
   vLLM parsers and Ollama's llama.cpp runner handle every dialect in
   its inventory. No profile is demoted for tool behavior.
-- `gemma4-e2b-awq` on vLLM is `whitespace_runaway`: the grammar permits
-  structural whitespace and the model emits it until the protocol's
-  16,384-token budget ends, 123 s into the check. This is the third
-  Gemma 4 to fail this way on a vLLM grammar backend, after the 26B on
-  the A100 and the 31B on the M5, and the first on vLLM 0.27.1 rather
-  than 0.28.0 or the Metal plugin -- so the behavior is neither
-  version-scoped nor plugin-scoped.
-- The same checkpoint family passes on the other runtime here: Ollama's
-  `gemma4-e2b` and `gemma4-12b` both report `enforced`. That sharpens
-  the fleet's reading of llama.cpp bounding grammar whitespace, because
-  the A100's `gemma4-26b` on Ollama still fails as plain `truncated`.
-  Gemma 4 is usable for structured work on this host only through
-  Ollama.
+- `gemma4-e2b-awq` on vLLM fails schema enforcement on both engine
+  versions this host has run, but by different mechanisms, and the pin
+  bump made it worse. On 0.27.1 with Transformers 5.14.1 it was
+  `whitespace_runaway`: the grammar was applied and the model emitted
+  structural whitespace until the protocol's 16,384-token budget ended,
+  123 s in. On 0.28.0 with Transformers 5.15.1 the schema is simply
+  `ignored` -- the endpoint accepts it, returns HTTP 200 and a 5.9k-character
+  Markdown audit report in about 10 s, `finish_reason` `stop`.
+  Reproducible 3/3, and the server logs nothing about a grammar
+  fallback: startup reports `structured_outputs_config` with
+  `backend='auto'`, and the failing request produces no grammar-related
+  line at any level. `qwen3.5-4b-awq` enforced correctly on the same
+  0.28.0 engine minutes earlier, so grammars work in general here and
+  this is specific to the Gemma 4 path.
+- That is a regression in kind, not just in verdict. A loud failure that
+  burns the budget is visible; silent non-enforcement is the exact shape
+  this gate exists to catch, because a caller receives prose while
+  believing a schema was applied. It is also the first time a vLLM CUDA
+  profile has produced the `ignored` outcome anywhere in the fleet --
+  previously only Ollama's MLX runner did. Neither engine version is
+  usable for schema-constrained work with this checkpoint; 0.28.0 is
+  kept for the Gemma 4 per-layer head-dim fix and fleet alignment, since
+  the gate result is a failure either way.
+- Gemma 4's Ollama pairings are unaffected and pass: `gemma4-e2b` and
+  `gemma4-12b` both report `enforced`, where the A100's larger
+  `gemma4-26b` under the same llama.cpp runner fails as plain
+  `truncated`. Bounded grammar whitespace is enough for the small and
+  mid Gemma 4 tiers to finish the document in budget. Gemma 4 remains
+  usable for structured work on this host only through Ollama.
 - `muse-glimmer-30b` fails `json_schema` as `ignored`, reproducibly
   (2/2, 183.0 s and 183.8 s). The retained document shows the recorded
   classification understates it: the schema-constrained response is
