@@ -7,12 +7,14 @@ repository root.
 
 ## Mission
 
-This repository exists for exactly one workload: **maximum secaudit-cli audit
-throughput**. An audit call is a deep-context request -- tens to hundreds
-of thousands of evidence tokens -- with tool calls landing mid-context
-and complex reasoning over the whole window. The fleet is tuned,
-benchmarked, and judged on completed audit calls per hour at real depths,
-nothing else.
+This repository exists for exactly one workload shape: **maximum
+throughput on deep-context agentic tool loops** -- automated
+vulnerability discovery across a codebase, and deep agentic coding
+sessions. A call of that shape is a deep-context request -- tens to
+hundreds of thousands of evidence tokens -- with tool calls landing
+mid-context and complex reasoning over the whole window. The fleet is
+tuned, benchmarked, and judged on completed calls per hour at real
+depths, nothing else.
 
 **Every decision in this tree must serve this mission.** Model
 selection, quantization choice, context sizing, cache policy, scheduler

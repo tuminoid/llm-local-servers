@@ -277,8 +277,8 @@ model produces when the schema is stated in words instead of a grammar.
 
 ## A100-SXM4-80GB campaign
 
-Host: shared A100 test host (`tuomo-ubuntu-gpu`, ssh alias
-`xd-ubuntu-gpu`). Initial run date: 2026-08-26, all ten managed
+Host: shared A100 test host, reached over ssh through the `HOST` alias
+supplied by `.envrc`. Initial run date: 2026-08-26, all ten managed
 operating points, vLLM 0.27.1 and isolated Ollama 0.32.14. Every row
 below re-run in full on 2026-09-06 at protocol SCHEMA_VERSION 4 on the
 vLLM 0.28.0 venv and Ollama 0.32.14. Two profiles that owed a record

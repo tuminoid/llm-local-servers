@@ -184,14 +184,14 @@ generations are in [BENCHMARKS.md](BENCHMARKS.md).
 ## Prerequisites
 
 - `vllm`, found in this order: the `VLLM_BIN` override, a `venv/` beside these
-  scripts, then PATH. PATH is the local host (uv tool wrapper,
-  `tools/uv/tools.conf` in the scripts repo); the venv is the portable route for
+  scripts, then PATH. PATH is whatever the host provides, typically a uv tool
+  wrapper; the venv is the portable route for
   hosts without it, created by `make vllm-remote-bootstrap`. First install pulls
   roughly 10 GB of torch and CUDA wheels either way.
 - A CUDA toolkit only for the FlashInfer backend, which the launcher selects
-  solely when fp8 KV is in play. `CUDA_HOME` is set by the host bashrc; without
-  it the launcher falls back to Triton. Host provisioning (toolkit install,
-  driver notes) is documented in [AGENTS.md](AGENTS.md).
+  solely when fp8 KV is in play. `CUDA_HOME` comes from the host environment;
+  without it the launcher falls back to Triton. Host provisioning (toolkit
+  install, driver notes) is documented in [AGENTS.md](AGENTS.md).
 - For gated models, `hf auth login` plus accepting the model's terms.
 
 ## Host tuning notes

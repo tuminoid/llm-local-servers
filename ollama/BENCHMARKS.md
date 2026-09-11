@@ -141,7 +141,7 @@ Per profile:
   Qwen3.8 27B (2.93 tok/s decode) await a separately approved
   CPU-offload batch.
 
-Run JSONs: `~/tmp/auditbench-conv-rtx/`.
+Run JSONs: retained under `${XDG_STATE_HOME:-~/.local/state}/auditbench/`.
 
 ## Apple M5 Max MLX operating points
 

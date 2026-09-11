@@ -383,7 +383,8 @@ Pin decision, `qwen3.5-4b-awq`: 0 -> 1 on the morning cost math, then
 its own tool loop under align mode; compliance is a capability gate no
 throughput number overrides. `gemma4-e2b-awq` keeps APC 1: regular
 attention, no align numerics, identical (non-)compliance in both modes,
-and a 1.73x replay win. Run JSONs: `~/tmp/auditbench-conv-rtx/`.
+and a 1.73x replay win. Run JSONs: retained under
+`${XDG_STATE_HOME:-~/.local/state}/auditbench/`.
 
 ## Small-card model notes
 

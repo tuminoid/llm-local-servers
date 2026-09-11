@@ -68,8 +68,8 @@ pidfile teardown signals.
 
 ## Remote A100 deployment
 
-The isolated deployment was exercised on the shared A100 at
-`xd-ubuntu-gpu`. The server was stopped after benchmarking, GPU use returned
+The isolated deployment was exercised on the shared A100 test host. The
+server was stopped after benchmarking, GPU use returned
 to 0 MiB, and no tunnel was opened. Do not run any remote Ollama write or GPU
 target while vLLM or another compute workload is active.
 
@@ -105,7 +105,7 @@ normal first-start generation once:
 
 ```bash
 make ollama-remote-start MODEL=<config> \
-  HOST=xd-ubuntu-gpu OLLAMA_REMOTE_ALLOW_KEY_CREATE=1
+  HOST=<ssh-host> OLLAMA_REMOTE_ALLOW_KEY_CREATE=1
 ```
 
 Omit `OLLAMA_REMOTE_ALLOW_KEY_CREATE` after that first start; its default is
@@ -144,19 +144,19 @@ Detailed throughput, residency, and full-context proofs are in
 Read-only status does not deploy:
 
 ```bash
-make ollama-remote-status HOST=xd-ubuntu-gpu
+make ollama-remote-status HOST=<ssh-host>
 ```
 
 Only after the host is confirmed idle, the isolated lifecycle is:
 
 ```bash
-make ollama-remote-bootstrap HOST=xd-ubuntu-gpu
+make ollama-remote-bootstrap HOST=<ssh-host>
 make ollama-remote-start MODEL=qwen3-coder-30b \
-  OLLAMA_NUM_PARALLEL=4 HOST=xd-ubuntu-gpu
-make ollama-remote-pull MODEL=qwen3-coder-30b HOST=xd-ubuntu-gpu
+  OLLAMA_NUM_PARALLEL=4 HOST=<ssh-host>
+make ollama-remote-pull MODEL=qwen3-coder-30b HOST=<ssh-host>
 make ollama-remote-bench MODEL=qwen3-coder-30b \
-  OLLAMA_NUM_PARALLEL=4 OLLAMA_BENCH_JOBS=4 HOST=xd-ubuntu-gpu
-make ollama-remote-stop HOST=xd-ubuntu-gpu
+  OLLAMA_NUM_PARALLEL=4 OLLAMA_BENCH_JOBS=4 HOST=<ssh-host>
+make ollama-remote-stop HOST=<ssh-host>
 ```
 
 `ollama-remote-bootstrap`, `-start`, `-pull`, `-bench`, and `-capability`

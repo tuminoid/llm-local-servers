@@ -126,7 +126,7 @@ are byte-identical in both directions (prefix cached by A then reused by
 divergent B, and the reverse), across server restarts, and across 32k and
 262k max-len configs. The measured win on that prefix is time to first
 token 4.09 s cold against 0.11 s hot (36x); agentic clients that resend
-the whole conversation each step (opencode/secaudit) get most of their
+the whole conversation each step (opencode) get most of their
 prefill back.
 
 The opt-in is currently BLOCKED for serving and benchmarking: the

@@ -326,7 +326,7 @@ host-adaptation change must be exercised on before it is done.
 
 | Fact | Value |
 | -- | -- |
-| ssh host | `xd-ubuntu-gpu` (remote user `ubuntu`, hostname `tuomo-ubuntu-gpu`), the standing `HOST` value supplied by `.envrc` |
+| ssh host | the standing `HOST` value supplied by `.envrc`, never committed; override per invocation with `HOST=<ssh-host>` |
 | GPU | A100-SXM4-80GB, sm_80, 81920 MiB |
 | Scripts | `~/tmp/vllm/`, i.e. the Makefile's default `VLLM_REMOTE_DIR=tmp/vllm` |
 | venv | `~/tmp/vllm/venv`, the Makefile's pinned `VLLM_VERSION`, created by `vllm-remote-bootstrap` |
@@ -336,7 +336,7 @@ Rules for working on it, all of them learned the hard way:
 
 - **Drive it with the make targets, never ssh into it and run the scripts by
   hand.** The repo-wide Makefile rule applies across the ssh boundary too.
-  The `.envrc` here sets `HOST=xd-ubuntu-gpu`, so a bare remote target lands
+  The `.envrc` here sets `HOST` to this machine, so a bare remote target lands
   here; override with `HOST=<ssh-host>` for another box.
 - **It is a shared, single-GPU machine.** One server can run at a time and
   someone else's may be up. Because the ambient `HOST` points at it, a remote
@@ -358,16 +358,16 @@ Rules for working on it, all of them learned the hard way:
 The full cycle (`vllm-remote-start` deploys first, so no explicit sync step):
 
 ```bash
-make vllm-remote-status HOST=xd-ubuntu-gpu                  # who is using it
-make vllm-remote-stop   HOST=xd-ubuntu-gpu                  # free the card
-make vllm-remote-start  HOST=xd-ubuntu-gpu MODEL=<conf>   # syncs, then starts
-make vllm-remote-status HOST=xd-ubuntu-gpu                  # backend, KV sizing
-make vllm-remote-bench  HOST=xd-ubuntu-gpu MODEL=<conf>
-make vllm-remote-stop   HOST=xd-ubuntu-gpu                  # must report 0 MiB
+make vllm-remote-status HOST=<ssh-host>                  # who is using it
+make vllm-remote-stop   HOST=<ssh-host>                  # free the card
+make vllm-remote-start  HOST=<ssh-host> MODEL=<conf>   # syncs, then starts
+make vllm-remote-status HOST=<ssh-host>                  # backend, KV sizing
+make vllm-remote-bench  HOST=<ssh-host> MODEL=<conf>
+make vllm-remote-stop   HOST=<ssh-host>                  # must report 0 MiB
 ```
 
 The server binds loopback on the remote host and has no authentication, so
-reaching it from here means `make vllm-remote-tunnel HOST=xd-ubuntu-gpu`; a
+reaching it from here means `make vllm-remote-tunnel HOST=<ssh-host>`; a
 one-off request is easier run over ssh with `curl localhost:8000`.
 
 `VLLM_*` overrides are forwarded across ssh by the `VLLM_ENV` variable in the
@@ -398,9 +398,9 @@ show that the derivation is right -- it only shows that one branch of it is.
 The second host is the A100 described above:
 
 ```bash
-make vllm-remote-start  HOST=xd-ubuntu-gpu MODEL=<model>   # deploys first
-make vllm-remote-status HOST=xd-ubuntu-gpu
-make vllm-remote-stop   HOST=xd-ubuntu-gpu
+make vllm-remote-start  HOST=<ssh-host> MODEL=<model>   # deploys first
+make vllm-remote-status HOST=<ssh-host>
+make vllm-remote-stop   HOST=<ssh-host>
 ```
 
 What proves a host-adaptation change is the resolved profile, not throughput,
@@ -455,35 +455,31 @@ never derive a missing metric from a retired-harness rate.
 ## Prerequisites
 
 - `vllm`, resolved by `vllm_bin` in this order: the `VLLM_BIN` override, a
-  `venv/` beside the scripts, then PATH. PATH is the local host's uv tool
-  wrapper (`tools/uv/tools.conf` in the scripts repo); the venv is the portable
-  route and is what `make vllm-remote-bootstrap` creates. First install pulls
+  `venv/` beside the scripts, then PATH. PATH is whatever the host provides,
+  typically a uv tool wrapper; the venv is the portable route and is what
+  `make vllm-remote-bootstrap` creates. First install pulls
   roughly 10 GB of torch and CUDA wheels.
 - `CUDA_HOME` only matters for FlashInfer, which is only selected for fp8 KV on
-  sm_89+. It is set by the host bashrc.
+  sm_89+. It comes from the host environment.
 - Gated models need `hf auth login` and acceptance of the model's terms.
 
 ### Host provisioning
 
-GPU host setup lives outside this repo, in the scripts repo under
-`~/Documents/scripts/host/tumipromax/`:
+GPU host provisioning lives outside this repo. What this server requires of
+it:
 
-| Path | Purpose |
-| -- | -- |
-| `scripts/setup-cuda-toolkit.sh` | Adds NVIDIA's CUDA apt repo (cuda-keyring, ubuntu2404) and installs `cuda-toolkit-13-3`, giving `/usr/local/cuda-13.3` plus the `/usr/local/cuda` symlink |
-| `scripts/setup-nvidia-drm.sh` | `nvidia-drm.modeset=1` in GRUB and Wayland in GDM. Unrelated to inference, listed because it is the other NVIDIA host script |
-| `_bashrc.sh` | Exports `CUDA_HOME=/usr/local/cuda` and prepends `$CUDA_HOME/bin` to PATH, guarded on `nvcc` existing |
-
-The toolkit is what unlocks FlashInfer, so a host that has not run
-`setup-cuda-toolkit.sh` gets the Triton fallback and roughly half the
-prefill throughput. Nothing breaks; it is just slower.
+- A CUDA toolkit from NVIDIA's own apt repo, new enough for the target GPU,
+  exposed as `/usr/local/cuda` with `CUDA_HOME` set and `$CUDA_HOME/bin` on
+  PATH. The toolkit is what unlocks FlashInfer, so a host without it gets
+  the Triton fallback and roughly half the prefill throughput. Nothing
+  breaks; it is just slower.
 
 Two traps when provisioning a GPU host for this server:
 
 - **Do not install Ubuntu's `nvidia-cuda-toolkit` package.** It is CUDA
   12.0, and sm_120 (Blackwell) needs 12.8 or newer, so that `nvcc` cannot
-  emit code for the GPU at all. `setup-cuda-toolkit.sh` uses NVIDIA's own
-  repo for exactly this reason.
+  emit code for the GPU at all. Use NVIDIA's own repo for exactly this
+  reason.
 - **A driver upgrade needs a reboot before this server will start.** The
   new userspace libraries load against the still-running old kernel
   module, and `nvidia-smi` fails with `Failed to initialize NVML:
@@ -492,6 +488,5 @@ Two traps when provisioning a GPU host for this server:
   `ls /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.*`) before debugging
   anything in this directory.
 
-`_bashrc.sh` deliberately does not touch `LD_LIBRARY_PATH`: adding the
-toolkit's `lib64` there shadows the pip-installed CUDA libraries that
-torch links against.
+Do not put the toolkit's `lib64` on `LD_LIBRARY_PATH`: it shadows the
+pip-installed CUDA libraries that torch links against.

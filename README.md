@@ -235,8 +235,8 @@ the throughput profile. Nemotron 3.5 Lightning is the host's
 audit-cadence and depth leader (its Mamba/attention hybrid holds
 prefill nearly flat with depth), but its ceiling is the one-slot MLX
 runner -- the vLLM-Metal path that would give it concurrency is blocked
-on a plugin bug (see the model conf) -- and it has no secaudit quality
-record yet. The NVFP4 row runs the 131,072 operating point, so its half
+on a plugin bug (see the model conf) -- and it has no vulnerability-discovery
+quality record yet. The NVFP4 row runs the 131,072 operating point, so its half
 and deep targets are 65k and 114.7k (parenthesized to keep the columns
 honest); at the shared 32k depth that one MLX stream still beats the
 vLLM-Metal MoE serving profile 1.6x. The uncensored 512k row's targets
