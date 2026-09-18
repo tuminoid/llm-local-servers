@@ -124,7 +124,11 @@ OLLAMA_DIR := ollama
 # failure from a graceful HTTP 500 into an unbounded memory runaway at the
 # 184,320 operating point (watchdog-killed at 56 MiB free; the 131,072
 # points stayed bounded). CUDA-side 0.33.2 was clean. Evidence in
-# ollama/BENCHMARKS.md; retest on the next release.
+# ollama/BENCHMARKS.md. 0.33.3 (2026-09-04) reproduced it one order of
+# magnitude faster, and 0.34.2 (2026-09-18) moved it inside the FIRST
+# conversation (~148k resident, ~34 GiB in ~1.5 s) and hard-reset the
+# host past the armed watchdog. Retest only on a release whose notes
+# name the MLX runner's post-prefill commit or trie memory bound.
 OLLAMA_VERSION ?= 0.32.14
 OLLAMA_ARCHIVE_SHA256 ?= c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f
 OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 7802b739fbdc74df556600f1619f86457b69dce913301cf2d91f7f9d7f7a41b8

@@ -587,6 +587,13 @@ bounded on the same trial runtime (two consecutive deep conversations,
 free-memory floor 27.8 GiB), so the regression bites at the large
 allocation, not everywhere.
 
+Supervised trials of 0.33.3 (2026-09-04) and 0.34.2 (2026-09-18) on
+the same artifact and allocation reproduced the runaway, 0.34.2 inside
+the first conversation at ~148k resident tokens and faster than an
+available-memory watchdog could act; the host hard-reset. The pin stays
+0.32.14 for every MLX profile. GGUF profiles never dispatch to the MLX
+runner and are unaffected.
+
 Remote A100 profiles (16-file/~165k shape, isolated Ollama 0.32.14):
 
 | Profile | Compliant | Conversations/hour | Recall |
