@@ -66,98 +66,108 @@ through `make vllm-remote-tunnel` (localhost:8001) or
 
 ## Measured overview
 
-Decision-oriented summary of the measured operating points. The tables
-copy canonical AuditBench v1 medians from
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
+Canonical AuditBench v1 medians copied from [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md), and
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md), which hold the
-evidence, memory analysis, ranges, per-model caveats, and history;
-missing values are never derived. Capability pass/fail records are in
-[CAPABILITIES.md](CAPABILITIES.md). Prefill and
-decode are aggregate tok/s, audit columns are calls/hour, a `@Nx`
-suffix names the measured concurrency, and `GPU KV / allocation` is
-the raw vLLM pool or Ollama's measured CPU/GPU model allocation
-(Ollama exposes no fungible pool).
+evidence, ranges, caveats, replay results, and history; nothing here is
+derived. Capability pass/fail is in [CAPABILITIES.md](CAPABILITIES.md).
+Prefill and decode are aggregate tok/s, audit columns are calls/hour,
+`@Nx` names the measured concurrency, and `GPU KV / allocation` is the
+raw vLLM pool or Ollama's measured allocation.
 
-### Audit conversations per hour, fleet-wide
+### Audit conversations per hour, per host
 
-The conversation profile is the mission workload: a growing tool-loop
-conversation resent every turn, findings verdict at depth (see the
-AuditBench protocol). One row per host/runtime pair and per model --
-each model's best measured compliant profile at its serving cache mode
--- so each row also certifies the model held the tool-loop protocol end
-to end. Dominated variants (a model's slower hosts, runtimes, digests,
-or cache modes) live in the runtime BENCHMARKS. MoE/hybrid and dense
-models rank separately: active-parameter count dominates prefill
-economics, so the tiers are not throughput-comparable. Contexts differ
-per operating point (131k-shape rows are marked), so compare within a
-tier.
+The mission workload: a growing tool-loop conversation resent every
+turn, verdict at depth, at the 262,144-token shape (16 tool steps,
+~230k resident). One row per runtime and model, ranked within a host
+only; a MoE or hybrid row and a dense row are not comparable. `Decode
+1x` is the same run's short-prompt single-stream decode ceiling.
 
-MoE and hybrid (sparse-active):
+A100-SXM4-80GB:
 
-| Rank | Host / runtime / best profile | Cache | Conv/hour |
-| --: | -- | -- | --: |
-| 1 | A100 vLLM `qwen3.6-35b-a3b-awq` | align APC | 85.9 |
-| 2 | M5 Ollama `qwen3.6 coding NVFP4` (131k shape) | MLX trie | 50.9 |
-| 3 | A100 vLLM `qwen3-coder-30b` | APC | 45.2 |
-| 4 | A100 vLLM `gemma4-26b-a4b-awq` | APC | 43.8 |
-| 5 | M5 Ollama `nemotron-3.5-lightning` | MLX trie | 34.4 |
-| 6 | A100 Ollama `qwen3.6-35b-a3b` GGUF | slot cache | 32.0 |
-| 7 | M5 vLLM-Metal `qwen3.6-35b-a3b-4bit` | align APC | 12.5 |
-| 8 | M5 Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | slot cache | 7.2 |
+| Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
+| --: | -- | -- | -- | --: | --: |
+| 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | align APC | 147.68 | 85.9 |
+| 2 | vLLM `qwen3-coder-30b` | MoE | APC | 149.49 | 45.2 |
+| 3 | vLLM `gemma4-26b-a4b-awq` | MoE | APC | 169.40 | 43.8 |
+| 4 | Ollama `qwen3.6-35b-a3b` GGUF | MoE | slot cache | 84.58 | 32.0 |
+| 5 | Ollama `qwen3-coder-30b` GGUF | MoE | slot cache | 114.41 | 26.0 |
+| 6 | vLLM `qwen3.8-27b-dflash2` | dense | align APC + DFlash 2 | 118.73 | 23.4 |
+| 7 | Ollama `qwen3.8-27b-native` | dense | slot cache | 57.80 | 14.5 |
 
-Dense:
+Apple M5 Max:
 
-| Rank | Host / runtime / best profile | Cache | Conv/hour |
-| --: | -- | -- | --: |
-| 1 | A100 vLLM `qwen3.8-27b-dflash2` | align APC + DFlash 2 | 23.4 |
-| 2 | A100 Ollama `qwen3.8-27b-native` | slot cache | 14.5 |
-| 3 | RTX Ollama `qwen3.5:9b` | slot cache | 9.8 |
-| 4 | M5 vLLM-Metal `gemma4-31b-4bit` | APC | 2.4 |
+| Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
+| --: | -- | -- | -- | --: | --: |
+| 1 | Ollama `nemotron-3.5-lightning` MLX | hybrid MoE | MLX trie | 141.7 | 34.4 |
+| 2 | vLLM-Metal `qwen3.6-35b-a3b-4bit` | MoE | align APC | 98.4 | 12.5 |
+| 3 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
+| 4 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | -- | 2.4 |
+| 5 | vLLM-Metal `qwen3.8-27b-4bit` | dense | APC off, retired pin | 33.1 | 0.70 |
 
-The qwen3.5-4b profiles are excluded despite leading the RTX rates:
-their fixture compliance is variant-split and cache-mode sensitive. Both
-pass Capability Check v1 on this host (see
-[CAPABILITIES.md](CAPABILITIES.md)), so the exclusion is a
-conversation-compliance judgement, not a missing gate; their measured
-rates stay in the RTX table below and the runtime BENCHMARKS.
+The qwen3.8 row predates the align-APC pin flip and the APC-on
+conversation has not been run; its bound is 5.5 tok/s verdict decode at
+depth, not the cache.
 
-The A100 vLLM `qwen3-coder-30b` row keeps its measured rate but is not
-promotable for agent workloads: under automatic tool choice it returns
-two tool calls for a one-call fixture, streaming and non-streaming
-alike, which is a capability failure no throughput number overrides.
-Its Ollama pairing passes the same checks; the evidence is in
-[CAPABILITIES.md](CAPABILITIES.md) and the diagnosis in the model conf.
+Apple M5 Max, 131k shape (9 tool steps, ~115k resident; qwen3.6 is
+pinned to 131,072 on the Ollama MLX runner because 262,144 triggers its
+memory runaway). Not comparable with the tables above:
 
-Cache and speculation policy, not model speed, dominates the spread
-behind each row: on the A100 alone the same qwen3.8 weights span 4.1
-(vLLM cache-off, retired) through 14.5 (Ollama slot cache) and 20.2
-(vLLM align APC) to 23.4 conv/hour (align APC plus the DFlash 2
-drafter). Profiles that deviated from the fixture (GLM 4.7
-Flash on both A100 runtimes, among others) are excluded here, not slow;
-the per-case stories are in the runtime BENCHMARKS, and the replay
-profile below still measures server performance for them.
+| Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
+| --: | -- | -- | -- | --: | --: |
+| 1 | Ollama `qwen3.6:35b-a3b-coding-nvfp4` MLX | MoE | MLX trie | 126.7 | 50.9 |
+| 2 | Ollama `qwen3.6:35b-a3b-nvfp4` MLX (base) | MoE | MLX trie | 140.8 | 48.1 |
 
-### Audit replay: server performance without model cooperation
+RTX PRO 3000:
 
-The replay profiles resend recorded audit conversations, so they price
-the server without model cooperation; full trials and gates are in each
-runtime's BENCHMARKS.md. Conclusions so far: on the A100, align APC is
-worth 6.1x end to end on qwen3.8 (its conf now pins APC on after the
-same-day correctness gate) and roughly 2x over Ollama's implicit slot
-cache on qwen3.6 (18.3 vs 9.92 replays/hour, same fixture); DFlash 2
-speculation on qwen3.8 is depth-dependent -- 2.4x shallow decode and
-+16% conversations, but neutral at verdict depth, with the crossover
-around 64-100k resident tokens; and GLM 4.7
-Flash -- conversation-non-compliant everywhere -- serves the shape well
-on vLLM. On the RTX,
-replay prices APC at 1.32-1.73x end to end, and verdict decode at depth
-is the ceiling. On the M5, the audit gap against the A100 is
-single-stream decode bandwidth at depth, not caching (cached fractions
-identical); the concurrent-replay profile puts the knee at two agents
-on both hybrids, with shared-prefix caching real but minor at audit
-depth, while the A100 is still scaling at four concurrent agents on
-qwen3.6 (2.28x aggregate).
+| Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
+| --: | -- | -- | -- | --: | --: |
+| 1 | Ollama `qwen3.5:9b` | dense | slot cache | 37.83 | 9.8 |
+
+Excluded for fixture non-compliance: both qwen3.5-4b stacks and the
+CPU-assisted qwen3.6 on the RTX, GLM 4.7 Flash and Ollama gemma4-26b on
+the A100. The A100 vLLM `qwen3-coder-30b` rate stands but the profile
+fails Capability Check v1 (two tool calls for a one-call fixture).
+
+### A100-SXM4-80GB
+
+Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.28.0, Transformers
+5.15.1. Ollama rows: isolated Ollama 0.32.14, Flash Attention, q8 KV.
+
+| Runtime and profile | Context | Slots | GPU KV / allocation | 32k prefill | Peak decode | Audit 32k | Audit half | Audit deep | Near-context proof |
+| -- | --: | --: | -- | --: | --: | --: | --: | --: | -- |
+| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,714,989 KV | 15,558.4 | 867.22 @8x | 992.75 @8x | 148.07 | 84.59 @4x | 8 x 245,752 in 359.58s |
+| Ollama `qwen3.6:35b-a3b` | 262,144 | 1 | 0.00 / 25.34 GiB | 4,165.7 | 84.58 | 176.52 | 64.82 | 42.81 | 245,752 in 85.26s |
+| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,867,456 KV | 7,603.9 | 1,072.38 @8x | 595.22 @8x | 58.53 | 26.22 @4x | 4 x 245,774 in 625.92s |
+| Ollama `gemma4:26b` | 262,144 | 8 | 0.00 / 25.32 GiB | 3,246.7 | 231.48 @8x | 222.32 @8x | 53.51 | 27.68 @4x | 8 x 245,777 in 1,030.85s |
+| vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,152 KV | 8,551.3 | 1,019.74 @8x | 515.11 @8x | 61.55 | 27.20 @1x | 2 x 245,762 in 289.67s |
+| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 498,225 KV | 2,721.2 | 592.04 @8x | 227.99 @8x | 34.77 | 22.84 @1x | 2 x 245,748 in 322.29s |
+| vLLM `qwen3.8-27b` | 262,144 | 8 | 742,613 KV | 2,722.0 | 343.53 @8x | 218.66 @8x | 38.88 | 23.50 @2x | 2 x 245,748 in 325.11s |
+| Ollama `qwen3.8-27b-native` | 262,144 | 1 | 0.00 / 17.27 GiB | 1,081.5 | 57.80 | 74.48 | 21.62 | 11.28 | 245,752 in 340.97s |
+| Ollama `qwen3-coder-30b` | 262,144 | 4 | 0.00 / 70.39 GiB | 2,729.4 | 186.96 @4x | 132.09 @4x | 26.45 | 14.82 @1x | 4 x 245,762 in 1,016.28s |
+| vLLM `glm4.7-flash-awq` | 202,752 | 8 | 1,050,624 KV | 7,346.1 | 365.23 @8x | 367.58 @8x | 66.04 | 37.28 @4x | 4 x 190,092 in 419.78s |
+| Ollama `glm4.7-flash` | 202,752 | 8 | 0.00 / 63.01 GiB | 1,457.8 | 268.75 @8x | 112.63 @8x | 21.23 | 8.39 @1x | 8 x 190,092 in 3,703.26s |
+
+### Apple M5 Max (128 GB unified memory)
+
+Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 26.6.2. Ollama
+MLX rows: managed official Ollama 0.32.14, MLX runner on
+`mlx_metal_v4`, safetensors NVFP4 artifacts; the runner serializes
+requests to one slot. The flash-next row runs the llama.cpp runner on
+the split 0.33.3 managed runtime with two real slots and q8 KV.
+vLLM-Metal rows: pinned plugin venv 0.28.0, paged KV, NAX prefill.
+
+| Runtime | Model or profile | Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h |
+| -- | -- | --: | --: | --: | --: | --: | --: | --: |
+| vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
+| vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
+| Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |
+| Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |
+| Ollama | `qwen3.6:35b-a3b-coding-nvfp4` (MLX) | 131,072 | one slot | 3,242 / 2,305 / - | 126.7 / - / - | 180.4 @1x | 88.5 (65k) | 48.7 (114.7k) |
+| Ollama | `qwen3.6:35b-a3b-nvfp4` (MLX, base) | 131,072 | one slot | 3,190 / 2,224 / - | 140.8 / - / - | 188.7 @1x | 91.2 (65k) | 47.7 (114.7k) |
+
+The qwen3.6 NVFP4 rows run the 131,072 operating point; their
+parenthesized half and deep targets are 65k and 114.7k.
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
@@ -169,83 +179,7 @@ Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM.
 | vLLM `qwen3.5-4b-awq` | 131,072 | 2 | 274,432 KV | 4,686.9 | 176.12 @2x | 250.94 @2x | 113.76 | 85.82 @2x | 2 x 122,861 in 87.77s |
 | Ollama `gemma4:e2b` | 131,072 | 4 | 0.00 / 2.66 GiB | 3,582.5 | 247.40 @4x | 184.88 @4x | 99.42 | 67.33 @1x | 4 x 122,903 in 217.03s |
 | Ollama `qwen3.5:9b` | 262,144 | 1 | 0.00 / 10.21 GiB | 1,654.8 | 37.83 | 70.34 | 22.10 | 12.26 | 245,752 in 311.57s |
-
-The practical RTX choices are vLLM Gemma for peak decode and cold-32k audit
-throughput, vLLM Qwen for stronger late-audit throughput, Ollama Gemma E2B for
-four-slot capacity, and Ollama Qwen3.5 9B for a fully resident 262k model.
-The remaining measured profiles (Ollama qwen3.5:4b and gemma4:12b, and the
-CPU-assisted qwen3.6 and qwen3.8 capability profiles) are in
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
-
-### A100-SXM4-80GB
-
-Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.28.0, Transformers
-5.15.1 (re-canonicalized within ~2% of the earlier 0.27.1 rates).
-Ollama rows: isolated Ollama 0.32.14, Flash Attention, q8 KV.
-
-| Runtime and profile | Context | Slots | GPU KV / allocation | 32k prefill | Peak decode | Audit 32k | Audit half | Audit deep | Near-context proof |
-| -- | --: | --: | -- | --: | --: | --: | --: | --: | -- |
-| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,714,989 KV | 15,558.4 | 867.22 @8x | 992.75 @8x | 148.07 | 84.59 @4x | 8 x 245,752 in 359.58s |
-| Ollama `qwen3.6:35b-a3b` | 262,144 | 1 | 0.00 / 25.34 GiB | 4,165.7 | 84.58 | 176.52 | 64.82 | 42.81 | 245,752 in 85.26s |
-| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,867,456 KV | 7,603.9 | 1,072.38 @8x | 595.22 @8x | 58.53 | 26.22 @4x | 4 x 245,774 in 625.92s |
-| Ollama `gemma4:26b` | 262,144 | 8 | 0.00 / 25.32 GiB | 3,246.7 | 231.48 @8x | 222.32 @8x | 53.51 | 27.68 @4x | 8 x 245,777 in 1,030.85s |
-| vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,152 KV | 8,551.3 | 1,019.74 @8x | 515.11 @8x | 61.55 | 27.20 @1x | 2 x 245,762 in 289.67s |
-| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 498,225 KV | 2,721.2 | 592.04 @8x | 227.99 @8x | 34.77 | 22.84 @1x | 2 x 245,748 in 322.29s |
-
-The A100 audit workhorse is vLLM Qwen3.6: it leads every prompt-heavy phase,
-reaches 992.75 cold-32k calls/hour, and proves eight simultaneous near-full
-contexts. vLLM Gemma and Qwen Coder lead pure aggregate decode, but their
-32k audit rates are only 60% and 52% of Qwen3.6; Gemma is also the best
-Ollama audit profile. The qwen3.8 DFlash 2 row is the dense model with its
-pinned speculative drafter: 2.4x plain decode and +27% cold-32k calls at
-one stream, fading with depth (its half/deep cells sit at or below the
-plain profile's; the crossover analysis is in
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md)). The remaining measured
-profiles (both GLM 4.7 Flash stacks, plain qwen3.8 on both runtimes, and
-Ollama qwen3-coder) are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
-
-### Apple M5 Max (128 GB unified memory)
-
-Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 26.6.2. Ollama
-MLX rows: managed official Ollama 0.32.14, MLX runner on
-`mlx_metal_v4`, safetensors NVFP4 artifacts; the runner serializes
-requests to one slot. The flash-next row runs the llama.cpp runner on
-the split 0.33.3 managed runtime with two real slots and q8 KV.
-vLLM-Metal rows: pinned plugin venv, paged KV, NAX prefill active.
-Calls/hour includes prefill; each profile passed its
-near-context proof at 1x and its maximum fitting concurrency
-(evidence in [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md) and
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md), alongside the bring-up
-history, memory ceilings, and hard-reset analysis).
-
-| Runtime | Model or profile | Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h |
-| -- | -- | --: | --: | --: | --: | --: | --: | --: |
-| vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
-| vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
-| vLLM-Metal | `qwen3.8-27b-uncensored-4bit` 512k YaRN, APC | 524,288 | 617,494 | 519 / 434 / 313 | 28.6 / 53.6 / 85.1 | 39.6 @4x | 2.3 (262k) | 0.97 (459k) |
-| Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |
-| Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |
-| Ollama | `qwen3.6:35b-a3b-coding-nvfp4` (MLX) | 131,072 | one slot | 3,242 / 2,305 / - | 126.7 / - / - | 180.4 @1x | 88.5 (65k) | 48.7 (114.7k) |
-
-The MoE holds a ~3x calls/hour advantage over qwen3.8 at every audit
-depth; the dense qwen3.8 batches better and is the quality profile, not
-the throughput profile. Nemotron 3.5 Lightning is the host's
-audit-cadence and depth leader (its Mamba/attention hybrid holds
-prefill nearly flat with depth), but its ceiling is the one-slot MLX
-runner -- the vLLM-Metal path that would give it concurrency is blocked
-on a plugin bug (see the model conf) -- and it has no vulnerability-discovery
-quality record yet. The NVFP4 row runs the 131,072 operating point, so its half
-and deep targets are 65k and 114.7k (parenthesized to keep the columns
-honest); at the shared 32k depth that one MLX stream still beats the
-vLLM-Metal MoE serving profile 1.6x. The uncensored 512k row's targets
-run deeper for the same reason (262k half, 459k deep, parenthesized),
-and its 491,514-token capacity proof is the fleet's first canonical
-completion beyond a checkpoint's native window. NVFP4 safetensors do not load
-under mlx-lm at the current plugin pin, so the Ollama registry remains
-the only NVFP4 path on this host. The remaining measured profiles
-(the cache-off control rows, gemma4-31b, and the rate-identical base
-NVFP4 digest) are in
-[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md) and
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+| Ollama `qwen3.5:4b` | 131,072 | 1 | 0.00 / 6.04 GiB | 2,057.6 | 67.43 | 100.55 | 59.19 | 41.92 | 122,861 in 84.87s |
+| Ollama `gemma4:12b` | 262,144 | 1 | 0.00 / 7.96 GiB | 1,242.8 | 32.36 | 59.82 | 16.67 | 8.31 | 245,777 in 462.12s |
+| Ollama `qwen3.6:35b-a3b` (CPU-assisted) | 262,144 | 1 | 14.53 / 10.21 GiB | 303.4 | 30.99 | 25.09 | 7.00 | 4.00 | 245,752 in 927.94s |
+| Ollama `qwen3.8:27b` (CPU-assisted) | 131,072 | 1 | 12.49 / 7.64 GiB | 188.3 | 2.93 | 2.70 | 1.83 | 2.15 | 122,861 in 745.62s |
