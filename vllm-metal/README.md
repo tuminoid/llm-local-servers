@@ -188,6 +188,28 @@ of the canonical rows on all three profiles: qwen3.8 567-602 tok/s
 The dev-pin canonical tables in BENCHMARKS.md therefore carry over
 unchanged.
 
+2026-09-18 re-gate at plugin 0.29.0 on a trial venv beside the fleet
+venv (paired core vLLM 0.29.0, MLX 0.32.1, mlx-lm 2026-08-25,
+transformers resolved to 5.17.0; the fleet pin stays 0.28.0 pending
+canonical re-runs): decode smoke flat with no per-request decay --
+qwen3.8 APC 29.2/51.8/82.2 tok/s and qwen3.6 APC 99.9/168.1/245.6 at
+1/2/4 streams, within ~3% of the 0.28.0 figures; pools 603,469 and
+1,326,140 (0.28.0: 611,156 and 1,324,084). The divergent-conversation
+correctness gate re-passed (byte-identical cold vs hit in both
+directions across a restart, TTFT 4.1-4.6 s cold vs 0.19-0.22 s hit),
+the same-instant pair probe passed 0/12 on qwen3.8, qwen3.6 and
+nemotron, and capability-v1 passed 8/8 on qwen3.8, qwen3.6, granite
+and ornith (gemma4 fails json_schema in the same whitespace class as
+on 0.28.0). Cold 32k prefill spot-checks ran 2-6% under the canonical
+rows on qwen3.8 and declined across consecutive samples on qwen3.6; a
+same-session A/B on the 0.28.0 venv showed the identical decline, so
+that is host state, not the plugin. 0.29.0 loads the HF processor at
+startup, which forced the qwen3.8 conf revision to the mlx-community
+Hub fix 10c35caa (processor_config.json only, identical weights); the
+uncensored orcarouter profile, which failed the same load with no Hub
+fix available, was removed from the fleet. Nemotron-H serves for the
+first time (see its conf).
+
 ## Runtime state
 
 Pidfile and log live in `~/.local/state/vllm-metal/` and are scoped to one
