@@ -107,7 +107,7 @@ proves nothing about parser compatibility.
 ### Apple M5 Max
 
 - vLLM-Metal: `qwen3.6-35b-a3b-4bit`, `qwen3.8-27b-4bit`,
-  `gemma4-31b-4bit`, `qwen3.8-27b-uncensored-4bit`,
+  `gemma4-31b-4bit`,
   `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit`
 - vLLM-Metal, not runnable: `nemotron-3.5-lightning-30b-4bit` (plugin bug
   at first forward; see the model config's retest condition)
@@ -160,7 +160,6 @@ model produces when the schema is stated in words instead of a grammar.
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM-Metal | `qwen3.8-27b-uncensored-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
@@ -240,10 +239,6 @@ model produces when the schema is stated in words instead of a grammar.
   known runtime defect -- HTTP 500 on cap-truncated tool calls --
   still sits outside the capability checks, which never truncate a call
   on either path.
-- `qwen3.8-27b-uncensored-4bit` passes on its 512k YaRN serving default
-  with identity by pinned HF revision. Capability proves response
-  semantics only: the abliteration behavior of the checkpoint is
-  deliberately not assessed by this gate.
 - The Ollama MLX runner on the 0.32.14 fleet pin accepts a JSON schema in
   `format` and returns unconstrained prose: all five rows at that pin fail
   the enforcement gate as `ignored`, while the llama.cpp runner enforces
