@@ -188,6 +188,32 @@ class SplashTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             capability.control("enable-thinking-false")
 
+    def test_benchmark_supplies_multimessage_chat_transport_to_shared_profiles(self):
+        values = runtime.config("qwen3.6-35b-a3b")
+        owner = {"command": ["splash"], "context": 262144, "release": {}}
+        status = {"maximum_context_tokens": 262144,
+                  "memory_plan": {"budget": {"maximum_batch_width": 4}}}
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = b'{"choices": []}'
+        messages = [{"role": "user", "content": "Read the file"},
+                    {"role": "tool", "tool_call_id": "call_1", "content": "evidence"}]
+        tools = [{"type": "function", "function": {"name": "read_file"}}]
+        with mock.patch.object(sys, "argv", ["bench.py", "qwen3.6-35b-a3b"]), \
+                mock.patch.object(bench, "evidence", return_value=(
+                    values, owner, "http://127.0.0.1:8022", status, {})), \
+                mock.patch.object(bench, "capacity", return_value=(4, 4358144)), \
+                mock.patch.object(bench, "run_benchmark") as run, \
+                mock.patch.object(urllib.request, "urlopen", return_value=response) as request:
+            bench.main()
+            chat = run.call_args.kwargs["openai_chat"]
+            chat(messages, tools, 16384)
+            wire = request.call_args.args[0]
+            self.assertEqual(wire.full_url, "http://127.0.0.1:8022/v1/chat/completions")
+            payload = json.loads(wire.data)
+            self.assertEqual(payload["messages"], messages)
+            self.assertEqual(payload["tools"], tools)
+            self.assertEqual(payload["max_tokens"], 16384)
+
 
 if __name__ == "__main__":
     unittest.main()

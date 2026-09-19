@@ -6,7 +6,7 @@ from pathlib import Path
 import shlex
 import sys
 
-from audit_bench import OpenAIChatAdapter, Settings, run_benchmark
+from audit_bench import OpenAIChatAdapter, Settings, openai_chat_fn, run_benchmark
 import runtime
 
 
@@ -55,13 +55,16 @@ def main():
     values, owner, base, status, identity = evidence(tag)
     slots, pool = capacity(status)
     settings = Settings.from_env()
+    timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     return run_benchmark(
         runtime="splash", tag=tag, model=values["SPLASH_MODEL_REPO"],
         context=status["maximum_context_tokens"], active_slots=slots, kv_pool_tokens=pool,
-        request=OpenAIChatAdapter(base, values["SPLASH_MODEL_REPO"],
-                                  int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200")),
+        request=OpenAIChatAdapter(base, values["SPLASH_MODEL_REPO"], timeout,
                                   reasoning_effort=settings.reasoning_effort,
                                   system_prompt=settings.system_prompt),
+        openai_chat=openai_chat_fn(f"{base}/v1", values["SPLASH_MODEL_REPO"], timeout,
+                                   reasoning_effort=settings.reasoning_effort,
+                                   system_prompt=settings.system_prompt),
         runtime_metadata={
             "model_identity": identity,
             "runtime_profile": {
