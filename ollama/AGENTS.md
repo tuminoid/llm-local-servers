@@ -90,18 +90,19 @@ in [README.md](README.md); shared server conventions live in
   profile (UD-IQ4_XS, 73 GB VRAM at 2 x 262,144 with q8_0 KV, locked to
   that shape -- llama.cpp has no fungible KV pool, so slots divide the
   context partition statically). Remote lifecycle calls must pass
-  `OLLAMA_VERSION=0.33.3` at the make level: the remote fixed environment
+  `OLLAMA_VERSION=0.34.2` at the make level: the remote fixed environment
   resolves `OLLAMA_BIN` before the conf's `OLLAMA_RUNTIME_VERSION` can
   apply; a forgotten override fails loudly at the min-version check.
 - `qwen3.8-flash-next-gguf` runs a split managed runtime: its conf declares
-  `OLLAMA_RUNTIME_VERSION=0.33.3` (vendored llama.cpp b10760, the first
-  qwen4exp-capable pin) which start.sh applies after the conf, while every
-  other profile stays on the fleet default. The split is safe because GGUF
-  manifests never dispatch to the MLX runner whose memory runaway keeps the
-  default at 0.32.14. The artifact is a LOCAL `ollama create` import, not a
-  registry pull -- pull.sh refuses profiles with `OLLAMA_LOCAL_IMPORT=1` --
-  and its import recipe (real-file staging dir, mandatory `use_mmap false`,
-  orphaned shard-upload blob cleanup) lives in the conf comments. Serving
+  `OLLAMA_RUNTIME_VERSION=0.34.2` (the GGUF runtime; qwen4exp needs
+  llama.cpp >= b10760) which start.sh applies after the conf, as do the
+  qwen3.8-27b profiles; the other profiles stay on the fleet default. The
+  split is safe because GGUF manifests never dispatch to the MLX runner
+  whose memory runaway keeps the default at 0.32.14. The artifact is a
+  LOCAL `ollama create` import, not a registry pull -- pull.sh refuses
+  profiles with `OLLAMA_LOCAL_IMPORT=1` -- and its import recipe (real-file
+  staging dir, mandatory `use_mmap false`, orphaned shard-upload blob
+  cleanup) lives in the conf comments. Serving
   default is two full 262,144 slots with q8_0 KV, gated by needle-exact
   retrieval at 131k/246k at f16 rate parity; qwen4exp has no one-slot
   architecture guard and two-slot decode batching is real, but cold deep
