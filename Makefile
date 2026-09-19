@@ -104,34 +104,30 @@ VLLM_METAL_VLLM_VERSION ?= 0.29.0
 VLLM_METAL_VLLM_WHEEL_SHA256 ?= 7133cb494664c502b07b114fe915847f0e71296d502f67f6fa76172ba46978df
 
 OLLAMA_DIR := ollama
-# qwen3.8:27b requires Ollama 0.32.12 or newer. Keep a reviewed release and
-# its per-platform checksums together; ollama-install refuses an unverified
-# archive. Digests come from the release's sha256sum.txt asset:
-# OLLAMA_ARCHIVE_SHA256 is ollama-linux-amd64.tar.zst (the A100 remote host),
-# _LINUX_ARM64 is ollama-linux-arm64.tar.zst, and _DARWIN is the universal
-# ollama-darwin.tgz used for the local Apple Silicon install.
-# A 0.33.2 trial was run and rejected: on the Apple MLX runner its
-# prefix-cache changes turn the qwen3.8 NVFP4 consecutive-deep-conversation
-# failure from a graceful HTTP 500 into an unbounded memory runaway at the
-# 184,320 operating point (watchdog-killed at 56 MiB free; the 131,072
-# points stayed bounded). CUDA-side 0.33.2 was clean. Evidence in
-# ollama/BENCHMARKS.md. 0.33.3 (2026-09-04) reproduced it one order of
-# magnitude faster, and 0.34.2 (2026-09-18) moved it inside the FIRST
-# conversation (~148k resident, ~34 GiB in ~1.5 s) and hard-reset the
-# host past the armed watchdog. Retest only on a release whose notes
-# name the MLX runner's post-prefill commit or trie memory bound.
+# Two managed Ollama runtimes, both reviewed releases with per-platform
+# archive digests from the release's sha256sum.txt (OLLAMA_ARCHIVE_SHA256 is
+# ollama-linux-amd64.tar.zst for the A100, _LINUX_ARM64 the arm64 build,
+# _DARWIN the universal ollama-darwin.tgz); ollama-install refuses an
+# unverified archive.
+# Default 0.32.14: the only release whose MLX runner survives the
+# post-prefill commit memory runaway on safetensors profiles (0.33.2,
+# 0.33.3 and 0.34.2 each fail harder; 0.34.2 hard-reset the M5 inside the
+# first conversation). Retest only on a release whose notes name the MLX
+# runner's post-prefill commit or trie memory bound.
 OLLAMA_VERSION ?= 0.32.14
 OLLAMA_ARCHIVE_SHA256 ?= c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f
 OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 7802b739fbdc74df556600f1619f86457b69dce913301cf2d91f7f9d7f7a41b8
 OLLAMA_ARCHIVE_SHA256_DARWIN ?= c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3500366942dc50cd1
-# Secondary managed runtime for the qwen3.8-flash-next-gguf profile, which
-# needs the qwen4exp-capable llama.cpp (b10760) in 0.33.3 and dispatches to
-# the llama.cpp runner only -- the MLX-runner runaway behind the 0.32.14
-# default does not reach GGUF profiles. The profile selects it per start via
-# OLLAMA_RUNTIME_VERSION in its conf. Reviewed v0.33.3 digests; install with
-#   make ollama-install OLLAMA_VERSION=0.33.3 \
-#     OLLAMA_ARCHIVE_SHA256_DARWIN=342db03df80bb9db84ff64246031bd5f70c09b59ff52fa5cc9aaae3476cc4a9d \
-#     OLLAMA_ARCHIVE_SHA256=c13cea8f3389db4145f8a6cb88d1747242a48639d7c13e3bda7c1ebdc6eebb2f
+# GGUF runtime 0.34.2 (llama.cpp b10969), selected per profile through
+# OLLAMA_RUNTIME_VERSION in the conf; GGUF never dispatches to the MLX
+# runner. Profiles on it: qwen3.8-27b, qwen3.8-27b-native, both flash-next
+# GGUF confs. Not qwen3.6-35b-a3b or qwen3-coder-30b (protocol regressions
+# at 0.34.2: coder emits duplicate streaming tool calls, qwen3.6 drops out
+# of the conversation profile). Install with
+#   make ollama-install OLLAMA_VERSION=0.34.2 \
+#     OLLAMA_ARCHIVE_SHA256_DARWIN=f33b2a5aa59bc6c961ed3ec23ba9dc646ca6d99ced8d2a0d46eb3a522167dd3f \
+#     OLLAMA_ARCHIVE_SHA256=e155b83589986d2c581fdbf1381ea3ebdb16549883679cd5a0627f7cdc05b12b \
+#     OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=8edcfe99eb7546d9422cfa8297d341dcd50e090e192ce1a8092a6ab6d182867b
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0
