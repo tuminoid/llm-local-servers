@@ -275,17 +275,22 @@ the retired cache-off default measured 4.1 conv/h.
 
 ### qwen3.8 DFlash 2 replay leg
 
-The speculative profile replayed the same fixture on vLLM 0.28.0:
-16.26 replays/hour median, but as with every qwen3.8 replay the median
-rides on mixed verdict lengths (one sample filled the 16,384 cap, two
-ignored the never-conclude control at 1.1-3.0k tokens), so compare the
-server-comparable columns instead: turn walls 12.7 s cold then flat to
-8.4 s (plain APC: 12.8 then 4.3-7.4 s), cached 0.890, and verdict
-decode at ~164k depth of 30.5 tok/s -- statistically the same as the
-plain profile's ~29.5. Both confirm the operating-point section's depth
-finding: speculation is neutral-to-slightly-negative at full audit
-depth, and the DFlash 2 conversation win comes from the shallow-to-mid
-turns, not the verdict.
+Same fixture as the plain profile. Replays/hour rides on mixed verdict
+lengths (some samples fill the 16,384 cap, others stop at 1.1-3.0k), so
+compare the server-side columns.
+
+| vLLM | Profile | Turn walls | Cached | Verdict decode at ~164k |
+| -- | -- | -- | --: | --: |
+| 0.28.0 canonical | plain APC | 12.8 s cold, 4.3-7.4 s | 0.890 | ~29.5 tok/s |
+| 0.28.0 canonical | dflash2 | 12.7 s cold, 8.4 s | 0.890 | 30.5 tok/s |
+| 0.29.0 trial venv | plain APC | 13.1 s cold, 7.6 s | 0.90 | 32.1 tok/s |
+| 0.29.0 trial venv | dflash2 | 12.8 s cold, 8.5 s | 0.89 | 46.7 tok/s |
+
+On 0.28.0 speculation was depth-neutral; on the current 0.29.0 pin it holds
+1.46x at full depth (three samples per leg). 0.29.0 decode-profile medians
+at 1/2/4/8 streams: plain 48.9/93.9/181.9/345.0, dflash2
+123.7/233.0/418.3/615.8 tok/s (0.28.0 canonical: 48.6/93.4/180.9/343.5 and
+114.5/221.0/404.0/602.0).
 
 ### First GLM serving data, and the qwen3.6 anchor
 
