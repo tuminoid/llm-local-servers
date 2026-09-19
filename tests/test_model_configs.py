@@ -23,6 +23,16 @@ class ModelConfigInventoryTest(unittest.TestCase):
     def test_every_model_declares_capability_expectations(self):
         inventories = (
             (
+                REPO_DIR / "splash" / "models",
+                (
+                    "SPLASH_CAP_REASONING",
+                    "SPLASH_CAP_TOOLS",
+                    "SPLASH_CAP_REASONING_MODE",
+                    "SPLASH_CAP_DISABLE_MODE",
+                    "SPLASH_CAP_SYSTEM_PROMPT",
+                ),
+            ),
+            (
                 REPO_DIR / "vllm" / "models",
                 (
                     "VLLM_CAP_REASONING",

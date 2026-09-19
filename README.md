@@ -1,7 +1,7 @@
 # llm-local-servers
 
-Measured, Makefile-driven local LLM serving. Three managed runtimes --
-vLLM (CUDA), Ollama, and vLLM-Metal (Apple Silicon) -- with one portable
+Measured, Makefile-driven local LLM serving. Four managed runtimes --
+vLLM (CUDA), Ollama, vLLM-Metal and Splash (Apple Silicon) -- with one portable
 config per model, host-adaptive launchers, isolated remote-host
 operation, and the retained benchmark and capability results for every
 host in the fleet. The workload everything is tuned for is deep-context
@@ -27,8 +27,9 @@ adapters, model configs, and results.
 3. Install the runtime you intend to serve with; prerequisites and
    host-tuning rationale are per runtime in
    [vllm/README.md](vllm/README.md),
-   [ollama/README.md](ollama/README.md), and
-   [vllm-metal/README.md](vllm-metal/README.md).
+   [ollama/README.md](ollama/README.md),
+   [vllm-metal/README.md](vllm-metal/README.md), and
+   [splash/README.md](splash/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
 newer for `make lint` and `make test`.
@@ -47,8 +48,9 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-bench MODEL=<name>` | Run AuditBench v1 |
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v1 |
 
-where `<runtime>` is `vllm`, `ollama`, or `vllm-metal` (plus
-`ollama-install`, `vllm-metal-install`, and `vllm-metal-pull` for
+where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, or `splash` (plus
+`ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,
+`splash-install`, and `splash-pull` for
 runtime and model installation). `MODEL` names a config file in that
 runtime's `models/` directory, never a served model ID or registry tag;
 there is deliberately no default model.
@@ -67,8 +69,9 @@ through `make vllm-remote-tunnel` (localhost:8001) or
 ## Measured overview
 
 Canonical AuditBench v1 medians copied from [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md), and
-[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md), which hold the
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
+[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md), and
+[splash/BENCHMARKS.md](splash/BENCHMARKS.md), which hold the
 evidence, ranges, caveats, replay results, and history; nothing here is
 derived. Capability pass/fail is in [CAPABILITIES.md](CAPABILITIES.md).
 Prefill and decode are aggregate tok/s, audit columns are calls/hour,
@@ -156,9 +159,16 @@ MLX rows: managed official Ollama 0.32.14, MLX runner on
 requests to one slot. The flash-next row runs the llama.cpp runner on
 the split 0.33.3 managed runtime with two real slots and q8 KV.
 vLLM-Metal rows: pinned plugin venv 0.28.0, paged KV, NAX prefill.
+Splash rows: release 1.0 on macOS 27.0, 64 GiB native memory cap,
+four active slots, DFlash 2 and prefix/state caching. Its KV column is
+sparse virtual capacity, not committed memory. Splash full-run numbers
+are canonical trial measurements with `publishable: false`; the new
+managed adapter has separate integration checks.
 
 | Runtime | Model or profile | Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h |
 | -- | -- | --: | --: | --: | --: | --: | --: | --: |
+| Splash | `qwen3.6-35b-a3b`, 64 GiB, 4 slots | 262,144 | 4,415,488 virtual | 4,663 / 3,334 / 2,242 | 299.5 / 374.8 / 512.6 | 375.7 @4x | 58.7 | 23.3 @1x |
+| Splash | `qwen3.8-27b`, 64 GiB, 4 slots | 262,144 | 1,474,560 virtual | 778 / 686 / 561 | 67.0 / 119.3 / 151.5 | 65.7 @4x | 14.1 | 6.6 @1x |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
 | vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
 | Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |

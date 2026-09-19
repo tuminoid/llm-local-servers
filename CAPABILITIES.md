@@ -43,6 +43,10 @@ make ollama-stop
 make vllm-metal-start MODEL=<profile>
 make vllm-metal-capability MODEL=<profile>
 make vllm-metal-stop
+
+make splash-start MODEL=<profile>
+make splash-capability MODEL=<profile>
+make splash-stop
 ```
 
 Remote lifecycle:
@@ -106,6 +110,7 @@ proves nothing about parser compatibility.
 
 ### Apple M5 Max
 
+- Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`
 - vLLM-Metal: `qwen3.6-35b-a3b-4bit`, `qwen3.8-27b-4bit`,
   `gemma4-31b-4bit`,
   `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit`
@@ -140,13 +145,15 @@ proves nothing about parser compatibility.
 ## Apple M5 Max campaign
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
-26.6.2. Initial run date: 2026-08-25; every row below re-run in full on
+26.6.2. Initial run date: 2026-08-25; the original inventory re-run in full on
 2026-09-06 at protocol SCHEMA_VERSION 4, which moved both tool-call
 fixtures to automatic tool choice and added the streamed tool call. Two
 rows are dated 2026-09-07: Muse Glimmer, whose 2026-09-06 run refused on
 identity drift and whose reviewed replacement digest was checked the next
 day, and `qwen3.8-flash-next-mlx-nvfp4`, which owed a record and runs on
 the split 0.33.3 runtime rather than the 0.32.14 fleet pin.
+Splash rows were added on 2026-09-19 with release 1.0 on macOS 27.0;
+the managed adapters use the current checker, including schema enforcement.
 
 Every passing row verified live model identity against the config's pinned
 revision or digest, streamed reasoning separation, one exact structured tool
@@ -158,6 +165,8 @@ model produces when the schema is stated in words instead of a grammar.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
@@ -172,6 +181,20 @@ model produces when the schema is stated in words instead of a grammar.
 | Ollama MLX 0.33.3 | `qwen3.8-flash-next-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 
 ### Findings
+
+Splash 1.0, 2026-09-19: both pinned packages passed all eight checks
+through the managed uv entry points at 262,144 configured context and
+a 64 GiB memory cap. Qwen3.8 also exercised authenticated HTTP transport.
+The thinking-disable control is top-level `reasoning_effort: "none"`;
+the default remains thinking enabled. These are short API fixtures.
+Deep-context capacity is established separately by the retained full
+[AuditBench runs](splash/BENCHMARKS.md), not by the capability gate.
+JSON reports under `~/.local/state/capability-check/`:
+
+```text
+20260919T193355.354675+0000_splash_qwen3-6-35b-a3b.json
+20260919T192742.892922+0000_splash_qwen3-8-27b.json
+```
 
 - Every vLLM-Metal and Ollama profile that reached inference passes both
   tool-call checks under automatic tool choice, so the plugin's and both

@@ -1,0 +1,106 @@
+# Splash on Apple Silicon
+
+Managed [Splash](https://github.com/incoai/splash) 1.0, with Q4 packed
+targets, bundled DFlash 2 drafts, sparse Q8 KV storage and prefix/state
+caching. These defaults serve repeated deep agent requests; the measured
+262K operating points are in [BENCHMARKS.md](BENCHMARKS.md).
+
+## Install and run
+
+Requires `uv`, Apple Silicon M3 or newer and macOS 26.4 or newer. Upstream
+requires at least 36 GB unified memory and recommends 48 GB or more;
+our four-stream 262K measurements used an M5 Max with 128 GB. Smaller
+machines need their own capacity proof.
+
+Run every command from the repository root:
+
+```bash
+make splash-install
+make splash-pull MODEL=qwen3.6-35b-a3b
+make splash-start MODEL=qwen3.6-35b-a3b
+make splash-status
+make splash-capability MODEL=qwen3.6-35b-a3b
+make splash-bench MODEL=qwen3.6-35b-a3b
+make splash-stop
+make splash-status
+```
+
+The other profile is `qwen3.8-27b`. There is no default model. Stop before
+pulling another model or installing a runtime. `make splash-logs` follows
+the current log. A guard Makefile rejects commands from this directory.
+
+The installer verifies the release archive's SHA-256 and extracts the
+standalone runtime into `~/.local/share/splash/runtime/1.0`. It owns no
+Homebrew installation. `uv run` executes the repository's adapters using
+the release's bundled interpreter and dependency set; installation,
+status and teardown use uv-selected Python 3.12. The detached child uses
+`uv python find` then `exec` so its PID remains the session leader.
+
+Pull selects the exact Hugging Face revision in the model config, reuses
+the HF cache, verifies the pinned manifest and every artifact hash, and
+links the snapshot under `~/.local/share/splash/models/`. Startup never
+downloads or follows `main`. Both packed weights and tokenizer files are
+verified again before launch and measurement. The upstream layout hashes
+reported by `/status` are checked separately: they identify headers and
+geometry, not weight contents.
+
+## Serving settings
+
+| Setting | Default | Purpose |
+| -- | -- | -- |
+| `SPLASH_HOST` | `127.0.0.1` | Bind address; a non-loopback address requires `SPLASH_API_KEY` |
+| `SPLASH_PORT` | `8022` | Separate from Ollama and vLLM-Metal |
+| `SPLASH_MAX_MEMORY` | `64G` | Native engine memory ceiling, including weights, KV and cached states |
+| `SPLASH_REQUEST_TIMEOUT` | `7200` | Allows the dense model's four-way deep prefills to complete |
+| `SPLASH_START_TIMEOUT` | `600` | Readiness deadline in seconds |
+| `SPLASH_DATA_DIR` | XDG data root + `/splash` | Versioned runtime and model links |
+| `SPLASH_STATE_DIR` | XDG state root + `/splash` | Managed pidfile and current log |
+
+Host settings can be exported or prefixed to `make`. Model facts live in
+`models/<name>.conf`: immutable repository revision and manifest digest,
+262,144-token context, and capability expectations. `SPLASH_MODEL_CONF`
+can select an alternate config file. Environment values override config
+defaults. Carry `SPLASH_API_KEY` into status, benchmark and capability
+commands when authentication is enabled; the key is never put in argv
+or retained metadata.
+
+Splash itself clamps the requested memory ceiling to Metal's recommended
+working set minus its safety margin. It also guards allocations against
+host memory pressure. A configured 262K context is a per-request limit,
+not a claim that every machine can admit four such requests.
+
+The native maximum decode width is four. Larger client queues can wait,
+but they cannot create more active lanes in this release. The adapter
+reads the live memory plan and conservatively bounds sparse virtual KV
+by physical dynamic memory after reserving active state cells. Retained
+cache states share that memory and may evict. AuditBench admits only
+stream counts that fit both scheduler width and this capacity bound.
+
+## Agent API and measurement
+
+The OpenAI-compatible endpoint is `http://127.0.0.1:8022/v1`. Thinking is
+enabled by default; top-level `reasoning_effort: "none"` disables it.
+The capability adapter preserves this wire format rather than sending
+vLLM's nested `chat_template_kwargs` option. See the measured reasoning,
+tool-call, streaming, JSON and schema results in
+[CAPABILITIES.md](../CAPABILITIES.md).
+
+Benchmark and capability fixtures come only from `llm-audit-bench`.
+`make splash-bench` defaults to the full canonical protocol and preserves
+the model's default thinking behavior, matching the retained full runs.
+An explicit `AUDIT_BENCH_REASONING_EFFORT=none` control is recorded in
+the result and changes the operating point.
+All shared profiles remain available through `AUDIT_BENCH_PROFILE`.
+For a decode diagnostic and the existing laptop power gate:
+
+```bash
+AUDIT_BENCH_GATE_CMD=vllm-metal/battery-gate.sh \
+  make splash-bench MODEL=qwen3.6-35b-a3b AUDIT_BENCH_PROFILE=decode
+```
+
+The decode profile is non-canonical. Full trial results retain their
+original provenance; integration diagnostics do not replace them.
+Default JSON retention is `~/.local/state/auditbench/` and
+`~/.local/state/capability-check/`. Normal teardown confirms the process
+group is empty and the port is released, then removes the pidfile and
+log. Failed starts/stops retain diagnostic logs.

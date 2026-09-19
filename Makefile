@@ -13,6 +13,8 @@
 .PHONY: vllm-metal-model-check vllm-metal-install vllm-metal-pull
 .PHONY: vllm-metal-start vllm-metal-stop vllm-metal-status vllm-metal-logs
 .PHONY: vllm-metal-bench vllm-metal-capability
+.PHONY: splash-model-check splash-install splash-pull splash-start splash-stop
+.PHONY: splash-status splash-logs splash-bench splash-capability
 
 # Every target here is phony, so GNU Make's built-in rules can only do harm.
 # Left on, a mistyped target matches the built-in `%: %.sh` rule and silently
@@ -103,6 +105,12 @@ VLLM_METAL_WHEEL_SHA256 ?= 0d03dcc2be9a4286a19c5e53e1355d2e47acdbf2be6f9de9cbb48
 VLLM_METAL_VLLM_VERSION ?= 0.29.0
 VLLM_METAL_VLLM_WHEEL_SHA256 ?= 7133cb494664c502b07b114fe915847f0e71296d502f67f6fa76172ba46978df
 
+SPLASH_DIR := splash
+SPLASH_VERSION ?= 1.0
+SPLASH_ARCHIVE_SHA256 ?= dc752f0aab8419c46fe2803a0e7059c1515e5df48def11b9d517bbbf1fb2dddc
+export SPLASH_VERSION SPLASH_ARCHIVE_SHA256
+SPLASH_MODEL_CONF ?= $(SPLASH_DIR)/models/$(MODEL).conf
+
 OLLAMA_DIR := ollama
 # Two managed Ollama runtimes, both reviewed releases with per-platform
 # archive digests from the release's sha256sum.txt (OLLAMA_ARCHIVE_SHA256 is
@@ -181,6 +189,17 @@ help:
 	@echo "  make vllm-metal-capability - Check reasoning, tools, and structured output"
 	@echo "  make vllm-metal-stop    - Stop and verify process-group release"
 	@echo ""
+	@echo "  Splash on Apple Silicon M3+ (port 8022, needs MODEL=<name>):"
+	@echo "  make splash-install    - Install the checksum-pinned standalone runtime"
+	@echo "  make splash-pull       - Verify and link the model's pinned HF snapshot"
+	@echo "  make splash-start      - Start detached with DFlash 2 and caching"
+	@echo "  make splash-status     - Show identity, context, sparse KV and memory plan"
+	@echo "  make splash-logs       - Follow the server log"
+	@echo "  make splash-bench      - Run AuditBench v1"
+	@echo "  make splash-capability - Check reasoning, tools, and structured output"
+	@echo "  make splash-stop       - Stop and verify process-group and port release"
+	@echo "  Models: $(patsubst $(SPLASH_DIR)/models/%.conf,%,$(wildcard $(SPLASH_DIR)/models/*.conf))"
+	@echo ""
 	@echo "  Remote vLLM host (HOST=<ssh-host> required, needs MODEL=<name>):"
 	@echo "  make vllm-remote-bootstrap - Create the remote venv and install vllm"
 	@echo "  make vllm-remote-start     - Start on the remote host (syncs scripts first)"
@@ -236,7 +255,7 @@ markdownlint:
 	markdownlint-cli2
 
 pycompile:
-	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) tests
+	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) tests
 
 # --- Test ---
 
@@ -549,6 +568,40 @@ vllm-metal-bench: vllm-metal-model-check audit-bench-check
 vllm-metal-capability: vllm-metal-model-check audit-bench-check
 	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		python3 ./$(VLLM_METAL_DIR)/capability.py $(MODEL)
+
+# --- Splash (Apple Silicon M3+) ---
+
+splash-model-check:
+	@test -n "$(MODEL)" -a -f "$(SPLASH_MODEL_CONF)" || { \
+		echo "error: set MODEL to a Splash config name:" >&2; \
+		echo "  $(patsubst $(SPLASH_DIR)/models/%.conf,%,$(wildcard $(SPLASH_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+
+splash-install:
+	@./$(SPLASH_DIR)/install.sh
+
+splash-pull: splash-model-check
+	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" ./$(SPLASH_DIR)/pull.sh $(MODEL)
+
+splash-start: splash-model-check
+	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" ./$(SPLASH_DIR)/run.sh $(MODEL)
+
+splash-stop:
+	@./$(SPLASH_DIR)/stop.sh
+
+splash-status:
+	@./$(SPLASH_DIR)/status.sh
+
+splash-logs:
+	@tail -f "$${SPLASH_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/splash}/server.log"
+
+splash-bench: splash-model-check audit-bench-check
+	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" $(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source splash/lib.sh; exec uv run --no-project --python "$${SPLASH_RUNTIME}/python/bin/python3" splash/bench.py "$$1"' bash $(MODEL)
+
+splash-capability: splash-model-check audit-bench-check
+	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source splash/lib.sh; exec uv run --no-project --python "$${SPLASH_RUNTIME}/python/bin/python3" splash/capability.py "$$1"' bash $(MODEL)
 
 # --- Remote vLLM host ---
 #

@@ -54,6 +54,7 @@ What this means in practice:
 | `ollama/` | Ollama native and OpenAI-compatible server | Local lifecycle plus isolated `ollama-remote-*` targets |
 | `vllm/` | vLLM OpenAI-compatible server | Local lifecycle, benchmark and capability targets, plus `vllm-remote-*` |
 | `vllm-metal/` | vLLM-Metal plugin server on Apple Silicon | `vllm-metal-{install,pull,start,stop,status,logs,bench,capability}` |
+| `splash/` | Splash native Metal server on Apple Silicon M3+ | `splash-{install,pull,start,stop,status,logs,bench,capability}` |
 
 [README.md](README.md) is the front page and the cross-runtime, host-oriented
 executive summary of measured results. The per-runtime `BENCHMARKS.md` files
@@ -248,7 +249,8 @@ Do not remove that distinction: exploratory or dirty runs remain useful
 evidence without becoming publication artifacts.
 
 The overview tables in `README.md` are derived from `vllm/BENCHMARKS.md`,
-`ollama/BENCHMARKS.md`, and `vllm-metal/BENCHMARKS.md`. Update the matching
+`ollama/BENCHMARKS.md`, `vllm-metal/BENCHMARKS.md`, and
+`splash/BENCHMARKS.md`. Update the matching
 host overview whenever a benchmark source changes a model, context, memory
 allocation, KV pool, active slots, or canonical metric.
 
