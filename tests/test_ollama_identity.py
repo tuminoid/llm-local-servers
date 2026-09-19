@@ -193,6 +193,24 @@ class OllamaIdentityTest(unittest.TestCase):
             expectations = OLLAMA_BENCH._identity_expectations(conf)
         self.assertEqual(expectations["digest"], "f" * 64)
 
+    def test_unknown_live_quantization_requires_matching_digest(self):
+        loaded = {
+            "name": "demo:latest", "digest": "a" * 64,
+            "details": {"format": "gguf", "quantization_level": "unknown"},
+        }
+        identity = {"digest": "a" * 64, "format": "gguf", "quantization": "Q6_K"}
+        with mock.patch.object(OLLAMA_BENCH, "_request",
+                               return_value={"models": [loaded]}):
+            result = OLLAMA_BENCH._residency("demo", identity)
+            self.assertEqual(result["digest"], identity["digest"])
+            loaded["digest"] = "b" * 64
+            with self.assertRaisesRegex(RuntimeError, "loaded model digest"):
+                OLLAMA_BENCH._residency("demo", identity)
+            loaded["digest"] = identity["digest"]
+            loaded["details"]["quantization_level"] = "Q4_K_M"
+            with self.assertRaisesRegex(RuntimeError, "loaded model quantization"):
+                OLLAMA_BENCH._residency("demo", identity)
+
     def test_runtime_profile_comes_from_managed_log(self):
         with tempfile.TemporaryDirectory() as directory:
             log = pathlib.Path(directory) / "server.log"

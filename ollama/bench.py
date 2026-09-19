@@ -344,6 +344,12 @@ def _residency(model: str, identity: dict) -> dict:
     ):
         expected = identity.get(field)
         actual = live_details.get(detail)
+        # HF manifests can leave the file-type field used by /api/ps as
+        # "unknown" even when /api/show parsed the GGUF quantization.
+        # The exact loaded digest was checked above; this sentinel adds no
+        # conflicting evidence. A named, different quantization still fails.
+        if field == "quantization" and actual == "unknown":
+            actual = None
         if expected and actual and actual != expected:
             raise RuntimeError(
                 f"loaded model {field} is {actual}, installed identity is {expected}"
