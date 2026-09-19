@@ -155,6 +155,13 @@ class SplashTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "unrecognized"):
                 runtime.owned_group(owner)
 
+    def test_exiting_group_permission_error_does_not_imply_resource_release(self):
+        with mock.patch.object(runtime.os, "killpg", side_effect=[
+                None, PermissionError(1, "Operation not permitted"), ProcessLookupError()]):
+            self.assertTrue(runtime.group_alive(123))
+            self.assertTrue(runtime.group_alive(123))
+            self.assertFalse(runtime.group_alive(123))
+
     def test_sparse_virtual_kv_cannot_overstate_physical_admission(self):
         # Four cells need 400 B. The remaining 624 B fit three 200 B
         # extents, regardless of the much larger virtual address space.

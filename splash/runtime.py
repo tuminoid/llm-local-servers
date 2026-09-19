@@ -254,6 +254,10 @@ def group_alive(pid):
         os.killpg(pid, 0)
     except ProcessLookupError:
         return False
+    except PermissionError:
+        # macOS can reject signals while a native worker is exiting.
+        # EPERM still means the group exists; keep waiting for release.
+        return True
     return True
 
 

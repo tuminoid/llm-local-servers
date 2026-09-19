@@ -35,7 +35,9 @@ or reimplement benchmark workloads.
   concurrent mutation. Existing managed state blocks start/install/pull;
   stop validates PID start time and process-group ownership before
   signaling. Wait for transient zombies to disappear before declaring
-  the group empty. Confirm port release too. Keep failure evidence.
+  the group empty. macOS can return EPERM during native-worker exit;
+  this means the group still exists, so keep waiting. Confirm port
+  release too. Keep failure evidence.
   The foreground child waits on its parent's stdin gate until its
   ownership record is saved; direct `start.sh` use must fail.
 - Bind loopback by default. Non-loopback requires an API key; pass it
