@@ -92,23 +92,16 @@ CAPABILITY_ENV = CAPABILITY_TIMEOUT=$(CAPABILITY_TIMEOUT) \
 	CAPABILITY_OUTPUT_DIR=$(CAPABILITY_OUTPUT_DIR)
 
 VLLM_METAL_DIR := vllm-metal
-# vLLM-Metal runs on Apple Silicon only. 0.28.0 is the first stable plugin
-# release: upstream renumbered the plugin after its vLLM core version and
-# deleted the v0.3.0.dev* release channel, which is what forced this bump
-# (the previous dev20260826100011 pin's asset now 404s). Stable 0.28.0
-# carries everything that pin was chosen for: PR #634 (in-place align-state
-# updates: fixes the APC decode decay) and NAX prefill, previously dev-only
-# (PR #623). The nemotron_h ssm-mask seam diagnosed at the dev pin is
-# still broken at 0.28.0 (retested 2026-09-03, identical first-forward
-# TypeError); trial evidence in vllm-metal/BENCHMARKS.md.
-# The plugin's transitive pins (mlx==0.32.0, an mlx-lm git SHA) are declared
-# by its wheel and ABI-locked to that exact MLX; the paired core is the
-# prebuilt vLLM 0.28.0 macOS arm64 wheel. Both digests match the GitHub
-# release asset digests and are verified by install.sh.
-VLLM_METAL_VERSION ?= 0.28.0
-VLLM_METAL_WHEEL_SHA256 ?= 61d7c410fe0f017b0268a306208582b23f1ac4e18e7ffd5472cf3631866d4b28
-VLLM_METAL_VLLM_VERSION ?= 0.28.0
-VLLM_METAL_VLLM_WHEEL_SHA256 ?= e8c5a3930367b740914a14420efcc3535da2c2dba5bb23d77221ff81094cc630
+# vLLM-Metal runs on Apple Silicon only. Plugin 0.29.0 paired with the
+# prebuilt vLLM 0.29.0 macOS arm64 wheel; the plugin wheel pins mlx==0.32.1
+# (ABI-locked) and an mlx-lm git SHA. Digests match the GitHub release
+# assets and are verified by install.sh. 0.29.0 loads the HF processor at
+# startup, so confs pin processor-compatible revisions. Canonical rows in
+# vllm-metal/BENCHMARKS.md are 0.28.0 measurements until re-run at this pin.
+VLLM_METAL_VERSION ?= 0.29.0
+VLLM_METAL_WHEEL_SHA256 ?= 0d03dcc2be9a4286a19c5e53e1355d2e47acdbf2be6f9de9cbb48cc4b880f393
+VLLM_METAL_VLLM_VERSION ?= 0.29.0
+VLLM_METAL_VLLM_WHEEL_SHA256 ?= 7133cb494664c502b07b114fe915847f0e71296d502f67f6fa76172ba46978df
 
 OLLAMA_DIR := ollama
 # qwen3.8:27b requires Ollama 0.32.12 or newer. Keep a reviewed release and

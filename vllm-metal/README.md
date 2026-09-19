@@ -190,8 +190,9 @@ unchanged.
 
 2026-09-18 re-gate at plugin 0.29.0 on a trial venv beside the fleet
 venv (paired core vLLM 0.29.0, MLX 0.32.1, mlx-lm 2026-08-25,
-transformers resolved to 5.17.0; the fleet pin stays 0.28.0 pending
-canonical re-runs): decode smoke flat with no per-request decay --
+transformers resolved to 5.17.0; the fleet pin is now 0.29.0 and the
+canonical rows in BENCHMARKS.md are 0.28.0 measurements until re-run):
+decode smoke flat with no per-request decay --
 qwen3.8 APC 29.2/51.8/82.2 tok/s and qwen3.6 APC 99.9/168.1/245.6 at
 1/2/4 streams, within ~3% of the 0.28.0 figures; pools 603,469 and
 1,326,140 (0.28.0: 611,156 and 1,324,084). The divergent-conversation
