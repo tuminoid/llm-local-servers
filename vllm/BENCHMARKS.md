@@ -62,11 +62,11 @@ than queued.
 ### 80 GB A100
 
 A100-SXM4-80GB (sm_80), 81,920 MiB VRAM. Canonical AuditBench v1 ran with
-three measured samples, vLLM 0.28.0, Transformers 5.15.1, and the full
-profile, at each conf's serving-default cache pin. The pin moved from
-0.27.1 (which predates DFlash 2); the re-canonicalization measured every
-plain profile within ~2% of its 0.27.1 rates, so the earlier per-phase
-analysis carries over unchanged. `qwen3.8-27b-dflash2` is the same
+three measured samples and the full profile at each conf's serving-default
+cache pin, Transformers 5.15.1: `qwen3.8-27b` and `qwen3.8-27b-dflash2` on
+vLLM 0.29.0, the other profiles on 0.28.0 (each pin move re-baselined the
+plain profiles within ~2%, so rows across pins compare).
+`qwen3.8-27b-dflash2` is the same
 weights and revision as `qwen3.8-27b` plus the pinned z-lab DFlash 2
 drafter at K=7 (see the model conf); the plain profile remains the
 control. The scheduler admitted eight sequences; each phase automatically
@@ -80,8 +80,8 @@ queued pseudo-concurrency.
 | `qwen3-coder-30b` | 262,144 | 513,152 | 1.96x | 2 x 245,762 in 289.67s |
 | `glm4.7-flash-awq` | 202,752 | 1,050,624 | 5.18x | 4 x 190,092 in 419.78s |
 | `qwen3.6-35b-a3b-awq` | 262,144 | 2,714,989 | 10.36x | 8 x 245,752 in 359.58s |
-| `qwen3.8-27b` | 262,144 | 742,613 | 2.83x | 2 x 245,748 in 325.11s |
-| `qwen3.8-27b-dflash2` | 262,144 | 498,225 | 1.90x | 2 x 245,748 in 322.29s |
+| `qwen3.8-27b` | 262,144 | 746,456 | 2.85x | 2 x 245,748 in 326.04s |
+| `qwen3.8-27b-dflash2` | 262,144 | 507,737 | 1.94x | 2 x 245,748 in 323.42s |
 | `gemma4-26b-a4b-awq` | 262,144 | 1,867,456 | 7.12x | 4 x 245,774 in 625.92s |
 
 Performance cells are median tok/s followed by `[min-max]`. Prefill generates
@@ -92,8 +92,8 @@ one token; decode generates exactly 1,024 tokens per stream.
 | `qwen3-coder-30b` | 8,551.3 [8,537.7-8,565.0] | 5,275.6 [5,264.5-5,286.8] | 3,011.2 [3,010.0-3,012.4] | 149.49 [147.80-149.51] | 268.36 [268.35-289.43] | 521.63 [521.61-521.66] | 1,019.74 [1,019.57-1,019.95] |
 | `glm4.7-flash-awq` | 7,346.1 [7,333.5-7,358.8] | 4,367.1 [4,364.1-4,370.1] | 2,546.5 [2,546.5-2,546.6] | 87.41 [87.23-87.59] | 149.80 [149.57-150.02] | 230.77 [229.98-231.56] | 365.23 [364.08-366.39] |
 | `qwen3.6-35b-a3b-awq` | 15,558.4 [15,332.8-15,783.9] | 12,293.1 [11,483.1-12,319.6] | 8,313.8 [8,190.3-8,437.2] | 147.68 [134.63-147.70] | 269.35 [268.98-274.41] | 499.95 [495.06-501.06] | 867.22 [863.03-871.66] |
-| `qwen3.8-27b` | 2,722.0 [2,713.9-2,730.1] | 2,429.2 [2,422.6-2,435.9] | 1,996.6 [1,996.1-1,997.2] | 48.63 [48.62-48.63] | 93.41 [93.41-93.41] | 180.91 [180.90-180.92] | 343.53 [343.50-343.55] |
-| `qwen3.8-27b-dflash2` | 2,721.2 [2,714.4-2,728.0] | 2,431.7 [2,426.0-2,437.4] | 2,003.8 [2,002.3-2,005.3] | 118.73 [118.59-118.87] | 216.55 [212.42-220.69] | 385.78 [380.97-390.60] | 592.04 [585.66-598.41] |
+| `qwen3.8-27b` | 2,700.3 [2,693.4-2,707.1] | 2,407.7 [2,402.0-2,413.4] | 1,978.8 [1,978.7-1,978.9] | 48.88 [48.88-48.89] | 93.90 [93.90-93.91] | 181.88 [181.87-181.89] | 344.97 [344.86-345.09] |
+| `qwen3.8-27b-dflash2` | 2,702.5 [2,702.1-2,703.0] | 2,414.6 [2,414.4-2,414.8] | 1,991.6 [1,988.6-1,994.6] | 124.16 [122.44-125.88] | 243.83 [241.10-246.56] | 404.89 [402.96-406.82] | 597.01 [596.79-597.24] |
 | `gemma4-26b-a4b-awq` | 7,603.9 [7,601.4-7,606.4] | 4,820.9 [4,819.5-4,822.3] | 2,760.6 [2,759.3-2,761.8] | 169.40 [169.30-169.50] | 320.94 [315.21-326.66] | 589.79 [589.65-589.94] | 1,072.38 [1,072.06-1,072.71] |
 
 Observed 32k/64k/128k prompt counts were respectively 32,762/65,543/131,068
@@ -109,8 +109,8 @@ half-context phases generate 1,024 tokens; deep generates 256.
 | `qwen3-coder-30b` | 283.07 [283.06-283.08] | 378.34 [378.14-378.54] | 461.41 [460.63-462.19] | 515.11 [514.73-515.49] | 61.55 [61.51-61.58] | 27.20 [27.08-27.32] | 2x: 26.73 [26.68-26.78] |
 | `glm4.7-flash-awq` | 185.50 [185.33-185.66] | 241.23 [240.73-241.73] | 311.39 [310.91-311.88] | 367.58 [367.54-367.61] | 66.04 [65.96-66.12] | 36.37 [36.29-36.46] | 4x: 37.28 [37.22-37.35] |
 | `qwen3.6-35b-a3b-awq` | 377.55 [377.08-378.35] | 580.18 [533.46-582.35] | 808.54 [808.38-812.65] | 992.75 [990.72-993.00] | 148.07 [147.82-148.32] | 84.33 [84.06-84.60] | 4x: 84.59 [84.52-84.66] |
-| `qwen3.8-27b` | 103.76 [103.62-103.91] | 147.22 [147.07-147.37] | 188.61 [188.48-188.74] | 218.66 [218.63-218.69] | 38.88 [38.88-38.89] | 23.24 [23.20-23.28] | 2x: 23.50 [23.48-23.51] |
-| `qwen3.8-27b-dflash2` | 131.67 [130.83-132.52] | 176.42 [174.64-178.20] | 215.35 [215.11-215.59] | 227.99 [227.96-228.02] | 34.77 [34.69-34.85] | 22.84 [22.82-22.85] | 2x: 22.83 [22.82-22.85] |
+| `qwen3.8-27b` | 103.80 | 147.72 | 188.50 | 218.65 | 38.94 | 23.25 | 2x: 23.49 |
+| `qwen3.8-27b-dflash2` | 132.74 | 179.58 | 217.45 | 228.51 | 35.48 | 22.82 | 2x: 22.88 |
 | `gemma4-26b-a4b-awq` | 259.69 [259.59-259.79] | 390.23 [389.56-390.91] | 512.35 [511.59-513.11] | 595.22 [594.83-595.60] | 58.53 [58.51-58.55] | 25.65 [25.60-25.69] | 4x: 26.22 [26.22-26.22] |
 
 `qwen3.6-35b-a3b-awq` is the audit workhorse: 992.75 cold-32k calls/hour,
@@ -119,20 +119,13 @@ near-full requests. Gemma is the pure decode leader at 1,072.38 tok/s, with
 Qwen Coder close behind at 1,019.74. Those decode wins do not survive the
 prompt-heavy audit phases.
 
-The DFlash 2 profile's gain is depth-dependent, and the tables above
-show both ends: 2.4x decode and +27% cold-32k calls at one stream,
-fading to +4% at eight, and turning into a 10.6% audit_half loss.
-Decomposing audit walls against the identical prefill rates puts the
-crossover at roughly 64-100k resident tokens: speculated decode runs
-67.1 tok/s with 32k resident (plain 45.2) but 26.9 with 131k resident
-(plain 38.0). A depth probe with the engine's own counters showed
-acceptance intact at depth (mean acceptance length ~3.6 at 131k, same
-as short-context), so the penalty is the speculative execution path --
-the 8-query verification pass plus drafter over a long KV costs ~4x its
-short-context self while plain single-query decode grows only ~28% --
-an implementation property of this vLLM release, worth retesting on
-core bumps. Serving guidance: DFlash 2 for conversations and
-shallow-to-mid work, the plain profile for deep single-shots.
+The DFlash 2 profile's gain is depth-dependent: 2.5x decode and +28%
+cold-32k calls at one stream, fading to +5% at eight, and a 9% audit_half
+loss where the 1,024-token generation over 131k resident KV costs more
+speculated than plain. At full audit depth the verdict decode leads 1.45x
+(replay section), so the deep single-shot penalty measured on 0.28.0 is
+confined to the mid-depth 1,024-token shape on 0.29.0. Serving guidance:
+DFlash 2 is the qwen3.8 audit profile; plain stays the control.
 
 These rankings describe serving performance only. They do not establish which
 model gives better answers.
@@ -165,8 +158,8 @@ The conversation profile (AuditBench protocol) is the production-shaped
 workload: 32k evidence, a 16-file sequential tool chain resent in full
 every turn, plain-text findings-ledger verdict at ~165k depth. All
 profiles ran at their serving-default cache pins on the finalized
-control-free fixture; the qwen3.8 rows are measured on vLLM 0.28.0, the
-rest on 0.27.1 (re-baselined rate-neutral on 0.28.0 in the full
+control-free fixture; the qwen3.8 rows are measured on vLLM 0.29.0, the
+rest on 0.27.1 (re-baselined rate-neutral on later pins in the full
 profile).
 
 ### The cache decides the workload, first
@@ -196,23 +189,23 @@ Medians over compliant samples; cached fraction from engine counters.
 | `qwen3.6-35b-a3b-awq` | APC on | yes | 85.9 | 0.898 | 16/16 |
 | `qwen3-coder-30b` | APC on | yes | 45.2 | 0.902 | 16/16 |
 | `gemma4-26b-a4b-awq` | APC on | yes | 43.8 | 0.906 | 16/16 |
-| `qwen3.8-27b-dflash2` | APC on | yes | 23.4 | 0.890 | 16/16 |
-| `qwen3.8-27b` | APC on | yes | 20.2 | 0.898 | 16/16 |
+| `qwen3.8-27b-dflash2` | APC on | yes | 23.3 | 0.890 | 16/16 |
+| `qwen3.8-27b` | APC on | yes | 21.5 | 0.899 | 16/16 |
 | `glm4.7-flash-awq` | APC on | NO | -- | 0.902 | 0/16 |
 
 Findings:
 
 - qwen3.6 at its APC serving default is the A100's audit workhorse:
   85.9 conversations/hour with perfect recall.
-- qwen3.8 at its align-APC default reaches 20.2 conversations/hour on
-  vLLM 0.28.0 (21.9 measured on 0.27.1, within that run's sample
+- qwen3.8 at its align-APC default reaches 21.5 conversations/hour
+  (samples 20.2-24.4; 20.2 on 0.28.0 and 21.9 on 0.27.1 sit inside that
   range), roughly 5x the retired cache-off default's 4.1/h (~877 s
   conversations, each re-prefilling ~1.69M tokens) and past its own
-  Ollama GGUF artifact on the same host (14.5/h through llama.cpp's
+  Ollama GGUF artifact on the same host (15.3/h through llama.cpp's
   implicit slot cache). The pin flip came from the align-APC trial in
   the replay section below.
-- The DFlash 2 profile lifts the same model to 23.4 conversations/hour
-  (+16% over plain, perfect recall on all three samples): conversation
+- The DFlash 2 profile lifts the same model to 23.3 conversations/hour
+  (+8% over plain, perfect recall on both samples): conversation
   token mass sits mostly at shallow-to-mid depth in short per-turn
   bursts, where speculation pays 1.5-2.4x, while the depth-negative
   zone (see the operating-point section) only touches the verdict
@@ -275,22 +268,18 @@ the retired cache-off default measured 4.1 conv/h.
 
 ### qwen3.8 DFlash 2 replay leg
 
-Same fixture as the plain profile. Replays/hour rides on mixed verdict
-lengths (some samples fill the 16,384 cap, others stop at 1.1-3.0k), so
-compare the server-side columns.
+Same fixture as the plain profile, vLLM 0.29.0 canonical. Replays/hour
+rides on mixed verdict lengths (some samples fill the 16,384 cap, others
+stop at 1.1-1.2k), so compare the server-side columns.
 
-| vLLM | Profile | Turn walls | Cached | Verdict decode at ~164k |
-| -- | -- | -- | --: | --: |
-| 0.28.0 canonical | plain APC | 12.8 s cold, 4.3-7.4 s | 0.890 | ~29.5 tok/s |
-| 0.28.0 canonical | dflash2 | 12.7 s cold, 8.4 s | 0.890 | 30.5 tok/s |
-| 0.29.0 trial venv | plain APC | 13.1 s cold, 7.6 s | 0.90 | 32.1 tok/s |
-| 0.29.0 trial venv | dflash2 | 12.8 s cold, 8.5 s | 0.89 | 46.7 tok/s |
+| Profile | Replays/h | Turn walls | Cached | Verdict decode at ~164k |
+| -- | --: | -- | --: | --: |
+| plain APC | 25.5 | 13.1 s cold, 4.4 -> 7.6 s | 0.899 | 30.1 tok/s |
+| dflash2 | 8.4 | 12.7 s cold, 4.8 -> 8.5 s | 0.890 | 43.6 tok/s |
 
-On 0.28.0 speculation was depth-neutral; on the current 0.29.0 pin it holds
-1.46x at full depth (three samples per leg). 0.29.0 decode-profile medians
-at 1/2/4/8 streams: plain 48.9/93.9/181.9/345.0, dflash2
-123.7/233.0/418.3/615.8 tok/s (0.28.0 canonical: 48.6/93.4/180.9/343.5 and
-114.5/221.0/404.0/602.0).
+DFlash 2 holds 1.45x over plain at full depth. On 0.28.0 the same legs
+measured 30.5 vs ~29.5 tok/s (depth-neutral); the difference is the
+0.29.0 core, not the drafter or the fixture.
 
 ### First GLM serving data, and the qwen3.6 anchor
 

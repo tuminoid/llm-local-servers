@@ -505,32 +505,42 @@ native-262,144, plain-decode only.
 
 The replay and replay-concurrent profiles CANNOT run canonically on
 this model at this pin: their 32-token probe turns cap-truncate a tool
-call mid-arguments and Ollama 0.33.3 returns HTTP 500 ("invalid tool
-call arguments ... unexpected end of JSON input") on both endpoints.
+call mid-arguments and Ollama 0.33.3 and 0.34.2 return HTTP 500 ("invalid
+tool call arguments ... unexpected end of JSON input") on both endpoints.
 Minimal deterministic repro at temp 0: tools plus max_tokens 32 (16
 stops before the call opens, 200 completes it) -- the same
 truncated-tool-call parser class already documented for GLM 4.7
 Flash, now shown to affect the qwen4exp path too. Retest on a release
 whose parsers degrade truncation gracefully.
 
-The A100 sibling profile (`qwen3.8-flash-next-gguf-iq4xs`, 73 GB VRAM
-at the same 2 x 262,144 q8_0 shape) has no canonical rates yet. Its
-supervised operating point, measured 2026-09-05 on the A100 (211 GB host
-RAM, 49/49 layers offloaded, 73.0-73.4 GB VRAM): needles exact at
-20k/131k/246k and in a dual concurrent 246k pair; prefill 1,087 / 829 /
-634 tok/s at those depths, roughly 1.75-2x the M5 Q4_K_XL point; decode
-35.5 / 20.7 / 13.8 tok/s, PLE-over-PCIe and QSA bound and only ~8% above
-the M5; 2-stream decode 58.2 tok/s aggregate (1.85x). Cold deep prefills
-serialize across slots and starve the sibling slot's decode, as on Metal.
-A measured 8 x 65,536 shape batched decode to 143.5 tok/s aggregate at
-only 63% GPU utilisation, which is why the 2 x 262,144 shape is locked:
-a big model on tiny windows serves no fleet need.
+The A100 sibling profile (`qwen3.8-flash-next-gguf-iq4xs`, Ollama 0.34.2,
+2 x 262,144 q8_0 shape, 62.84 GiB GPU allocation, 49/49 layers on GPU)
+has canonical AuditBench v1 full and conversation rows; replay is blocked
+by the same truncated-tool-call 500.
 
-It passed Capability Check v1 on 2026-09-07, and that run also found a
-harder defect than the truncation class above: an unconstrained
-long-document request reproducibly kills the runner with a CUDA illegal
-memory access, while the same document under a JSON schema completes.
-Details and the retest condition are in the conf.
+| Metric | 1 slot | 2 slots |
+| -- | --: | --: |
+| 32k / 64k / 128k prefill tok/s | 958.8 / 875.8 / 740.2 | |
+| Decode tok/s | 51.38 | 83.26 |
+| Audit 32k calls/h | 59.11 | 63.50 |
+| Audit half calls/h | 15.88 | |
+| Audit deep calls/h | 8.96 | 8.72 |
+| Near-context proof | 245,748 in 424.06 s | 2 x 245,748 in 853.61 s |
+| Conversation | 10.5/h, compliant, 16/16 | |
+
+Prefill runs roughly 1.5x the M5 Q4_K_XL point and decode ~1.3x; the
+model is PLE-over-PCIe and QSA bound, so cold deep prefills serialize
+across slots and starve the sibling slot's decode, as on Metal. The
+2 x 262,144 shape is locked: an 8 x 65,536 shape batched decode to only
+143.5 tok/s aggregate at 63% GPU utilisation, and a big model on tiny
+windows serves no fleet need.
+
+The capability check's unaided long-document request reproducibly kills
+the runner with a CUDA illegal memory access (Xid 31 in the quantized
+matmul launch) on 0.33.3 and 0.34.2 alike; the same document under a
+JSON schema completes, Ollama restarts the runner in ~10 s, and a later
+12k-token unconstrained generation in the same session completed.
+Constrain long generations with a schema; retest on every runtime bump.
 
 ## Audit conversation profile
 
@@ -594,20 +604,22 @@ available-memory watchdog could act; the host hard-reset. The pin stays
 0.32.14 for every MLX profile. GGUF profiles never dispatch to the MLX
 runner and are unaffected.
 
-Remote A100 profiles (16-file/~165k shape, isolated Ollama 0.32.14):
+Remote A100 profiles (16-file/~165k shape, isolated Ollama; qwen3.8-27b-native
+and flash-next on 0.34.2, the rest on 0.32.14):
 
 | Profile | Compliant | Conversations/hour | Recall |
 | -- | -- | --: | -- |
 | `qwen3.6-35b-a3b` | yes | 32.0 | 16/16 |
 | `qwen3-coder-30b` | yes | 26.0 | 16/16 |
-| `qwen3.8-27b-native` | yes | 14.5 | 16/16 |
+| `qwen3.8-27b-native` | yes | 15.3 | 16/16 |
+| `qwen3.8-flash-next-gguf-iq4xs` | yes | 10.5 | 16/16 |
 | `gemma4-26b` | NO | -- | mixed |
 | `glm4.7-flash` | NO | -- | -- |
 
 The cross-runtime headline: cache policy, not model speed, dominates
 this workload. On the same host the same qwen3.8 weights run 4.1
-conversations/hour on cache-off CUDA vLLM (since retired), 14.5 here
-through Ollama's implicit slot cache, and 21.9 on vLLM's adopted
+conversations/hour on cache-off CUDA vLLM (since retired), 15.3 here
+through Ollama's implicit slot cache, and 21.5 on vLLM's adopted
 align-APC pin -- and align-APC vLLM carries qwen3.6 to 85.9.
 GLM think-runs-away or paraphrases the ledger on both runtimes; gemma4
 alternates between hallucinated file names and clean completions.
@@ -618,14 +630,15 @@ The replay profile (AuditBench protocol) scripts every
 turn, so it measures the server with no dependence on model protocol
 compliance. Gemma and GLM ran at harness commit `03b9b2c`, the three
 Qwen rows at `8425d08` (the replay workload is unchanged between the
-two); isolated Ollama 0.32.14, 16-file/~165k shape. Replays/hour is not
+two), the qwen3.8 row on 0.34.2; isolated Ollama, 16-file/~165k shape.
+Replays/hour is not
 comparable to conversations/hour (probe turns decode almost nothing;
 the verdict decode is pushed toward the 16,384 cap).
 
 | Profile | Replays/h | Turn walls | Verdict | Note |
 | -- | --: | -- | -- | -- |
 | `qwen3.6-35b-a3b` | 9.92 | 11.9 s cold, 3.7 -> 6.7 s | 16,384 tok @ 59.4 tok/s | slot cache behavioral |
-| `qwen3.8-27b-native` | 6.66* | 31.6 s cold, 9.5 -> 15.4 s | 2 of 3 fill cap @ ~49 tok/s | mixed verdict lengths |
+| `qwen3.8-27b-native` | 7.43* | 30.6 s cold, 8.9 -> 14.7 s | 2 of 3 fill cap @ 58.4 tok/s | mixed verdict lengths |
 | `qwen3-coder-30b` | 3.39 | 8.6 s cold, 3.9 -> 10.9 s | 16,384 tok @ 17.4 tok/s | depth-decode bound |
 | `gemma4-26b` | 30.0 | flat 10.4 -> 6.9 s | 1.6-2.6k tok, stops early | slot cache confirmed behaviorally |
 | `glm4.7-flash` | -- | 12 turns clean, then HTTP 500 | never reached | truncated tool-call 500, below |
@@ -639,9 +652,9 @@ this host:
   9.92 replays/h against vLLM's 18.3 on the same fixture, and the gap
   is at both ends -- growing turn walls (3.7 -> 6.7 s vs flat 2.3-2.5 s)
   and verdict decode at ~165k depth (59.4 vs 98.0 tok/s).
-- qwen3.8's median (6.66*) rides on mixed verdict lengths: one sample
+- qwen3.8's median (7.43*) rides on mixed verdict lengths: one sample
   obeyed its own stop instinct at 926 tokens (14.34 replays/h), the
-  other two filled the 16,384 cap (6.51-6.66). The same
+  other two filled the 16,384 cap (7.36-7.43). The same
   variant-dependent never-conclude compliance was recorded on its vLLM
   legs; compare turn walls and verdict rate, not the starred median.
 - qwen3-coder is depth-decode bound: 17.4 tok/s verdict decode at 164k

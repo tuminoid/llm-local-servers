@@ -96,8 +96,9 @@ A100-SXM4-80GB:
 | 3 | vLLM `gemma4-26b-a4b-awq` | MoE | APC | 169.40 | 43.8 |
 | 4 | Ollama `qwen3.6-35b-a3b` GGUF | MoE | slot cache | 84.58 | 32.0 |
 | 5 | Ollama `qwen3-coder-30b` GGUF | MoE | slot cache | 114.41 | 26.0 |
-| 6 | vLLM `qwen3.8-27b-dflash2` | dense | align APC + DFlash 2 | 118.73 | 23.4 |
-| 7 | Ollama `qwen3.8-27b-native` | dense | slot cache | 57.80 | 14.5 |
+| 6 | vLLM `qwen3.8-27b-dflash2` | dense | align APC + DFlash 2 | 124.16 | 23.3 |
+| 7 | Ollama `qwen3.8-27b-native` | dense | slot cache | 74.31 | 15.3 |
+| 8 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | slot cache | 51.38 | 10.5 |
 
 Apple M5 Max:
 
@@ -152,8 +153,10 @@ fails Capability Check v1 (two tool calls for a one-call fixture).
 
 ### A100-SXM4-80GB
 
-Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.28.0, Transformers
-5.15.1. Ollama rows: isolated Ollama 0.32.14, Flash Attention, q8 KV.
+Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.29.0 for the two qwen3.8
+profiles, 0.28.0 for the rest, Transformers 5.15.1. Ollama rows: isolated
+Ollama, 0.34.2 for qwen3.8-27b-native and flash-next, 0.32.14 for the rest;
+Flash Attention, q8 KV.
 
 | Runtime and profile | Context | Slots | GPU KV / allocation | 32k prefill | Peak decode | Audit 32k | Audit half | Audit deep | Near-context proof |
 | -- | --: | --: | -- | --: | --: | --: | --: | --: | -- |
@@ -162,9 +165,10 @@ Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.28.0, Transformers
 | vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,867,456 KV | 7,603.9 | 1,072.38 @8x | 595.22 @8x | 58.53 | 26.22 @4x | 4 x 245,774 in 625.92s |
 | Ollama `gemma4:26b` | 262,144 | 8 | 0.00 / 25.32 GiB | 3,246.7 | 231.48 @8x | 222.32 @8x | 53.51 | 27.68 @4x | 8 x 245,777 in 1,030.85s |
 | vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,152 KV | 8,551.3 | 1,019.74 @8x | 515.11 @8x | 61.55 | 27.20 @1x | 2 x 245,762 in 289.67s |
-| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 498,225 KV | 2,721.2 | 592.04 @8x | 227.99 @8x | 34.77 | 22.84 @1x | 2 x 245,748 in 322.29s |
-| vLLM `qwen3.8-27b` | 262,144 | 8 | 742,613 KV | 2,722.0 | 343.53 @8x | 218.66 @8x | 38.88 | 23.50 @2x | 2 x 245,748 in 325.11s |
-| Ollama `qwen3.8-27b-native` | 262,144 | 1 | 0.00 / 17.27 GiB | 1,081.5 | 57.80 | 74.48 | 21.62 | 11.28 | 245,752 in 340.97s |
+| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 507,737 KV | 2,702.5 | 597.01 @8x | 228.51 @8x | 35.48 | 22.88 @2x | 2 x 245,748 in 323.42s |
+| vLLM `qwen3.8-27b` | 262,144 | 8 | 746,456 KV | 2,700.3 | 344.97 @8x | 218.65 @8x | 38.94 | 23.49 @2x | 2 x 245,748 in 326.04s |
+| Ollama `qwen3.8-27b-native` | 262,144 | 1 | 0.00 / 17.27 GiB | 1,089.4 | 74.31 | 78.38 | 22.15 | 11.63 | 245,752 in 337.33s |
+| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 0.00 / 62.84 GiB | 958.8 | 83.26 @2x | 63.50 @2x | 15.88 | 8.96 @1x | 2 x 245,748 in 853.61s |
 | Ollama `qwen3-coder-30b` | 262,144 | 4 | 0.00 / 70.39 GiB | 2,729.4 | 186.96 @4x | 132.09 @4x | 26.45 | 14.82 @1x | 4 x 245,762 in 1,016.28s |
 | vLLM `glm4.7-flash-awq` | 202,752 | 8 | 1,050,624 KV | 7,346.1 | 365.23 @8x | 367.58 @8x | 66.04 | 37.28 @4x | 4 x 190,092 in 419.78s |
 | Ollama `glm4.7-flash` | 202,752 | 8 | 0.00 / 63.01 GiB | 1,457.8 | 268.75 @8x | 112.63 @8x | 21.23 | 8.39 @1x | 8 x 190,092 in 3,703.26s |

@@ -151,7 +151,7 @@ fixtures to automatic tool choice and added the streamed tool call. Two
 rows are dated 2026-09-07: Muse Glimmer, whose 2026-09-06 run refused on
 identity drift and whose reviewed replacement digest was checked the next
 day, and `qwen3.8-flash-next-mlx-nvfp4`, which owed a record and runs on
-the split 0.33.3 runtime rather than the 0.32.14 fleet pin.
+the 0.34.2 GGUF runtime rather than the 0.32.14 fleet default.
 Splash rows were added on 2026-09-19 with release 1.0 on macOS 27.0;
 both were rechecked before the full managed AuditBench campaign. The
 managed adapters use the current checker, including schema enforcement.
@@ -309,15 +309,12 @@ AuditBench module. The earlier authenticated Qwen3.8 report remains under
 ## A100-SXM4-80GB campaign
 
 Host: shared A100 test host, reached over ssh through the `HOST` alias
-supplied by `.envrc`. Initial run date: 2026-08-26, all ten managed
-operating points, vLLM 0.27.1 and isolated Ollama 0.32.14. Every row
-below re-run in full on 2026-09-06 at protocol SCHEMA_VERSION 4 on the
-vLLM 0.28.0 venv and Ollama 0.32.14. Two profiles that owed a record
-joined the inventory on 2026-09-07: `qwen3.8-27b-512k`, whose first
-server start ever happened for this check, and
-`qwen3.8-flash-next-gguf-iq4xs` on the split 0.33.3 runtime. The
-`glm4.7-flash-awq` row is also dated 2026-09-07: it was re-run after its
-conf gained the thinking-disable control its checkpoint always had.
+supplied by `.envrc`. Protocol SCHEMA_VERSION 4. `qwen3.8-27b` and
+`qwen3.8-27b-dflash2` are dated 2026-09-19 on vLLM 0.29.0;
+`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs` the same day on
+Ollama 0.34.2; every other row is the 2026-09-06/07 run on vLLM 0.28.0 and
+Ollama 0.32.14 (`qwen3.8-27b-512k` and `glm4.7-flash-awq` on 2026-09-07,
+the latter after its conf gained the thinking-disable control).
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -354,14 +351,15 @@ its model config.
   streamed, on both runtimes.
 - `qwen3.8-flash-next-gguf-iq4xs` passes all eight checks with schema
   enforcement verified, and is the only row in the fleet whose unaided
-  document is `error`: that request reproducibly (2/2) kills the model
-  with `CUDA error: an illegal memory access was encountered` and an HTTP
-  500. The grammar-constrained document over the same fixture completes
-  in the same session, and the M5 Q4_K_XL sibling returns a valid
-  document, so this is the CUDA llama.cpp path on the qwen4exp
-  architecture, not the prompt or the import. `unaided` never gates, so
-  the row passes -- but the crash is a serving risk on unconstrained long
-  generations, recorded in the model conf with its retest condition.
+  document is `error`: that request reproducibly (3/3 across Ollama
+  0.33.3 and 0.34.2) kills the model with `CUDA error: an illegal memory
+  access was encountered` and an HTTP 500. The grammar-constrained
+  document over the same fixture completes in the same session, and the
+  M5 Q4_K_XL sibling returns a valid document, so this is the CUDA
+  llama.cpp path on the qwen4exp architecture, not the prompt or the
+  import. `unaided` never gates, so the row passes -- but the crash is a
+  serving risk on unconstrained long generations, recorded in the model
+  conf with its retest condition.
 - `qwen3.8-27b-512k` came up on its first start with a 748,760-token KV
   pool at max_len 524,288, close to the base profile's measured pool, and
   passed the first seven checks. Its enforcement result is
