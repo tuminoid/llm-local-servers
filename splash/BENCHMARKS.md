@@ -1,8 +1,166 @@
 # Splash benchmarks
 
-## Apple M5 Max, Splash 1.0, 2026-09-19
+## Managed campaign, Apple M5 Max, 2026-09-19 to 2026-09-20
 
-Host `tumi-m5-max.local`: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU
+Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU
+cores, 128 GiB unified memory, macOS 27.0 build 26A428. Both pinned
+profiles completed `full`, `conversation`, `replay` and
+`replay-concurrent` through the managed, uv-driven root Make targets.
+All eight retained reports have `canonical: true`, `publishable: true`
+and no publication reasons. Publication provenance and conversation
+fixture compliance are separate: Qwen3.6 failed one conversation sample.
+Both models passed all eight capability checks, including schema
+enforcement; see [CAPABILITIES.md](../CAPABILITIES.md).
+
+The operating point was 262,144 configured tokens, a 64 GiB native
+memory cap, four active slots, DFlash 2, Q8 KV and state/prefix caching
+at release defaults. `reasoning_effort` was unset and the request timeout
+was 7,200 seconds. Release and package identities match the pinned
+configs and the trials below. Canonical stream candidates remain
+1/2/4/8; native admission excludes eight. No workload overrides were used.
+
+Qwen3.6 `full` used clean fleet commit `9d2e99b`; the other seven
+reports used clean `1e4a42f`, after fixes to teardown polling and the
+adapter's shared conversation/replay transport hook. Runtime, model and
+workload settings did not change. The shared `audit_bench.py` matches
+commit `8b39ee2`, SHA-256
+`ee10944f7b1287bbe382708aee70804731731d0bb92ca93754427057bbf2c98b`.
+Every report retains exact adapter/config hashes, fully checked model
+identity and the live memory plan.
+
+### Full profile
+
+Medians from the retained JSON. Decode is aggregate end-to-end output
+tok/s; audit rates are aggregate completed calls/hour.
+
+| Profile | Decode 1/2/4 tok/s | Audit 32k 1/2/4 /h | Audit half 1x /h | Audit deep 1/4 /h |
+| -- | --: | --: | --: | --: |
+| `qwen3.6-35b-a3b` | 301.08 / 375.05 / 515.42 | 331.96 / 348.98 / 375.25 | 58.67 | 23.40 / 23.18 |
+| `qwen3.8-27b` | 67.31 / 119.61 / 152.03 | 63.16 / 65.52 / 66.38 | 14.28 | 6.62 / 6.58 |
+
+| Profile | Prefill 32k/64k/128k tok/s | Measured prefill input tokens | Near-context input per stream | Near-context wall seconds, 1/4 streams |
+| -- | --: | --: | --: | --: |
+| `qwen3.6-35b-a3b` | 4,454.50 / 3,241.15 / 2,237.37 | 32,780 / 65,547 / 131,071 | 245,752 | 173.44 / 692.61 |
+| `qwen3.8-27b` | 796.35 / 704.46 / 558.69 | 32,784 / 65,556 / 131,075 | 245,748 | 602.03 / 2,406.49 |
+
+The 32k and half audits use the first and third measured input counts
+above, with 1,024 output tokens. Deep audits use 229,362 input tokens
+for Qwen3.6 and 229,366 for Qwen3.8, with 256 output tokens. Prefill
+and near-context phases request one output token. Four-way deep
+execution is supported but does not multiply aggregate audit throughput.
+
+### Growing conversation and fixed replay
+
+Both profiles use 16 tool steps. Configured context is 262,144; the
+measured verdict inputs below are about 164k, not 230k. Conversation
+checks whether the model follows the tool loop. Replay fixes the
+transcript and measures serving behavior independently of tool selection.
+
+| Profile | Conversation compliance | Conversations/hour | Final input tokens | Cached input fraction |
+| -- | -- | --: | --: | --: |
+| `qwen3.6-35b-a3b` | 1/2 samples; unranked | 37.16 (sole compliant sample) | 164,744 in the compliant sample | 90.19% in the compliant sample |
+| `qwen3.8-27b` | 2/2 samples | 10.29 (10.18-10.39) | 164,143-164,198 | 90.20% |
+
+Qwen3.6's first sample read all 16 files and recalled all 16 findings.
+Its second returned a verdict after one file, with 15 files remaining
+and only 41,338 final input tokens. The JSON's 37.16/h rate summarizes
+the sole compliant sample and must not enter the serving ranking.
+This is an observed fixture failure, not a root-caused model or cache
+defect. Retest the canonical conversation after changes to the runtime,
+model, draft or template before promoting this conversation operating point.
+Qwen3.8 read all 16 files and recalled all 16 findings in both samples.
+
+| Profile | Fixed replay/hour | Verdict input tokens | Verdict output tokens / finish | Verdict output tok/s | Cached input fraction |
+| -- | --: | --: | -- | --: | --: |
+| `qwen3.6-35b-a3b` | 15.09 (15.09-15.10) | 164,671 | 16,384 / length limit, both samples | 112.55 | 82.86% |
+| `qwen3.8-27b` | 10.17 (10.13-10.21) | 164,175 | 1,293-1,445 / stop | 32.74 | 90.20% |
+
+Fixed replay uses 32-token probe caps and a 16,384-token verdict cap.
+Verdict tok/s is end-to-end for that request. The different realized
+output lengths matter when comparing the two models' replay rates.
+
+### Concurrent replay
+
+This separate profile uses 1,024-token probe caps and the same
+16,384-token verdict cap. Its rates are not interchangeable with the
+32-token-probe replay above. The harness ran alternating 1/2/4 and
+4/2/1 passes. Qwen3.6 finished with two samples per count; Qwen3.8
+required the canonical third 1/2/4 pass after exceeding 5% disagreement.
+
+| Profile | Aggregate replay/hour, 1/2/4 streams | Observed rate ranges, 1/2/4 | Per-stream verdict tok/s, 1/2/4 | Cached input fraction, 1/2/4 |
+| -- | --: | -- | --: | --: |
+| `qwen3.6-35b-a3b` | 12.91 / 12.35 / 12.38 | 12.68-13.14 / 12.18-12.52 / 12.30-12.46 | 227.97 / 144.81 / 82.07 | 80.86% / 81.82% / 82.71% |
+| `qwen3.8-27b` | 4.38 / 4.32 / 4.06 | 4.17-4.52 / 4.21-4.36 / 4.02-4.19 | 21.53 / 13.06 / 7.91 | 80.90% / 81.93% / 82.22% |
+
+Both models peak at one stream in aggregate replay/hour. Four streams
+provide concurrent sessions, with longer per-session latency. Qwen3.6
+verdict inputs were 164,671-164,687 tokens and every verdict used the
+full 16,384-token cap. Qwen3.8 inputs were 164,175-164,191; verdicts
+stopped naturally at 1,287-2,203 output tokens. Probe completion medians
+were 1,024 tokens for Qwen3.6 and 820 / 755 / 904.5 for Qwen3.8 at
+1/2/4 streams. Verdict tok/s above is the harness's per-stream median,
+not aggregate throughput.
+
+### Capacity, stability and teardown
+
+| Profile | Configured context | Active slots | Native virtual KV tokens | Conservative benchmark KV tokens | Campaign native peak GiB |
+| -- | --: | --: | --: | --: | --: |
+| `qwen3.6-35b-a3b` | 262,144 | 4 | 4,415,488 | 4,358,144 | 63.25 |
+| `qwen3.8-27b` | 262,144 | 4 | 1,474,560 | 1,445,888 | 63.25 |
+
+Virtual KV is sparse capacity, not committed memory. The conservative
+bound reserves all four active state cells inside the dynamic budget.
+The near-context measurements prove four admitted requests at their
+listed input depths. Native counters also recorded four-wide decode.
+
+Across the eight retained runs, all 880 submitted requests completed
+(including capability, warmup and calibration traffic), with zero
+failed/cancelled requests, capacity failures, Metal failures or resource
+suspensions. Sampled memory pressure stayed normal and charger negotiation
+stayed at 140 W. Qwen3.8 paused between batches for the standard battery
+gate; these pauses are outside measured request wall times. Optional
+checkpoint publication failures and state evictions did occur; they are
+separate from inference failures and remain in the native telemetry.
+
+Two teardowns required recovery after valid reports had been retained.
+The first Qwen3.6 full run encountered macOS EPERM while checking the
+exiting group; `cf98de4` fixed polling, and later teardowns exercised it.
+The final Qwen3.8 concurrent run reached the 30-second escalation check,
+where ownership validation rejected an unrecognized group member. Its
+exact `ps` row was not retained, so the exit-state cause is not proven.
+By subsequent inspection the group was empty; a second root
+`make splash-stop` verified group and port release. The original campaign
+manifests retain their failure status. Recovery evidence establishes final
+cleanup without rewriting those failures. Retest this ownership check
+after a long, cache-filled run when changing shutdown handling; readiness
+or a short lifecycle alone does not cover it.
+
+### Retained campaign evidence
+
+Evidence roots under `~/.local/state/auditbench/trials/` on the measured host:
+
+- `2026-09-19-splash-campaign/`: Qwen3.6 full and its capability check.
+- `2026-09-19-splash-campaign-continuation2/`: the other seven reports,
+  Qwen3.8 capability, final `validation.json` and recovery evidence.
+
+Each report is under `<profile-name>-<benchmark-profile>/auditbench/`
+within its root. Campaign manifests record commands, source hashes and
+exit codes; run directories retain native telemetry and server logs.
+
+| Profile | Benchmark | JSON filename |
+| -- | -- | -- |
+| `qwen3.6-35b-a3b` | full | `20260919T195925.456946+0000_splash_qwen3-6-35b-a3b_full.json` |
+| `qwen3.6-35b-a3b` | conversation | `20260919T205701.690098+0000_splash_qwen3-6-35b-a3b_conversation.json` |
+| `qwen3.6-35b-a3b` | replay | `20260919T205920.345224+0000_splash_qwen3-6-35b-a3b_replay.json` |
+| `qwen3.6-35b-a3b` | replay-concurrent | `20260919T210748.323111+0000_splash_qwen3-6-35b-a3b_replay-concurrent.json` |
+| `qwen3.8-27b` | full | `20260919T221622.423875+0000_splash_qwen3-8-27b_full.json` |
+| `qwen3.8-27b` | conversation | `20260920T013452.454541+0000_splash_qwen3-8-27b_conversation.json` |
+| `qwen3.8-27b` | replay | `20260920T014717.027791+0000_splash_qwen3-8-27b_replay.json` |
+| `qwen3.8-27b` | replay-concurrent | `20260920T015948.044687+0000_splash_qwen3-8-27b_replay-concurrent.json` |
+
+## Pre-integration full trials, Apple M5 Max, 2026-09-19
+
+Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU
 cores, 128 GiB unified memory, macOS 27.0 build 26A428. These full
 AuditBench v1 runs preceded the managed integration and used the
 same release engine, model artifacts, 262,144-token context and 64 GiB
@@ -38,11 +196,11 @@ audit calls/hour.
 | `qwen3.6-35b-a3b` | 4,662.81 / 3,334.05 / 2,242.19 | 131,071 / 229,362 | 245,752 | 174.67 / 698.89 |
 | `qwen3.8-27b` | 778.06 / 686.47 / 560.87 | 131,075 / 229,366 | 245,748 | 604.55 / 2,422.28 |
 
-Near-context phases request one output token; audit half/deep request
-256. These full-profile results use cache-neutral evidence prompts.
-The shared growing-conversation and replay profiles have not yet been
-measured for Splash; no warm conversation rate is inferred from this
-table. Cross-runtime comparisons are in the root
+Near-context phases request one output token; audit 32k/half request
+1,024 and audit deep requests 256. These full-profile results use
+cache-neutral evidence prompts. The growing-conversation and replay
+profiles were not measured in these earlier trials; no warm conversation
+rate is inferred from this table. Cross-runtime comparisons are in the root
 [README.md](../README.md#measured-overview).
 
 ### Capacity and stability

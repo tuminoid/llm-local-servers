@@ -81,10 +81,11 @@ raw vLLM pool or Ollama's measured allocation.
 ### Audit conversations per hour, per host
 
 The mission workload: a growing tool-loop conversation resent every
-turn, verdict at depth, at the 262,144-token shape (16 tool steps,
-~230k resident). One row per runtime and model, ranked within a host
-only; a MoE or hybrid row and a dense row are not comparable. `Decode
-1x` is the same run's short-prompt single-stream decode ceiling.
+turn, verdict at depth, with 262,144 configured context and 16 tool
+steps. Actual verdict input counts are recorded per runtime; Splash
+measured about 164k. One row per runtime and model, ranked within a
+host only; a MoE or hybrid row and a dense row are not comparable.
+`Decode 1x` is the matching operating point's short-prompt decode ceiling.
 
 A100-SXM4-80GB:
 
@@ -104,13 +105,29 @@ Apple M5 Max:
 | --: | -- | -- | -- | --: | --: |
 | 1 | Ollama `nemotron-3.5-lightning` MLX | hybrid MoE | MLX trie | 141.7 | 34.4 |
 | 2 | vLLM-Metal `qwen3.6-35b-a3b-4bit` | MoE | align APC | 98.4 | 12.5 |
-| 3 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
-| 4 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | -- | 2.4 |
-| 5 | vLLM-Metal `qwen3.8-27b-4bit` | dense | APC off, retired pin | 33.1 | 0.70 |
+| 3 | Splash `qwen3.8-27b` | dense | state/prefix cache + DFlash 2 | 67.31 | 10.29 |
+| 4 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
+| 5 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | -- | 2.4 |
+| 6 | vLLM-Metal `qwen3.8-27b-4bit` | dense | APC off, retired pin | 33.1 | 0.70 |
+| -- | Splash `qwen3.6-35b-a3b` | MoE | state/prefix cache + DFlash 2 | 301.08 | 37.16 (1/2 compliant) |
 
-The qwen3.8 row predates the align-APC pin flip and the APC-on
+Splash qwen3.6's 37.16/h is the rate of its sole compliant sample; the
+other sample stopped after one of 16 files. Its measurement is shown
+unranked because the conversation campaign failed the fixture gate.
+
+The vLLM-Metal qwen3.8 row predates the align-APC pin flip and the APC-on
 conversation has not been run; its bound is 5.5 tok/s verdict decode at
 depth, not the cache.
+
+Splash fixed-transcript replay on this host, 16 steps and about 164k
+verdict input. These are separate workloads from conversation and from
+each other; verdict output lengths also differ between models. Details
+and ranges are in [splash/BENCHMARKS.md](splash/BENCHMARKS.md).
+
+| Profile | Replay/hour, 32-token probe cap | Concurrent replay/hour, 1,024-token probe cap, 1/2/4 streams |
+| -- | --: | --: |
+| `qwen3.6-35b-a3b` | 15.09 | 12.91 / 12.35 / 12.38 |
+| `qwen3.8-27b` | 10.17 | 4.38 / 4.32 / 4.06 |
 
 Apple M5 Max, 131k shape (9 tool steps, ~115k resident; qwen3.6 is
 pinned to 131,072 on the Ollama MLX runner because 262,144 triggers its
@@ -127,9 +144,10 @@ RTX PRO 3000:
 | --: | -- | -- | -- | --: | --: |
 | 1 | Ollama `qwen3.5:9b` | dense | slot cache | 37.83 | 9.8 |
 
-Excluded for fixture non-compliance: both qwen3.5-4b stacks and the
+Excluded from ranking for fixture non-compliance: both qwen3.5-4b stacks and the
 CPU-assisted qwen3.6 on the RTX, GLM 4.7 Flash and Ollama gemma4-26b on
-the A100. The A100 vLLM `qwen3-coder-30b` rate stands but the profile
+the A100, and Splash qwen3.6 on the M5 (only 1/2 conversation samples
+compliant). The A100 vLLM `qwen3-coder-30b` rate stands but the profile
 fails Capability Check v1 (two tool calls for a one-call fixture).
 
 ### A100-SXM4-80GB
@@ -161,14 +179,14 @@ the split 0.33.3 managed runtime with two real slots and q8 KV.
 vLLM-Metal rows: pinned plugin venv 0.28.0, paged KV, NAX prefill.
 Splash rows: release 1.0 on macOS 27.0, 64 GiB native memory cap,
 four active slots, DFlash 2 and prefix/state caching. Its KV column is
-sparse virtual capacity, not committed memory. Splash full-run numbers
-are canonical trial measurements with `publishable: false`; the new
-managed adapter has separate integration checks.
+sparse virtual capacity, not committed memory. All eight managed campaign
+reports are canonical and publishable. Long-run teardown needed recovery;
+the benchmark record retains the failures and verified final release.
 
 | Runtime | Model or profile | Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h |
 | -- | -- | --: | --: | --: | --: | --: | --: | --: |
-| Splash | `qwen3.6-35b-a3b`, 64 GiB, 4 slots | 262,144 | 4,415,488 virtual | 4,663 / 3,334 / 2,242 | 299.5 / 374.8 / 512.6 | 375.7 @4x | 58.7 | 23.3 @1x |
-| Splash | `qwen3.8-27b`, 64 GiB, 4 slots | 262,144 | 1,474,560 virtual | 778 / 686 / 561 | 67.0 / 119.3 / 151.5 | 65.7 @4x | 14.1 | 6.6 @1x |
+| Splash | `qwen3.6-35b-a3b`, 64 GiB, 4 slots | 262,144 | 4,415,488 virtual | 4,455 / 3,241 / 2,237 | 301.1 / 375.1 / 515.4 | 375.3 @4x | 58.7 | 23.4 @1x |
+| Splash | `qwen3.8-27b`, 64 GiB, 4 slots | 262,144 | 1,474,560 virtual | 796 / 704 / 559 | 67.3 / 119.6 / 152.0 | 66.4 @4x | 14.3 | 6.6 @1x |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
 | vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
 | Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |

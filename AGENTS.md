@@ -112,6 +112,11 @@ Personal, host-specific values -- above all the remote GPU host's ssh alias
 -- are supplied by the environment (`.envrc`, gitignored; see
 `.envrc.example`), never committed in the Makefile or scripts.
 
+Committed content must contain no PII. Identify measured hosts by hardware
+labels such as Apple M5 Max or A100-SXM4-80GB. Keep personal hostnames,
+login names, SSH aliases, private addresses and personal absolute paths
+in untracked local configuration or retained evidence, not repository files.
+
 ## Conventions
 
 All servers in this tree follow these. They exist because each one was
@@ -254,7 +259,9 @@ The overview tables in `README.md` are derived from `vllm/BENCHMARKS.md`,
 host overview whenever a benchmark source changes a model, context, memory
 allocation, KV pool, active slots, or canonical metric.
 
-Use the exact host name and measured tokenizer counts. Keep these separate:
+Use hardware host labels and exact measured tokenizer counts. Personal
+hostnames belong only in retained evidence outside the repository.
+Keep these separate:
 
 - configured per-request context;
 - raw vLLM KV pool or Ollama allocation;
