@@ -166,6 +166,24 @@ if [[ -z "${VLLM_EXE}" ]]; then
     printf 'run: make vllm-metal-install\n' >&2
     exit 1
 fi
+# Pin guard. Start never installs; the venv moves only through install.sh, so
+# a venv that drifted from the Makefile pins would otherwise serve a retired
+# release under the documented rates. make passes both pins; a manual start
+# without them skips the check. The local version segment (+cpu) is not part
+# of the pin.
+if [[ -n "${VLLM_METAL_VERSION:-}" || -n "${VLLM_METAL_VLLM_VERSION:-}" ]]; then
+    read -r INSTALLED_PLUGIN INSTALLED_VLLM < <("$(dirname "${VLLM_EXE}")/python" -c \
+        'from importlib.metadata import version
+print(version("vllm-metal"), version("vllm").split("+")[0])')
+    if [[ -n "${VLLM_METAL_VERSION:-}" && "${INSTALLED_PLUGIN}" != "${VLLM_METAL_VERSION}" ]] \
+        || [[ -n "${VLLM_METAL_VLLM_VERSION:-}" && "${INSTALLED_VLLM}" != "${VLLM_METAL_VLLM_VERSION}" ]]; then
+        printf 'error: %s holds vllm-metal %s / vllm %s, the pins are %s / %s\n' \
+            "${VLLM_METAL_VENV}" "${INSTALLED_PLUGIN}" "${INSTALLED_VLLM}" \
+            "${VLLM_METAL_VERSION:-any}" "${VLLM_METAL_VLLM_VERSION:-any}" >&2
+        printf 'run: make vllm-metal-install\n' >&2
+        exit 1
+    fi
+fi
 # The venv's bin must be on PATH, not merely used to locate the entry point.
 PATH="$(dirname "${VLLM_EXE}"):${PATH}"
 export PATH

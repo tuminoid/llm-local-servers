@@ -499,7 +499,7 @@ vllm-model-check:
 		exit 1; }
 
 vllm-start: vllm-model-check
-	@./$(VLLM_DIR)/run.sh $(MODEL)
+	@VLLM_VERSION=$(VLLM_VERSION) ./$(VLLM_DIR)/run.sh $(MODEL)
 
 vllm-stop:
 	@./$(VLLM_DIR)/stop.sh
@@ -548,7 +548,9 @@ vllm-metal-pull: vllm-metal-model-check
 	@./$(VLLM_METAL_DIR)/pull.sh $(MODEL)
 
 vllm-metal-start: vllm-metal-model-check
-	@./$(VLLM_METAL_DIR)/run.sh $(MODEL)
+	@VLLM_METAL_VERSION=$(VLLM_METAL_VERSION) \
+		VLLM_METAL_VLLM_VERSION=$(VLLM_METAL_VLLM_VERSION) \
+		./$(VLLM_METAL_DIR)/run.sh $(MODEL)
 
 vllm-metal-stop:
 	@./$(VLLM_METAL_DIR)/stop.sh
@@ -675,7 +677,7 @@ vllm-remote-deploy: vllm-remote-check audit-bench-check
 # tree as a side effect. logs and tunnel run no repo script (tail, ssh -L), and
 # bootstrap only builds the venv.
 vllm-remote-start: vllm-remote-check vllm-model-check vllm-remote-deploy
-	@ssh $(HOST) '$(VLLM_ENV) $(VLLM_REMOTE_DIR)/run.sh $(MODEL)'
+	@ssh $(HOST) 'VLLM_VERSION=$(VLLM_VERSION) $(VLLM_ENV) $(VLLM_REMOTE_DIR)/run.sh $(MODEL)'
 
 vllm-remote-stop: vllm-remote-check
 	@ssh $(HOST) '$(VLLM_REMOTE_DIR)/stop.sh'

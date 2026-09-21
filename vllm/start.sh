@@ -261,6 +261,28 @@ if [[ -z "${VLLM_EXE}" ]]; then
     exit 1
 fi
 
+# Pin guard. Start never installs: the venv moves only through the bootstrap
+# target, so a venv that drifted from the Makefile pin would otherwise serve a
+# retired release and every documented rate for the profile would be off.
+# VLLM_VERSION is the pin make passes; a manual start without it skips the
+# check. The interpreter beside the entry point answers without importing
+# torch; `vllm --version` is the slow fallback for a PATH install.
+if [[ -n "${VLLM_VERSION:-}" ]]; then
+    VLLM_PY="$(dirname "${VLLM_EXE}")/python"
+    if [[ -x "${VLLM_PY}" ]]; then
+        VLLM_INSTALLED="$("${VLLM_PY}" -c \
+            'from importlib.metadata import version; print(version("vllm"))')"
+    else
+        VLLM_INSTALLED="$("${VLLM_EXE}" --version | tail -1)"
+    fi
+    if [[ "${VLLM_INSTALLED}" != "${VLLM_VERSION}" ]]; then
+        printf 'error: %s is vllm %s, the pin is %s; run the bootstrap (remote) or\n' \
+            "${VLLM_EXE}" "${VLLM_INSTALLED}" "${VLLM_VERSION}" >&2
+        printf '  reinstall the venv to the pin before starting\n' >&2
+        exit 1
+    fi
+fi
+
 # When running from a venv, its bin must be on PATH and not merely used to
 # locate the entry point: vLLM JIT-compiles kernels in a subprocess and shells
 # out to `ninja`, which pip installs into the venv's bin. Without this the

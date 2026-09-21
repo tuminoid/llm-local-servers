@@ -61,3 +61,6 @@ or reimplement benchmark workloads.
   README and CAPABILITIES alongside changes to retained serving results.
 - Validate with `make lint`, `make test`, and the full managed lifecycle
   for both configured models. Stop and verify release even on failure.
+- `start.sh` refuses a runtime directory whose `release.json` version differs
+  from `SPLASH_VERSION`. The directory is named by the pin; the guard covers a
+  mis-populated one.

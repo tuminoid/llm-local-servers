@@ -115,6 +115,10 @@ Serving measurements follow
   the failed trial), so no bump has occurred yet. The Ollama registry is
   the only NVFP4 path on this host. Expect and accept loud load failures;
   never paper over one with a dequantizing fallback.
+- `start.sh` refuses a venv whose installed vllm-metal or vllm version
+  differs from the Makefile pins, which `vllm-metal-start` passes. Start
+  never installs; a pin bump is complete only after `make
+  vllm-metal-install` has rebuilt the venv.
 
 ## Verification
 

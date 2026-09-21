@@ -118,6 +118,17 @@ if [[ -z "${actual_version}" ]] \
     printf 'run: make ollama-install\n' >&2
     exit 1
 fi
+# Pin guard: the binary must be the pinned release, not merely a new enough
+# one. The managed path encodes the version, but an explicit OLLAMA_BIN (the
+# remote fixed environment) can name a different runtime than the effective
+# OLLAMA_VERSION after the conf's OLLAMA_RUNTIME_VERSION applied above.
+if [[ "${actual_version}" != "${OLLAMA_VERSION}" ]]; then
+    printf 'error: %s is Ollama %s, the pin for %s is %s\n' \
+        "${OLLAMA_EXE}" "${actual_version}" "${OLLAMA_MODEL}" "${OLLAMA_VERSION}" >&2
+    printf 'pass OLLAMA_VERSION=%s (and the matching OLLAMA_BIN remotely), or make ollama-install\n' \
+        "${OLLAMA_VERSION}" >&2
+    exit 1
+fi
 
 export OLLAMA_HOST OLLAMA_CONTEXT_LENGTH OLLAMA_NUM_PARALLEL
 export OLLAMA_FLASH_ATTENTION OLLAMA_MAX_LOADED_MODELS

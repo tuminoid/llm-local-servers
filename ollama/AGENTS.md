@@ -92,7 +92,7 @@ in [README.md](README.md); shared server conventions live in
   context partition statically). Remote lifecycle calls must pass
   `OLLAMA_VERSION=0.34.2` at the make level: the remote fixed environment
   resolves `OLLAMA_BIN` before the conf's `OLLAMA_RUNTIME_VERSION` can
-  apply; a forgotten override fails loudly at the min-version check.
+  apply; a forgotten override fails loudly at the version guard.
 - `qwen3.8-flash-next-gguf` runs a split managed runtime: its conf declares
   `OLLAMA_RUNTIME_VERSION=0.34.2` (the GGUF runtime; qwen4exp needs
   llama.cpp >= b10760) which start.sh applies after the conf, as do the
@@ -171,6 +171,10 @@ in [README.md](README.md); shared server conventions live in
   consumers of the managed server log must decode with replacement so identity
   and runner checks do not fail before inference.
 - Stop by the recorded process group, never by a command-line pattern.
+- `start.sh` refuses a binary whose version differs from the effective
+  `OLLAMA_VERSION` (the fleet default or the conf's `OLLAMA_RUNTIME_VERSION`),
+  on top of the per-model minimum. The managed path encodes the version; the
+  guard exists for an explicit `OLLAMA_BIN` naming another runtime.
 
 ## Verification
 

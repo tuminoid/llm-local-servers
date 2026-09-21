@@ -120,6 +120,17 @@ outputs from the first generated token and shrinking the engine-sized KV
 pool. The environment still wins over the conf; the qwen3.8 extended
 profiles inherit the base conf's pin.
 
+### The runtime pin is enforced at start
+
+`start.sh` refuses to launch when the resolved vllm's installed version
+differs from `VLLM_VERSION`, which the `vllm-start` and `vllm-remote-start`
+recipes pass from the Makefile pin. Start never installs: a venv moves only
+through `vllm-remote-bootstrap` (or a local reinstall), so a pin bump is
+incomplete until every host's venv has been re-bootstrapped, and the guard
+is what makes a forgotten host fail loudly instead of serving a retired
+release under the documented rates. `bench.py` applies the same check to
+the live engine.
+
 ### Budget is footprint
 
 vLLM preallocates the KV cache as a single tensor sized to fill whatever
