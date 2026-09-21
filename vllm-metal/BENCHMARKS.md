@@ -16,27 +16,27 @@ legacy rates with canonical results.
 
 The conversation profile (AuditBench protocol) is the production-shaped
 workload: 32k evidence, a sequential 16-file tool chain resent in full
-every turn, findings-ledger verdict at ~164k depth. All three profiles
-ran at their serving-default cache pins on plugin dev20260826100011,
-finalized control-free fixture. Medians over compliant samples; cached
-fraction from the engine's own counters.
+every turn, findings-ledger verdict at ~164k depth. All rows run at
+their serving-default cache pins on the finalized control-free
+fixture: the qwen rows at plugin 0.29.0 (repo commit `705c493`),
+gemma4 at plugin dev20260826100011. Medians over compliant samples;
+cached fraction from the engine's own counters.
 
 | Profile | Cache pin | Compliant | Conversations/hour | Cached | Recall |
 | -- | -- | -- | --: | --: | -- |
-| `qwen3.6-35b-a3b-4bit` | APC on | yes | 12.5 | 0.897 | 16/16 |
+| `qwen3.6-35b-a3b-4bit` | APC on | yes | 12.9 | 0.897 | 16/16 |
+| `qwen3.8-27b-4bit` | APC on | yes | 4.2 | 0.899 | 16/16 |
 | `gemma4-31b-4bit` | APC on | yes | 2.4 | 0.902 | 16/16 |
-| `qwen3.8-27b-4bit` | APC off | yes | 0.70 | -- | 16/16 |
 
 Findings:
 
 - qwen3.6 with align-mode APC is this host's only practical audit
-  conversation server: 12.5 conversations/hour with 89.7% of prompt
+  conversation server: 12.9 conversations/hour with 89.7% of prompt
   tokens served from cache and perfect recall on every sample.
-- qwen3.8 cache-off pays the full quadratic resend: 5,117-5,139 s per
-  conversation, re-prefilling ~1.69M tokens at ~495 tok/s. It completes
-  with perfect recall -- the model is fine, the operating point is not
-  serving this shape. (Superseded: the align-APC trial below
-  flipped the pin, so this row records the retired cache-off default.)
+- qwen3.8 with align-mode APC completes a conversation in 849 s with
+  89.9% of prompt tokens cached and perfect recall. The cache removes
+  the quadratic resend; what bounds the row is dense decode at depth
+  (5.5 tok/s verdict decode, see the replay profile).
 - gemma4 completes with perfect recall but at 1,500 s per conversation
   (decode-bound); it stays a capability point, not an audit choice.
 
@@ -67,35 +67,35 @@ strong bar: cold-vs-hit byte-identical on both probe conversations
 across server restarts, cache-off control also deterministic, semantic
 needles 8/8. The pin flipped to align APC on. Align mode changes temp-0
 outputs versus cache-off (documented plugin behavior), so the cache-off
-canonical rates do not transfer: the APC operating point owes its own
-canonical run.
+canonical rates do not transfer; the APC operating point has its own
+canonical table below.
 
 ## Audit replay profile: M5 Max
 
 Canonical replay runs (AuditBench protocol) at the
 serving-default cache pins (align APC on for both hybrids), repo commit
-`c5763bc`, plugin dev20260826100011, Dell brick at the 140 W contract,
+`705c493`, plugin 0.29.0, Dell brick at the 140 W contract,
 dedicated server lifecycle per model. Replays/hour is never comparable
 to conversations/hour, and here it is not even comparable across these
 two models: qwen3.6 filled the forced 16,384-token verdict
 (`finish_reason: length`) while qwen3.8 ignored the never-conclude
-control in all three samples and stopped at 1.4-2.2k tokens, so its
-4.12 replays/h rides on 8x less verdict decode. The server-comparable
+control in both samples and stopped at 1.5-1.6k tokens, so its
+4.04 replays/h rides on ~10x less verdict decode. The server-comparable
 columns are the turn walls and the verdict decode rate.
 
 | Profile | Replays/h | Turn walls (16 turns) | Cached | Verdict decode at ~164k depth |
 | -- | --: | -- | --: | -- |
-| `qwen3.6-35b-a3b-4bit` | 2.13 | 13.0 s cold, 5.4 -> 18.3 s | 0.824 | 16,384 tok @ 11.0 tok/s |
-| `qwen3.8-27b-4bit` | 4.12* | 58.6 s cold, 21.4 -> 52.0 s | 0.899 | 1.4-2.2k tok @ 5.5-5.9 tok/s (stopped early) |
+| `qwen3.6-35b-a3b-4bit` | 2.13 | 13.3 s cold, 6.2 -> 18.8 s | 0.824 | 16,384 tok @ 11.0 tok/s |
+| `qwen3.8-27b-4bit` | 4.04* | 59.3 s cold, 21.2 -> 52.6 s | 0.899 | 1.5-1.6k tok @ 5.5-5.6 tok/s (stopped early) |
 
-- qwen3.6: 88% of the 1,689.6 s median wall is the forced verdict
+- qwen3.6: 88% of the 1,689 s median wall is the forced verdict
   decode (1,489 s); the same fixture on the A100 runs 18.3 replays/h
   with the verdict at 98 tok/s, so the M5 gap at audit depth is almost
   entirely single-stream decode bandwidth (11.0 tok/s), not caching.
   Cached fraction matches the A100 anchor exactly (0.824, same
   block-rounding of the shared fixture).
 - qwen3.8: even with 89.9% of prompt tokens cached, turn walls grow
-  21 -> 52 s with depth -- the ~8.2k-token uncached suffix each turn
+  21 -> 53 s with depth -- the ~8.2k-token uncached suffix each turn
   prefills against growing attention depth, and align-mode Metal
   prefill pays it. Contrast the A100's flat 4.3-7.4 s turns on the same
   fixture. Verdict decode of 5.5 tok/s at 164k depth confirms the
@@ -114,56 +114,58 @@ columns are the turn walls and the verdict decode rate.
 ## Concurrent audit replay profile: M5 Max
 
 Canonical replay-concurrent runs (AuditBench protocol) at the
-serving-default align-APC pins, plugin dev20260826100011, Dell brick at
-the 140 W contract, dedicated server lifecycle per model. The profile is the multi-agent
+serving-default align-APC pins, repo commit `705c493`, plugin 0.29.0,
+Dell brick at the 140 W contract, dedicated server lifecycle per
+model. The profile is the multi-agent
 audit shape: N scripted replays at once share the 32k evidence prefix
 (same repository, distinct per-agent file chains) and every probe turn
 decodes a 1,024-token agent turn, so aggregate decode contention is
 part of the number. Replays/hour here is not comparable to the 1x
 replay profile above (32-token probes), and not across these two
 models either: qwen3.6 decodes every turn to the full 1,024 cap while
-qwen3.8 stops at ~790 median.
+qwen3.8 stops at ~810 median.
 
 ### qwen3.6-35b-a3b-4bit APC -- concurrent replay canonical
 
-Context 262,144, pool 1,324,084 tokens; streams 1, 2, and 4 fit; peak
+Context 262,144, pool 1,326,140 tokens; streams 1, 2, and 4 fit; peak
 2 streams.
 
 | Streams | Batch wall | Replays/h | Scaling | Turn walls first -> final | Verdict decode | Cached |
 | --: | --: | --: | --: | -- | --: | --: |
-| 1 | 2,310 s | 1.56 | 1.00 | 28.3 -> 92.7 s | 12.2 tok/s | 0.897 |
-| 2 | 3,632 s | 1.98 | 1.27 | 40.6 -> 165.0 s | 7.1 tok/s | 0.906 |
-| 4 | 7,372 s | 1.95 | 1.25 | 55.2 -> 298.0 s | 3.9 tok/s | 0.916 |
+| 1 | 2,312 s | 1.56 | 1.00 | 28.9 -> 92.4 s | 12.2 tok/s | 0.892 |
+| 2 | 2,996 s | 2.40 | 1.54 | 40.2 -> 146.4 s | 8.1 tok/s | 0.902 |
+| 4 | 7,383 s | 1.95 | 1.25 | 54.6 -> 293.1 s | 3.8 tok/s | 0.912 |
 
-Two concurrent agents are the knee: 4x matches 2x aggregate while
-quadrupling per-agent latency, and the shared prefix helps (cached
+Two concurrent agents are the knee: 4x falls below 2x aggregate while
+doubling per-agent latency, and the shared prefix helps (cached
 fraction rises with streams) but stays minor against a ~167k final
 conversation. The 2x median-of-3 carries a wide sample range
-(2,792-3,755 s).
+(2,982-3,729 s).
 
 ### qwen3.8-27b-4bit APC -- concurrent replay canonical
 
-Context 262,144, pool 611,156 tokens; the 184,320-token per-stream
+Context 262,144, pool 603,469 tokens; the 184,320-token per-stream
 demand fits streams 1 and 2 only; peak 2 streams.
 
 | Streams | Batch wall | Replays/h | Scaling | Turn walls first -> final | Verdict decode | Cached |
 | --: | --: | --: | --: | -- | --: | --: |
-| 1 | 1,965 s | 1.83 | 1.00 | 88.7 -> 57.8 s | 5.6 tok/s | 0.898 |
-| 2 | 3,283 s | 2.19 | 1.20 | 100.3 -> 63.3 s | 3.6 tok/s | 0.908 |
+| 1 | 1,937 s | 1.86 | 1.00 | 93.4 -> 58.8 s | 5.6 tok/s | 0.898 |
+| 2 | 3,379 s | 2.13 | 1.15 | 96.2 -> 63.5 s | 4.1 tok/s | 0.908 |
 
-qwen3.8 under-decodes the per-turn control (~790 of 1,024 median), so
-its replays/hour buys less work per replay than qwen3.6's.
+qwen3.8 under-decodes the per-turn control (~810 of 1,024 median), so
+its replays/hour buys less work per replay than qwen3.6's. Both stream
+counts needed a third sample (1x range 1,867-2,133 s, 2x
+3,179-3,699 s).
 
 ## Apple M5 Max operating points
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU cores, 128 GB unified
-memory, macOS 26.6.2 (25G83), on external power. The plugin pin moved
-from 0.3.0.dev20260819180958 to 0.3.0.dev20260826100011 (PR #634 APC
-decay fix) and then to 0.28.0 stable; each canonical subsection below
-names its pin. The 2026-09-03 re-gate at 0.28.0 measured decode and
-cold 32k/64k prefill within ~3% of the dev-pin canonicals on all three
-serving profiles (numbers in README.md), so the dev-pin tables carry
-over unchanged. The legacy
+memory, macOS 26.6.2 (25G83), on external power. The two align-APC
+serving points are measured at the current plugin pin 0.29.0; the
+cache-off comparison tables name the earlier dev pins they were
+measured on, and each pin move (dev20260826100011 with the PR #634 APC
+decay fix, 0.28.0, 0.29.0) re-gated decode and cold 32k/64k prefill
+within ~3% of the previous pin. The legacy
 bring-up rows ran on the earlier pin, vLLM 0.27.1 and MLX 0.32.0, paged
 KV path, utilization 0.60, max-num-seqs 4, NAX prefill kernels
 confirmed loaded from the engine log (`NAX prefill attention kernels
@@ -188,22 +190,23 @@ context 262,144, util 0.46, paged KV pool 1,407,463 tokens, seqs 5.
 
 ### qwen3.6-35b-a3b-4bit APC operating point -- AuditBench v1 canonical
 
-Measured at plugin 0.3.0.dev20260826100011. The serving default (`VLLM_PREFIX_CACHING=1`):
-context 262,144, util 0.71, paged KV pool 1,324,084 tokens, seqs 5.
+Measured at plugin 0.29.0, repo commit `705c493`. The serving default
+(`VLLM_PREFIX_CACHING=1`): context 262,144, util 0.71, paged KV pool
+1,326,140 tokens, seqs 5.
 
 | Phase | Streams | Result |
 | -- | -- | --: |
-| Prefill 32,780 | 1 | 2,823.8 tok/s |
-| Prefill 65,547 | 1 | 1,573.6 tok/s |
-| Prefill 131,071 | 1 | 1,062.5 tok/s |
-| Capacity 245,752 | 1 | passed, 650.1 tok/s, 378 s |
-| Capacity 245,752 | 4 | passed, 648.8 tok/s aggregate, 1,515 s |
-| Decode | 1 / 2 / 4 | 98.4 / 168.6 / 258.1 tok/s (1.71x / 2.62x) |
-| audit_32k calls/hour | 1 / 2 / 4 | 111.5 / 106.9 / 112.6 (peak streams 4) |
-| audit_half (131k) calls/hour | 1 | 18.8 |
-| audit_deep (229k) calls/hour | 1 / 4 | 9.9 / 9.9 |
+| Prefill 32,780 | 1 | 2,543.4 tok/s |
+| Prefill 65,547 | 1 | 1,646.1 tok/s |
+| Prefill 131,071 | 1 | 1,065.9 tok/s |
+| Capacity 245,752 | 1 | passed, 637.6 tok/s, 385 s |
+| Capacity 245,752 | 4 | passed, 637.2 tok/s aggregate, 1,543 s |
+| Decode | 1 / 2 / 4 | 102.0 / 174.3 / 265.0 tok/s (1.71x / 2.60x) |
+| audit_32k calls/hour | 1 / 2 / 4 | 113.3 / 110.5 / 117.9 (peak streams 4) |
+| audit_half (131k) calls/hour | 1 | 19.1 |
+| audit_deep (229k) calls/hour | 1 / 4 | 9.8 / 9.9 (peak streams 4) |
 
-Align-APC costs ~19% decode and ~10% cold 32k audit rate against the
+Align-APC costs ~16% decode and ~9% cold 32k audit rate against the
 cache-off table above; all benchmark requests are cold, and the
 operating point exists for the warm TTFT win on resent audit
 conversations (see the replay profile).
@@ -261,24 +264,24 @@ Findings beyond the raw rates:
 
 ### qwen3.8-27b-4bit APC operating point -- AuditBench v1 canonical
 
-Measured at plugin 0.3.0.dev20260826100011. The serving default (`VLLM_PREFIX_CACHING=1`):
-context 262,144, util 0.91, paged KV pool 611,156 tokens, seqs 5. The
-APC pool holds 2.33 near-full contexts, so capacity and audit_deep
-probe 1x and 2x.
+Measured at plugin 0.29.0, repo commit `705c493`. The serving default
+(`VLLM_PREFIX_CACHING=1`): context 262,144, util 0.91, paged KV pool
+603,469 tokens, seqs 5. The APC pool holds 2.30 near-full contexts, so
+capacity and audit_deep probe 1x and 2x.
 
 | Phase | Streams | Result |
 | -- | -- | --: |
-| Prefill 32,784 | 1 | 569.9 tok/s |
-| Prefill 65,551 | 1 | 457.6 tok/s |
-| Prefill 131,075 | 1 | 317.8 tok/s |
-| Capacity 245,748 | 1 | passed, 208.9 tok/s, 1,176 s |
-| Capacity 245,748 | 2 | passed, 208.9 tok/s aggregate, 2,353 s |
-| Decode | 1 / 2 / 4 | 28.6 / 53.4 / 83.3 tok/s (1.87x / 2.92x) |
-| audit_32k calls/hour | 1 / 2 / 4 | 34.7 / 38.4 / 39.4 (peak streams 4) |
-| audit_half (131k) calls/hour | 1 | 6.7 |
+| Prefill 32,784 | 1 | 568.0 tok/s |
+| Prefill 65,556 | 1 | 450.3 tok/s |
+| Prefill 131,075 | 1 | 315.5 tok/s |
+| Capacity 245,748 | 1 | passed, 207.0 tok/s, 1,187 s |
+| Capacity 245,748 | 2 | passed, 206.9 tok/s aggregate, 2,375 s |
+| Decode | 1 / 2 / 4 | 28.8 / 52.8 / 82.6 tok/s (1.83x / 2.87x) |
+| audit_32k calls/hour | 1 / 2 / 4 | 34.7 / 38.1 / 39.0 (peak streams 4) |
+| audit_half (131k) calls/hour | 1 | 6.6 |
 | audit_deep (229k) calls/hour | 1 / 2 | 3.3 / 3.3 |
 
-Against the cache-off table above, APC costs ~10-14% decode and halves
+Against the cache-off table above, APC costs ~11-13% decode and halves
 the token pool while audit calls/hour stay flat; the operating point
 exists for the warm TTFT win on resent audit conversations.
 

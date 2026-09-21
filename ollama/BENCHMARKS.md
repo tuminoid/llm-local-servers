@@ -146,7 +146,7 @@ Run JSONs: retained under `${XDG_STATE_HOME:-~/.local/state}/auditbench/`.
 ## Apple M5 Max MLX operating points
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU cores, 128 GB unified
-memory, macOS 26.6.2 (25G83), on external power. All rows use the managed
+memory, macOS 26.6.2 (25G83), on external power. The MLX rows use the managed
 official Ollama 0.32.14 (`ollama-darwin.tgz`), whose MLX runner loaded the
 `mlx_metal_v4` backend (MLX 0.32.0-213-gadf21de, device gpu) -- the Metal 4
 path on M5. Both models are safetensors NVFP4 registry artifacts dispatched
@@ -542,6 +542,36 @@ JSON schema completes, Ollama restarts the runner in ~10 s, and a later
 12k-token unconstrained generation in the same session completed.
 Constrain long generations with a schema; retest on every runtime bump.
 
+### Qwen3.8 27B GGUF -- AuditBench v1 canonical (M5 Max)
+
+The `qwen3.8-27b` profile (registry `qwen3.8:27b`, Q4_K_M, digest
+`22130167c4c2`, llama.cpp runner on the 0.34.2 GGUF runtime) at
+`OLLAMA_CONTEXT_LENGTH=262144`, one slot, q8_0 KV, 19.28 GiB GPU
+allocation; the conf default stays 131,072. Canonical full,
+conversation and replay profiles 2026-09-20, repo commit `705c493`,
+140 W contract; Capability Check v1 passed the same day (all eight
+checks, schema enforced). Decode is MTP-speculated: the registry
+Modelfile sets `draft_num_predict 4`.
+
+| Phase | Result |
+| -- | -- |
+| Prefill 32k / 64k / 128k | 450 / 327 / 206 tok/s |
+| Near-context capacity | 245,752 tokens at 1x (1,990 s, 123.5 tok/s) |
+| Decode ceiling 1x | 44.66 tok/s |
+| Audit 32k | 34.7 calls/h |
+| Audit half (131k) | 5.2 calls/h |
+| Audit deep (229k) | 2.0 calls/h |
+| Conversation | 3.5/h, compliant 16/16, cached fraction 0.902 |
+| Replay | 1.90/h, 75.3 s cold turn, 27.2 -> 82.3 s, verdict 16,384 tok @ 16.5 tok/s |
+
+Against the same weights on vLLM-Metal align APC
+([../vllm-metal/BENCHMARKS.md](../vllm-metal/BENCHMARKS.md)): MTP gives
+this row the higher short-prompt decode (44.7 vs 28.8 tok/s) and 3x
+the verdict decode at 165k depth (16.5 vs 5.6 tok/s), while vLLM-Metal
+prefills 1.3-1.5x faster and serves 4.2 vs 3.5 conversations/hour on
+its cache. The llama.cpp slot cache engages on the resent conversation
+(suffix-only prefill; turn walls 27 -> 82 s against growing depth).
+
 ## Audit conversation profile
 
 The conversation profile (AuditBench protocol) measures the production
@@ -563,12 +593,14 @@ so not directly comparable across context tiers):
 | `qwen3.6-35b-a3b-mlx-nvfp4` | 131,072 | yes | 48.1 | 9/9 |
 | `nemotron-3.5-lightning-30b-mlx` | 262,144 | yes | 34.4 | 16/16 |
 | `qwen3.8-flash-next-gguf` | 262,144 | yes | 7.2 | 16/16 |
+| `qwen3.8-27b` (GGUF, 0.34.2) | 262,144 | yes | 3.5 | 16/16 |
 | `qwen3.8-27b-mlx-nvfp4` | 184,320 | NO | (7.7 sample 1) | 15/15 |
 
-The flash-next row (canonical 2026-09-04, cached fraction 0.902, walls
-493/506 s) is the first M5 Ollama profile to serve consecutive deep
-audit conversations at a 262,144 allocation: the GGUF dispatches to
-the llama.cpp runner, which is immune to the MLX runner's repeated
+The two GGUF rows (flash-next canonical 2026-09-04, walls 493/506 s;
+qwen3.8-27b canonical 2026-09-20, median wall 1,035 s; cached fraction
+0.902 on both) are the M5 Ollama profiles that serve consecutive deep
+audit conversations at a 262,144 allocation: GGUF dispatches to the
+llama.cpp runner, which is immune to the MLX runner's repeated
 deep-request failures below.
 
 Lightning is the deep-context standout: full 16-file conversations at
@@ -624,13 +656,29 @@ align-APC pin -- and align-APC vLLM carries qwen3.6 to 85.9.
 GLM think-runs-away or paraphrases the ledger on both runtimes; gemma4
 alternates between hallucinated file names and clean completions.
 
+## Audit replay profile: M5 Max
+
+The replay profile (AuditBench protocol) scripts every turn, so it
+measures the server with no dependence on model protocol compliance.
+The one M5 Ollama row is `qwen3.8-27b` on the 0.34.2 GGUF runtime at
+262,144 (2026-09-20, repo commit `705c493`). Replays/hour is not
+comparable to conversations/hour.
+
+| Profile | Replays/h | Turn walls | Verdict | Note |
+| -- | --: | -- | -- | -- |
+| `qwen3.8-27b` | 1.90 | 75.3 s cold, 27.2 -> 82.3 s | 16,384 tok @ 16.5 tok/s | slot cache behavioral, MTP drafting |
+
+Both samples filled the verdict cap, so the median is a full-work rate:
+of the 1,899 s wall, 994 s is the verdict decode and 905 s the 16
+turns, whose walls grow 27 -> 82 s as the ~8.2k-token suffix prefills
+against growing depth.
+
 ## Audit replay profile: A100 remote
 
-The replay profile (AuditBench protocol) scripts every
-turn, so it measures the server with no dependence on model protocol
-compliance. Gemma and GLM ran at harness commit `03b9b2c`, the three
-Qwen rows at `8425d08` (the replay workload is unchanged between the
-two), the qwen3.8 row on 0.34.2; isolated Ollama, 16-file/~165k shape.
+The replay profile scripts every turn, as above. Gemma and GLM ran at
+harness commit `03b9b2c`, the three Qwen rows at `8425d08` (the replay
+workload is unchanged between the two), the qwen3.8 row on 0.34.2;
+isolated Ollama, 16-file/~165k shape.
 Replays/hour is not
 comparable to conversations/hour (probe turns decode almost nothing;
 the verdict decode is pushed toward the 16,384 cap).

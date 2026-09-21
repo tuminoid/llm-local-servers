@@ -105,20 +105,17 @@ Apple M5 Max:
 | Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
 | --: | -- | -- | -- | --: | --: |
 | 1 | Ollama `nemotron-3.5-lightning` MLX | hybrid MoE | MLX trie | 141.7 | 34.4 |
-| 2 | vLLM-Metal `qwen3.6-35b-a3b-4bit` | MoE | align APC | 98.4 | 12.5 |
+| 2 | vLLM-Metal `qwen3.6-35b-a3b-4bit` | MoE | align APC | 102.0 | 12.9 |
 | 3 | Splash `qwen3.8-27b` | dense | state/prefix cache + DFlash 2 | 67.31 | 10.29 |
 | 4 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
-| 5 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | -- | 2.4 |
-| 6 | vLLM-Metal `qwen3.8-27b-4bit` | dense | APC off, retired pin | 33.1 | 0.70 |
+| 5 | vLLM-Metal `qwen3.8-27b-4bit` | dense | align APC | 28.8 | 4.2 |
+| 6 | Ollama `qwen3.8-27b` GGUF | dense | slot cache + MTP | 44.7 | 3.5 |
+| 7 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | -- | 2.4 |
 | -- | Splash `qwen3.6-35b-a3b` | MoE | state/prefix cache + DFlash 2 | 301.08 | 37.16 (1/2 compliant) |
 
 Splash qwen3.6's 37.16/h is the rate of its sole compliant sample; the
 other sample stopped after one of 16 files. Its measurement is shown
 unranked because the conversation campaign failed the fixture gate.
-
-The vLLM-Metal qwen3.8 row predates the align-APC pin flip and the APC-on
-conversation has not been run; its bound is 5.5 tok/s verdict decode at
-depth, not the cache.
 
 Splash fixed-transcript replay on this host, 16 steps and about 164k
 verdict input. These are separate workloads from conversation and from
@@ -178,9 +175,12 @@ Flash Attention, q8 KV.
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 26.6.2. Ollama
 MLX rows: managed official Ollama 0.32.14, MLX runner on
 `mlx_metal_v4`, safetensors NVFP4 artifacts; the runner serializes
-requests to one slot. The flash-next row runs the llama.cpp runner on
-the split 0.33.3 managed runtime with two real slots and q8 KV.
-vLLM-Metal rows: pinned plugin venv 0.28.0, paged KV, NAX prefill.
+requests to one slot. Ollama GGUF rows run the llama.cpp runner with
+q8 KV: flash-next measured on the 0.33.3 runtime with two real slots
+(the profile now pins 0.34.2), qwen3.8-27b on 0.34.2 at its native
+262,144 with one slot and the registry Modelfile's MTP drafting.
+vLLM-Metal rows: pinned plugin venv 0.29.0, align APC, paged KV, NAX
+prefill.
 Splash rows: release 1.0 on macOS 27.0, 64 GiB native memory cap,
 four active slots, DFlash 2 and prefix/state caching. Its KV column is
 sparse virtual capacity, not committed memory. All eight managed campaign
@@ -191,9 +191,10 @@ the benchmark record retains the failures and verified final release.
 | -- | -- | --: | --: | --: | --: | --: | --: | --: |
 | Splash | `qwen3.6-35b-a3b`, 64 GiB, 4 slots | 262,144 | 4,415,488 virtual | 4,455 / 3,241 / 2,237 | 301.1 / 375.1 / 515.4 | 375.3 @4x | 58.7 | 23.4 @1x |
 | Splash | `qwen3.8-27b`, 64 GiB, 4 slots | 262,144 | 1,474,560 virtual | 796 / 704 / 559 | 67.3 / 119.6 / 152.0 | 66.4 @4x | 14.3 | 6.6 @1x |
-| vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,324,084 | 2,824 / 1,574 / 1,063 | 98.4 / 168.6 / 258.1 | 112.6 @4x | 18.8 | 9.9 @1x |
-| vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 611,156 | 570 / 458 / 318 | 28.6 / 53.4 / 83.3 | 39.4 @4x | 6.7 | 3.3 @1x |
+| vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,326,140 | 2,543 / 1,646 / 1,066 | 102.0 / 174.3 / 265.0 | 117.9 @4x | 19.1 | 9.9 @4x |
+| vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 603,469 | 568 / 450 / 316 | 28.8 / 52.8 / 82.6 | 39.0 @4x | 6.6 | 3.3 @1x |
 | Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |
+| Ollama | `qwen3.8:27b` (Q4_K_M GGUF, llama.cpp, 0.34.2, MTP) | 262,144 | one slot | 450 / 327 / 206 | 44.7 / - / - | 34.7 @1x | 5.2 | 2.0 @1x |
 | Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |
 | Ollama | `qwen3.6:35b-a3b-coding-nvfp4` (MLX) | 131,072 | one slot | 3,242 / 2,305 / - | 126.7 / - / - | 180.4 @1x | 88.5 (65k) | 48.7 (114.7k) |
 | Ollama | `qwen3.6:35b-a3b-nvfp4` (MLX, base) | 131,072 | one slot | 3,190 / 2,224 / - | 140.8 / - / - | 188.7 @1x | 91.2 (65k) | 47.7 (114.7k) |

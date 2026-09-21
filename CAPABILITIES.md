@@ -122,8 +122,8 @@ proves nothing about parser compatibility.
   `nemotron-3.5-lightning-30b-mlx`
 - Ollama MLX on the split 0.33.3 runtime: `qwen3.8-flash-next-mlx-nvfp4`
   (tech demo; audit-unusable on this host, see the conf)
-- Ollama GGUF (llama.cpp runner on the split 0.33.3 managed runtime):
-  `qwen3.8-flash-next-gguf`
+- Ollama GGUF (llama.cpp runner on the 0.34.2 GGUF runtime):
+  `qwen3.8-flash-next-gguf`, `qwen3.8-27b`
 
 ### RTX PRO 3000 Blackwell
 
@@ -154,6 +154,9 @@ day, and `qwen3.8-flash-next-mlx-nvfp4`, which owed a record and runs on
 the 0.34.2 GGUF runtime rather than the 0.32.14 fleet default.
 Splash rows were added on 2026-09-19 with release 1.0 on macOS 27.0;
 both were rechecked before the full managed AuditBench campaign. The
+vLLM-Metal `qwen3.6-35b-a3b-4bit` and `qwen3.8-27b-4bit` rows are dated
+2026-09-20 on plugin 0.29.0, as is the Ollama GGUF `qwen3.8-27b` row
+(registry `qwen3.8:27b` on the 0.34.2 GGUF runtime at 262,144). The
 managed adapters use the current checker, including schema enforcement.
 
 Every passing row verified live model identity against the config's pinned
@@ -179,6 +182,7 @@ model produces when the schema is stated in words instead of a grammar.
 | Ollama MLX | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
 | Ollama MLX | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail |
 | Ollama GGUF | `qwen3.8-flash-next-gguf` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| Ollama GGUF | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Ollama MLX 0.33.3 | `qwen3.8-flash-next-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 
 ### Findings
