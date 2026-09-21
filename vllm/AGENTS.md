@@ -131,17 +131,6 @@ is what makes a forgotten host fail loudly instead of serving a retired
 release under the documented rates. `bench.py` applies the same check to
 the live engine.
 
-### Sampling defaults to greedy
-
-`start.sh` passes `--override-generation-config` with temperature 0, so a
-request that sends no sampling parameters decodes greedily instead of
-under the checkpoint's `generation_config.json` (Qwen3.8 ships 1.0). The
-served workloads are coding and security audits, every canonical row and
-capability verdict was measured at 0, and speculative profiles keep their
-measured draft acceptance only there. Request parameters override it;
-`VLLM_GENERATION_OVERRIDE='{}'` restores the checkpoint defaults for a
-trial.
-
 ### Budget is footprint
 
 vLLM preallocates the KV cache as a single tensor sized to fill whatever
