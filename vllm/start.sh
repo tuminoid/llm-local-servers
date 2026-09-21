@@ -334,6 +334,19 @@ fi
 if [[ -n "${VLLM_SPECULATIVE_CONFIG}" ]]; then
     args+=(--speculative-config "${VLLM_SPECULATIVE_CONFIG}")
 fi
+# Server-side sampling default for requests that send none; vLLM otherwise
+# takes them from the checkpoint's generation_config.json (Qwen3.8: temperature
+# 1.0, top_k 20, top_p 0.95). The fleet serves coding and security-audit
+# agents whose clients typically send no sampling parameters, so the default
+# is greedy: reproducible findings and tool calls, the drafter acceptance the
+# speculative profiles were measured at, and the setting behind every
+# canonical row and capability verdict. Explicit request parameters win.
+# One argv element of JSON merged over the checkpoint file; '{}' keeps the
+# checkpoint defaults. Two-step default: a literal `}` inside ${VAR:-...}
+# breaks the expansion when the environment overrides it.
+VLLM_GENERATION_OVERRIDE_DEFAULT='{"temperature":0}'
+VLLM_GENERATION_OVERRIDE="${VLLM_GENERATION_OVERRIDE:-${VLLM_GENERATION_OVERRIDE_DEFAULT}}"
+args+=(--override-generation-config "${VLLM_GENERATION_OVERRIDE}")
 if [[ -n "${VLLM_REASONING_PARSER}" ]]; then
     # The engine subprocess imports reasoning plugins independently. Loading
     # the same file as a tool plugin in the API process is not sufficient.

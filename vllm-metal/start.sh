@@ -216,6 +216,15 @@ if [[ -n "${VLLM_HF_OVERRIDES}" ]]; then
     # context-extended profile (same shape as the CUDA 512k conf).
     args+=(--hf-overrides "${VLLM_HF_OVERRIDES}")
 fi
+# Server-side sampling default for requests that send none: greedy, the
+# setting every canonical row and capability verdict used and what the coding
+# and audit clients need; the checkpoint's generation_config.json (Qwen3.8:
+# temperature 1.0) applies otherwise. Request parameters win; '{}' keeps the
+# checkpoint defaults. Two-step default: a literal `}` inside ${VAR:-...}
+# breaks the expansion when the environment overrides it.
+VLLM_GENERATION_OVERRIDE_DEFAULT='{"temperature":0}'
+VLLM_GENERATION_OVERRIDE="${VLLM_GENERATION_OVERRIDE:-${VLLM_GENERATION_OVERRIDE_DEFAULT}}"
+args+=(--override-generation-config "${VLLM_GENERATION_OVERRIDE}")
 
 mkdir -p "$(dirname "${VLLM_METAL_PIDFILE}")"
 

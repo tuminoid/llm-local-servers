@@ -27,6 +27,12 @@ Serving measurements follow
 
 - Run every operation through a root Makefile target.
 - The venv, model weights, pidfile, and log all live outside the repository.
+- Sampling defaults to greedy: `start.sh` passes
+  `--override-generation-config` with temperature 0 for requests that send
+  no sampling parameters, the setting every canonical row and capability
+  verdict used and what the coding and audit clients need. Request
+  parameters override it; `VLLM_GENERATION_OVERRIDE='{}'` restores the
+  checkpoint's `generation_config.json` defaults for a trial.
 - `vllm_metal_bin` accepts only the `VLLM_METAL_BIN` override or the managed
   venv. Never fall back to a PATH `vllm`: that is the CUDA install or the uv
   tool wrapper, and it would serve without the Metal plugin.
