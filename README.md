@@ -105,13 +105,14 @@ Apple M5 Max:
 | Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
 | --: | -- | -- | -- | --: | --: |
 | 1 | Ollama `nemotron-3.5-lightning` MLX | hybrid MoE | MLX trie | 141.7 | 34.4 |
-| 2 | vLLM-Metal `qwen3.6-35b-a3b-4bit` | MoE | align APC | 102.0 | 12.9 |
-| 3 | Splash `qwen3.8-27b` | dense | state/prefix cache + DFlash 2 | 67.31 | 10.29 |
-| 4 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
-| 5 | vLLM-Metal `nemotron-3.5-lightning-30b-4bit` | hybrid MoE | off | 123.0 | 4.9 |
-| 6 | vLLM-Metal `qwen3.8-27b-4bit` | dense | align APC | 28.8 | 4.2 |
-| 7 | Ollama `qwen3.8-27b` GGUF | dense | slot cache + MTP | 44.7 | 3.5 |
-| 8 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | 26.6 | 2.4 |
+| 2 | vLLM-Metal `mimo-v2.6-9b-4bit` | dense | align APC | 69.6 | 15.7 |
+| 3 | vLLM-Metal `qwen3.6-35b-a3b-4bit` | MoE | align APC | 102.0 | 12.9 |
+| 4 | Splash `qwen3.8-27b` | dense | state/prefix cache + DFlash 2 | 67.31 | 10.29 |
+| 5 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
+| 6 | vLLM-Metal `nemotron-3.5-lightning-30b-4bit` | hybrid MoE | off | 123.0 | 4.9 |
+| 7 | vLLM-Metal `qwen3.8-27b-4bit` | dense | align APC | 28.8 | 4.2 |
+| 8 | Ollama `qwen3.8-27b` GGUF | dense | slot cache + MTP | 44.7 | 3.5 |
+| 9 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | 26.6 | 2.4 |
 | -- | Splash `qwen3.6-35b-a3b` | MoE | state/prefix cache + DFlash 2 | 301.08 | 37.16 (1/2 compliant) |
 | -- | vLLM-Metal `ornith1.5-35b-a3b-4bit` | hybrid MoE | align APC | 101.5 | 7.6 (1/2 compliant) |
 
@@ -198,6 +199,7 @@ the benchmark record retains the failures and verified final release.
 | Splash | `qwen3.8-27b`, 64 GiB, 4 slots | 262,144 | 1,474,560 virtual | 796 / 704 / 559 | 67.3 / 119.6 / 152.0 | 66.4 @4x | 14.3 | 6.6 @1x |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,326,140 | 2,543 / 1,646 / 1,066 | 102.0 / 174.3 / 265.0 | 117.9 @4x | 19.1 | 9.9 @4x |
 | vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 603,469 | 568 / 450 / 316 | 28.8 / 52.8 / 82.6 | 39.0 @4x | 6.6 | 3.3 @1x |
+| vLLM-Metal | `mimo-v2.6-9b-4bit` APC, util 0.90, seqs 5 | 262,144 | 1,323,749 | 1,666 / 1,420 / 989 | 69.6 / 129.8 / 218.0 | 118.0 @4x | 20.1 | 9.9 @1x |
 | vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` cache off, util 0.32, seqs 5 | 262,144 | 1,591,012 | 3,359 / 2,738 / 2,323 | 123.0 / 185.6 / 267.0 | 197.4 @2x | 42.9 | 25.9 @1x |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` APC, util 0.70, seqs 5 | 262,144 | 1,300,439 | 2,623 / 1,664 / 1,075 | 101.5 / 173.5 / 264.3 | 117.5 @4x | 19.0 | 9.9 @4x |
 | vLLM-Metal | `granite4.2-30b-4bit` APC, util 0.91, seqs 5 | 131,072 | 331,584 | 558 / 446 / - | 30.8 / 55.6 / 88.6 | 31.0 @2x | 13.8 (65k) | 9.3 (114.7k) |

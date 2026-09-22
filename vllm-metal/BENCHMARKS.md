@@ -29,6 +29,7 @@ compliant samples; cached fraction from the engine's own counters.
 | `ornith1.5-35b-a3b-4bit` | APC on | 1/2 | 7.6 | 0.896 | 16/16 |
 | `granite4.2-30b-4bit` (131k fixture) | APC on | no | -- | 0.525 | 2/9 files |
 | `nemotron-3.5-lightning-30b-4bit` | off | yes | 4.9 | -- | 16/16 |
+| `mimo-v2.6-9b-4bit` | APC on | yes | 15.7 | 0.900 | 16/16 |
 
 Findings:
 
@@ -39,6 +40,10 @@ Findings:
   89.9% of prompt tokens cached and perfect recall. The cache removes
   the quadratic resend; what bounds the row is dense decode at depth
   (5.5 tok/s verdict decode, see the replay profile).
+- MiMo 9B (repo commit `aa84c5b`) is the fastest compliant conversation
+  server on this host's vLLM-Metal: 230 s per conversation against
+  qwen3.6's 279 s, 90.0% cached, perfect recall on both samples, at 32%
+  lower single-stream decode.
 - gemma4 completes with perfect recall but at 1,500 s per conversation
   (decode-bound); it stays a capability point, not an audit choice.
 - ornith completes a conversation in 471 s with 89.6% cached and
@@ -104,6 +109,7 @@ verdict decode rate.
 | `granite4.2-30b-4bit` (131k fixture, 9 turns) | 0.95 | 58.8 s cold, 22.3 -> 38.9 s | 0.848 | 16,384 tok @ 4.7 tok/s (107k depth) |
 | `gemma4-31b-4bit` | 0.42 | 96.8 s cold, 40.5 -> 121.3 s | 0.902 | 16,384 tok @ 2.3 tok/s |
 | `nemotron-3.5-lightning-30b-4bit` (cache off) | 2.80 | 9.9 s cold, 13.0 -> 72.6 s | -- | 16,384 tok @ 24.2 tok/s |
+| `mimo-v2.6-9b-4bit` | 3.28 | 17.5 s cold, 7.0 -> 17.6 s | 0.899 | 16,384 tok @ 18.2 tok/s (2 of 3 samples) |
 
 - qwen3.6: 88% of the 1,689 s median wall is the forced verdict
   decode (1,489 s); the same fixture on the A100 runs 18.3 replays/h
@@ -122,6 +128,14 @@ verdict decode rate.
   turn walls growing 13 -> 73 s with depth; plugin 0.29.0 offers no
   prefix caching for this state family, so that cost stands until a
   plugin bump.
+- MiMo 9B: flat 7-18 s turns at 89.9% cached. The verdict is not
+  deterministic across samples at temperature 0: the first sample
+  stopped at 951 tokens, the next two filled the 16,384-token budget at
+  18.2 tok/s, so the harness extended to three samples and the median
+  is the forced-decode case. Every sample was a cache hit on different
+  blocks, and align mode resumes from the hit boundary, so greedy
+  decoding can flip at 164k depth; ornith's 931 vs 881 tokens is the
+  same effect.
 - ornith: 12.6 replays/h with turn walls of 6-19 s at 89.7% cached;
   the verdict stopped at 0.9k tokens (never-conclude control ignored,
   as qwen3.8) decoding at 10.5 tok/s at 165k depth.
@@ -330,6 +344,23 @@ the best stream count.
   1.30M-token pool.
 - granite and gemma4 are dense-decode bound: 31 and 17 audit_32k
   calls/h and single-digit deep calls/h.
+
+### mimo-v2.6-9b-4bit APC -- AuditBench v1 canonical
+
+Plugin 0.29.0, repo commit `aa84c5b`, align APC, util 0.90 computed
+from the conf, `max-num-seqs` 5, text-only serving, dedicated server
+lifecycle (2026-09-22). Medians; the audit columns name the best
+stream count.
+
+| Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h | Near-context proof |
+| --: | --: | --: | --: | --: | --: | --: | -- |
+| 262,144 | 1,323,749 | 1,666 / 1,420 / 989 | 69.6 / 129.8 / 218.0 | 118.0 @4x | 20.1 | 9.9 @1x | 4 x 245,749 in 1,530.12s |
+
+- Audit rates match qwen3.6 APC (117.9 / 19.1 / 9.9) at 65% of its 32k
+  prefill and 68% of its single-stream decode.
+- MiMo decides for itself whether to think: its template acts only on
+  `enable_thinking=false`, so short questions get direct answers without
+  reasoning.
 
 ### qwen3.8-27b-8bit (mlx-community/Qwen3.8-27B-8bit) -- retired baseline
 

@@ -114,7 +114,7 @@ proves nothing about parser compatibility.
 - vLLM-Metal: `qwen3.6-35b-a3b-4bit`, `qwen3.8-27b-4bit`,
   `gemma4-31b-4bit`,
   `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit`
-- vLLM-Metal: `nemotron-3.5-lightning-30b-4bit`
+- vLLM-Metal: `nemotron-3.5-lightning-30b-4bit`, `mimo-v2.6-9b-4bit`
 - Ollama MLX: `qwen3.6-35b-a3b-mlx-nvfp4`,
   `qwen3.6-35b-a3b-coding-mlx-nvfp4`,
   `qwen3.8-27b-mlx-nvfp4`, `muse-glimmer-30b-mlx`,
@@ -161,7 +161,8 @@ vLLM-Metal `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit` and
 with unchanged verdicts (gemma4's schema check hit the default 600 s
 timeout, the same runaway), and the vLLM-Metal
 `nemotron-3.5-lightning-30b-4bit` row is dated 2026-09-22, the first
-check with the conf's qwen3 dialect parsers declared. The
+check with the conf's qwen3 dialect parsers declared, as is the
+`mimo-v2.6-9b-4bit` row. The
 managed adapters use the current checker, including schema enforcement.
 
 Every passing row verified live model identity against the config's pinned
@@ -182,6 +183,7 @@ model produces when the schema is stated in words instead of a grammar.
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
 | vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Ollama MLX | `qwen3.6-35b-a3b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
 | Ollama MLX | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
 | Ollama MLX | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
