@@ -120,6 +120,14 @@ outputs from the first generated token and shrinking the engine-sized KV
 pool. The environment still wins over the conf; the qwen3.8 extended
 profiles inherit the base conf's pin.
 
+### Serving is text only
+
+`start.sh` always passes `--language-model-only`. Multimodal checkpoints
+(the Qwen3.5 family, Gemma 4) serve text, reasoning and tools only: image
+and video requests are rejected, the checkpoint's image processor is never
+built, and the vision tower is not loaded. Text-only architectures ignore
+the flag.
+
 ### The runtime pin is enforced at start
 
 `start.sh` refuses to launch when the resolved vllm's installed version

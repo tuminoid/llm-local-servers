@@ -198,6 +198,12 @@ args=(
     --host "${VLLM_HOST}"
     --port "${VLLM_PORT}"
 )
+# Text only: the fleet's clients send no images, video or audio. The flag
+# zeroes every modality limit of a multimodal checkpoint, so vLLM builds
+# no HF image processor at startup (whose files some conversions ship
+# broken or not at all) and skips the vision tower where the model class
+# allows it. Text-only architectures ignore it.
+args+=(--language-model-only)
 if [[ -n "${VLLM_REASONING_PARSER}" ]]; then
     args+=(--reasoning-parser "${VLLM_REASONING_PARSER}")
 fi

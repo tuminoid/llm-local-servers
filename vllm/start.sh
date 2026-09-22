@@ -306,6 +306,12 @@ args=(
     --host "${VLLM_HOST}"
     --port "${VLLM_PORT}"
 )
+# Text only: the fleet's clients send no images, video or audio. The flag
+# zeroes every modality limit of a multimodal checkpoint, so vLLM builds
+# no HF image processor at startup (whose files some conversions ship
+# broken or not at all) and skips the vision tower where the model class
+# allows it. Text-only architectures ignore it.
+args+=(--language-model-only)
 
 # Extended-context profiles carry model-specific nested config rather than
 # teaching the launcher how to reconstruct each architecture's RoPE fields.

@@ -115,6 +115,10 @@ Serving measurements follow
   the failed trial), so no bump has occurred yet. The Ollama registry is
   the only NVFP4 path on this host. Expect and accept loud load failures;
   never paper over one with a dequantizing fallback.
+- Serving is text only: `start.sh` always passes `--language-model-only`,
+  so a multimodal checkpoint's image processor is never built and its
+  processor files (broken or absent in several MLX conversions) are never
+  read. Image and video requests are rejected.
 - `start.sh` refuses a venv whose installed vllm-metal or vllm version
   differs from the Makefile pins, which `vllm-metal-start` passes. Start
   never installs; a pin bump is complete only after `make
