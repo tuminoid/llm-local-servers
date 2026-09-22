@@ -114,8 +114,7 @@ proves nothing about parser compatibility.
 - vLLM-Metal: `qwen3.6-35b-a3b-4bit`, `qwen3.8-27b-4bit`,
   `gemma4-31b-4bit`,
   `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit`
-- vLLM-Metal, failed: `nemotron-3.5-lightning-30b-4bit` (serves on plugin
-  0.29.0; the conf declares no reasoning or tool parser)
+- vLLM-Metal: `nemotron-3.5-lightning-30b-4bit`
 - Ollama MLX: `qwen3.6-35b-a3b-mlx-nvfp4`,
   `qwen3.6-35b-a3b-coding-mlx-nvfp4`,
   `qwen3.8-27b-mlx-nvfp4`, `muse-glimmer-30b-mlx`,
@@ -161,7 +160,8 @@ vLLM-Metal `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit` and
 `gemma4-31b-4bit` rows were rechecked 2026-09-21/22 on plugin 0.29.0
 with unchanged verdicts (gemma4's schema check hit the default 600 s
 timeout, the same runaway), and the vLLM-Metal
-`nemotron-3.5-lightning-30b-4bit` row is dated 2026-09-21. The
+`nemotron-3.5-lightning-30b-4bit` row is dated 2026-09-22, the first
+check with the conf's qwen3 dialect parsers declared. The
 managed adapters use the current checker, including schema enforcement.
 
 Every passing row verified live model identity against the config's pinned
@@ -181,7 +181,7 @@ model produces when the schema is stated in words instead of a grammar.
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
-| vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` | pass | fail | - | fail | fail | - | fail | - | enforced | fail |
+| vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Ollama MLX | `qwen3.6-35b-a3b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
 | Ollama MLX | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
 | Ollama MLX | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
@@ -312,12 +312,10 @@ AuditBench module. The earlier authenticated Qwen3.8 report remains under
   `unaided` document that is `json_only`: the combination the protocol
   singles out as unusable for structured work on this host.
 - No serving profile was promoted or demoted on this refresh. The
-  vLLM-Metal `nemotron-3.5-lightning-30b-4bit` profile serves on plugin
-  0.29.0 and fails: its conf declares no reasoning or tool parser, so
-  `</think>` leaks into content and automatic tool choice is rejected
-  with 400. Schema enforcement passed. The Ollama MLX artifact of the
-  same model passes with native controls, so the gap is the conf, not
-  the model.
+  vLLM-Metal `nemotron-3.5-lightning-30b-4bit` profile passes every
+  check on plugin 0.29.0, schema enforcement included in 11.5 s, so the
+  whitespace runaway seen on the 2026-09-18 trial venv did not recur on
+  the pinned venv.
 
 ## A100-SXM4-80GB campaign
 

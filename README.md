@@ -108,9 +108,10 @@ Apple M5 Max:
 | 2 | vLLM-Metal `qwen3.6-35b-a3b-4bit` | MoE | align APC | 102.0 | 12.9 |
 | 3 | Splash `qwen3.8-27b` | dense | state/prefix cache + DFlash 2 | 67.31 | 10.29 |
 | 4 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
-| 5 | vLLM-Metal `qwen3.8-27b-4bit` | dense | align APC | 28.8 | 4.2 |
-| 6 | Ollama `qwen3.8-27b` GGUF | dense | slot cache + MTP | 44.7 | 3.5 |
-| 7 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | 26.6 | 2.4 |
+| 5 | vLLM-Metal `nemotron-3.5-lightning-30b-4bit` | hybrid MoE | off | 123.0 | 4.9 |
+| 6 | vLLM-Metal `qwen3.8-27b-4bit` | dense | align APC | 28.8 | 4.2 |
+| 7 | Ollama `qwen3.8-27b` GGUF | dense | slot cache + MTP | 44.7 | 3.5 |
+| 8 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | 26.6 | 2.4 |
 | -- | Splash `qwen3.6-35b-a3b` | MoE | state/prefix cache + DFlash 2 | 301.08 | 37.16 (1/2 compliant) |
 | -- | vLLM-Metal `ornith1.5-35b-a3b-4bit` | hybrid MoE | align APC | 101.5 | 7.6 (1/2 compliant) |
 
@@ -118,8 +119,7 @@ Splash qwen3.6's 37.16/h and vLLM-Metal ornith's 7.6/h are the rates of
 their sole compliant samples; the other sample stopped after one and
 fifteen of 16 files respectively. Both are shown unranked because the
 conversation campaign failed the fixture gate. vLLM-Metal granite (0/2
-compliant on its 131k fixture) and nemotron (no tool parser in its conf,
-so the tool turns are rejected) have no conversation rate.
+compliant on its 131k fixture) has no conversation rate.
 
 Splash fixed-transcript replay on this host, 16 steps and about 164k
 verdict input. These are separate workloads from conversation and from

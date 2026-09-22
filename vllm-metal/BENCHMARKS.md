@@ -28,6 +28,7 @@ compliant samples; cached fraction from the engine's own counters.
 | `gemma4-31b-4bit` | APC on | yes | 2.4 | 0.902 | 16/16 |
 | `ornith1.5-35b-a3b-4bit` | APC on | 1/2 | 7.6 | 0.896 | 16/16 |
 | `granite4.2-30b-4bit` (131k fixture) | APC on | no | -- | 0.525 | 2/9 files |
+| `nemotron-3.5-lightning-30b-4bit` | off | yes | 4.9 | -- | 16/16 |
 
 Findings:
 
@@ -45,8 +46,11 @@ Findings:
   15/16 files, so the row stays unranked in the cross-runtime table.
 - granite stopped after one or two of its 131k fixture's nine files in
   both samples: not a conversation server on this host.
-- nemotron has no conversation or replay row: its conf declares no
-  tool parser, so the harness's tool-call turns are rejected with 400.
+- nemotron, cache off by pin, completes a conversation in 730 s with
+  perfect recall: every turn resends the whole transcript and 3,300
+  tok/s prefill absorbs the quadratic resend. Plugin 0.29.0 refuses
+  prefix caching for the `nemotron_h` state family (`mamba_cache_mode`
+  none only), so cache off is the only operating point.
 
 ### qwen3.8 align-APC trial and adoption
 
@@ -85,12 +89,12 @@ serving-default cache pins (align APC on for both hybrids), repo commit
 `705c493`, plugin 0.29.0, Dell brick at the 140 W contract,
 dedicated server lifecycle per model. Replays/hour is never comparable
 to conversations/hour, and here it is not even comparable across
-models: qwen3.6, granite and gemma4 filled the forced 16,384-token
-verdict (`finish_reason: length`) while qwen3.8 and ornith ignored the
-never-conclude control in both samples and stopped at 0.9-1.6k tokens,
-so their replays/h ride on 10-18x less verdict decode. The
-server-comparable columns are the turn walls and the verdict decode
-rate.
+models: qwen3.6, nemotron, granite and gemma4 filled the forced
+16,384-token verdict (`finish_reason: length`) while qwen3.8 and
+ornith ignored the never-conclude control in both samples and stopped
+at 0.9-1.6k tokens, so their replays/h ride on 10-18x less verdict
+decode. The server-comparable columns are the turn walls and the
+verdict decode rate.
 
 | Profile | Replays/h | Turn walls (16 turns) | Cached | Verdict decode at ~164k depth |
 | -- | --: | -- | --: | -- |
@@ -99,6 +103,7 @@ rate.
 | `ornith1.5-35b-a3b-4bit` | 12.6* | 13.2 s cold, 6.1 -> 18.6 s | 0.897 | 0.9k tok @ 10.5 tok/s (stopped early) |
 | `granite4.2-30b-4bit` (131k fixture, 9 turns) | 0.95 | 58.8 s cold, 22.3 -> 38.9 s | 0.848 | 16,384 tok @ 4.7 tok/s (107k depth) |
 | `gemma4-31b-4bit` | 0.42 | 96.8 s cold, 40.5 -> 121.3 s | 0.902 | 16,384 tok @ 2.3 tok/s |
+| `nemotron-3.5-lightning-30b-4bit` (cache off) | 2.80 | 9.9 s cold, 13.0 -> 72.6 s | -- | 16,384 tok @ 24.2 tok/s |
 
 - qwen3.6: 88% of the 1,689 s median wall is the forced verdict
   decode (1,489 s); the same fixture on the A100 runs 18.3 replays/h
@@ -112,6 +117,11 @@ rate.
   prefill pays it. Contrast the A100's flat 4.3-7.4 s turns on the same
   fixture. Verdict decode of 5.5 tok/s at 164k depth confirms the
   settled fleet role: quality reserve, not a live audit server.
+- nemotron, cache off by pin: 2.80 replays/h. 53% of the 1,287 s wall
+  is the forced verdict at 24.2 tok/s; the rest is the uncached resend,
+  turn walls growing 13 -> 73 s with depth; plugin 0.29.0 offers no
+  prefix caching for this state family, so that cost stands until a
+  plugin bump.
 - ornith: 12.6 replays/h with turn walls of 6-19 s at 89.7% cached;
   the verdict stopped at 0.9k tokens (never-conclude control ignored,
   as qwen3.8) decoding at 10.5 tok/s at 165k depth.
@@ -313,10 +323,9 @@ the best stream count.
 | `gemma4-31b-4bit` | APC, util 0.91 | 262,144 | 617,308 | 355 / 243 / 148 | 26.6 / 47.9 / 72.0 | 17.3 @4x | 2.6 | 1.4 @2x | 2 x 245,774 in 5,601.60s |
 
 - nemotron leads every column on this host (cache off, one private
-  Mamba-2 state slot per request), but its conf declares no reasoning
-  or tool parser, so Capability Check v1 fails and the conversation and
-  replay profiles cannot run. The rates stand; the serving role does
-  not.
+  Mamba-2 state slot per request) and passes Capability Check v1 with
+  the conf's qwen3 dialect parsers; its conversation and replay rows
+  are above.
 - ornith lands within 3% of qwen3.6 APC on prefill and decode with a
   1.30M-token pool.
 - granite and gemma4 are dense-decode bound: 31 and 17 audit_32k
