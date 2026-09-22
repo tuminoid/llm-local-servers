@@ -110,12 +110,16 @@ Apple M5 Max:
 | 4 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | slot cache | 38.69 | 7.2 |
 | 5 | vLLM-Metal `qwen3.8-27b-4bit` | dense | align APC | 28.8 | 4.2 |
 | 6 | Ollama `qwen3.8-27b` GGUF | dense | slot cache + MTP | 44.7 | 3.5 |
-| 7 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | -- | 2.4 |
+| 7 | vLLM-Metal `gemma4-31b-4bit` | dense | APC | 26.6 | 2.4 |
 | -- | Splash `qwen3.6-35b-a3b` | MoE | state/prefix cache + DFlash 2 | 301.08 | 37.16 (1/2 compliant) |
+| -- | vLLM-Metal `ornith1.5-35b-a3b-4bit` | hybrid MoE | align APC | 101.5 | 7.6 (1/2 compliant) |
 
-Splash qwen3.6's 37.16/h is the rate of its sole compliant sample; the
-other sample stopped after one of 16 files. Its measurement is shown
-unranked because the conversation campaign failed the fixture gate.
+Splash qwen3.6's 37.16/h and vLLM-Metal ornith's 7.6/h are the rates of
+their sole compliant samples; the other sample stopped after one and
+fifteen of 16 files respectively. Both are shown unranked because the
+conversation campaign failed the fixture gate. vLLM-Metal granite (0/2
+compliant on its 131k fixture) and nemotron (no tool parser in its conf,
+so the tool turns are rejected) have no conversation rate.
 
 Splash fixed-transcript replay on this host, 16 steps and about 164k
 verdict input. These are separate workloads from conversation and from
@@ -142,11 +146,12 @@ RTX PRO 3000:
 | --: | -- | -- | -- | --: | --: |
 | 1 | Ollama `qwen3.5:9b` | dense | slot cache | 37.83 | 9.8 |
 
-Excluded from ranking for fixture non-compliance: both qwen3.5-4b stacks and the
-CPU-assisted qwen3.6 on the RTX, GLM 4.7 Flash and Ollama gemma4-26b on
-the A100, and Splash qwen3.6 on the M5 (only 1/2 conversation samples
-compliant). The A100 vLLM `qwen3-coder-30b` rate stands but the profile
-fails Capability Check v1 (two tool calls for a one-call fixture).
+Excluded from ranking for fixture non-compliance: both qwen3.5-4b stacks
+and the CPU-assisted qwen3.6 on the RTX, GLM 4.7 Flash and Ollama
+gemma4-26b on the A100, and Splash qwen3.6 and vLLM-Metal ornith (1/2
+conversation samples compliant) and vLLM-Metal granite (0/2) on the M5.
+The A100 vLLM `qwen3-coder-30b` rate stands but the profile fails
+Capability Check v1 (two tool calls for a one-call fixture).
 
 ### A100-SXM4-80GB
 
@@ -179,8 +184,8 @@ requests to one slot. Ollama GGUF rows run the llama.cpp runner with
 q8 KV: flash-next measured on the 0.33.3 runtime with two real slots
 (the profile now pins 0.34.2), qwen3.8-27b on 0.34.2 at its native
 262,144 with one slot and the registry Modelfile's MTP drafting.
-vLLM-Metal rows: pinned plugin venv 0.29.0, align APC, paged KV, NAX
-prefill.
+vLLM-Metal rows: pinned plugin venv 0.29.0, serving-default cache pins
+(align APC; nemotron cache off), paged KV, NAX prefill.
 Splash rows: release 1.0 on macOS 27.0, 64 GiB native memory cap,
 four active slots, DFlash 2 and prefix/state caching. Its KV column is
 sparse virtual capacity, not committed memory. All eight managed campaign
@@ -193,6 +198,10 @@ the benchmark record retains the failures and verified final release.
 | Splash | `qwen3.8-27b`, 64 GiB, 4 slots | 262,144 | 1,474,560 virtual | 796 / 704 / 559 | 67.3 / 119.6 / 152.0 | 66.4 @4x | 14.3 | 6.6 @1x |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` APC (serving), util 0.71, seqs 5 | 262,144 | 1,326,140 | 2,543 / 1,646 / 1,066 | 102.0 / 174.3 / 265.0 | 117.9 @4x | 19.1 | 9.9 @4x |
 | vLLM-Metal | `qwen3.8-27b-4bit` APC (serving), util 0.91, seqs 5 | 262,144 | 603,469 | 568 / 450 / 316 | 28.8 / 52.8 / 82.6 | 39.0 @4x | 6.6 | 3.3 @1x |
+| vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` cache off, util 0.32, seqs 5 | 262,144 | 1,591,012 | 3,359 / 2,738 / 2,323 | 123.0 / 185.6 / 267.0 | 197.4 @2x | 42.9 | 25.9 @1x |
+| vLLM-Metal | `ornith1.5-35b-a3b-4bit` APC, util 0.70, seqs 5 | 262,144 | 1,300,439 | 2,623 / 1,664 / 1,075 | 101.5 / 173.5 / 264.3 | 117.5 @4x | 19.0 | 9.9 @4x |
+| vLLM-Metal | `granite4.2-30b-4bit` APC, util 0.91, seqs 5 | 131,072 | 331,584 | 558 / 446 / - | 30.8 / 55.6 / 88.6 | 31.0 @2x | 13.8 (65k) | 9.3 (114.7k) |
+| vLLM-Metal | `gemma4-31b-4bit` APC, util 0.91, seqs 5 | 262,144 | 617,308 | 355 / 243 / 148 | 26.6 / 47.9 / 72.0 | 17.3 @4x | 2.6 | 1.4 @2x |
 | Ollama | `qwen3.8-flash-next-gguf` (125B-A6B, llama.cpp, 0.33.3) | 262,144 | 2 slots | 632 / 518 / 406 | 38.7 / 57.2 / - | 47.4 @2x | 9.7 | 5.1 @1x |
 | Ollama | `qwen3.8:27b` (Q4_K_M GGUF, llama.cpp, 0.34.2, MTP) | 262,144 | one slot | 450 / 327 / 206 | 44.7 / - / - | 34.7 @1x | 5.2 | 2.0 @1x |
 | Ollama | `nemotron-3.5-lightning:30b-a3b-mlx` | 262,144 | one slot | 4,040 / 3,072 / 2,628 | 141.7 / - / - | 212.8 @1x | 58.3 | 31.1 @1x |

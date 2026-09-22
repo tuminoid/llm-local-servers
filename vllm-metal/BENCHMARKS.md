@@ -18,15 +18,16 @@ The conversation profile (AuditBench protocol) is the production-shaped
 workload: 32k evidence, a sequential 16-file tool chain resent in full
 every turn, findings-ledger verdict at ~164k depth. All rows run at
 their serving-default cache pins on the finalized control-free
-fixture: the qwen rows at plugin 0.29.0 (repo commit `705c493`),
-gemma4 at plugin dev20260826100011. Medians over compliant samples;
-cached fraction from the engine's own counters.
+fixture at plugin 0.29.0 (repo commit `705c493`). Medians over
+compliant samples; cached fraction from the engine's own counters.
 
 | Profile | Cache pin | Compliant | Conversations/hour | Cached | Recall |
 | -- | -- | -- | --: | --: | -- |
 | `qwen3.6-35b-a3b-4bit` | APC on | yes | 12.9 | 0.897 | 16/16 |
 | `qwen3.8-27b-4bit` | APC on | yes | 4.2 | 0.899 | 16/16 |
 | `gemma4-31b-4bit` | APC on | yes | 2.4 | 0.902 | 16/16 |
+| `ornith1.5-35b-a3b-4bit` | APC on | 1/2 | 7.6 | 0.896 | 16/16 |
+| `granite4.2-30b-4bit` (131k fixture) | APC on | no | -- | 0.525 | 2/9 files |
 
 Findings:
 
@@ -39,6 +40,13 @@ Findings:
   (5.5 tok/s verdict decode, see the replay profile).
 - gemma4 completes with perfect recall but at 1,500 s per conversation
   (decode-bound); it stays a capability point, not an audit choice.
+- ornith completes a conversation in 471 s with 89.6% cached and
+  perfect recall when it completes, but one of two samples stopped at
+  15/16 files, so the row stays unranked in the cross-runtime table.
+- granite stopped after one or two of its 131k fixture's nine files in
+  both samples: not a conversation server on this host.
+- nemotron has no conversation or replay row: its conf declares no
+  tool parser, so the harness's tool-call turns are rejected with 400.
 
 ### qwen3.8 align-APC trial and adoption
 
@@ -76,17 +84,21 @@ Canonical replay runs (AuditBench protocol) at the
 serving-default cache pins (align APC on for both hybrids), repo commit
 `705c493`, plugin 0.29.0, Dell brick at the 140 W contract,
 dedicated server lifecycle per model. Replays/hour is never comparable
-to conversations/hour, and here it is not even comparable across these
-two models: qwen3.6 filled the forced 16,384-token verdict
-(`finish_reason: length`) while qwen3.8 ignored the never-conclude
-control in both samples and stopped at 1.5-1.6k tokens, so its
-4.04 replays/h rides on ~10x less verdict decode. The server-comparable
-columns are the turn walls and the verdict decode rate.
+to conversations/hour, and here it is not even comparable across
+models: qwen3.6, granite and gemma4 filled the forced 16,384-token
+verdict (`finish_reason: length`) while qwen3.8 and ornith ignored the
+never-conclude control in both samples and stopped at 0.9-1.6k tokens,
+so their replays/h ride on 10-18x less verdict decode. The
+server-comparable columns are the turn walls and the verdict decode
+rate.
 
 | Profile | Replays/h | Turn walls (16 turns) | Cached | Verdict decode at ~164k depth |
 | -- | --: | -- | --: | -- |
 | `qwen3.6-35b-a3b-4bit` | 2.13 | 13.3 s cold, 6.2 -> 18.8 s | 0.824 | 16,384 tok @ 11.0 tok/s |
 | `qwen3.8-27b-4bit` | 4.04* | 59.3 s cold, 21.2 -> 52.6 s | 0.899 | 1.5-1.6k tok @ 5.5-5.6 tok/s (stopped early) |
+| `ornith1.5-35b-a3b-4bit` | 12.6* | 13.2 s cold, 6.1 -> 18.6 s | 0.897 | 0.9k tok @ 10.5 tok/s (stopped early) |
+| `granite4.2-30b-4bit` (131k fixture, 9 turns) | 0.95 | 58.8 s cold, 22.3 -> 38.9 s | 0.848 | 16,384 tok @ 4.7 tok/s (107k depth) |
+| `gemma4-31b-4bit` | 0.42 | 96.8 s cold, 40.5 -> 121.3 s | 0.902 | 16,384 tok @ 2.3 tok/s |
 
 - qwen3.6: 88% of the 1,689 s median wall is the forced verdict
   decode (1,489 s); the same fixture on the A100 runs 18.3 replays/h
@@ -100,16 +112,17 @@ columns are the turn walls and the verdict decode rate.
   prefill pays it. Contrast the A100's flat 4.3-7.4 s turns on the same
   fixture. Verdict decode of 5.5 tok/s at 164k depth confirms the
   settled fleet role: quality reserve, not a live audit server.
-- `gemma4-31b-4bit`: replay is infeasible at the default 7,200 s
-  request timeout. All 16 turns completed (89.5% cache hit, single
-  stream at 19.5% KV), then the forced 16,384-token verdict decoded at
-  a steady 2.1-2.2 tok/s -- about 2.1 h for the verdict alone -- and
-  the harness timed out mid-decode after 2 h 22 m total; the server
-  stayed healthy throughout. This is the dense-31B depth-decode wall
-  (consistent with its 1.3 deep audit calls/h canonical), not a fault.
-  A rerun needs AUDIT_BENCH_TIMEOUT of roughly 16,000 s and a 6-9 h
-  window; given the model's settled capability-point role, none is
-  scheduled.
+- ornith: 12.6 replays/h with turn walls of 6-19 s at 89.7% cached;
+  the verdict stopped at 0.9k tokens (never-conclude control ignored,
+  as qwen3.8) decoding at 10.5 tok/s at 165k depth.
+- granite: 0.95 replays/h on the 9-turn 131k fixture; 92% of the
+  3,783 s wall is the forced verdict at 4.7 tok/s.
+- `gemma4-31b-4bit`: 8,497 s per replay, 85% of it the forced
+  16,384-token verdict at 2.3 tok/s (7,196 s, four seconds inside the
+  7,200 s request timeout). Turn walls grow 40 -> 121 s with depth at
+  90.2% cached. This is the dense-31B depth-decode wall, consistent
+  with its 1.4 deep audit calls/h; a capability point, not an audit
+  server.
 
 ## Concurrent audit replay profile: M5 Max
 
@@ -284,6 +297,30 @@ capacity and audit_deep probe 1x and 2x.
 Against the cache-off table above, APC costs ~11-13% decode and halves
 the token pool while audit calls/hour stay flat; the operating point
 exists for the warm TTFT win on resent audit conversations.
+
+### nemotron, ornith, granite, gemma4 -- AuditBench v1 canonical
+
+Plugin 0.29.0, repo commit `705c493`, serving-default cache pins,
+`max-num-seqs` 5, Dell brick at the 140 W contract, dedicated server
+lifecycle per model (2026-09-21/22). Medians; the audit columns name
+the best stream count.
+
+| Profile | Cache pin | Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h | Near-context proof |
+| -- | -- | --: | --: | --: | --: | --: | --: | --: | -- |
+| `nemotron-3.5-lightning-30b-4bit` | off, util 0.32 | 262,144 | 1,591,012 | 3,359 / 2,738 / 2,323 | 123.0 / 185.6 / 267.0 | 197.4 @2x | 42.9 | 25.9 @1x | 4 x 245,773 in 564.90s |
+| `ornith1.5-35b-a3b-4bit` | align APC, util 0.70 | 262,144 | 1,300,439 | 2,623 / 1,664 / 1,075 | 101.5 / 173.5 / 264.3 | 117.5 @4x | 19.0 | 9.9 @4x | 4 x 245,752 in 1,539.43s |
+| `granite4.2-30b-4bit` | APC, util 0.91 | 131,072 | 331,584 | 558 / 446 / - | 30.8 / 55.6 / 88.6 | 31.0 @2x | 13.8 (65k) | 9.3 @1x (114.7k) | 2 x 122,876 in 753.08s |
+| `gemma4-31b-4bit` | APC, util 0.91 | 262,144 | 617,308 | 355 / 243 / 148 | 26.6 / 47.9 / 72.0 | 17.3 @4x | 2.6 | 1.4 @2x | 2 x 245,774 in 5,601.60s |
+
+- nemotron leads every column on this host (cache off, one private
+  Mamba-2 state slot per request), but its conf declares no reasoning
+  or tool parser, so Capability Check v1 fails and the conversation and
+  replay profiles cannot run. The rates stand; the serving role does
+  not.
+- ornith lands within 3% of qwen3.6 APC on prefill and decode with a
+  1.30M-token pool.
+- granite and gemma4 are dense-decode bound: 31 and 17 audit_32k
+  calls/h and single-digit deep calls/h.
 
 ### qwen3.8-27b-8bit (mlx-community/Qwen3.8-27B-8bit) -- retired baseline
 
@@ -503,19 +540,18 @@ vLLM 0.27.1, mlx-lm 0.31.3, mlx-vlm 0.6.4, transformers 5.12.1:
   rollback venv experiment; vLLM's `--tokenizer-mode` cannot reach the
   selection. Retest on a plugin bump whose mlx-vlm drops the `.vocab`
   assumption.
-- `NVIDIA-Nemotron-3.5-Lightning-30B-A3B-OptiQ-4bit` loads (pool
-  1,331,525 tokens) but the first forward kills the engine
-  (`TypeError: string indices must be integers`). mlx-lm 0.31.3 ships
-  `nemotron_h.py` and is current, so the fault is at the plugin/mlx-lm
-  boundary; the tool story is otherwise clean (Qwen3-style, bundled
-  parsers). Retest on a plugin bump.
+- `NVIDIA-Nemotron-3.5-Lightning-30B-A3B-OptiQ-4bit` loaded (pool
+  1,331,525 tokens) but the first forward killed the engine
+  (`TypeError: string indices must be integers`) at the plugin/mlx-lm
+  boundary. It serves since plugin 0.29.0; its canonical rows are
+  above.
 - `gemma-4-12b-coder-fable5-composer2.5-4bit` is an incomplete artifact:
   every mlx-community gemma4-12B conversion (plain and OptiQ) lacks the
   processor files vLLM's gemma4 path requires; the 31B conversion has
   them. Needs a re-uploaded conversion, not a code bump.
 
-Weights for all five remain in the managed models directory for cheap
-retests. Failing configs were removed per the fail-loudly convention.
+Failing configs were removed per the fail-loudly convention; their
+weights are no longer kept.
 
 ### History: qwen3.6 align-APC adoption (resolved)
 
