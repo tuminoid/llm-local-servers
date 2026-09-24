@@ -38,6 +38,8 @@ def capacity(status):
 
 def evidence(tag):
     values = runtime.config(tag)
+    if not runtime.PIDFILE.exists():
+        raise RuntimeError("no managed Splash server; run make splash-start")
     owner = json.loads(runtime.PIDFILE.read_text())
     release = runtime.verify_release()
     if owner["release"] != release:
@@ -90,4 +92,7 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except Exception as error:
+        raise SystemExit(f"error: {error}") from error
