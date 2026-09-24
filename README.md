@@ -55,6 +55,7 @@ where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, or `lmstudio`
 runtime and model installation). `MODEL` names a config file in that
 runtime's `models/` directory, never a served model ID or registry tag;
 there is deliberately no default model.
+`make status` shows whether each local runtime is running, and with which model.
 
 The vLLM and Ollama runtimes also run on a remote GPU host over ssh:
 `make vllm-remote-{bootstrap,start,stop,status,logs,bench,capability}`

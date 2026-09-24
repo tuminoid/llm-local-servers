@@ -1,4 +1,4 @@
-.PHONY: help lint shellcheck markdownlint pycompile test clean all opencode-config
+.PHONY: help status lint shellcheck markdownlint pycompile test clean all opencode-config
 .PHONY: audit-bench-check
 .PHONY: ollama-model-check ollama-install ollama-start ollama-pull
 .PHONY: ollama-stop ollama-status ollama-logs ollama-bench ollama-capability
@@ -164,6 +164,7 @@ OLLAMA_REMOTE_ALLOW_KEY_CREATE ?= 0
 help:
 	@echo "llm-local-servers - Managed local inference serving fleet"
 	@echo ""
+	@echo "  make status      - Show every local server's status (not the remote ones)"
 	@echo "  make lint        - Run all linters (shellcheck + markdownlint + pycompile)"
 	@echo "  make test        - Run the unit tests (needs the llm-audit-bench checkout)"
 	@echo "  make opencode-config - Regenerate opencode/*/opencode.json from the model configs"
@@ -253,6 +254,14 @@ help:
 	@echo "  Select the vLLM-Metal model with MODEL=<name> ($(VLLM_METAL_DIR)/models/<name>.conf):"
 	@echo "  $(patsubst $(VLLM_METAL_DIR)/models/%.conf,%,$(wildcard $(VLLM_METAL_DIR)/models/*.conf))"
 	@echo ""
+
+# Every local runtime's server and model lines, one after another; a failing
+# one does not hide the rest, but fails the target.
+status:
+	@rc=0; for r in vllm vllm-metal splash lmstudio ollama; do \
+		echo "== $$r"; out="$$($(MAKE) --no-print-directory $$r-status)" || rc=1; \
+		printf '%s\n' "$$out" | grep -E '^(server|model): '; \
+	done; exit $$rc
 
 # --- llm-audit-bench checkout guard ---
 

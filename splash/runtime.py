@@ -394,12 +394,14 @@ def stop(preserve_log=False, child=None):
 
 def status():
     if not PIDFILE.exists():
-        print("Splash is stopped (no managed pidfile).")
+        print("server:   not running")
         return
     owner = json.loads(PIDFILE.read_text())
     if owner["pid"] not in owned_group(owner):
         raise RuntimeError("managed server is not running; use make splash-stop to inspect teardown")
     live = request(connect(owner) + "/status")
+    print(f"server:   running (pid {owner['pid']})")
+    print(f"model:    {owner['model_identity']}")
     print(json.dumps({"pid": owner["pid"], "model": owner["model_identity"],
                       "release": owner["release"], "context": live["maximum_context_tokens"],
                       "ready": live["ready"], "memory_plan": live["memory_plan"]}, indent=2))

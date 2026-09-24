@@ -68,8 +68,12 @@ def config(tag):
     return values
 
 
+def lms_exe():
+    return os.environ.get("LMSTUDIO_BIN") or shutil.which("lms") or str(HOME / "bin/lms")
+
+
 def lms(*args, check=True):
-    exe = os.environ.get("LMSTUDIO_BIN") or shutil.which("lms") or str(HOME / "bin/lms")
+    exe = lms_exe()
     if not os.access(exe, os.X_OK):
         raise RuntimeError("the lms CLI was not found; run LM Studio once, or set LMSTUDIO_BIN")
     done = subprocess.run([exe, *args], capture_output=True, text=True, timeout=900)
@@ -318,11 +322,19 @@ def stop(preserve_log=False):
 
 
 def status():
+    if not os.access(lms_exe(), os.X_OK):
+        print("server:   not installed")
+        return
     owner = json.loads(RECORD.read_text()) if RECORD.exists() else None
     entries = [{key: item.get(key) for key in (
         "identifier", "path", "format", "contextLength", "parallel", "sizeBytes")}
         for item in loaded()]
-    print(json.dumps({"record": owner, "server": server(), "loaded": entries}, indent=2))
+    live = server()
+    print(f"server:   running (port {live.get('port')})" if live.get("running")
+          else "server:   not running")
+    for entry in entries:
+        print(f"model:    {entry['identifier']}")
+    print(json.dumps({"record": owner, "server": live, "loaded": entries}, indent=2))
 
 
 def main():
