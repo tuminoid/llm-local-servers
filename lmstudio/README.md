@@ -22,7 +22,7 @@ at the same revisions. On an M3+ host use the Splash engine: its configs pass
 Capability Check v1 and decode 2.2-2.4x faster at one stream, while the MLX
 configs ignore schema enforcement. LM Studio runs Splash one request at a
 time, so the MLX engine only catches up at four streams; it remains the path
-for older Apple Silicon.
+for older Apple Silicon. Measurements are in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Usage
 

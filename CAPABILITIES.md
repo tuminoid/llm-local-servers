@@ -115,6 +115,8 @@ proves nothing about parser compatibility.
 ### Apple M5 Max
 
 - Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`
+- LM Studio: `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash`,
+  `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx`
 - vLLM-Metal: `qwen3.6-35b-a3b-4bit`, `qwen3.8-27b-4bit`,
   `gemma4-31b-4bit`,
   `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit`
@@ -156,7 +158,8 @@ identity drift and whose reviewed replacement digest was checked the next
 day, and `qwen3.8-flash-next-mlx-nvfp4`, which owed a record and runs on
 the 0.34.2 GGUF runtime rather than the 0.32.14 fleet default.
 Splash rows were added on 2026-09-19 with release 1.0 on macOS 27.0;
-both were rechecked before the full managed AuditBench campaign. The
+both were rechecked before the full managed AuditBench campaign and again
+on 2026-09-24 on the committed checker. The
 vLLM-Metal `qwen3.6-35b-a3b-4bit` and `qwen3.8-27b-4bit` rows are dated
 2026-09-20 on plugin 0.29.0, as is the Ollama GGUF `qwen3.8-27b` row
 (registry `qwen3.8:27b` on the 0.34.2 GGUF runtime at 262,144). The
@@ -166,7 +169,8 @@ with unchanged verdicts (gemma4's schema check hit the default 600 s
 timeout, the same runaway), and the vLLM-Metal
 `nemotron-3.5-lightning-30b-4bit` row is dated 2026-09-22, the first
 check with the conf's qwen3 dialect parsers declared, as is the
-`mimo-v2.6-9b-4bit` row. The
+`mimo-v2.6-9b-4bit` row. LM Studio rows are dated 2026-09-24 on
+LM Studio 0.4.25+1 with its Splash engine 0.0.5 and mlx-llm 1.11.0. The
 managed adapters use the current checker, including schema enforcement.
 
 Every passing row verified live model identity against the config's pinned
@@ -181,6 +185,10 @@ model produces when the schema is stated in words instead of a grammar.
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | fail |
+| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | fail |
 | vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
@@ -199,11 +207,11 @@ model produces when the schema is stated in words instead of a grammar.
 
 ### Findings
 
-Splash 1.0, 2026-09-19 campaign recheck: both pinned packages passed all eight checks
+Splash 1.0, 2026-09-24 recheck: both pinned packages passed all eight checks
 through the managed uv entry points at 262,144 configured context and
 a 64 GiB memory cap. Both produced valid unaided JSON and passed schema
 enforcement. Qwen3.8 exercised authenticated HTTP transport in the earlier
-integration check; these campaign rechecks used the owned loopback endpoint.
+integration check; the rechecks used the owned loopback endpoint.
 The thinking-disable control is top-level `reasoning_effort: "none"`;
 the default remains thinking enabled. These are short API fixtures.
 Deep-context capacity is established separately by the retained full
@@ -211,19 +219,37 @@ Deep-context capacity is established separately by the retained full
 Qwen3.6 subsequently failed one of two growing-conversation samples;
 that fixture result remains separate from its short API pass.
 
-Campaign JSON reports under `~/.local/state/auditbench/trials/`:
+Reports under `~/.local/state/capability-check/`, from a clean `2bbfce7`
+tree on llm-audit-bench `382760d`, checker file SHA-256
+`2012b9c4332823033b7c526177bbb8b7a0265623a85d680458267d0c008c3e99`:
 
 ```text
-2026-09-19-splash-campaign/qwen3.6-35b-a3b-full/capability/20260919T195916.789042+0000_splash_qwen3-6-35b-a3b.json
-2026-09-19-splash-campaign-continuation2/qwen3.8-27b-full/capability/20260919T221615.837078+0000_splash_qwen3-8-27b.json
+20260924T083242.715681+0000_splash_qwen3-6-35b-a3b.json
+20260924T083202.997136+0000_splash_qwen3-8-27b.json
 ```
 
-The checker file SHA-256 was
-`96498352d2f246c5fa458e49a2534e2af2088c6b0fed8fec78d8195cd56ce617`;
-this identifies the current checker snapshot separately from the unchanged
-AuditBench module. The earlier authenticated Qwen3.8 report remains under
-`~/.local/state/capability-check/` as
-`20260919T192742.892922+0000_splash_qwen3-8-27b.json`.
+The 2026-09-19 campaign rechecks, with the same verdicts, and the earlier
+authenticated Qwen3.8 report
+(`20260919T192742.892922+0000_splash_qwen3-8-27b.json`, same directory)
+ran on an uncommitted checker snapshot.
+
+LM Studio 0.4.25+1, 2026-09-24: the Splash-engine configs load the native
+Splash packages at their pinned revisions and pass all eight checks, with the
+same top-level `reasoning_effort: "none"` control. The MLX-engine configs load
+the vLLM-Metal checkpoints. Neither `reasoning_effort` nor `enable_thinking`
+disables their thinking, so thinking-off is unsupported. The engine accepts
+the schema parameter, and the model thinks, then stops with empty content,
+so schema enforcement is ignored. Reasoning arrives only in
+`reasoning_content`; these rows pass through the checker's alias for it. The
+tree and checker are the Splash rows'; reports are under
+`~/.local/state/capability-check/`:
+
+```text
+20260924T082154.775587+0000_lmstudio_qwen3-6-35b-a3b-splash.json
+20260924T082102.420159+0000_lmstudio_qwen3-8-27b-splash.json
+20260924T083009.694517+0000_lmstudio_qwen3-6-35b-a3b-mlx.json
+20260924T082509.680783+0000_lmstudio_qwen3-8-27b-mlx.json
+```
 
 - Every vLLM-Metal and Ollama profile that reached inference passes both
   tool-call checks under automatic tool choice, so the plugin's and both
