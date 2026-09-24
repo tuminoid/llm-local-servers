@@ -440,10 +440,12 @@ its model config.
   Ollama pairing: on both runtimes the host carries this model for
   structured work.
 - Sweeping the fleet for the harness's new graded `reasoning_effort`
-  controls found no profile that needs them. Granite 4.2 is the only
-  checkpoint whose template reads the kwarg, and it uses it only to set
-  `low_effort = reasoning_effort == "low"`, so it grades verbosity and
-  cannot disable thinking; `enable-thinking-false` remains its control.
+  controls found no profile that needs them. Granite 4.2 and Qwen3.8 are
+  the checkpoints whose templates read the kwarg. Granite uses it only to
+  set `low_effort = reasoning_effort == "low"`, so it grades verbosity.
+  Qwen3.8 grades the thinking instruction with `low`, `medium` or `xhigh`
+  (the default) and rejects any other value. Neither can disable thinking
+  through it; `enable-thinking-false` remains their control.
   The remaining `unsupported` cells are Qwen3 Coder's, where the model
   genuinely has no control.
 - `qwen3.8-27b-dflash2` passes every check with the same weights and

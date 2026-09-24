@@ -109,56 +109,40 @@ not reconnect automatically.
 
 ## Using it from opencode
 
-The server is registered as the opencode provider `vllm-local` in the
-operator's client configuration, which lives outside this repository with the
-other CLI settings, so no per-use configuration is needed.
+The generated providers `vllm` (`127.0.0.1:8000`) and `vllm-remote`
+(`127.0.0.1:8001`, where `make vllm-remote-tunnel` lands) list every config
+here; see [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
 
 ```bash
 make vllm-start MODEL=qwen3.5-4b-awq
-opencode run -m vllm-local/qwen3.5-4b-awq "Summarise the auth flow in this repo."
-```
+export OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/vllm/opencode.json
+opencode run -m vllm/qwen3.5-4b-awq "Summarise the auth flow."
 
-A remote host gets its own provider, because the baseURL differs. `vllm-a100`
-points at `127.0.0.1:8001`, which is where `make vllm-remote-tunnel` lands:
-
-```bash
-make vllm-remote-start  HOST=gpu-box MODEL=qwen3.6-35b-a3b-awq
+make vllm-remote-start  HOST=gpu-box MODEL=qwen3.8-27b
 make vllm-remote-tunnel HOST=gpu-box      # separate shell; holds the tunnel
-opencode run -m vllm-a100/qwen3.6-35b-a3b-awq "Summarise the auth flow in this repo."
+export OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/vllm-remote/opencode.json
+opencode run -m vllm-remote/qwen3.8-27b --variant low "Summarise the auth flow."
 ```
 
-The model id must equal the config's `VLLM_SERVED_NAME`, and only the model
-the server was started with is selectable -- one runs at a time, so the other
-entries are what you can switch to, not what is live. `/v1/models` lists the
-live one.
-
-For the models shown here, declared limits come from each config's
+The model id is the config's `VLLM_SERVED_NAME`, and only the model the
+server was started with is live; `/v1/models` lists it. Limits come from
 `VLLM_MAX_LEN`.
 
-Which entries declare reasoning follows the same rule as `vllm-local`: declare
-it where the model actually populates the field in this harness.
-
-| Model | `reasoning` | Why |
-| -- | -- | -- |
-| `qwen3.8-27b` | yes | `qwen3` parser, `<think>` blocks |
-| `qwen3.6-35b-a3b-awq` | yes | `qwen3` parser, `<think>` blocks |
-| `glm4.7-flash-awq` | yes | `glm47` parser, `<think>` blocks |
-| `gemma4-26b-a4b-awq` | no | see below |
-| `qwen3-coder-30b` | no | non-thinking model, returns `reasoning: None` |
-
-Gemma 4 is the interesting one, and it is not that the parser is wrong. Its
-chat template inverts the usual sense: with `enable_thinking` false, the
-default, it pre-fills an empty closed thought block into the generation
-prompt, which actively suppresses reasoning. The model then reasons inline in
-the content and `message.reasoning` stays empty, so declaring the field here
-would be the misleading case described above. Sending
+An entry declares reasoning only where the model populates the field with no
+request control, since opencode sends no thinking toggle:
+`VLLM_CAP_REASONING=required` with `VLLM_CAP_REASONING_MODE=default`.
+`qwen3-coder-30b` is a non-thinking model and returns `reasoning: None`. Gemma
+4 inverts the usual sense: with `enable_thinking` false, the template default,
+it pre-fills an empty closed thought block into the generation prompt, which
+actively suppresses reasoning. The model then reasons inline in the content
+and `message.reasoning` stays empty. Its configs therefore check reasoning
+with `enable-thinking`, and its entries declare none. Sending
 `chat_template_kwargs: {"enable_thinking": true}` produces reasoning normally,
 which is verifiable with curl but is not something this provider path sends.
 
-That field name matters where it applies: vLLM 0.26 renamed the response field
-from `reasoning_content`, and the older name (still used by some hosted-model
-provider entries) silently yields no reasoning here. Verified against
-the live streaming deltas, which carry `reasoning`.
+The field is `reasoning`: vLLM 0.26 renamed it from `reasoning_content`, and
+the older name silently yields no reasoning here. Verified against the live
+streaming deltas, which carry `reasoning`.
 
 ## Layout
 

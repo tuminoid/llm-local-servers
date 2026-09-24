@@ -85,6 +85,13 @@ vLLM's nested `chat_template_kwargs` option. See the measured reasoning,
 tool-call, streaming, JSON and schema results in
 [CAPABILITIES.md](../CAPABILITIES.md).
 
+The generated provider `splash` lists both configs, keyed by
+`SPLASH_MODEL_REPO`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+
+```bash
+OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/splash/opencode.json opencode
+```
+
 Benchmark and capability fixtures come only from `llm-audit-bench`.
 `make splash-bench` defaults to the full canonical protocol and preserves
 the model's default thinking behavior, matching the retained full runs.

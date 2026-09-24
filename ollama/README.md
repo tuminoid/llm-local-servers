@@ -384,6 +384,18 @@ explicit experiment rather than the default:
 OLLAMA_KV_CACHE_TYPE=q4_0 make ollama-start MODEL=qwen3.8-27b
 ```
 
+## Using it from opencode
+
+The generated providers `ollama` (`127.0.0.1:11434`) and `ollama-remote`
+(`127.0.0.1:11436`, where `make ollama-remote-tunnel` lands) list every config
+here, keyed by the `OLLAMA_MODEL` tag. The entries declare no reasoning,
+because the capability check verifies Ollama reasoning only on its native
+API, not on `/v1`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+
+```bash
+OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/ollama/opencode.json opencode
+```
+
 ## Runtime state
 
 Pidfile, log, and the pre-start GPU baseline live under

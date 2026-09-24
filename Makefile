@@ -1,4 +1,4 @@
-.PHONY: help lint shellcheck markdownlint pycompile test clean all
+.PHONY: help lint shellcheck markdownlint pycompile test clean all opencode-config
 .PHONY: audit-bench-check
 .PHONY: ollama-model-check ollama-install ollama-start ollama-pull
 .PHONY: ollama-stop ollama-status ollama-logs ollama-bench ollama-capability
@@ -166,6 +166,7 @@ help:
 	@echo ""
 	@echo "  make lint        - Run all linters (shellcheck + markdownlint + pycompile)"
 	@echo "  make test        - Run the unit tests (needs the llm-audit-bench checkout)"
+	@echo "  make opencode-config - Regenerate opencode/*/opencode.json from the model configs"
 	@echo "  make all         - Run lint and test"
 	@echo "  make clean       - Remove Python bytecode and editor droppings"
 	@echo ""
@@ -278,12 +279,18 @@ markdownlint:
 
 pycompile:
 	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) \
-		$(LMSTUDIO_DIR) tests
+		$(LMSTUDIO_DIR) opencode tests
 
 # --- Test ---
 
 test: audit-bench-check
 	@PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 -m unittest discover -s tests -p 'test_*.py'
+
+# --- opencode ---
+
+# opencode/*/opencode.json are committed and generated; make test fails when stale.
+opencode-config: audit-bench-check
+	@PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./opencode/generate.py
 
 # --- Clean ---
 

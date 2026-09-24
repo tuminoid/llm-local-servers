@@ -36,6 +36,14 @@ make lmstudio-bench MODEL=qwen3.8-27b-splash
 make lmstudio-stop
 ```
 
+The generated provider `lmstudio` lists every config here, keyed by the
+config name that start loads as the identifier. Reasoning arrives in
+`reasoning_content`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+
+```bash
+OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/lmstudio/opencode.json opencode
+```
+
 ## Pins and identity
 
 The app auto-updates and installs its engines itself, so the root Makefile pins

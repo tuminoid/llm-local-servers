@@ -1,0 +1,38 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "splash": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Splash",
+      "options": {
+        "baseURL": "http://127.0.0.1:8022/v1"
+      },
+      "models": {
+        "incoai/Qwen3.6-35B-A3B-Splash": {
+          "name": "Qwen3.6 35B A3B",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        },
+        "incoai/Qwen3.8-27B-Splash": {
+          "name": "Qwen3.8 27B",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        }
+      }
+    }
+  }
+}

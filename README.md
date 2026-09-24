@@ -67,6 +67,66 @@ under a running server. Servers bind loopback only; reach a remote one
 through `make vllm-remote-tunnel` (localhost:8001) or
 `make ollama-remote-tunnel` (localhost:11436).
 
+## Using the servers from opencode
+
+Each provider, an access path to one runtime, has a ready opencode config
+at `opencode/<provider>/opencode.json`. Start a server here, then run opencode
+in your own project with that file layered over your settings; opencode
+merges configs:
+
+```bash
+make splash-start MODEL=qwen3.8-27b           # in this repository
+
+export OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/splash/opencode.json
+opencode models splash                        # the model ids it offers
+opencode                                      # in your project
+opencode run -m splash/incoai/Qwen3.8-27B-Splash "Summarise the auth flow."
+```
+
+- `MODEL` names a config in this repository; the opencode model id is its
+  served name. Only the model the server was started with answers.
+- To give one project a provider permanently, copy the file to that
+  project's root as `opencode.json`.
+- The Qwen3.8 vLLM and vLLM-Metal entries take a reasoning effort:
+  `opencode run --variant low|medium|xhigh`, default `xhigh`.
+- The remote providers need their tunnel running (`make vllm-remote-tunnel`
+  or `make ollama-remote-tunnel`).
+- Do not point `OPENCODE_CONFIG_DIR` at these directories: opencode writes
+  its plugin files into that directory.
+
+| Provider | Base URL | Config | Reasoning field |
+| -- | -- | -- | -- |
+| `vllm` | `http://127.0.0.1:8000/v1` | [vllm/opencode.json](opencode/vllm/opencode.json) | `reasoning` |
+| `vllm-remote` | `http://127.0.0.1:8001/v1`, `make vllm-remote-tunnel` | [vllm-remote/opencode.json](opencode/vllm-remote/opencode.json) | `reasoning` |
+| `vllm-metal` | `http://127.0.0.1:8021/v1` | [vllm-metal/opencode.json](opencode/vllm-metal/opencode.json) | `reasoning` |
+| `splash` | `http://127.0.0.1:8022/v1` | [splash/opencode.json](opencode/splash/opencode.json) | `reasoning` |
+| `lmstudio` | `http://127.0.0.1:1234/v1` | [lmstudio/opencode.json](opencode/lmstudio/opencode.json) | `reasoning_content` |
+| `ollama` | `http://127.0.0.1:11434/v1` | [ollama/opencode.json](opencode/ollama/opencode.json) | not declared |
+| `ollama-remote` | `http://127.0.0.1:11436/v1`, `make ollama-remote-tunnel` | [ollama-remote/opencode.json](opencode/ollama-remote/opencode.json) | not declared |
+
+### How the files are generated
+
+`make opencode-config` generates them from the model configs, and
+`make test` fails when they are stale, so never edit them by hand.
+
+- Every config of a runtime is a model of each of its providers.
+  [CAPABILITIES.md](CAPABILITIES.md) lists which configs run on which
+  host.
+- The id is `VLLM_SERVED_NAME`, the `OLLAMA_MODEL` tag, the
+  `SPLASH_MODEL_REPO` repository, or for LM Studio the config name.
+  Configs that share a served id become one model, with the smaller
+  context.
+- The display name is derived from the config name.
+- `limit.context` is the config's launch context, and `limit.output` is
+  a quarter of it.
+- `reasoning` is declared only where the model reasons with no request
+  control, since opencode sends no thinking toggle. `tool_call` follows
+  the config's tool expectation.
+- Ollama entries declare no reasoning, because the capability check
+  verifies Ollama reasoning only on its native API.
+- `<PREFIX>_REASONING_EFFORTS` in a config, such as `VLLM_REASONING_EFFORTS`,
+  becomes `reasoningEffort` variants on an entry that declares reasoning.
+
 ## Measured overview
 
 Canonical AuditBench v1 medians copied from [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),

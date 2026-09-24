@@ -104,7 +104,8 @@ under `src/`. This repository consumes them and never carries copies:
 This repository holds servers that host models locally: their launchers,
 per-model operating points, and the measured results. It does not hold the
 benchmark or capability harnesses (llm-audit-bench), and it does not hold
-clients, CLI configurations, or agent definitions.
+clients, cloud models, or agent definitions. The one client artifact is the
+generated opencode provider configs for its own servers, under `opencode/`.
 
 A server belongs here when it owns a long-running process and GPU or CPU
 resources. A wrapper that merely calls a hosted API does not.
@@ -289,6 +290,14 @@ pass.
 
 Capability expectations live in model configs and name documented controls.
 Never infer them from a parser name or registry capability list.
+
+### Client configs are generated
+
+`opencode/*/opencode.json` is generated from the model configs by
+`make opencode-config`, and `make test` fails when it is stale. Never edit it
+by hand: change the config, or `opencode/generate.py` for a provider's base
+URL or a runtime rule. A provider is an access path and carries no host
+names; its port is the launcher's default, which the test checks.
 
 ### Diagnose upstream bugs, do not report them
 
