@@ -15,6 +15,8 @@
 .PHONY: vllm-metal-bench vllm-metal-capability
 .PHONY: splash-model-check splash-install splash-pull splash-start splash-stop
 .PHONY: splash-status splash-logs splash-bench splash-capability
+.PHONY: lmstudio-model-check lmstudio-install lmstudio-pull lmstudio-start
+.PHONY: lmstudio-stop lmstudio-status lmstudio-logs lmstudio-bench lmstudio-capability
 
 # Every target here is phony, so GNU Make's built-in rules can only do harm.
 # Left on, a mistyped target matches the built-in `%: %.sh` rule and silently
@@ -111,6 +113,15 @@ SPLASH_ARCHIVE_SHA256 ?= dc752f0aab8419c46fe2803a0e7059c1515e5df48def11b9d517bbb
 export SPLASH_VERSION SPLASH_ARCHIVE_SHA256
 SPLASH_MODEL_CONF ?= $(SPLASH_DIR)/models/$(MODEL).conf
 
+LMSTUDIO_DIR := lmstudio
+# The operator installs and updates the desktop app and its engines, so the pins
+# name the release measured here: bench and capability refuse any other, while
+# install and start report the drift and serve it.
+LMSTUDIO_VERSION ?= 0.4.25+1
+LMSTUDIO_SPLASH_ENGINE_VERSION ?= 0.0.5
+LMSTUDIO_MLX_ENGINE_VERSION ?= 1.11.0
+export LMSTUDIO_VERSION LMSTUDIO_SPLASH_ENGINE_VERSION LMSTUDIO_MLX_ENGINE_VERSION
+
 OLLAMA_DIR := ollama
 # Two managed Ollama runtimes, both reviewed releases with per-platform
 # archive digests from the release's sha256sum.txt (OLLAMA_ARCHIVE_SHA256 is
@@ -200,6 +211,17 @@ help:
 	@echo "  make splash-stop       - Stop and verify process-group and port release"
 	@echo "  Models: $(patsubst $(SPLASH_DIR)/models/%.conf,%,$(wildcard $(SPLASH_DIR)/models/*.conf))"
 	@echo ""
+	@echo "  LM Studio (port 1234, needs MODEL=<name>):"
+	@echo "  make lmstudio-install    - Check the app, engines and hf CLI; report pin drift"
+	@echo "  make lmstudio-pull       - Download the model's pinned revision into LM Studio"
+	@echo "  make lmstudio-start      - Start the server and load the model"
+	@echo "  make lmstudio-status     - Show the managed record and loaded models"
+	@echo "  make lmstudio-logs       - Follow the launch log"
+	@echo "  make lmstudio-bench      - Run AuditBench v1"
+	@echo "  make lmstudio-capability - Check reasoning, tools, and structured output"
+	@echo "  make lmstudio-stop       - Unload, stop the server and verify release"
+	@echo "  Models: $(patsubst $(LMSTUDIO_DIR)/models/%.conf,%,$(wildcard $(LMSTUDIO_DIR)/models/*.conf))"
+	@echo ""
 	@echo "  Remote vLLM host (HOST=<ssh-host> required, needs MODEL=<name>):"
 	@echo "  make vllm-remote-bootstrap - Create the remote venv and install vllm"
 	@echo "  make vllm-remote-start     - Start on the remote host (syncs scripts first)"
@@ -255,7 +277,8 @@ markdownlint:
 	markdownlint-cli2
 
 pycompile:
-	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) tests
+	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) \
+		$(LMSTUDIO_DIR) tests
 
 # --- Test ---
 
@@ -604,6 +627,38 @@ splash-bench: splash-model-check audit-bench-check
 splash-capability: splash-model-check audit-bench-check
 	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		bash -c 'source splash/lib.sh; exec uv run --no-project --python "$${SPLASH_RUNTIME}/python/bin/python3" splash/capability.py "$$1"' bash $(MODEL)
+
+# --- LM Studio ---
+
+lmstudio-model-check:
+	@test -n "$(MODEL)" -a -f "$(LMSTUDIO_DIR)/models/$(MODEL).conf" || { \
+		echo "error: set MODEL to an LM Studio config name:" >&2; \
+		echo "  $(patsubst $(LMSTUDIO_DIR)/models/%.conf,%,$(wildcard $(LMSTUDIO_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+
+lmstudio-install:
+	@python3 ./$(LMSTUDIO_DIR)/runtime.py install
+
+lmstudio-pull: lmstudio-model-check
+	@python3 ./$(LMSTUDIO_DIR)/runtime.py pull $(MODEL)
+
+lmstudio-start: lmstudio-model-check
+	@python3 ./$(LMSTUDIO_DIR)/runtime.py start $(MODEL)
+
+lmstudio-stop:
+	@python3 ./$(LMSTUDIO_DIR)/runtime.py stop
+
+lmstudio-status:
+	@python3 ./$(LMSTUDIO_DIR)/runtime.py status
+
+lmstudio-logs:
+	@tail -f "$${LMSTUDIO_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/lmstudio}/server.log"
+
+lmstudio-bench: lmstudio-model-check audit-bench-check
+	@$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(LMSTUDIO_DIR)/bench.py $(MODEL)
+
+lmstudio-capability: lmstudio-model-check audit-bench-check
+	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(LMSTUDIO_DIR)/capability.py $(MODEL)
 
 # --- Remote vLLM host ---
 #

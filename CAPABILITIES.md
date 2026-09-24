@@ -47,6 +47,10 @@ make vllm-metal-stop
 make splash-start MODEL=<profile>
 make splash-capability MODEL=<profile>
 make splash-stop
+
+make lmstudio-start MODEL=<profile>
+make lmstudio-capability MODEL=<profile>
+make lmstudio-stop
 ```
 
 Remote lifecycle:

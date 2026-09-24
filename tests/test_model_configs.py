@@ -23,6 +23,16 @@ class ModelConfigInventoryTest(unittest.TestCase):
     def test_every_model_declares_capability_expectations(self):
         inventories = (
             (
+                REPO_DIR / "lmstudio" / "models",
+                (
+                    "LMSTUDIO_CAP_REASONING",
+                    "LMSTUDIO_CAP_TOOLS",
+                    "LMSTUDIO_CAP_REASONING_MODE",
+                    "LMSTUDIO_CAP_DISABLE_MODE",
+                    "LMSTUDIO_CAP_SYSTEM_PROMPT",
+                ),
+            ),
+            (
                 REPO_DIR / "splash" / "models",
                 (
                     "SPLASH_CAP_REASONING",

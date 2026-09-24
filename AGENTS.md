@@ -55,6 +55,7 @@ What this means in practice:
 | `vllm/` | vLLM OpenAI-compatible server | Local lifecycle, benchmark and capability targets, plus `vllm-remote-*` |
 | `vllm-metal/` | vLLM-Metal plugin server on Apple Silicon | `vllm-metal-{install,pull,start,stop,status,logs,bench,capability}` |
 | `splash/` | Splash native Metal server on Apple Silicon M3+ | `splash-{install,pull,start,stop,status,logs,bench,capability}` |
+| `lmstudio/` | LM Studio service with its Splash and MLX engines | `lmstudio-{install,pull,start,stop,status,logs,bench,capability}` |
 
 [README.md](README.md) is the front page and the cross-runtime, host-oriented
 executive summary of measured results. The per-runtime `BENCHMARKS.md` files

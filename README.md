@@ -1,8 +1,8 @@
 # llm-local-servers
 
-Measured, Makefile-driven local LLM serving. Four managed runtimes --
-vLLM (CUDA), Ollama, vLLM-Metal and Splash (Apple Silicon) -- with one portable
-config per model, host-adaptive launchers, isolated remote-host
+Measured, Makefile-driven local LLM serving. Five managed runtimes --
+vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon) and LM Studio --
+with one portable config per model, host-adaptive launchers, isolated remote-host
 operation, and the retained benchmark and capability results for every
 host in the fleet. The workload everything is tuned for is deep-context
 security-audit calls; [AGENTS.md](AGENTS.md) states the mission and the
@@ -28,8 +28,9 @@ adapters, model configs, and results.
    host-tuning rationale are per runtime in
    [vllm/README.md](vllm/README.md),
    [ollama/README.md](ollama/README.md),
-   [vllm-metal/README.md](vllm-metal/README.md), and
-   [splash/README.md](splash/README.md).
+   [vllm-metal/README.md](vllm-metal/README.md),
+   [splash/README.md](splash/README.md), and
+   [lmstudio/README.md](lmstudio/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
 newer for `make lint` and `make test`.
@@ -48,9 +49,9 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-bench MODEL=<name>` | Run AuditBench v1 |
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v1 |
 
-where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, or `splash` (plus
-`ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,
-`splash-install`, and `splash-pull` for
+where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, or `lmstudio`
+(plus `ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,
+`splash-install`, `splash-pull`, `lmstudio-install`, and `lmstudio-pull` for
 runtime and model installation). `MODEL` names a config file in that
 runtime's `models/` directory, never a served model ID or registry tag;
 there is deliberately no default model.
