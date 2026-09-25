@@ -36,6 +36,18 @@
             "output": 50688
           }
         },
+        "mimo-v2.6-9b-awq": {
+          "name": "MiMo V2.6 9B AWQ",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        },
         "nemotron-nano-9b-awq": {
           "name": "Nemotron Nano 9B AWQ",
           "reasoning": true,

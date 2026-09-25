@@ -222,6 +222,7 @@ def main() -> int:
             "VLLM_REASONING_PLUGIN",
             "VLLM_TOOL_PARSER",
             "VLLM_TOOL_PLUGIN",
+            "VLLM_CHAT_TEMPLATE",
         ),
     )
     model_source = config["VLLM_MODEL"]
@@ -241,6 +242,7 @@ def main() -> int:
         "reasoning_plugin": config["VLLM_REASONING_PLUGIN"] or None,
         "tool_parser": config["VLLM_TOOL_PARSER"] or None,
         "tool_plugin": config["VLLM_TOOL_PLUGIN"] or None,
+        "chat_template": config["VLLM_CHAT_TEMPLATE"] or None,
     }
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     base = os.environ.get("VLLM_BENCH_BASE", "http://127.0.0.1:8000")

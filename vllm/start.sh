@@ -67,6 +67,7 @@ VLLM_REASONING_PARSER="${VLLM_REASONING_PARSER:-}"
 VLLM_REASONING_PLUGIN="${VLLM_REASONING_PLUGIN:-}"
 VLLM_TOOL_PARSER="${VLLM_TOOL_PARSER:-}"
 VLLM_TOOL_PLUGIN="${VLLM_TOOL_PLUGIN:-}"
+VLLM_CHAT_TEMPLATE="${VLLM_CHAT_TEMPLATE:-}"
 
 # shellcheck source=models/qwen3.5-4b-awq.conf disable=SC1091
 source "${CONF_FILE}"
@@ -367,6 +368,16 @@ if [[ -n "${VLLM_TOOL_PARSER}" ]]; then
         args+=(--tool-parser-plugin "${SCRIPT_DIR}/${VLLM_TOOL_PLUGIN}")
     fi
     args+=(--enable-auto-tool-choice --tool-call-parser "${VLLM_TOOL_PARSER}")
+fi
+# A checkpoint whose own chat template is defective names a replacement file
+# here, resolved beside these scripts like the parser plugins. A model fact:
+# the file is the checkpoint's template with the defect fixed.
+if [[ -n "${VLLM_CHAT_TEMPLATE}" ]]; then
+    if [[ ! -f "${SCRIPT_DIR}/${VLLM_CHAT_TEMPLATE}" ]]; then
+        printf 'error: no such chat template: %s\n' "${SCRIPT_DIR}/${VLLM_CHAT_TEMPLATE}" >&2
+        exit 1
+    fi
+    args+=(--chat-template "${SCRIPT_DIR}/${VLLM_CHAT_TEMPLATE}")
 fi
 
 # Reduces allocator fragmentation; set per host profile above, since it is

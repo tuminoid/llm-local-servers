@@ -19,6 +19,7 @@ Tree conventions are in [AGENTS.md](../AGENTS.md).
 | `bench.py` | Benchmark | CUDA adapter for shared AuditBench v1; records model identity, exact configs, and the resolved host profile |
 | `capability.py` | Capability gate | OpenAI-compatible adapter for shared Capability Check v1 |
 | `nemotron_tool_parser.py` | Parser plugin | Loaded when the Nemotron config sets `VLLM_TOOL_PLUGIN`. Registers its Olmo3-derived reasoning adapter, buffers `<TOOLCALL>`, and repairs the AWQ checkpoint's malformed JSON |
+| `mimo-v2.6-chat-template.jinja` | Chat template | Loaded when the MiMo config sets `VLLM_CHAT_TEMPLATE`. The checkpoint's template with the thinking opener prefilled; the config records why |
 | `models/*.conf` | Per-model settings | Portable model facts, including an immutable HF revision; all `${VAR:-default}` so env wins |
 | `Makefile` | Guard, defines no targets | Fails with the root target list. Present only to disable Make's built-in `%: %.sh` rule, which turns `make stop` here into an executable copy of `stop.sh` |
 

@@ -45,12 +45,11 @@ VLLM_DIR := vllm
 # launched the wrong vLLM model remotely in a way run.sh could not see, costing
 # a full readiness timeout before it gave up.
 MODEL           ?=
-# vLLM 0.29.0 (Model Runner V2). Transformers 5.15.1: 0.29.0 needs >= 5.10.4
-# and 5.15 carries the Gemma 4 per-layer head-dim handling (vllm#49797).
-# ninja is a runtime dependency: the DFlash draft head is torch.compiled at
-# engine init and inductor shells out to it. Canonical rows in
-# vllm/BENCHMARKS.md are 0.28.0 measurements until re-run at this pin.
-VLLM_VERSION    ?= 0.29.0
+# vLLM 0.30.0 (Model Runner V2). Transformers 5.15.1: 5.15 carries the
+# Gemma 4 per-layer head-dim handling (vllm#49797). ninja is a runtime
+# dependency: the DFlash draft head is torch.compiled at engine init and
+# inductor shells out to it. vllm/BENCHMARKS.md names the pin of each row.
+VLLM_VERSION    ?= 0.30.0
 VLLM_TRANSFORMERS_VERSION ?= 5.15.1
 VLLM_REMOTE_DIR ?= tmp/vllm
 VLLM_REMOTE_PORT ?= 8000

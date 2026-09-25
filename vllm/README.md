@@ -68,9 +68,9 @@ effect.
 
 `VLLM_REMOTE_DIR` (default `tmp/vllm`, relative to the remote home) sets where
 the scripts land. `VLLM_VERSION` and `VLLM_TRANSFORMERS_VERSION` pin what
-bootstrap installs; their defaults are vLLM 0.29.0 and Transformers 5.15.1.
+bootstrap installs; their defaults are vLLM 0.30.0 and Transformers 5.15.1.
 
-The Transformers pin moves with the vLLM pin. vLLM 0.29.0 requires
+The Transformers pin moves with the vLLM pin. vLLM 0.30.0 requires
 Transformers >= 5.10.4; 5.15.1 is kept because 5.15 made Gemma 4's 256/512
 head dimensions explicitly per-layer, matched on the vLLM side by
 [PR #49797](https://github.com/vllm-project/vllm/pull/49797).
