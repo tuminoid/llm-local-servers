@@ -76,6 +76,14 @@ class SplashTest(unittest.TestCase):
             with self.assertRaises(OSError):
                 runtime.port_free("127.0.0.1", listener.getsockname()[1])
 
+    def test_start_refuses_non_apple_silicon_host(self):
+        with mock.patch.object(runtime, "require_stopped"), \
+                mock.patch.object(runtime.platform, "system", return_value="Linux"), \
+                mock.patch.object(runtime, "command") as command:
+            with self.assertRaisesRegex(RuntimeError, "this host is Linux/"):
+                runtime.start("tag", {})
+        command.assert_not_called()
+
     def test_stop_refuses_reused_pid_and_retains_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
             pidfile = Path(directory) / "server.json"

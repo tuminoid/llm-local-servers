@@ -17,6 +17,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh disable=SC1091
 source "${SCRIPT_DIR}/lib.sh"
 
+# The Metal plugin runs only on Apple Silicon macOS.
+if [[ "$(uname -s)/$(uname -m)" != "Darwin/arm64" ]]; then
+    printf 'error: vllm-metal/ serves on macOS Apple Silicon; this host is %s/%s\n' "$(uname -s)" "$(uname -m)" >&2
+    printf 'use make vllm-start on a CUDA Linux host\n' >&2
+    exit 1
+fi
+
 if [[ -z "${1:-}" ]]; then
     printf 'usage: %s <model-config-name>\n' "$(basename "$0")" >&2
     printf 'available:\n' >&2

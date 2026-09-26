@@ -18,6 +18,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh disable=SC1091
 source "${SCRIPT_DIR}/lib.sh"
 
+# This server is CUDA vLLM, Linux only. On macOS it would die at setsid.
+if [[ "$(uname -s)" != "Linux" ]]; then
+    printf 'error: vllm/ serves CUDA vLLM on Linux; this host is %s\n' "$(uname -s)" >&2
+    printf 'use make vllm-remote-start for the GPU host, or make vllm-metal-start on Apple Silicon\n' >&2
+    exit 1
+fi
+
 if [[ -z "${1:-}" ]]; then
     printf 'usage: %s <model-config-name>\n' "$(basename "$0")" >&2
     printf 'available:\n' >&2

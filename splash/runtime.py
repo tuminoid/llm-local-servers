@@ -141,10 +141,15 @@ def require_stopped():
         raise RuntimeError(f"managed state exists at {PIDFILE}; run make splash-stop first")
 
 
+def require_host():
+    if platform.system() != "Darwin" or platform.machine() != "arm64":
+        raise RuntimeError("Splash requires Apple Silicon (M3 or newer) and macOS 26.4+; "
+                           f"this host is {platform.system()}/{platform.machine()}")
+
+
 def install():
     require_stopped()
-    if platform.system() != "Darwin" or platform.machine() != "arm64":
-        raise RuntimeError("Splash requires Apple Silicon (M3 or newer) and macOS 26.4+")
+    require_host()
     if tuple(map(int, platform.mac_ver()[0].split(".")[:2])) < (26, 4):
         raise RuntimeError("Splash requires macOS 26.4+")
     if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_.-]*", VERSION):
@@ -313,6 +318,7 @@ def check_live(values, owner, identity):
 
 def start(tag, values):
     require_stopped()
+    require_host()
     argv = command(values)
     host, port = argv[argv.index("--host") + 1], int(argv[argv.index("--port") + 1])
     port_free(host, port)
