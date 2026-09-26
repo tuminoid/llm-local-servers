@@ -62,9 +62,11 @@ than queued.
 ### 80 GB A100
 
 A100-SXM4-80GB (sm_80), 81,920 MiB VRAM. Canonical AuditBench v1 ran with
-three measured samples and the full profile at each conf's serving-default
-cache pin, Transformers 5.15.1: `qwen3.8-27b` and `qwen3.8-27b-dflash2` on
-vLLM 0.29.0, the other profiles on 0.28.0 (each pin move re-baselined the
+three measured samples (two, with a third only on disagreement, for the
+0.30.0 rows) and the full profile at each conf's serving-default
+cache pin, Transformers 5.15.1: `qwen3.6-35b-a3b-awq` and `mimo-v2.6-9b-awq`
+on vLLM 0.30.0 (2026-09-25), `qwen3.8-27b` and `qwen3.8-27b-dflash2` on
+0.29.0, the other profiles on 0.28.0 (each pin move re-baselined the
 plain profiles within ~2%, so rows across pins compare).
 `qwen3.8-27b-dflash2` is the same
 weights and revision as `qwen3.8-27b` plus the pinned z-lab DFlash 2
@@ -79,7 +81,8 @@ queued pseudo-concurrency.
 | -- | --: | --: | --: | -- |
 | `qwen3-coder-30b` | 262,144 | 513,152 | 1.96x | 2 x 245,762 in 289.67s |
 | `glm4.7-flash-awq` | 202,752 | 1,050,624 | 5.18x | 4 x 190,092 in 419.78s |
-| `qwen3.6-35b-a3b-awq` | 262,144 | 2,714,989 | 10.36x | 8 x 245,752 in 359.58s |
+| `qwen3.6-35b-a3b-awq` | 262,144 | 2,798,258 | 10.67x | 8 x 245,752 in 359.53s |
+| `mimo-v2.6-9b-awq` | 262,144 | 2,229,526 | 8.50x | 8 x 245,751 in 389.62s |
 | `qwen3.8-27b` | 262,144 | 746,456 | 2.85x | 2 x 245,748 in 326.04s |
 | `qwen3.8-27b-dflash2` | 262,144 | 507,737 | 1.94x | 2 x 245,748 in 323.42s |
 | `gemma4-26b-a4b-awq` | 262,144 | 1,867,456 | 7.12x | 4 x 245,774 in 625.92s |
@@ -91,15 +94,16 @@ one token; decode generates exactly 1,024 tokens per stream.
 | -- | --: | --: | --: | --: | --: | --: | --: |
 | `qwen3-coder-30b` | 8,551.3 [8,537.7-8,565.0] | 5,275.6 [5,264.5-5,286.8] | 3,011.2 [3,010.0-3,012.4] | 149.49 [147.80-149.51] | 268.36 [268.35-289.43] | 521.63 [521.61-521.66] | 1,019.74 [1,019.57-1,019.95] |
 | `glm4.7-flash-awq` | 7,346.1 [7,333.5-7,358.8] | 4,367.1 [4,364.1-4,370.1] | 2,546.5 [2,546.5-2,546.6] | 87.41 [87.23-87.59] | 149.80 [149.57-150.02] | 230.77 [229.98-231.56] | 365.23 [364.08-366.39] |
-| `qwen3.6-35b-a3b-awq` | 15,558.4 [15,332.8-15,783.9] | 12,293.1 [11,483.1-12,319.6] | 8,313.8 [8,190.3-8,437.2] | 147.68 [134.63-147.70] | 269.35 [268.98-274.41] | 499.95 [495.06-501.06] | 867.22 [863.03-871.66] |
+| `qwen3.6-35b-a3b-awq` | 15,733.8 [15,731.3-15,736.4] | 12,213.1 [12,162.5-12,263.7] | 8,388.9 [8,361.9-8,415.9] | 148.49 [148.45-148.53] | 275.57 [275.27-275.87] | 511.03 [510.14-511.93] | 879.80 [876.74-882.86] |
+| `mimo-v2.6-9b-awq` | 9,612.6 [9,612.0-9,613.3] | 8,424.6 [8,416.6-8,432.6] | 6,758.3 [6,738.1-6,778.6] | 172.62 [172.51-172.73] | 326.96 [326.93-327.00] | 628.27 [628.18-628.35] | 1,172.99 [1,172.96-1,173.02] |
 | `qwen3.8-27b` | 2,700.3 [2,693.4-2,707.1] | 2,407.7 [2,402.0-2,413.4] | 1,978.8 [1,978.7-1,978.9] | 48.88 [48.88-48.89] | 93.90 [93.90-93.91] | 181.88 [181.87-181.89] | 344.97 [344.86-345.09] |
 | `qwen3.8-27b-dflash2` | 2,702.5 [2,702.1-2,703.0] | 2,414.6 [2,414.4-2,414.8] | 1,991.6 [1,988.6-1,994.6] | 124.16 [122.44-125.88] | 243.83 [241.10-246.56] | 404.89 [402.96-406.82] | 597.01 [596.79-597.24] |
 | `gemma4-26b-a4b-awq` | 7,603.9 [7,601.4-7,606.4] | 4,820.9 [4,819.5-4,822.3] | 2,760.6 [2,759.3-2,761.8] | 169.40 [169.30-169.50] | 320.94 [315.21-326.66] | 589.79 [589.65-589.94] | 1,072.38 [1,072.06-1,072.71] |
 
 Observed 32k/64k/128k prompt counts were respectively 32,762/65,543/131,068
 for Qwen Coder, 32,766/65,547/131,060 for GLM, 32,780/65,547/131,071 for
-Qwen3.6, 32,784/65,556/131,075 for Qwen3.8 (both profiles), and
-32,776/65,532/131,055 for Gemma.
+Qwen3.6, 32,779/65,546/131,070 for MiMo, 32,784/65,556/131,075 for Qwen3.8
+(both profiles), and 32,776/65,532/131,055 for Gemma.
 
 Audit cells are median calls/hour followed by `[min-max]`. The 32k and
 half-context phases generate 1,024 tokens; deep generates 256.
@@ -108,16 +112,21 @@ half-context phases generate 1,024 tokens; deep generates 256.
 | -- | --: | --: | --: | --: | --: | --: | --: |
 | `qwen3-coder-30b` | 283.07 [283.06-283.08] | 378.34 [378.14-378.54] | 461.41 [460.63-462.19] | 515.11 [514.73-515.49] | 61.55 [61.51-61.58] | 27.20 [27.08-27.32] | 2x: 26.73 [26.68-26.78] |
 | `glm4.7-flash-awq` | 185.50 [185.33-185.66] | 241.23 [240.73-241.73] | 311.39 [310.91-311.88] | 367.58 [367.54-367.61] | 66.04 [65.96-66.12] | 36.37 [36.29-36.46] | 4x: 37.28 [37.22-37.35] |
-| `qwen3.6-35b-a3b-awq` | 377.55 [377.08-378.35] | 580.18 [533.46-582.35] | 808.54 [808.38-812.65] | 992.75 [990.72-993.00] | 148.07 [147.82-148.32] | 84.33 [84.06-84.60] | 4x: 84.59 [84.52-84.66] |
+| `qwen3.6-35b-a3b-awq` | 379.64 [379.58-379.71] | 586.44 [584.23-588.64] | 820.55 [818.95-822.14] | 1,001.46 [1,000.17-1,002.76] | 148.35 [148.10-148.59] | 84.17 [84.01-84.33] | 4x: 84.80 [84.62-84.98] |
+| `mimo-v2.6-9b-awq` | 357.21 [357.05-357.37] | 504.21 [503.60-504.82] | 641.04 [640.65-641.42] | 736.33 [735.60-737.05] | 128.51 [128.33-128.69] | 76.11 [75.65-76.56] | 4x: 77.20 [77.07-77.34] |
 | `qwen3.8-27b` | 103.80 | 147.72 | 188.50 | 218.65 | 38.94 | 23.25 | 2x: 23.49 |
 | `qwen3.8-27b-dflash2` | 132.74 | 179.58 | 217.45 | 228.51 | 35.48 | 22.82 | 2x: 22.88 |
 | `gemma4-26b-a4b-awq` | 259.69 [259.59-259.79] | 390.23 [389.56-390.91] | 512.35 [511.59-513.11] | 595.22 [594.83-595.60] | 58.53 [58.51-58.55] | 25.65 [25.60-25.69] | 4x: 26.22 [26.22-26.22] |
 
-`qwen3.6-35b-a3b-awq` is the audit workhorse: 992.75 cold-32k calls/hour,
-148.07 half-context calls/hour, 84.33 deep calls/hour, and eight simultaneous
-near-full requests. Gemma is the pure decode leader at 1,072.38 tok/s, with
-Qwen Coder close behind at 1,019.74. Those decode wins do not survive the
-prompt-heavy audit phases.
+`qwen3.6-35b-a3b-awq` is the audit workhorse: 1,001.46 cold-32k calls/hour,
+148.35 half-context calls/hour, 84.17 deep calls/hour, and eight
+simultaneous near-full requests; on 0.30.0 its audit rates reproduce the
+0.28.0 row within 1.5% (decode +0.5-2.3%). `mimo-v2.6-9b-awq` (Xiaomi's
+cyber and agentic fine-tune of Qwen3.5-9B) is the decode leader at 1,172.99
+tok/s but trails qwen3.6 on every audit phase: 736.33 cold-32k at eight
+streams (-26%), 128.51 half-context (-13%), 77.20 deep (-9%). Gemma's
+1,072.38 and Qwen Coder's 1,019.74 decode wins likewise do not survive the
+prompt-heavy phases.
 
 The DFlash 2 profile's gain is depth-dependent: 2.5x decode and +28%
 cold-32k calls at one stream, fading to +5% at eight, and a 9% audit_half
@@ -133,11 +142,11 @@ model gives better answers.
 ## Comparability and benchmark method
 
 The RTX and A100 canonical rows use AuditBench v1 exactly as defined in the
-shared protocol: three interleaved samples, common absolute prompts, relative
-long-context prompts, fixed outputs, and only stream counts that fit both
-admission and the raw KV pool. Compare models within one host. The common
-protocol makes workload shapes consistent across hosts, but it does not erase
-their different GPU generations, memory systems, or power envelopes.
+shared protocol: interleaved samples per its sample rule, common absolute
+prompts, relative long-context prompts, fixed outputs, and only stream counts
+that fit both admission and the raw KV pool. Compare models within one host.
+The common protocol makes workload shapes consistent across hosts, but it does
+not erase their different GPU generations, memory systems, or power envelopes.
 
 The tables compare deployed operating points rather than forcing identical
 backends or quantization. That is intentional: some architectures require
@@ -158,9 +167,9 @@ The conversation profile (AuditBench protocol) is the production-shaped
 workload: 32k evidence, a 16-file sequential tool chain resent in full
 every turn, plain-text findings-ledger verdict at ~165k depth. All
 profiles ran at their serving-default cache pins on the finalized
-control-free fixture; the qwen3.8 rows are measured on vLLM 0.29.0, the
-rest on 0.27.1 (re-baselined rate-neutral on later pins in the full
-profile).
+control-free fixture; `qwen3.6-35b-a3b-awq` and `mimo-v2.6-9b-awq` are
+measured on vLLM 0.30.0, the qwen3.8 rows on 0.29.0, the rest on 0.27.1
+(re-baselined rate-neutral on later pins in the full profile).
 
 ### The cache decides the workload, first
 
@@ -186,7 +195,8 @@ Medians over compliant samples; cached fraction from engine counters.
 
 | Profile | Cache pin | Compliant | Conversations/hour | Cached | Recall |
 | -- | -- | -- | --: | --: | -- |
-| `qwen3.6-35b-a3b-awq` | APC on | yes | 85.9 | 0.898 | 16/16 |
+| `mimo-v2.6-9b-awq` | APC on | yes | 88.5 | 0.900 | 16/16 |
+| `qwen3.6-35b-a3b-awq` | APC on | 1/2 | 89.1 | 0.898 | 16/16 |
 | `qwen3-coder-30b` | APC on | yes | 45.2 | 0.902 | 16/16 |
 | `gemma4-26b-a4b-awq` | APC on | yes | 43.8 | 0.906 | 16/16 |
 | `qwen3.8-27b-dflash2` | APC on | yes | 23.3 | 0.890 | 16/16 |
@@ -195,8 +205,12 @@ Medians over compliant samples; cached fraction from engine counters.
 
 Findings:
 
-- qwen3.6 at its APC serving default is the A100's audit workhorse:
-  85.9 conversations/hour with perfect recall.
+- `mimo-v2.6-9b-awq` completes both samples with perfect recall at 88.5
+  conversations/hour, with its fixed chat template (see its conf).
+- qwen3.6 on 0.30.0 completed one of two samples: sample 1 stopped after
+  14 of 16 files (15 turns, ~148k final prompt). The compliant sample ran
+  at 89.1/h with perfect recall; on 0.27.1 both samples complied at
+  85.9/h. The rate is the compliant sample's, not a median.
 - qwen3.8 at its align-APC default reaches 21.5 conversations/hour
   (samples 20.2-24.4; 20.2 on 0.28.0 and 21.9 on 0.27.1 sit inside that
   range), roughly 5x the retired cache-off default's 4.1/h (~877 s
@@ -295,6 +309,20 @@ measured 30.5 vs ~29.5 tok/s (depth-neutral); the difference is the
   replay: turns are nearly free and 85% of the 196.7 s wall is the
   forced verdict decode itself (167.0 s).
 
+### vLLM 0.30.0: qwen3.6 and MiMo
+
+Canonical, 2026-09-25, both at their align-APC serving defaults. Every
+verdict filled the 16,384-token cap, so these replays/hour compare.
+
+| Profile | Replays/h | Turn walls | Cached | Verdict decode at ~164k |
+| -- | --: | -- | --: | --: |
+| `mimo-v2.6-9b-awq` | 19.62 [19.58-19.66] | 3.7 s cold, 1.3-2.7 s | 0.899 | 16,384 tok @ 109.1 tok/s |
+| `qwen3.6-35b-a3b-awq` | 18.30 [18.28-18.31] | 2.3 s cold, 1.1-2.6 s | 0.824 | 16,384 tok @ 98.2 tok/s |
+
+qwen3.6 reproduces its 0.27.1 anchor (18.3/h, 98.0 tok/s). MiMo's lead is
+the single-stream verdict decode, 150 s against 167 s of the ~184-197 s
+replay.
+
 ## Concurrent audit replay profile: A100
 
 Canonical replay-concurrent run (AuditBench protocol) on the audit
@@ -328,6 +356,61 @@ per-stream demand fits all three candidate stream counts.
   cached tokens; cached fraction rises with streams (0.897 -> 0.915)
   but stays minor against a ~167k final conversation, same as on the
   M5.
+
+### vLLM 0.30.0 canonical: qwen3.6 and MiMo
+
+2026-09-25, serving defaults (align APC, seqs 8). Both pools fit all three
+candidate stream counts.
+
+`qwen3.6-35b-a3b-awq`, pool 2,798,258 tokens:
+
+| Streams | Batch wall | Replays/h | Scaling | Turn walls first -> final | Verdict decode | Cached |
+| --: | --: | --: | --: | -- | --: | --: |
+| 1 | 307 s | 11.73 | 1.00 | 9.6 -> 11.3 s | 110.7 tok/s | 0.892 |
+| 2 | 384 s | 18.74 | 1.60 | 10.2 -> 15.0 s | 89.0 tok/s | 0.902 |
+| 4 | 538 s | 26.78 | 2.28 | 11.2 -> 22.6 s | 63.8 tok/s | 0.912 |
+
+`mimo-v2.6-9b-awq`, pool 2,229,526 tokens:
+
+| Streams | Batch wall | Replays/h | Scaling | Turn walls first -> final | Verdict decode | Cached |
+| --: | --: | --: | --: | -- | --: | --: |
+| 1 | 237 s | 15.16 | 1.00 | 10.1 -> 13.0 s | 109.1 tok/s | 0.885 |
+| 2 | 338 s | 21.29 | 1.40 | 10.9 -> 20.0 s | 79.7 tok/s | 0.894 |
+| 4 | 505 s | 28.49 | 1.88 | 12.1 -> 36.9 s | 54.2 tok/s | 0.904 |
+
+- qwen3.6 reproduces its 0.27.1 canonical within 1% at every stream count.
+- MiMo's higher replays/hour is less work, not a faster server: most of
+  its probe turns end on their own at ~100-400 tokens (sample medians
+  152-184), where qwen3.6 fills every 1,024-token turn, and one of its
+  twelve 4-stream verdicts stopped at 435 tokens where qwen3.6 fills every
+  16,384. Under contention qwen3.6 decodes the ~164k-deep verdict faster
+  (63.8 vs 54.2 tok/s at four streams).
+
+### Serving point: eight agents
+
+Exploratory replay-concurrent sweeps on vLLM 0.30.0, 2026-09-25, two
+samples each, find the multi-agent operating point above the canonical 4.
+qwen3.6 ran on a trial copy of the scripts with admission raised to 16
+(pool 2,677,980); MiMo on this tree's committed profile (8970ccc, seqs 8).
+
+| Agents | qwen3.6 replays/h | qwen3.6 final turn | MiMo replays/h | MiMo final turn |
+| --: | --: | --: | --: | --: |
+| 1 | 11.71 | 11.3 s | 15.32 | 13.1 s |
+| 4 | 26.72 | 22.7 s | 27.93 | 32.3 s |
+| 8 | 33.88 | 38.2 s | 33.24 | 65.0 s |
+| 12 | 33.02 | 59.2 s | -- | -- |
+
+- Eight concurrent agents is the A100 serving point for both: +27% (qwen3.6)
+  and +19% (MiMo) over four, and the launcher's 80 GB profile already
+  admits eight sequences. MiMo's pool fits twelve such agents.
+- Twelve buys nothing for qwen3.6, partly because vLLM captures CUDA graphs
+  only at batch sizes 1, 2, 4, 8, 16 and up: 12 runs at the cost of 16. An
+  INT4 MiMo sibling (letechlead W4A16, same trial) showed the same padding
+  at 6 and 10 agents, both below its 8-agent rate, with no preemption. Pick
+  agent counts on those sizes.
+- MiMo's rates carry the short-turn caveat above (one of its sixteen
+  8-agent verdicts also stopped early, at 337 tokens); its per-agent
+  verdict decode at eight agents is 32.8 tok/s.
 
 ## Audit conversation and replay: RTX PRO 3000
 

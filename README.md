@@ -153,7 +153,7 @@ A100-SXM4-80GB:
 
 | Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
 | --: | -- | -- | -- | --: | --: |
-| 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | align APC | 147.68 | 85.9 |
+| 1 | vLLM `mimo-v2.6-9b-awq` | dense | align APC | 172.62 | 88.5 |
 | 2 | vLLM `qwen3-coder-30b` | MoE | APC | 149.49 | 45.2 |
 | 3 | vLLM `gemma4-26b-a4b-awq` | MoE | APC | 169.40 | 43.8 |
 | 4 | Ollama `qwen3.6-35b-a3b` GGUF | MoE | slot cache | 84.58 | 32.0 |
@@ -161,6 +161,10 @@ A100-SXM4-80GB:
 | 6 | vLLM `qwen3.8-27b-dflash2` | dense | align APC + DFlash 2 | 124.16 | 23.3 |
 | 7 | Ollama `qwen3.8-27b-native` | dense | slot cache | 74.31 | 15.3 |
 | 8 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | slot cache | 51.38 | 10.5 |
+| -- | vLLM `qwen3.6-35b-a3b-awq` | MoE | align APC | 148.49 | 89.1 (1/2 compliant) |
+
+vLLM qwen3.6's 89.1/h is its compliant sample on 0.30.0; the other
+stopped after 14 of 16 files (both complied at 85.9/h on 0.27.1).
 
 Apple M5 Max:
 
@@ -209,23 +213,25 @@ RTX PRO 3000:
 | --: | -- | -- | -- | --: | --: |
 | 1 | Ollama `qwen3.5:9b` | dense | slot cache | 37.83 | 9.8 |
 
-Excluded from ranking for fixture non-compliance: both qwen3.5-4b stacks
-and the CPU-assisted qwen3.6 on the RTX, GLM 4.7 Flash and Ollama
-gemma4-26b on the A100, and Splash qwen3.6 and vLLM-Metal ornith (1/2
-conversation samples compliant) and vLLM-Metal granite (0/2) on the M5.
-The A100 vLLM `qwen3-coder-30b` rate stands but the profile fails
+Excluded from ranking for fixture non-compliance: both qwen3.5-4b stacks and
+the CPU-assisted qwen3.6 on the RTX, GLM 4.7 Flash, Ollama gemma4-26b and
+vLLM qwen3.6 on 0.30.0 (1/2) on the A100, and Splash qwen3.6 and vLLM-Metal
+ornith (1/2 conversation samples compliant) and vLLM-Metal granite (0/2) on
+the M5. The A100 vLLM `qwen3-coder-30b` rate stands but the profile fails
 Capability Check v1 (two tool calls for a one-call fixture).
 
 ### A100-SXM4-80GB
 
-Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.29.0 for the two qwen3.8
-profiles, 0.28.0 for the rest, Transformers 5.15.1. Ollama rows: isolated
+Remote host: sm_80, 81,920 MiB VRAM. vLLM rows: 0.30.0 for qwen3.6 and
+MiMo, 0.29.0 for the two qwen3.8 profiles, 0.28.0 for the rest,
+Transformers 5.15.1. Ollama rows: isolated
 Ollama, 0.34.2 for qwen3.8-27b-native and flash-next, 0.32.14 for the rest;
 Flash Attention, q8 KV.
 
 | Runtime and profile | Context | Slots | GPU KV / allocation | 32k prefill | Peak decode | Audit 32k | Audit half | Audit deep | Near-context proof |
 | -- | --: | --: | -- | --: | --: | --: | --: | --: | -- |
-| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,714,989 KV | 15,558.4 | 867.22 @8x | 992.75 @8x | 148.07 | 84.59 @4x | 8 x 245,752 in 359.58s |
+| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,798,258 KV | 15,733.8 | 879.80 @8x | 1,001.46 @8x | 148.35 | 84.80 @4x | 8 x 245,752 in 359.53s |
+| vLLM `mimo-v2.6-9b-awq` | 262,144 | 8 | 2,229,526 KV | 9,612.6 | 1,172.99 @8x | 736.33 @8x | 128.51 | 77.20 @4x | 8 x 245,751 in 389.62s |
 | Ollama `qwen3.6:35b-a3b` | 262,144 | 1 | 0.00 / 25.34 GiB | 4,165.7 | 84.58 | 176.52 | 64.82 | 42.81 | 245,752 in 85.26s |
 | vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,867,456 KV | 7,603.9 | 1,072.38 @8x | 595.22 @8x | 58.53 | 26.22 @4x | 4 x 245,774 in 625.92s |
 | Ollama `gemma4:26b` | 262,144 | 8 | 0.00 / 25.32 GiB | 3,246.7 | 231.48 @8x | 222.32 @8x | 53.51 | 27.68 @4x | 8 x 245,777 in 1,030.85s |

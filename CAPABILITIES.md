@@ -142,7 +142,7 @@ proves nothing about parser compatibility.
 
 - vLLM: `qwen3-coder-30b`, `glm4.7-flash-awq`,
   `qwen3.6-35b-a3b-awq`, `qwen3.8-27b`, `qwen3.8-27b-dflash2`,
-  `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`
+  `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
 - Ollama: `qwen3-coder-30b`, `glm4.7-flash`, `qwen3.6-35b-a3b`,
   `qwen3.8-27b-native`, `gemma4-26b`, `qwen3.8-flash-next-gguf-iq4xs`
   (needs `OLLAMA_VERSION=0.33.3` on every lifecycle target)
@@ -352,8 +352,9 @@ tree and checker are the Splash rows'; reports are under
 ## A100-SXM4-80GB campaign
 
 Host: shared A100 test host, reached over ssh through the `HOST` alias
-supplied by `.envrc`. Protocol SCHEMA_VERSION 4. `qwen3.8-27b` and
-`qwen3.8-27b-dflash2` are dated 2026-09-19 on vLLM 0.29.0;
+supplied by `.envrc`. Protocol SCHEMA_VERSION 4. `qwen3.6-35b-a3b-awq` and
+`mimo-v2.6-9b-awq` are dated 2026-09-25 on vLLM 0.30.0; `qwen3.8-27b` and
+`qwen3.8-27b-dflash2` 2026-09-19 on vLLM 0.29.0;
 `qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs` the same day on
 Ollama 0.34.2; every other row is the 2026-09-06/07 run on vLLM 0.28.0 and
 Ollama 0.32.14 (`qwen3.8-27b-512k` and `glm4.7-flash-awq` on 2026-09-07,
@@ -362,6 +363,7 @@ the latter after its conf gained the thinking-disable control).
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+| vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | vLLM | `glm4.7-flash-awq` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass |
@@ -392,6 +394,10 @@ its model config.
   remains a pass.
 - Every other A100 row passes both tool paths, non-streaming and
   streamed, on both runtimes.
+- `mimo-v2.6-9b-awq` passes on its fixed chat template
+  (`VLLM_CHAT_TEMPLATE`). On the checkpoint's own template it is 4/8: the
+  model skips reasoning, then writes JSON tool arguments that `qwen3_xml`
+  reads as `{}` (diagnosis and retest condition in its model config).
 - `qwen3.8-flash-next-gguf-iq4xs` passes all eight checks with schema
   enforcement verified, and is the only row in the fleet whose unaided
   document is `error`: that request reproducibly (3/3 across Ollama
