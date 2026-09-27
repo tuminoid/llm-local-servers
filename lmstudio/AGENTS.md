@@ -9,7 +9,7 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and rationale are in
 | -- | -- |
 | `runtime.py` | Lifecycle, pin checks, pulls and live identity; the Makefile calls its verbs |
 | `bench.py` | AuditBench transport, admission and provenance |
-| `capability.py` | Capability Check v1 with LM Studio's top-level thinking control |
+| `capability.py` | Capability Check v2 with LM Studio's top-level thinking control |
 | `models/*.conf` | One artifact each: format, repo, revision, context, expectations |
 | `Makefile` | Guard against built-in script-copy rules |
 
@@ -44,7 +44,7 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and rationale are in
 - Refuse a remote LM Link preferred device; a load would run on that host.
 - The OpenAI endpoint lists every downloaded model; select the served id.
   `tool_choice` accepts strings only, and reasoning arrives in
-  `reasoning_content`, which Capability Check v1 accepts as its alias.
+  `reasoning_content`, which Capability Check accepts as its alias.
 
 ## Retest conditions
 

@@ -17,7 +17,7 @@ Serving measurements follow
 | `run.sh` | Detached launcher and readiness wait |
 | `status.sh` | Process, KV sizing, NAX evidence, footprint, live API probe |
 | `bench.py` | vLLM-Metal adapter for shared AuditBench v2, including exact config and resolved host-profile provenance |
-| `capability.py` | OpenAI-compatible adapter for shared Capability Check v1 |
+| `capability.py` | OpenAI-compatible adapter for shared Capability Check v2 |
 | `battery-gate.sh` | AuditBench sample gate: charge floor plus 140 W adapter contract |
 | `stop.sh` | Process-group teardown and release verification |
 | `models/*.conf` | Portable model facts: repo, revision, context, parsers, KV cost |

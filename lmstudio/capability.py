@@ -1,10 +1,11 @@
-"""Capability Check v1 against the owned, pinned LM Studio server."""
+"""Capability Check v2 against the owned, pinned LM Studio server."""
 
 import os
 import sys
 
 from capability_check import (
-    CapabilityConfig, OpenAIChatAdapter, run_capability_check, setup_failure,
+    CapabilityConfig, OpenAIChatAdapter, parse_sampling, run_capability_check,
+    setup_failure,
 )
 import bench
 
@@ -25,7 +26,7 @@ def control(mode):
 def main():
     tag = sys.argv[1]
     try:
-        values, _owner, base, identity = bench.evidence(tag)
+        values, owner, base, identity = bench.evidence(tag)
         timeout = int(os.environ.get("CAPABILITY_TIMEOUT", "600"))
         return run_capability_check(
             runtime="lmstudio", tag=tag, model=tag,
@@ -35,6 +36,8 @@ def main():
                 reasoning_options=control(values["LMSTUDIO_CAP_REASONING_MODE"]),
                 disable_options=control(values["LMSTUDIO_CAP_DISABLE_MODE"]),
                 system_prompt=values["LMSTUDIO_CAP_SYSTEM_PROMPT"] or None,
+                sampling=parse_sampling(values["LMSTUDIO_SAMPLING"]),
+                concurrency=owner["parallel"],
             ),
             identity=identity,
             timeout_tokens=int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048")),

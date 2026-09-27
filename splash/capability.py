@@ -1,10 +1,11 @@
-"""Capability Check v1 against the owned, pinned Splash server."""
+"""Capability Check v2 against the owned, pinned Splash server."""
 
 import os
 import sys
 
 from capability_check import (
-    CapabilityConfig, OpenAIChatAdapter, run_capability_check, setup_failure,
+    CapabilityConfig, OpenAIChatAdapter, parse_sampling, run_capability_check,
+    setup_failure,
 )
 import bench
 
@@ -23,7 +24,7 @@ def main():
     tag = sys.argv[1]
     model = None
     try:
-        values, _owner, base, _status, identity = bench.evidence(tag)
+        values, _owner, base, status, identity = bench.evidence(tag)
         model = values["SPLASH_MODEL_REPO"]
         timeout = int(os.environ.get("CAPABILITY_TIMEOUT", "600"))
         return run_capability_check(
@@ -34,6 +35,8 @@ def main():
                 reasoning_options=control(values["SPLASH_CAP_REASONING_MODE"]),
                 disable_options=control(values["SPLASH_CAP_DISABLE_MODE"]),
                 system_prompt=values["SPLASH_CAP_SYSTEM_PROMPT"] or None,
+                sampling=parse_sampling(values["SPLASH_SAMPLING"]),
+                concurrency=bench.capacity(status)[0],
             ),
             identity=identity,
             timeout_tokens=int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048")),

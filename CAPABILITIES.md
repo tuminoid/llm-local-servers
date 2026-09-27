@@ -1,13 +1,19 @@
-# Capability Check v1 results
+# Capability Check results
 
-Capability Check v1 is the pass/fail API compatibility gate for models in the
-serving inventory. It proves response semantics needed by coding agents;
-AuditBench separately measures serving performance and capacity. The protocol
--- fixed checks, model expectations, and the mapping from the retained JSON
-report to the tables below -- is defined in
+Capability Check is the pass/fail gate for models in the serving inventory.
+Its API checks prove the response semantics coding agents need; since v2 its
+audit fitness check also proves the model finishes audit-shaped work at its
+declared sampling. AuditBench
+separately measures serving performance and capacity. The protocol -- fixed
+checks, model expectations, and the mapping from the retained JSON report to
+the tables below -- is defined in
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 (`docs/CAPABILITY.md`); this file holds the fleet's campaign inventory and
 retained results.
+
+The result tables below are Capability Check v1 campaigns. A v1 pass is not
+a v2 pass: re-check a model at v2 before promoting it, and replace its row
+when the v2 campaign lands.
 
 Capability results never rank model quality or serving performance.
 
@@ -27,6 +33,12 @@ failures as failures, and never convert manual evidence into a Capability
 Check pass. `uv run capability-check --list` (in the llm-audit-bench
 checkout) names every retained report and
 `uv run capability-check --show FILE` re-prints one.
+
+Audit fitness samples at the model config's `<PREFIX>_SAMPLING`, so the
+config must declare it. A check takes about 10 to 80 minutes per model on
+the M5, most of it the selection task; `CAPABILITY_FITNESS_SAMPLES=0` makes
+an API-only run, which cannot promote a model. A v2 host row adds the audit
+fitness column from `checks.audit_fitness.status`.
 
 Local lifecycle:
 
@@ -100,7 +112,8 @@ automatic when it is provably safe.
 ### Promotion rule
 
 A model intended for agent workloads must pass identity, streaming, the
-non-streaming and streaming tool calls, tool round trip, and structured JSON.
+non-streaming and streaming tool calls, tool round trip, structured JSON, and
+audit fitness at the default sample count.
 Its reasoning result must match the model-config expectation. A throughput
 result cannot override a capability failure.
 

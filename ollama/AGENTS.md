@@ -16,7 +16,7 @@ in [README.md](README.md); shared server conventions live in
 | `preflight.sh` | Remote managed-server and idle-GPU guard |
 | `status.sh` | API allocation, CPU/GPU split, RAM, VRAM, and process report |
 | `bench.py` | Ollama adapter, live artifact identity and effective-slot guards for shared AuditBench v2 |
-| `capability.py` | Native Ollama adapter for shared Capability Check v1 |
+| `capability.py` | Native Ollama adapter for shared Capability Check v2 |
 | `stop.sh` | Recorded-process-group teardown and GPU release check |
 | `models/*.conf` | Portable model facts |
 | `Makefile` | Guard with no runnable targets |

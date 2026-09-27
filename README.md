@@ -9,9 +9,9 @@ security-audit calls; [AGENTS.md](AGENTS.md) states the mission and the
 invariants.
 
 Serving performance is measured with AuditBench (v1 rows until each host
-is re-measured at v2) and API compatibility
-is gated with Capability Check v1. Both live in the sibling
-[llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
+is re-measured at v2), and API compatibility and audit fitness are gated
+with Capability Check v2 (v1 rows until each model is re-checked). Both
+live in the sibling [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 repository (`docs/PROTOCOL.md` and `docs/CAPABILITY.md` are the
 canonical protocol documents); this repository holds the runtime
 adapters, model configs, and results.
@@ -48,7 +48,7 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-status` | Process, memory split, context allocation, KV sizing |
 | `make <runtime>-logs` | Follow the server log |
 | `make <runtime>-bench MODEL=<name>` | Run AuditBench v2 |
-| `make <runtime>-capability MODEL=<name>` | Run Capability Check v1 |
+| `make <runtime>-capability MODEL=<name>` | Run Capability Check v2 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, or `lmstudio`
 (plus `ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,

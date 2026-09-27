@@ -251,7 +251,7 @@ scaling taxes the whole early conversation, which is most tokens. Worst,
 the failure is quiet: a 512k config that parses, serves, and reasons
 slightly worse at depth looks fine on a throughput sweep. That is why
 any extended profile here is exploratory until a deep AuditBench run
-plus Capability Check v1 pass at the new depth, and why factor is kept
+plus Capability Check pass at the new depth, and why factor is kept
 as low as the workload allows rather than as high as the pool permits.
 
 Alternatives, roughly in order of preference for this fleet:

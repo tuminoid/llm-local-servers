@@ -32,7 +32,7 @@ MAKEFLAGS += --no-builtin-rules
 	$(MAKE) --no-print-directory help >&2; \
 	exit 1
 
-# The AuditBench v2 and Capability Check v1 harnesses live in the sibling
+# The AuditBench v2 and Capability Check v2 harnesses live in the sibling
 # llm-audit-bench repository. Local bench, capability, and test targets import
 # them via PYTHONPATH; deploy targets rsync the two modules next to the
 # adapters on remote hosts, where they import as adjacent files.
@@ -86,9 +86,12 @@ CAPABILITY_TIMEOUT ?= 600
 CAPABILITY_REASONING_TOKENS ?= 2048
 # Empty means the harness default state directory on the executing host.
 CAPABILITY_OUTPUT_DIR ?=
+# Empty means the harness default samples per audit fitness task; 0 skips it.
+CAPABILITY_FITNESS_SAMPLES ?=
 CAPABILITY_ENV = CAPABILITY_TIMEOUT=$(CAPABILITY_TIMEOUT) \
 	CAPABILITY_REASONING_TOKENS=$(CAPABILITY_REASONING_TOKENS) \
-	CAPABILITY_OUTPUT_DIR=$(CAPABILITY_OUTPUT_DIR)
+	CAPABILITY_OUTPUT_DIR=$(CAPABILITY_OUTPUT_DIR) \
+	CAPABILITY_FITNESS_SAMPLES=$(CAPABILITY_FITNESS_SAMPLES)
 
 VLLM_METAL_DIR := vllm-metal
 # vLLM-Metal runs on Apple Silicon only. Plugin 0.29.0 paired with the
@@ -166,7 +169,7 @@ help:
 	@echo "  make all         - Run lint and test"
 	@echo "  make clean       - Remove Python bytecode and editor droppings"
 	@echo ""
-	@echo "  AuditBench v2 and Capability Check v1 run from the sibling"
+	@echo "  AuditBench v2 and Capability Check v2 run from the sibling"
 	@echo "  llm-audit-bench checkout: AUDIT_BENCH_DIR=$(AUDIT_BENCH_DIR)"
 	@echo ""
 	@echo "  Local Ollama:"
@@ -176,7 +179,7 @@ help:
 	@echo "  make ollama-status  - Show process, CPU/GPU split, context, and memory"
 	@echo "  make ollama-logs    - Follow the Ollama server log"
 	@echo "  make ollama-bench   - Run AuditBench v2"
-	@echo "  make ollama-capability - Check reasoning, tools, and structured output"
+	@echo "  make ollama-capability - Check API capabilities and audit fitness"
 	@echo "  make ollama-stop    - Stop Ollama and verify GPU release"
 	@echo ""
 	@echo "  Local vLLM (CUDA):"
@@ -185,7 +188,7 @@ help:
 	@echo "  make vllm-status - Show process, GPU use, backend, KV cache sizing"
 	@echo "  make vllm-logs   - Follow the vLLM server log"
 	@echo "  make vllm-bench  - Run AuditBench v2"
-	@echo "  make vllm-capability - Check reasoning, tools, and structured output"
+	@echo "  make vllm-capability - Check API capabilities and audit fitness"
 	@echo ""
 	@echo "  vLLM-Metal on Apple Silicon (port 8021, needs MODEL=<name>):"
 	@echo "  make vllm-metal-install - Install the pinned plugin venv"
@@ -194,7 +197,7 @@ help:
 	@echo "  make vllm-metal-status  - Show process, KV sizing, NAX, memory"
 	@echo "  make vllm-metal-logs    - Follow the vLLM-Metal server log"
 	@echo "  make vllm-metal-bench   - Run AuditBench v2"
-	@echo "  make vllm-metal-capability - Check reasoning, tools, and structured output"
+	@echo "  make vllm-metal-capability - Check API capabilities and audit fitness"
 	@echo "  make vllm-metal-stop    - Stop and verify process-group release"
 	@echo ""
 	@echo "  Splash on Apple Silicon M3+ (port 8022, needs MODEL=<name>):"
@@ -204,7 +207,7 @@ help:
 	@echo "  make splash-status     - Show identity, context, sparse KV and memory plan"
 	@echo "  make splash-logs       - Follow the server log"
 	@echo "  make splash-bench      - Run AuditBench v2"
-	@echo "  make splash-capability - Check reasoning, tools, and structured output"
+	@echo "  make splash-capability - Check API capabilities and audit fitness"
 	@echo "  make splash-stop       - Stop and verify process-group and port release"
 	@echo "  Models: $(patsubst $(SPLASH_DIR)/models/%.conf,%,$(wildcard $(SPLASH_DIR)/models/*.conf))"
 	@echo ""
@@ -215,7 +218,7 @@ help:
 	@echo "  make lmstudio-status     - Show the managed record and loaded models"
 	@echo "  make lmstudio-logs       - Follow the launch log"
 	@echo "  make lmstudio-bench      - Run AuditBench v2"
-	@echo "  make lmstudio-capability - Check reasoning, tools, and structured output"
+	@echo "  make lmstudio-capability - Check API capabilities and audit fitness"
 	@echo "  make lmstudio-stop       - Unload, stop the server and verify release"
 	@echo "  Models: $(patsubst $(LMSTUDIO_DIR)/models/%.conf,%,$(wildcard $(LMSTUDIO_DIR)/models/*.conf))"
 	@echo ""
@@ -226,7 +229,7 @@ help:
 	@echo "  make vllm-remote-status    - Status of the remote server"
 	@echo "  make vllm-remote-logs      - Follow the remote server log"
 	@echo "  make vllm-remote-bench     - Run AuditBench v2 on the remote host"
-	@echo "  make vllm-remote-capability - Check model API capabilities"
+	@echo "  make vllm-remote-capability - Check API capabilities and audit fitness"
 	@echo "  make vllm-remote-tunnel    - Forward localhost:$(VLLM_TUNNEL_PORT) to the host"
 	@echo ""
 	@echo "  Isolated remote Ollama (HOST=<ssh-host> required, needs MODEL=<name>):"
@@ -237,7 +240,7 @@ help:
 	@echo "  make ollama-remote-status    - Read isolated remote status"
 	@echo "  make ollama-remote-logs      - Follow the isolated remote log"
 	@echo "  make ollama-remote-bench     - Run AuditBench v2 against the owned remote server"
-	@echo "  make ollama-remote-capability - Check model API capabilities"
+	@echo "  make ollama-remote-capability - Check API capabilities and audit fitness"
 	@echo "  make ollama-remote-tunnel    - Forward localhost:$(OLLAMA_TUNNEL_PORT) to remote $(OLLAMA_REMOTE_PORT)"
 	@echo ""
 	@echo "  Select the vLLM model with MODEL=<name> ($(VLLM_DIR)/models/<name>.conf):"

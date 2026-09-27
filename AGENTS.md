@@ -36,8 +36,10 @@ What this means in practice:
   parses 262k but cannot serve repeated deep prefills is broken, not
   "mostly fine".
 - Tool calls and reasoning must work mid-context, in streaming requests,
-  at depth -- that is what capability-v1 gates and why a throughput
-  number can never override a capability failure.
+  at depth, and the model must finish audit work at its own sampling
+  without running away, skipping its thinking, or ignoring the task --
+  that is what capability-v2 gates and why a throughput number can never
+  override a capability failure.
 - Repeated-prefix reuse matters because audit clients resend the whole
   growing conversation every step. Trading a flat decode percentage for
   a large warm-prefix prefill win is the correct trade for this
@@ -67,7 +69,7 @@ local serving concepts.
 
 ## The shared harness
 
-AuditBench v2 (the serving benchmark) and Capability Check v1 (the API gate)
+AuditBench v2 (the serving benchmark) and Capability Check v2 (the model gate)
 are defined and implemented in the sibling
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench) repository:
 `docs/PROTOCOL.md`, `docs/CAPABILITY.md`, and the two stdlib-only modules
@@ -153,7 +155,7 @@ them beside the parser and model identity rather than inferring them in the
 shared checker. So is the checkpoint's sampling: each config declares
 `<PREFIX>_SAMPLING` from its `generation_config.json` at the pinned revision
 (else the model card or registry params), and the adapters pass it to
-AuditBench.
+AuditBench and audit fitness.
 
 Host-specific settings (bind address, port, accelerator backend) belong in
 the launcher, not the model config. A model config should be portable
@@ -282,10 +284,11 @@ KV capacity of that workload.
 
 ### Gate agent API capabilities separately
 
-Run Capability Check v1 before promoting a model for agent workloads. It must
+Run Capability Check v2 before promoting a model for agent workloads. It must
 prove the configured reasoning semantics, structured tool call, tool-result
-continuation, and direct JSON output. Keep these pass/fail fixtures out of
-AuditBench: serving speed cannot compensate for malformed agent responses.
+continuation, and direct JSON output, and pass audit fitness at the
+declared sampling. Keep these pass/fail fixtures out of AuditBench: serving speed
+cannot compensate for malformed agent responses or unfinished work.
 
 Any run intended to update the serving inventory must follow
 [CAPABILITIES.md](CAPABILITIES.md) and update its host row in the same

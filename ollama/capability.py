@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Run capability-v1 against the managed Ollama server."""
+"""Run capability-v2 against the managed Ollama server."""
 
 import os
 import pathlib
 import sys
+from dataclasses import replace
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 # The shared harness modules (audit_bench, capability_check) resolve via
@@ -15,6 +16,7 @@ import bench as benchmark_adapter
 from capability_check import (
     CapabilityConfig,
     OllamaChatAdapter,
+    parse_sampling,
     ollama_control,
     resolve_shell_config,
     run_capability_check,
@@ -58,6 +60,7 @@ def main() -> int:
                 "OLLAMA_CAP_REASONING_MODE",
                 "OLLAMA_CAP_DISABLE_MODE",
                 "OLLAMA_CAP_SYSTEM_PROMPT",
+                "OLLAMA_SAMPLING",
             ),
         )
         model = values["OLLAMA_MODEL"]
@@ -75,6 +78,7 @@ def main() -> int:
             reasoning_prefix=reasoning_prefix,
             disable_prefix=disable_prefix,
             system_prompt=values["OLLAMA_CAP_SYSTEM_PROMPT"] or None,
+            sampling=parse_sampling(values["OLLAMA_SAMPLING"]),
         )
         timeout = int(os.environ.get("CAPABILITY_TIMEOUT", "600"))
         tokens = int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048"))
@@ -115,7 +119,7 @@ def main() -> int:
             tag=tag,
             model=model,
             adapter=adapter,
-            config=config,
+            config=replace(config, concurrency=effective_slots),
             identity=identity,
             timeout_tokens=tokens,
         )
