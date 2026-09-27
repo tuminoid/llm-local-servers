@@ -131,10 +131,12 @@ prompt-heavy phases.
 The DFlash 2 profile's gain is depth-dependent: 2.5x decode and +28%
 cold-32k calls at one stream, fading to +5% at eight, and a 9% audit_half
 loss where the 1,024-token generation over 131k resident KV costs more
-speculated than plain. At full audit depth the verdict decode leads 1.45x
-(replay section), so the deep single-shot penalty measured on 0.28.0 is
-confined to the mid-depth 1,024-token shape on 0.29.0. Serving guidance:
-DFlash 2 is the qwen3.8 audit profile; plain stays the control.
+speculated than plain. At full audit depth the greedy verdict decode leads
+about 1.25x at equal verdict length (the 1.45x first published here divided
+verdicts of different lengths), so the deep single-shot penalty measured on
+0.28.0 is confined to the mid-depth 1,024-token shape on 0.29.0. Superseded
+for serving by AuditBench v2 at the declared sampling, where plain qwen3.8
+wins (top of this file).
 
 These rankings describe serving performance only. They do not establish which
 model gives better answers.
@@ -291,7 +293,9 @@ stop at 1.1-1.2k), so compare the server-side columns.
 | plain APC | 25.5 | 13.1 s cold, 4.4 -> 7.6 s | 0.899 | 30.1 tok/s |
 | dflash2 | 8.4 | 12.7 s cold, 4.8 -> 8.5 s | 0.890 | 43.6 tok/s |
 
-DFlash 2 holds 1.45x over plain at full depth. On 0.28.0 the same legs
+DFlash 2 holds about 1.25x over plain at full depth and equal verdict
+length, greedy (the 1.45x first published here compared verdicts of
+different lengths; v2 at sampling reverses it). On 0.28.0 the same legs
 measured 30.5 vs ~29.5 tok/s (depth-neutral); the difference is the
 0.29.0 core, not the drafter or the fixture.
 
