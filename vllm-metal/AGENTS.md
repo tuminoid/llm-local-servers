@@ -86,7 +86,7 @@ Serving measurements follow
   `1` opts in, `0` forces off, empty (a conf without a pin) keeps the
   engine default. A hybrid conf that opts in must also declare
   `VLLM_KV_BYTES_PER_TOKEN_APC` (align mode makes every pool block carry
-  GDN state, roughly doubling per-token cost) or the utilization
+  GDN state; 1-3% more per token on plugin 0.30.0) or the utilization
   inversion under-budgets the pool. Align mode changes hybrid temp-0
   outputs from the first token, so cache-off canonical benchmark rates
   do not transfer to an APC profile -- each condition carries its own

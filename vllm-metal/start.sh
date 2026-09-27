@@ -81,8 +81,8 @@ VLLM_PORT="${VLLM_PORT:-8021}"
 # hybrid-off default. Environment wins over the conf; empty (a conf
 # without a pin) falls back to the engine default. Opting a hybrid in changes its
 # numerics (the align kernel path diverges from the default path at the
-# first generated token) and roughly doubles its per-token pool cost;
-# both the divergent-conversation correctness gate and the cost math for
+# first generated token) and adds GDN state to its per-token pool cost
+# (about 2x on plugin 0.29.0, 1-3% on 0.30.0's shared cache); both the divergent-conversation correctness gate and the cost math for
 # that are in README.md. A hybrid conf that supports the opt-in declares
 # VLLM_KV_BYTES_PER_TOKEN_APC so the budget below stays honest.
 VLLM_PREFIX_CACHING="${VLLM_PREFIX_CACHING:-}"
