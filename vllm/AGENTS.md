@@ -16,7 +16,7 @@ Tree conventions are in [AGENTS.md](../AGENTS.md).
 | `run.sh` | Detached launcher | `setsid` + readiness wait, parses the log for success or failure |
 | `stop.sh` | Shutdown | Pidfile-targeted, escalates to SIGKILL, verifies VRAM released, removes the log on a clean stop |
 | `status.sh` | Introspection | Process, GPU, pinned model revision, backend, KV sizing, plus a live `/v1/models` probe |
-| `bench.py` | Benchmark | CUDA adapter for shared AuditBench v1; records model identity, exact configs, and the resolved host profile |
+| `bench.py` | Benchmark | CUDA adapter for shared AuditBench v2; records model identity, exact configs, and the resolved host profile |
 | `capability.py` | Capability gate | OpenAI-compatible adapter for shared Capability Check v1 |
 | `nemotron_tool_parser.py` | Parser plugin | Loaded when the Nemotron config sets `VLLM_TOOL_PLUGIN`. Registers its Olmo3-derived reasoning adapter, buffers `<TOOLCALL>`, and repairs the AWQ checkpoint's malformed JSON |
 | `mimo-v2.6-chat-template.jinja` | Chat template | Loaded when the MiMo config sets `VLLM_CHAT_TEMPLATE`. The checkpoint's template with the thinking opener prefilled; the config records why |
@@ -459,7 +459,7 @@ The measured throughput, memory and concurrency numbers for both GPU
 generations live in [BENCHMARKS.md](BENCHMARKS.md), grouped by host (small card
 and A100). Both host summaries use canonical AuditBench v1. New and replacement
 results follow
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench)
+[AuditBench v2](https://github.com/tuminoid/llm-audit-bench)
 and must have
 `canonical: true`.
 

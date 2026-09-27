@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LM Studio transport and admission evidence for the shared AuditBench v1."""
+"""LM Studio transport and admission evidence for the shared AuditBench v2."""
 
 import json
 import os
@@ -44,6 +44,8 @@ def main():
     if values["LMSTUDIO_BENCH_TOLERATE_OFF_BY_ONE"]:
         os.environ.setdefault("AUDIT_BENCH_TOLERATE_OFF_BY_ONE",
                               values["LMSTUDIO_BENCH_TOLERATE_OFF_BY_ONE"])
+    # The checkpoint's sampling, a model fact; the harness decodes at it.
+    os.environ["AUDIT_BENCH_SAMPLING"] = values["LMSTUDIO_SAMPLING"]
     settings = Settings.from_env()
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     slots = owner["parallel"]

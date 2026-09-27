@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run AuditBench v1 against the vLLM-Metal server."""
+"""Run AuditBench v2 against the vLLM-Metal server."""
 
 import json
 import os
@@ -290,6 +290,10 @@ def main() -> int:
             or 0
         ),
     }
+    # The checkpoint's sampling, a model fact; the harness decodes at it.
+    os.environ["AUDIT_BENCH_SAMPLING"] = os.environ.get(
+        "VLLM_SAMPLING"
+    ) or _config_value(conf, "VLLM_SAMPLING")
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     base = os.environ.get("VLLM_METAL_BENCH_BASE", "http://127.0.0.1:8021")
     dry_run = os.environ.get("AUDIT_BENCH_DRY_RUN", "0") == "1"

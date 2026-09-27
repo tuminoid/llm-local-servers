@@ -15,7 +15,7 @@ in [README.md](README.md); shared server conventions live in
 | `pull.sh` | Model pull through the running server |
 | `preflight.sh` | Remote managed-server and idle-GPU guard |
 | `status.sh` | API allocation, CPU/GPU split, RAM, VRAM, and process report |
-| `bench.py` | Ollama adapter, live artifact identity and effective-slot guards for shared AuditBench v1 |
+| `bench.py` | Ollama adapter, live artifact identity and effective-slot guards for shared AuditBench v2 |
 | `capability.py` | Native Ollama adapter for shared Capability Check v1 |
 | `stop.sh` | Recorded-process-group teardown and GPU release check |
 | `models/*.conf` | Portable model facts |
@@ -146,7 +146,7 @@ in [README.md](README.md); shared server conventions live in
   near-full Coder slots and eight each for GLM and Gemma; Qwen3.6 and Qwen3.8
   remain one-slot architectures under Ollama 0.32.14.
 - New and replacement measurements follow
-  [AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
+  [AuditBench v2](https://github.com/tuminoid/llm-audit-bench).
   Publish only canonical results and update [../README.md](../README.md)
   in the same change. Never combine a retired-harness rate with AuditBench
   or project results between hosts.

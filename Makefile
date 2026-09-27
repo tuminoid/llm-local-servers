@@ -32,7 +32,7 @@ MAKEFLAGS += --no-builtin-rules
 	$(MAKE) --no-print-directory help >&2; \
 	exit 1
 
-# The AuditBench v1 and Capability Check v1 harnesses live in the sibling
+# The AuditBench v2 and Capability Check v1 harnesses live in the sibling
 # llm-audit-bench repository. Local bench, capability, and test targets import
 # them via PYTHONPATH; deploy targets rsync the two modules next to the
 # adapters on remote hosts, where they import as adjacent files.
@@ -60,14 +60,12 @@ VLLM_TUNNEL_PORT ?= 8001
 # fail fast when it is unset.
 HOST ?=
 
-# AuditBench v1 canonical settings. Override streams with 1,2,3,4,5,6,7,8
-# while locating a host's decode knee; publish the canonical 1/2/4/8 run.
+# AuditBench v2 canonical settings. Override streams with 1,N per candidate
+# N while locating a host's serving concurrency; publish the canonical run.
+# Sampling is a model fact: each model config declares <PREFIX>_SAMPLING.
 AUDIT_BENCH_STREAMS ?= 1,2,4,8
-AUDIT_BENCH_DEEP_STREAMS ?= 1,2,4
-AUDIT_BENCH_PROFILE ?= full
+AUDIT_BENCH_PROFILE ?= session
 AUDIT_BENCH_SAMPLES ?= 3
-AUDIT_BENCH_OUTPUT_TOKENS ?= 1024
-AUDIT_BENCH_DEEP_OUTPUT_TOKENS ?= 256
 AUDIT_BENCH_TARGET_TOLERANCE ?= 0.02
 AUDIT_BENCH_TIMEOUT ?= 7200
 AUDIT_BENCH_DRY_RUN ?= 0
@@ -77,10 +75,8 @@ AUDIT_BENCH_KV_TOKENS ?=
 AUDIT_BENCH_OUTPUT_DIR ?=
 AUDIT_BENCH_REPO_COMMIT ?= $(shell git rev-parse --verify HEAD 2>/dev/null)
 AUDIT_BENCH_REPO_DIRTY ?= $(shell if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then if test -z "$$(git status --porcelain)"; then echo 0; else echo 1; fi; else echo unknown; fi)
-AUDIT_BENCH_VARS := AUDIT_BENCH_STREAMS AUDIT_BENCH_DEEP_STREAMS \
-	AUDIT_BENCH_PROFILE \
-	AUDIT_BENCH_SAMPLES AUDIT_BENCH_OUTPUT_TOKENS \
-	AUDIT_BENCH_DEEP_OUTPUT_TOKENS AUDIT_BENCH_TARGET_TOLERANCE \
+AUDIT_BENCH_VARS := AUDIT_BENCH_STREAMS AUDIT_BENCH_PROFILE \
+	AUDIT_BENCH_SAMPLES AUDIT_BENCH_TARGET_TOLERANCE \
 	AUDIT_BENCH_TIMEOUT AUDIT_BENCH_DRY_RUN AUDIT_BENCH_ACTIVE_SLOTS \
 	AUDIT_BENCH_KV_TOKENS AUDIT_BENCH_OUTPUT_DIR \
 	AUDIT_BENCH_REPO_COMMIT AUDIT_BENCH_REPO_DIRTY
@@ -170,7 +166,7 @@ help:
 	@echo "  make all         - Run lint and test"
 	@echo "  make clean       - Remove Python bytecode and editor droppings"
 	@echo ""
-	@echo "  AuditBench v1 and Capability Check v1 run from the sibling"
+	@echo "  AuditBench v2 and Capability Check v1 run from the sibling"
 	@echo "  llm-audit-bench checkout: AUDIT_BENCH_DIR=$(AUDIT_BENCH_DIR)"
 	@echo ""
 	@echo "  Local Ollama:"
@@ -179,7 +175,7 @@ help:
 	@echo "  make ollama-pull    - Pull the selected model into the running server"
 	@echo "  make ollama-status  - Show process, CPU/GPU split, context, and memory"
 	@echo "  make ollama-logs    - Follow the Ollama server log"
-	@echo "  make ollama-bench   - Run AuditBench v1"
+	@echo "  make ollama-bench   - Run AuditBench v2"
 	@echo "  make ollama-capability - Check reasoning, tools, and structured output"
 	@echo "  make ollama-stop    - Stop Ollama and verify GPU release"
 	@echo ""
@@ -188,7 +184,7 @@ help:
 	@echo "  make vllm-stop   - Stop vLLM and verify the GPU was released"
 	@echo "  make vllm-status - Show process, GPU use, backend, KV cache sizing"
 	@echo "  make vllm-logs   - Follow the vLLM server log"
-	@echo "  make vllm-bench  - Run AuditBench v1"
+	@echo "  make vllm-bench  - Run AuditBench v2"
 	@echo "  make vllm-capability - Check reasoning, tools, and structured output"
 	@echo ""
 	@echo "  vLLM-Metal on Apple Silicon (port 8021, needs MODEL=<name>):"
@@ -197,7 +193,7 @@ help:
 	@echo "  make vllm-metal-start   - Start vLLM-Metal detached"
 	@echo "  make vllm-metal-status  - Show process, KV sizing, NAX, memory"
 	@echo "  make vllm-metal-logs    - Follow the vLLM-Metal server log"
-	@echo "  make vllm-metal-bench   - Run AuditBench v1"
+	@echo "  make vllm-metal-bench   - Run AuditBench v2"
 	@echo "  make vllm-metal-capability - Check reasoning, tools, and structured output"
 	@echo "  make vllm-metal-stop    - Stop and verify process-group release"
 	@echo ""
@@ -207,7 +203,7 @@ help:
 	@echo "  make splash-start      - Start detached with DFlash 2 and caching"
 	@echo "  make splash-status     - Show identity, context, sparse KV and memory plan"
 	@echo "  make splash-logs       - Follow the server log"
-	@echo "  make splash-bench      - Run AuditBench v1"
+	@echo "  make splash-bench      - Run AuditBench v2"
 	@echo "  make splash-capability - Check reasoning, tools, and structured output"
 	@echo "  make splash-stop       - Stop and verify process-group and port release"
 	@echo "  Models: $(patsubst $(SPLASH_DIR)/models/%.conf,%,$(wildcard $(SPLASH_DIR)/models/*.conf))"
@@ -218,7 +214,7 @@ help:
 	@echo "  make lmstudio-start      - Start the server and load the model"
 	@echo "  make lmstudio-status     - Show the managed record and loaded models"
 	@echo "  make lmstudio-logs       - Follow the launch log"
-	@echo "  make lmstudio-bench      - Run AuditBench v1"
+	@echo "  make lmstudio-bench      - Run AuditBench v2"
 	@echo "  make lmstudio-capability - Check reasoning, tools, and structured output"
 	@echo "  make lmstudio-stop       - Unload, stop the server and verify release"
 	@echo "  Models: $(patsubst $(LMSTUDIO_DIR)/models/%.conf,%,$(wildcard $(LMSTUDIO_DIR)/models/*.conf))"
@@ -229,7 +225,7 @@ help:
 	@echo "  make vllm-remote-stop      - Stop on the remote host"
 	@echo "  make vllm-remote-status    - Status of the remote server"
 	@echo "  make vllm-remote-logs      - Follow the remote server log"
-	@echo "  make vllm-remote-bench     - Run AuditBench v1 on the remote host"
+	@echo "  make vllm-remote-bench     - Run AuditBench v2 on the remote host"
 	@echo "  make vllm-remote-capability - Check model API capabilities"
 	@echo "  make vllm-remote-tunnel    - Forward localhost:$(VLLM_TUNNEL_PORT) to the host"
 	@echo ""
@@ -240,7 +236,7 @@ help:
 	@echo "  make ollama-remote-stop      - Stop only the isolated pidfile-owned server"
 	@echo "  make ollama-remote-status    - Read isolated remote status"
 	@echo "  make ollama-remote-logs      - Follow the isolated remote log"
-	@echo "  make ollama-remote-bench     - Run AuditBench v1 against the owned remote server"
+	@echo "  make ollama-remote-bench     - Run AuditBench v2 against the owned remote server"
 	@echo "  make ollama-remote-capability - Check model API capabilities"
 	@echo "  make ollama-remote-tunnel    - Forward localhost:$(OLLAMA_TUNNEL_PORT) to remote $(OLLAMA_REMOTE_PORT)"
 	@echo ""
@@ -390,7 +386,7 @@ override OLLAMA_REMOTE_RESERVED := OLLAMA_REMOTE_% \
 	OLLAMA_NO_CLOUD OLLAMA_REQUIRE_EXISTING_KEY OLLAMA_BENCH_BASE
 override OLLAMA_ENV = $(strip $(foreach v, \
 	$(filter-out $(OLLAMA_REMOTE_RESERVED),$(filter OLLAMA_%,$(.VARIABLES))), \
-	$(if $(filter environment% command line,$(origin $(v))),$(v)=$($(v)))))
+	$(if $(filter environment% command line,$(origin $(v))),$(v)='\''$($(v))'\'')))
 
 ollama-remote-check:
 	@test -n "$(HOST)" || { \
@@ -697,16 +693,15 @@ lmstudio-capability: lmstudio-model-check audit-bench-check
 # recipes. MODEL is not a VLLM_* variable and is passed as run.sh's positional
 # argument instead.
 #
-# Values are interpolated bare, inside the recipe's own single quotes. Every
-# VLLM_* the launcher reads is a single shell token -- a number, an identifier,
-# or a Hugging Face repo id -- so this holds; a value containing whitespace
-# would need quoting that survives both shells and is not supported here.
+# Values are interpolated inside the recipe's own single quotes, each wrapped
+# as '\''value'\'' so the remote shell receives it quoted: VLLM_SAMPLING
+# carries spaces. A value containing a single quote is not supported.
 VLLM_MAKE_VARS := VLLM_DIR VLLM_VERSION \
 	VLLM_TRANSFORMERS_VERSION VLLM_REMOTE_DIR VLLM_REMOTE_PORT \
 	VLLM_TUNNEL_PORT VLLM_ENV VLLM_MAKE_VARS
 VLLM_ENV = $(strip $(foreach v, \
 	$(filter-out $(VLLM_MAKE_VARS),$(filter VLLM_%,$(.VARIABLES))), \
-	$(if $(filter environment% command line,$(origin $(v))),$(v)=$($(v)))))
+	$(if $(filter environment% command line,$(origin $(v))),$(v)='\''$($(v))'\'')))
 
 vllm-remote-check:
 	@test -n "$(HOST)" || { \

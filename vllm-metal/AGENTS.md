@@ -4,7 +4,7 @@ Script-managed vLLM-Metal server (Apple Silicon). User-facing usage and the
 memory rationale live in [README.md](README.md); shared server conventions
 live in [../AGENTS.md](../AGENTS.md).
 Serving measurements follow
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
+[AuditBench v2](https://github.com/tuminoid/llm-audit-bench).
 
 ## File inventory
 
@@ -16,7 +16,7 @@ Serving measurements follow
 | `start.sh` | Foreground launcher and host memory policy |
 | `run.sh` | Detached launcher and readiness wait |
 | `status.sh` | Process, KV sizing, NAX evidence, footprint, live API probe |
-| `bench.py` | vLLM-Metal adapter for shared AuditBench v1, including exact config and resolved host-profile provenance |
+| `bench.py` | vLLM-Metal adapter for shared AuditBench v2, including exact config and resolved host-profile provenance |
 | `capability.py` | OpenAI-compatible adapter for shared Capability Check v1 |
 | `battery-gate.sh` | AuditBench sample gate: charge floor plus 140 W adapter contract |
 | `stop.sh` | Process-group teardown and release verification |
@@ -91,8 +91,9 @@ Serving measurements follow
   outputs from the first token, so cache-off canonical benchmark rates
   do not transfer to an APC profile -- each condition carries its own
   canonical run in BENCHMARKS.md; gate and math are in README.md.
-  Rerun the decode smoke (AUDIT_BENCH_PROFILE=decode) on every plugin
-  bump.
+  Rerun a session smoke (`make vllm-metal-bench MODEL=<conf>
+  AUDIT_BENCH_STREAMS=1 AUDIT_BENCH_SAMPLES=1`, noncanonical) on every
+  plugin bump.
 - Parsers are explicit per model, as on the CUDA side: vLLM auto-detects
   neither. Qwen3.5-family checkpoints use `qwen3` reasoning and
   `qwen3_xml` tool parsers; the response field is `message.reasoning`.
@@ -139,7 +140,8 @@ make vllm-metal-stop        # must report the process group empty
 
 Also send one real streaming request and one structured tool call, and
 confirm `message.reasoning` is populated with no `</think>` in content.
-AuditBench's decode and audit phases provide 1/2/4/8 batching evidence. Its
-near-context phase runs canonical stream counts up to active admission and is
-the context and aggregate-capacity proof; every request must land between 90%
-and 100% of `VLLM_MAX_LEN`. Publish only a canonical result.
+AuditBench's session runs provide the batching evidence at 1x and the
+serving concurrency. Its near-context phase runs 1x and the highest canonical
+stream count that fits active admission and the pool, and is the context and
+aggregate-capacity proof; every request must land between 90% and 100% of
+`VLLM_MAX_LEN`. Publish only a canonical result.

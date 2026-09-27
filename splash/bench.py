@@ -1,4 +1,4 @@
-"""Splash transport and admission evidence for the shared AuditBench v1."""
+"""Splash transport and admission evidence for the shared AuditBench v2."""
 
 import json
 import os
@@ -56,6 +56,8 @@ def main():
     tag = sys.argv[1]
     values, owner, base, status, identity = evidence(tag)
     slots, pool = capacity(status)
+    # The checkpoint's sampling, a model fact; the harness decodes at it.
+    os.environ["AUDIT_BENCH_SAMPLING"] = values["SPLASH_SAMPLING"]
     settings = Settings.from_env()
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     return run_benchmark(

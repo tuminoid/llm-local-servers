@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run AuditBench v1 against the CUDA vLLM server."""
+"""Run AuditBench v2 against the CUDA vLLM server."""
 
 import json
 import os
@@ -223,6 +223,7 @@ def main() -> int:
             "VLLM_TOOL_PARSER",
             "VLLM_TOOL_PLUGIN",
             "VLLM_CHAT_TEMPLATE",
+            "VLLM_SAMPLING",
         ),
     )
     model_source = config["VLLM_MODEL"]
@@ -244,6 +245,8 @@ def main() -> int:
         "tool_plugin": config["VLLM_TOOL_PLUGIN"] or None,
         "chat_template": config["VLLM_CHAT_TEMPLATE"] or None,
     }
+    # The checkpoint's sampling, a model fact; the harness decodes at it.
+    os.environ["AUDIT_BENCH_SAMPLING"] = config["VLLM_SAMPLING"]
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     base = os.environ.get("VLLM_BENCH_BASE", "http://127.0.0.1:8000")
     dry_run = os.environ.get("AUDIT_BENCH_DRY_RUN", "0") == "1"

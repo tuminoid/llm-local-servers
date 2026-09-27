@@ -13,7 +13,7 @@ vulnerability discovery across a codebase, and deep agentic coding
 sessions. A call of that shape is a deep-context request -- tens to
 hundreds of thousands of evidence tokens -- with tool calls landing
 mid-context and complex reasoning over the whole window. The fleet is
-tuned, benchmarked, and judged on completed calls per hour at real
+tuned, benchmarked, and judged on completed sessions per hour at real
 depths, nothing else.
 
 **Every decision in this tree must serve this mission.** Model
@@ -28,9 +28,9 @@ metric.
 
 What this means in practice:
 
-- Calls/hour on audit-shaped phases (`audit_32k`, `audit_half`,
-  `audit_deep`) is the primary metric. A model or setting that wins a
-  short-prompt decode sweep but loses audit calls/hour loses, period.
+- Sessions/hour on the AuditBench agent session, at one stream and at the
+  serving concurrency, is the primary metric. A model or setting that wins
+  a short-prompt decode sweep but loses sessions/hour loses, period.
 - Deep context is the product, not an edge case. Survivable context
   depth is proven per model and per artifact digest; a config that
   parses 262k but cannot serve repeated deep prefills is broken, not
@@ -67,7 +67,7 @@ local serving concepts.
 
 ## The shared harness
 
-AuditBench v1 (the serving benchmark) and Capability Check v1 (the API gate)
+AuditBench v2 (the serving benchmark) and Capability Check v1 (the API gate)
 are defined and implemented in the sibling
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench) repository:
 `docs/PROTOCOL.md`, `docs/CAPABILITY.md`, and the two stdlib-only modules
@@ -150,7 +150,10 @@ environment wins over the file without the file needing to know.
 Capability Check expectations are model facts too: reasoning present or
 absent, tools required or absent, and the documented thinking controls. Keep
 them beside the parser and model identity rather than inferring them in the
-shared checker.
+shared checker. So is the checkpoint's sampling: each config declares
+`<PREFIX>_SAMPLING` from its `generation_config.json` at the pinned revision
+(else the model card or registry params), and the adapters pass it to
+AuditBench.
 
 Host-specific settings (bind address, port, accelerator backend) belong in
 the launcher, not the model config. A model config should be portable
@@ -238,16 +241,18 @@ cannot be established.
 ### Use one benchmark protocol
 
 All new and replacement measurements use
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
+[AuditBench v2](https://github.com/tuminoid/llm-audit-bench). Published
+AuditBench v1 rows are history: never compare them with v2 rows, and replace
+them as each host is re-measured.
 Runtime adapters may implement transport,
 model loading, and residency checks, but prompt generation, target sizes,
 sample count, stream counts, validation, metrics, and JSON schema belong only
 in the shared harness.
 
 A publishable result has `canonical: true`. Exploratory overrides are for
-finding the memory and decode operating point; rerun the canonical 1/2/4/8
-protocol after freezing it. Never combine a retired-harness rate with an
-AuditBench result or derive a missing scalar from another workload.
+finding the memory and concurrency operating point; rerun the canonical
+protocol after freezing it. Never combine a retired-harness rate with an AuditBench
+result or derive a missing scalar from another workload.
 
 Canonicality describes the workload only. The JSON `publishable` field also
 requires a clean repository commit, hashes of the exact harness, adapter and

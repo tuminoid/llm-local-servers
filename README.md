@@ -8,7 +8,8 @@ host in the fleet. The workload everything is tuned for is deep-context
 security-audit calls; [AGENTS.md](AGENTS.md) states the mission and the
 invariants.
 
-Serving performance is measured with AuditBench v1 and API compatibility
+Serving performance is measured with AuditBench (v1 rows until each host
+is re-measured at v2) and API compatibility
 is gated with Capability Check v1. Both live in the sibling
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 repository (`docs/PROTOCOL.md` and `docs/CAPABILITY.md` are the
@@ -46,7 +47,7 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-stop` | Stop by pidfile, verify the GPU or process group was released |
 | `make <runtime>-status` | Process, memory split, context allocation, KV sizing |
 | `make <runtime>-logs` | Follow the server log |
-| `make <runtime>-bench MODEL=<name>` | Run AuditBench v1 |
+| `make <runtime>-bench MODEL=<name>` | Run AuditBench v2 |
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v1 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, or `lmstudio`
@@ -56,6 +57,12 @@ runtime and model installation). `MODEL` names a config file in that
 runtime's `models/` directory, never a served model ID or registry tag;
 there is deliberately no default model.
 `make status` shows whether each local runtime is running, and with which model.
+
+Every bench and capability run retains its JSON under
+`~/.local/state/auditbench/` or `~/.local/state/capability-check/` on the
+host that ran it. In the llm-audit-bench checkout, `uv run audit-bench
+--list` and `uv run capability-check --list` index them, and `--show FILE`
+re-prints one.
 
 The vLLM and Ollama runtimes also run on a remote GPU host over ssh:
 `make vllm-remote-{bootstrap,start,stop,status,logs,bench,capability}`

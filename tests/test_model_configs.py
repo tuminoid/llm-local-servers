@@ -13,6 +13,7 @@ import pathlib
 import unittest
 from unittest import mock
 
+from audit_bench import parse_sampling
 from capability_check import resolve_shell_config
 
 
@@ -88,6 +89,24 @@ class ModelConfigInventoryTest(unittest.TestCase):
                     self.assertIn(values[names[1]], {"required", "absent"})
                     self.assertTrue(values[names[2]])
                     self.assertTrue(values[names[3]])
+
+    def test_every_model_declares_its_sampling(self):
+        # AuditBench decodes at the checkpoint's own sampling, and a run
+        # without a declared temperature is not canonical.
+        for directory, name in (
+            (REPO_DIR / "lmstudio" / "models", "LMSTUDIO_SAMPLING"),
+            (REPO_DIR / "splash" / "models", "SPLASH_SAMPLING"),
+            (REPO_DIR / "vllm" / "models", "VLLM_SAMPLING"),
+            (REPO_DIR / "vllm-metal" / "models", "VLLM_SAMPLING"),
+            (REPO_DIR / "ollama" / "models", "OLLAMA_SAMPLING"),
+        ):
+            configs = sorted(directory.glob("*.conf"))
+            self.assertTrue(configs, f"no model configs found in {directory}")
+            for conf in configs:
+                with self.subTest(conf=conf):
+                    with mock.patch.dict(os.environ, {name: ""}, clear=False):
+                        value = resolve_shell_config(conf, (name,))[name]
+                    self.assertIn("temperature", parse_sampling(value))
 
 
 if __name__ == "__main__":

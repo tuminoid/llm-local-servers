@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run AuditBench v1 against the managed Ollama server."""
+"""Run AuditBench v2 against the managed Ollama server."""
 
 import json
 import os
@@ -485,6 +485,10 @@ def main() -> int:
     )
     if system:
         os.environ["AUDIT_BENCH_SYSTEM_PROMPT"] = system
+    # The checkpoint's sampling, a model fact; the harness decodes at it.
+    os.environ["AUDIT_BENCH_SAMPLING"] = os.environ.get(
+        "OLLAMA_SAMPLING"
+    ) or _config_default(conf, "OLLAMA_SAMPLING")
     adapter = OllamaAdapter(model, context, system)
 
     if Settings.from_env().dry_run:

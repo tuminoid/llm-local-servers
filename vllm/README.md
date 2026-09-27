@@ -6,7 +6,7 @@ launch, so the same scripts and configs run unchanged on a 12 GB laptop GPU and
 an 80 GB A100.
 
 Serving benchmarks follow
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
+[AuditBench v2](https://github.com/tuminoid/llm-audit-bench).
 
 Everything runs through Makefile targets from the repo root. Model selection is
 mandatory -- there is no default, so `MODEL` must name a config in
@@ -16,7 +16,7 @@ mandatory -- there is no default, so `MODEL` must name a config in
 make vllm-start MODEL=qwen3.5-4b-awq  # start detached, wait until serving
 make vllm-status                      # process, GPU use, KV cache sizing
 make vllm-logs                        # follow the server log
-make vllm-bench MODEL=qwen3.5-4b-awq  # AuditBench v1
+make vllm-bench MODEL=qwen3.5-4b-awq  # AuditBench v2
 make vllm-stop                        # stop, verify the GPU was released
 ```
 
@@ -153,7 +153,7 @@ streaming deltas, which carry `reasoning`.
 | `run.sh` | Detached launcher; waits for readiness |
 | `stop.sh` | Stop by pidfile; verifies VRAM released |
 | `status.sh` | Process, GPU, backend, KV cache, liveness probe |
-| `bench.py` | AuditBench v1 runtime adapter |
+| `bench.py` | AuditBench v2 runtime adapter |
 | `models/*.conf` | Per-model settings |
 
 Runtime state (pidfile, log) lives in

@@ -93,20 +93,19 @@ OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/splash/opencode.json opencod
 ```
 
 Benchmark and capability fixtures come only from `llm-audit-bench`.
-`make splash-bench` defaults to the full canonical protocol and preserves
-the model's default thinking behavior, matching the retained full runs.
+`make splash-bench` defaults to the canonical session profile and preserves
+the model's default thinking behavior.
 An explicit `AUDIT_BENCH_REASONING_EFFORT=none` control is recorded in
 the result and changes the operating point.
-All shared profiles remain available through `AUDIT_BENCH_PROFILE`.
-For a decode diagnostic and the existing laptop power gate:
+Both shared profiles are available through `AUDIT_BENCH_PROFILE`.
+With the existing laptop power gate:
 
 ```bash
 AUDIT_BENCH_GATE_CMD=vllm-metal/battery-gate.sh \
-  make splash-bench MODEL=qwen3.6-35b-a3b AUDIT_BENCH_PROFILE=decode
+  make splash-bench MODEL=qwen3.6-35b-a3b
 ```
 
-The decode profile is non-canonical. Full trial results retain their
-original provenance; integration diagnostics do not replace them.
+Retained v1 `full` results keep their provenance as history.
 Default JSON retention is `~/.local/state/auditbench/` and
 `~/.local/state/capability-check/`. Normal teardown confirms the process
 group is empty and the port is released, then removes the pidfile and

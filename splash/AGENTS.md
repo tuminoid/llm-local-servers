@@ -56,8 +56,8 @@ or reimplement benchmark workloads.
   the same four-way near-context phase before lowering it.
 - Splash expects top-level `reasoning_effort`. Do not use the shared
   vLLM control mapping, which nests it in `chat_template_kwargs`.
-- Keep trial full-run provenance intact. New adapter decode diagnostics
-  are not replacement full canonical measurements. Update the root
+- Keep trial full-run provenance intact: retained v1 full runs are
+  history, replaced only by canonical v2 session runs. Update the root
   README and CAPABILITIES alongside changes to retained serving results.
 - Validate with `make lint`, `make test`, and the full managed lifecycle
   for both configured models. Stop and verify release even on failure.

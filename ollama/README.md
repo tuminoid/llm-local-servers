@@ -4,7 +4,7 @@ Script-managed Ollama server for local models. It does not manage a systemd
 service.
 
 Serving benchmarks follow
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
+[AuditBench v2](https://github.com/tuminoid/llm-audit-bench).
 Ollama operating points still require
 `OLLAMA_BENCH_JOBS` to match the effective runner slot count.
 

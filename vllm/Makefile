@@ -23,7 +23,7 @@ MAKEFLAGS += --no-builtin-rules
 	@echo "  make vllm-stop    - Stop, verify the GPU was released" >&2
 	@echo "  make vllm-status  - Process, GPU use, backend, KV cache sizing" >&2
 	@echo "  make vllm-logs    - Follow the server log" >&2
-	@echo "  make vllm-bench   - Run AuditBench v1 (from llm-audit-bench)" >&2
+	@echo "  make vllm-bench   - Run AuditBench v2 (from llm-audit-bench)" >&2
 	@echo >&2
 	@echo "  Remote host (HOST=<ssh-host> required):" >&2
 	@echo "  make vllm-remote-{bootstrap,start,stop,status,logs,bench,tunnel}" >&2

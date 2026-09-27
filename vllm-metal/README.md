@@ -35,9 +35,10 @@ make vllm-metal-stop
 ```
 
 The benchmark follows the shared
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench)
-protocol. It measures common 32k
-audit calls, context-relative calls, decode scaling, and near-ceiling capacity.
+[AuditBench v2](https://github.com/tuminoid/llm-audit-bench)
+protocol. It proves near-ceiling capacity, then measures agent sessions at 1x
+and the serving concurrency: sessions/hour, and prefill and decode rates as
+the context grows.
 
 The server binds `127.0.0.1:8021` (the port reserved for this runtime in
 phase 0) with no authentication; do not expose it.

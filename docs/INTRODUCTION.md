@@ -104,7 +104,7 @@ Three corollaries that spec sheets hide:
   re-reads the KV cache: Qwen3.6 decodes 122.8 tok/s with a short prompt,
   ~59 with 32k resident, ~16 with 131k resident. A "decode ceiling"
   benchmark flatters every real long-context workload -- which is why the
-  audit benchmark's production metric is calls/hour, not tok/s.
+  audit benchmark's production metric is sessions/hour, not tok/s.
 - **Speculation buys decode, never prefill.** During bandwidth-bound
   decode the arithmetic units are mostly idle, so a small draft model
   can propose several tokens and the target verifies them all in the
