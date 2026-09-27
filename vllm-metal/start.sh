@@ -132,8 +132,9 @@ fi
 # result is rounded up to the next 0.01 and clamped to the host cap, so a
 # KV-cheap model (hybrid MoE at 20 KiB/token) gets a low bound and a
 # KV-expensive one lands back on the cap. Verified against the planner:
-# qwen3.6-35b-a3b-4bit computes 0.46 -> 1,410,584-token pool >= 5 x
-# 262,144, while qwen3.8-27b-4bit computes past the cap and keeps 0.91.
+# qwen3.6-35b-a3b-4bit (align APC, plugin 0.30.0) computes 0.46 ->
+# 1,403,241-token pool >= 5 x 262,144, while qwen3.8-27b-4bit computes
+# past the cap and keeps 0.91.
 if [[ -z "${VLLM_GPU_UTIL:-}" && -n "${VLLM_KV_BYTES_PER_TOKEN}" ]]; then
     # Align-mode prefix caching makes every pool block carry GDN state
     # besides its KV pages, so the effective per-token cost is the conf's

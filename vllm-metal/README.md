@@ -118,17 +118,15 @@ override below still wins.
 VLLM_PREFIX_CACHING=1 make vllm-metal-start MODEL=qwen3.6-35b-a3b-4bit
 ```
 
-For hybrid GDN models the opt-in is not free. Align mode addresses
-recurrent state by scheduler block, so every pool block carries a GDN
-state slab besides its KV pages and the per-token pool cost roughly
-doubles; the conf declares the effective figure as
-`VLLM_KV_BYTES_PER_TOKEN_APC` and the launcher's utilization inversion
-uses it, so the full-native-sequence budget stays honest. For
-qwen3.6-35b-a3b-4bit that is 45,236,224 bytes per 1,056-token block
-(21,626,880 KV + 21,463,040 state + 2,146,304 growth overlap, matching
-the planner's breakdown line), 42,838 B/token: the computed utilization
-rises from 0.46 to 0.71 and the pool lands at 1,325,112 tokens, keeping
-five full 262,144-token sequences (5.05x admission).
+For hybrid GDN models the opt-in carries GDN state in the pool. Align mode
+addresses recurrent state by scheduler block, so every pool block holds a
+state slab besides its KV pages; the conf declares the effective figure as
+`VLLM_KV_BYTES_PER_TOKEN_APC` and the launcher's utilization inversion uses
+it, so the full-native-sequence budget stays honest. Since plugin 0.30.0
+KV and state share one cache, and the figure is the planner's backing over
+its pool: for qwen3.6-35b-a3b-4bit 21,039 B/token against 20,480 plain, so
+the computed utilization is 0.46 and the pool 1,403,241 tokens (5.35x
+admission). Plugin 0.29.0 kept separate state pools at 42,838 B/token.
 
 Correctness was gated on 2026-08-24 with divergent conversations sharing
 a 15k-token prefix at temperature 0: cold compute and cache-hit compute
@@ -220,6 +218,17 @@ Hub fix 10c35caa (processor_config.json only, identical weights); the
 uncensored orcarouter profile, which failed the same load with no Hub
 fix available, was removed from the fleet. Nemotron-H serves for the
 first time (see its conf).
+
+2026-09-27 re-gate at plugin 0.30.0 (paired core vLLM 0.30.0, MLX 0.32.1,
+mlx-lm `9e6acca`). Every profile starts. KV and Gated DeltaNet state now
+share one cache, so the align-APC figures halve (qwen3.6 and ornith
+21,039 and 21,038, qwen3.8 66,838, MiMo 33,200 B/token), and the engine
+labels the pool `CPU KV cache size`. qwen3.8, bound by the 0.91 cap,
+doubles its pool to 1,243,838 tokens (4.74x of 262,144; 0.29.0: 603,469).
+The others hold their five full sequences as before: qwen3.6 and ornith
+1,403,241, MiMo 1,376,386, nemotron 1,621,259; gemma4 617,308 and granite
+331,584 at the cap. The align-APC cold-vs-hit gate passed across a
+restart on qwen3.6, qwen3.8, MiMo and ornith.
 
 ## Runtime state
 

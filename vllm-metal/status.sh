@@ -26,8 +26,8 @@ printf 'log:      %s\n' "${VLLM_METAL_LOG}"
 
 if [[ -f "${VLLM_METAL_LOG}" ]]; then
     grep '^host:' "${VLLM_METAL_LOG}" | head -1 || true
-    grep -oE 'GPU KV cache size: [0-9,]+ tokens' "${VLLM_METAL_LOG}" | tail -1 |
-        sed 's/GPU KV cache size: /kv cache: /' || true
+    grep -oE '(GPU|CPU) KV cache size: [0-9,]+ tokens' "${VLLM_METAL_LOG}" | tail -1 |
+        sed -E 's/(GPU|CPU) KV cache size: /kv cache: /' || true
     grep -oE 'Maximum concurrency for [0-9,]+ tokens per request: [0-9.]+x' \
         "${VLLM_METAL_LOG}" | tail -1 | sed 's/^/limit:    /' || true
     # NAX prefill is automatic on M5; surface whatever the plugin logs about

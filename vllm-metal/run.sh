@@ -62,7 +62,7 @@ while ((SECONDS < deadline)); do
     if grep -q 'Application startup complete' "${VLLM_METAL_LOG}" 2> /dev/null \
         && kill -0 "${launcher_pid}" 2> /dev/null; then
         printf 'ready (pid %s)\n' "$(vllm_metal_pid)"
-        grep -oE 'GPU KV cache size: [0-9,]+ tokens' "${VLLM_METAL_LOG}" | tail -1 || true
+        grep -oE '(GPU|CPU) KV cache size: [0-9,]+ tokens' "${VLLM_METAL_LOG}" | tail -1 || true
         exit 0
     fi
     if grep -qE 'Engine core initialization failed|OutOfMemoryError|MemoryError' \
