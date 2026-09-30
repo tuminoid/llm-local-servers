@@ -12,6 +12,44 @@ plugin pin and cache condition. The other sections use the retired
 vLLM-Metal bring-up harness or the earlier prompt. Do not combine those
 legacy rates with canonical results.
 
+## AuditBench v2: Apple M5 Max
+
+Plugin 0.30.0 with core vLLM 0.30.0, serving-default cache pins (align APC
+on the hybrids, cache off on nemotron). Canonical AuditBench v2 `session`
+profile (llm-audit-bench v2.0.0 plus the amendments released as v2.1.0; each
+JSON records its harness hash), run 2026-09-27 to 2026-09-29 on the M5 Max
+(128 GB, macOS 27.0) from fleet commit `bee4a24` at each conf's declared
+sampling. The harness measured 1 stream and the largest of 2/4/8 that fits
+admission and the KV pool: tool steps from 32k evidence, 16 at 262,144
+configured context and 9 at 131,072, report at depth. Sessions/h is the
+median over 2-3 samples; complete counts sessions whose report ended on its
+own and named at least 7/8 of its findings. pp512/tg128 is the
+llama-bench-method reference (one stream, greedy, depth ~0), not a serving
+result. JSON files are retained under
+`~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`. Every later
+section of this file is AuditBench v1 or older, never comparable with v2.
+Their top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
+trial-directory copies remain, and the figures stay here and in git history.
+
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| vLLM-Metal `mimo-v2.6-9b-4bit` | 262,144 | 5 | 1,376,386 | 1x 8.08 / 4x 2.41 | 3,978 | 821.9 | 15.5 | 4/15 | 2,500 / 67.1 | fail | no | `20260929T055959.096871+0000_vllm-metal_mimo-v2-6-9b-4bit_session.json` |
+| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,403,241 | 1x 5.23 / 4x 5.30 | 6,211 | 861.5 | 11.3 | 13/15 | 3,064 / 99.3 | pass | no | `20260927T193210.121914+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
+| vLLM-Metal `nemotron-3.5-lightning-30b-4bit` | 262,144 | 5 | 1,613,193 | 1x 4.11 / 4x 4.17 | 5,639 | - | 22.8 | 14/15 | 2,539 / 111.6 | fail | no | `20260929T111136.041385+0000_vllm-metal_nemotron-3-5-lightning-30b-4bit_session.json` |
+| vLLM-Metal `qwen3.6-35b-a3b-4bit` | 262,144 | 5 | 1,403,241 | 1x 3.64 / 4x 5.57 | 7,538 | 817.6 | 11.1 | 10/15 | 3,139 / 100.1 | fail | no | `20260929T185313.422425+0000_vllm-metal_qwen3-6-35b-a3b-4bit_session.json` |
+| vLLM-Metal `gemma4-31b-4bit` | 262,144 | 5 | 617,308 | 1x 1.83 / 2x 1.84 | 1,435 | 118.2 | 2.3 | 9/9 | 651 / 27.1 | fail | yes | `20260929T222048.059806+0000_vllm-metal_gemma4-31b-4bit_session.json` |
+| vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 1.78 / 2x 2.08 | 13,459 | 346.7 | 4.9 | 9/9 | 853 / 30.9 | pass | yes | `20260927T123506.314386+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
+| vLLM-Metal `qwen3.8-27b-4bit` | 262,144 | 5 | 1,243,838 | 1x 1.03 / 4x 0.81 | 18,214 | 267.2 | 6.2 | 6/15 | 834 / 28.1 | fail | no | `20260928T122613.833193+0000_vllm-metal_qwen3-8-27b-4bit_session.json` |
+
+- `granite4.2-30b-4bit` and `ornith1.5-35b-a3b-4bit` are the profiles that
+  pass Capability Check v2. Granite's run is publishable but slow (1.78
+  sessions/h, 13,459 output tokens per session at 131k); ornith's is not:
+  two of its 4-stream reports named 9 and 7 of 16 findings.
+- Streams barely help on this runtime: ornith 5.23 to 5.30, nemotron 4.11
+  to 4.17, and qwen3.8 and MiMo lose at four streams.
+- qwen3.8, MiMo and nemotron fail Capability Check v2; their runs are also
+  unpublishable (incomplete sessions).
+
 ## Audit conversation profile
 
 The conversation profile (AuditBench protocol) is the production-shaped

@@ -9,11 +9,58 @@ Use the tables at the top to choose an operating point. The later sections
 preserve the measurements, architectural explanations, full-context tests, and
 failure modes behind those summaries.
 
-The RTX PRO 3000 and A100 rows use canonical
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
-Retired A100 measurements remain
-clearly separated later in this file and must not be combined with canonical
-rates.
+The A100 rows at the top use canonical [AuditBench
+v2](https://github.com/tuminoid/llm-audit-bench); every later section, and
+the RTX PRO 3000 rows, are AuditBench v1 or older history, never comparable
+with v2. Retired A100 measurements remain clearly separated later in this
+file and must not be combined with canonical rates. Their top-level retained
+JSON on the M5 and A100 was removed on 2026-09-30; trial-directory copies
+remain, and the figures stay here and in git history.
+
+## AuditBench v2: A100-SXM4-80GB
+
+sm_80, 81,920 MiB VRAM, vLLM 0.30.0, Transformers 5.15.1, serving-default
+cache pins. Canonical AuditBench v2 `session` profile (llm-audit-bench
+v2.0.0 plus the amendments released as v2.1.0; each JSON records its harness
+hash), run 2026-09-27 from fleet commit `d9ad1a7` at each conf's declared
+sampling. The harness measured 1 stream and the largest of 2/4/8 that fits
+admission and the KV pool: 16 tool steps from 32k evidence, report at about
+165k. Sessions/h is the median over 2-3 samples; complete counts sessions
+whose report ended on its own and named at least 7/8 of its findings.
+pp512/tg128 is the llama-bench-method reference (one stream, greedy, depth
+~0), not a serving result. JSON files are retained under
+`auditbench-trials/2026-09-27-v2-canonical/` on the host.
+
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| vLLM `mimo-v2.6-9b-awq` | 262,144 | 8 | 2,229,526 | 1x 60.11 / 8x 96.99 | 3,141 | 5,108.2 | 108.9 | 22/27 | 8,127 / 173.5 | fail | no | `20260927T195429.218887+0000_vllm-cuda_mimo-v2-6-9b-awq_session.json` |
+| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,798,258 | 1x 41.19 / 8x 59.99 | 4,593 | 6,204.8 | 109.6 | 27/27 | 4,694 / 151.3 | pass | yes | `20260927T215956.262272+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json` |
+| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,909,420 | 1x 35.78 / 8x 46.14 | 1,604 | 2,113.7 | 63.4 | 27/27 | 10,101 / 176.6 | fail | yes | `20260927T190405.588725+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json` |
+| vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,456 | 1x 34.80 / 2x 42.40 | 1,985 | 2,230.4 | 60.7 | 6/6 | 8,364 / 146.1 | fail | yes | `20260927T171631.242715+0000_vllm-cuda_qwen3-coder-30b_session.json` |
+| vLLM `qwen3.8-27b` | 262,144 | 8 | 774,131 | 1x 12.35 / 4x 17.26 | 7,229 | 1,708.5 | 36.7 | 15/15 | 2,534 / 49.1 | pass | yes | `20260927T103444.464367+0000_vllm-cuda_qwen3-8-27b_session.json` |
+| vLLM `qwen3.8-27b-512k` | 524,288 | 8 | 780,606 | 1x 11.92 / 4x 19.70 | 7,863 | 1,717.9 | 36.7 | 10/10 | 2,569 / 49.2 | fail | yes | `20260927T202135.684820+0000_vllm-cuda_qwen3-8-27b-512k_session.json` |
+| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 523,527 | 1x 8.71 / 2x 13.45 | 7,703 | 1,726.7 | 22.9 | 9/9 | 2,484 / 105.7 | pass | yes | `20260927T114754.494400+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json` |
+| vLLM `glm4.7-flash-awq` | 202,752 | 8 | 1,054,976 | 1x 6.06 / 4x 12.27 | 18,282 | 1,705.0 | 35.9 | 9/15 | 5,064 / 103.8 | fail | no | `20260927T173434.506779+0000_vllm-cuda_glm4-7-flash-awq_session.json` |
+
+- `qwen3.6-35b-a3b-awq` is the fastest profile that passes Capability
+  Check v2: 41.19 sessions/h at one stream, 59.99 at eight, every session
+  complete.
+- DFlash 2 loses at the declared sampling. `qwen3.8-27b-dflash2` decodes
+  the reference 2.2x faster than plain (105.7 against 49.1 tok/s) and the
+  first turn 1.7x faster, but its report at about 165k decodes at 22.9
+  tok/s against plain's 36.7, and it delivers 8.71 sessions/h against
+  12.35. The ~1.25x depth lead recorded for 0.29.0 and 0.30.0 was greedy.
+  For audit serving, plain `qwen3.8-27b` wins.
+- `qwen3.8-27b-512k` matches plain qwen3.8 at one stream (11.92) and
+  reaches 19.70 at four; it fails Capability Check v2 on schema
+  enforcement only.
+- MiMo is the fastest profile (60.11 / 96.99) but 5 of 27 sessions did
+  not finish their report's findings and it fails audit fitness, so
+  neither its rate nor the model is usable.
+- GLM 4.7 Flash writes 18,282 output tokens per session, 3-6x the
+  others, and 6 of 15 sessions are incomplete.
+- `gemma4-26b-a4b-awq` and `qwen3-coder-30b` publish rates, but both fail
+  Capability Check v2; a rate cannot promote them.
 
 ## TL;DR: same-hardware comparisons
 

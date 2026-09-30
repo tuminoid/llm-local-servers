@@ -1,5 +1,35 @@
 # Splash benchmarks
 
+## AuditBench v2: Apple M5 Max
+
+Splash 1.0, 64 GiB native memory cap, four active slots, DFlash 2, Q8 KV and
+state/prefix caching at release defaults. Canonical AuditBench v2 `session`
+profile (llm-audit-bench v2.0.0 plus the amendments released as v2.1.0; each
+JSON records its harness hash), run 2026-09-27 to 2026-09-29 on the M5 Max
+(128 GB, macOS 27.0) from fleet commit `bee4a24` at each conf's declared
+sampling. The harness measured 1 stream and the largest of 2/4/8 that fits
+admission and the KV pool: tool steps from 32k evidence, 16 at 262,144
+configured context and 9 at 131,072, report at depth. Sessions/h is the
+median over 2-3 samples; complete counts sessions whose report ended on its
+own and named at least 7/8 of its findings. pp512/tg128 is the
+llama-bench-method reference (one stream, greedy, depth ~0), not a serving
+result. JSON files are retained under
+`~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`. Every later
+section of this file is AuditBench v1 or older, never comparable with v2.
+Their top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
+trial-directory copies remain, and the figures stay here and in git history.
+
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 19.77 / 4x 15.93 | 5,055 | 1,874.4 | 186.0 | 13/15 | 3,766 / 333.1 | pass | no | `20260927T233225.886443+0000_splash_qwen3-6-35b-a3b_session.json` |
+| Splash `qwen3.8-27b` | 262,144 | 4 | 1,445,888 | 1x 7.70 / 4x 7.53 | 8,601 | 502.2 | 55.0 | 15/15 | unavailable | pass | yes | `20260928T005848.757558+0000_splash_qwen3-8-27b_session.json` |
+
+- Both profiles pass Capability Check v2. `qwen3.8-27b` is publishable at
+  7.70 sessions/h; `qwen3.6-35b-a3b` leads the host at 19.77 but two of
+  15 sessions were incomplete.
+- Four streams lose to one on both models (qwen3.6 15.93, qwen3.8 7.53):
+  on this workload Splash serves one session best.
+
 ## Managed campaign, Apple M5 Max, 2026-09-19 to 2026-09-20
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU

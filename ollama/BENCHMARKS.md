@@ -7,13 +7,91 @@ Use each host's operating-point table for its measured hardware. The later
 sections preserve the measurements and memory explanations behind those
 recommendations.
 
-The RTX PRO 3000 and A100 rows use canonical
-[AuditBench v1](https://github.com/tuminoid/llm-audit-bench).
-The Apple operating-point tables use the retired
-runtime-specific harness; the Apple AuditBench v1 sections (Nemotron,
-the qwen3.6 NVFP4 pair, and the conversation profile) are canonical and
-dated per section. Retired A100 measurements remain clearly separated
-later in this file and must not be combined with canonical rates.
+The A100 rows at the top use canonical [AuditBench
+v2](https://github.com/tuminoid/llm-audit-bench); every later section is
+AuditBench v1 or older history, never comparable with v2. The RTX PRO 3000
+and later A100 rows use canonical AuditBench v1. The Apple operating-point
+tables use the retired runtime-specific harness; the Apple AuditBench v1
+sections (Nemotron, the qwen3.6 NVFP4 pair, and the conversation profile)
+are canonical and dated per section. Retired A100 measurements remain
+clearly separated later in this file and must not be combined with canonical
+rates. Their top-level retained JSON on the M5 and A100 was removed on
+2026-09-30; trial-directory copies remain, and the figures stay here and in
+git history.
+
+## AuditBench v2: A100-SXM4-80GB
+
+Isolated remote Ollama, Flash Attention, q8 KV; 0.34.2 for
+`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs`, 0.32.14 for the
+rest. Canonical AuditBench v2 `session` profile (llm-audit-bench v2.0.0 plus
+the amendments released as v2.1.0; each JSON records its harness hash), run
+2026-09-27 from fleet commit `d9ad1a7` at each conf's declared sampling. The
+harness measured 1 stream and the largest of 2/4/8 that fits admission and
+the KV pool: 16 tool steps from 32k evidence, report at about 165k.
+Sessions/h is the median over 2-3 samples; complete counts sessions whose
+report ended on its own and named at least 7/8 of its findings. pp512/tg128
+is the llama-bench-method reference (one stream, greedy, depth ~0), not a
+serving result. JSON files are retained under
+`auditbench-trials/2026-09-27-v2-canonical/` on the host. Slots are the
+conf's `OLLAMA_NUM_PARALLEL`: one everywhere except flash-next's two. The KV
+column is configured context times slots, not a measured pool. Ollama has no
+`ignore_eos`, so the reference is unavailable where the model stopped before
+128 tokens, and prefill is absent where the server does not report cached
+tokens.
+
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| Ollama `gemma4-26b` | 262,144 | 1 | 262,144 | 1x 17.93 | 8,593 | - | 77.8 | 2/3 | unavailable | fail | no | `20260927T214127.278720+0000_ollama_gemma4-26b_session.json` |
+| Ollama `qwen3-coder-30b` | 262,144 | 1 | 262,144 | 1x 17.58 | 1,978 | - | 18.1 | 2/2 | unavailable | fail | yes | `20260927T210532.581384+0000_ollama_qwen3-coder-30b_session.json` |
+| Ollama `qwen3.6-35b-a3b` | 262,144 | 1 | 262,144 | 1x 15.55 | 6,842 | - | 65.8 | 2/2 | 515 / 93.4 | pass | yes | `20260927T135039.620033+0000_ollama_qwen3-6-35b-a3b_session.json` |
+| Ollama `qwen3.8-27b-native` | 262,144 | 1 | 262,144 | 1x 11.89 | 3,914 | 757.7 | 39.8 | 2/2 | unavailable | pass | yes | `20260927T224034.931906+0000_ollama_qwen3-8-27b-native_session.json` |
+| Ollama `glm4.7-flash` | 202,752 | 1 | 202,752 | 1x 7.54 | 4,489 | - | 36.7 | 2/2 | 656 / 103.8 | fail | yes | `20260927T211648.078334+0000_ollama_glm4-7-flash_session.json` |
+| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 6.36 / 2x 6.43 | 5,783 | 639.0 | 17.8 | 8/9 | unavailable | pass | no | `20260927T152831.321226+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
+
+- Three profiles pass Capability Check v2 here: `qwen3.6-35b-a3b` (15.55
+  sessions/h), `qwen3.8-27b-native` (11.89) and
+  `qwen3.8-flash-next-gguf-iq4xs`, whose run is unpublishable: one
+  two-stream report ended on its own naming none of its 16 findings.
+- `qwen3-coder-30b`, `gemma4-26b` and `glm4.7-flash` fail Capability Check
+  v2. They ran at one slot, the conf default; v1 measured them at 4, 8
+  and 8 slots set at start, so their v2 rates are not their v1 operating
+  points.
+
+## AuditBench v2: Apple M5 Max
+
+Managed Ollama 0.32.14 for the MLX profiles (the runner serializes requests
+to one slot) and 0.34.2 for the GGUF profiles, Flash Attention, q8 KV on
+GGUF. Contexts are the confs': 131,072 for qwen3.6/qwen3.8/Glimmer MLX and
+the GGUF qwen3.8, 262,144 for nemotron MLX and flash-next. Canonical
+AuditBench v2 `session` profile (llm-audit-bench v2.0.0 plus the amendments
+released as v2.1.0; each JSON records its harness hash), run 2026-09-27 to
+2026-09-29 on the M5 Max (128 GB, macOS 27.0) from fleet commit `bee4a24` at
+each conf's declared sampling. The harness measured 1 stream and the largest
+of 2/4/8 that fits admission and the KV pool: tool steps from 32k evidence,
+16 at 262,144 configured context and 9 at 131,072, report at depth.
+Sessions/h is the median over 2-3 samples; complete counts sessions whose
+report ended on its own and named at least 7/8 of its findings. pp512/tg128
+is the llama-bench-method reference (one stream, greedy, depth ~0), not a
+serving result. JSON files are retained under
+`~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`.
+
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| Ollama `qwen3.6-35b-a3b-coding-mlx-nvfp4` | 131,072 | 1 | 131,072 | 1x 24.28 | 3,008 | - | 73.8 | 2/2 | 2,598 / 128.3 | fail | yes | `20260929T180722.323977+0000_ollama_qwen3-6-35b-a3b-coding-mlx-nvfp4_session.json` |
+| Ollama `qwen3.6-35b-a3b-mlx-nvfp4` | 131,072 | 1 | 131,072 | 1x 23.60 | 3,222 | - | 81.4 | 2/2 | 2,362 / 159.0 | fail | yes | `20260929T180020.740142+0000_ollama_qwen3-6-35b-a3b-mlx-nvfp4_session.json` |
+| Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 21.12 | 9,913 | - | 86.7 | 2/2 | 2,647 / 157.0 | fail | yes | `20260929T184051.620932+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
+| Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 18.45 | 1,504 | - | 34.8 | 2/2 | unavailable | fail | yes | `20260929T183047.934174+0000_ollama_muse-glimmer-30b-mlx_session.json` |
+| Ollama `qwen3.8-27b-mlx-nvfp4` | 131,072 | 1 | 131,072 | 1x 10.63 | 3,334 | - | 31.2 | 2/2 | unavailable | fail | yes | `20260929T181413.771446+0000_ollama_qwen3-8-27b-mlx-nvfp4_session.json` |
+| Ollama `qwen3.8-27b` | 131,072 | 1 | 131,072 | 1x 5.55 | 3,408 | 231.5 | 15.8 | 3/3 | unavailable | pass | yes | `20260928T070506.810639+0000_ollama_qwen3-8-27b_session.json` |
+| Ollama `qwen3.8-flash-next-gguf` | 262,144 | 2 | 524,288 | 1x 5.02 / 2x 4.73 | 5,970 | 412.0 | 17.2 | 9/9 | unavailable | pass | yes | `20260928T083512.146087+0000_ollama_qwen3-8-flash-next-gguf_session.json` |
+
+- The GGUF profiles pass Capability Check v2 and publish: `qwen3.8-27b`
+  5.55 sessions/h at 131k and `qwen3.8-flash-next-gguf` 5.02 at 262k.
+- Every MLX profile fails Capability Check v2 on schema enforcement
+  (`ignored`); their rates (qwen3.6 23.60, coding 24.28, nemotron 21.12,
+  Glimmer 18.45, qwen3.8 10.63) cannot promote them.
+- `qwen3.8-flash-next-mlx-nvfp4` did not run: its tag is not in the local
+  store.
 
 ## RTX PRO 3000 Blackwell laptop GPU operating points
 

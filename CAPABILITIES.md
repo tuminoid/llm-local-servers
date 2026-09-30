@@ -11,9 +11,9 @@ the tables below -- is defined in
 (`docs/CAPABILITY.md`); this file holds the fleet's campaign inventory and
 retained results.
 
-The result tables below are Capability Check v1 campaigns. A v1 pass is not
-a v2 pass: re-check a model at v2 before promoting it, and replace its row
-when the v2 campaign lands.
+The M5 and A100 tables are Capability Check v2 campaigns; the RTX table
+below is v1 until its v2 campaign lands. A v1 pass is not a v2 pass:
+re-check a model at v2 before promoting it.
 
 Capability results never rank model quality or serving performance.
 
@@ -158,325 +158,130 @@ proves nothing about parser compatibility.
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
 - Ollama: `qwen3-coder-30b`, `glm4.7-flash`, `qwen3.6-35b-a3b`,
   `qwen3.8-27b-native`, `gemma4-26b`, `qwen3.8-flash-next-gguf-iq4xs`
-  (needs `OLLAMA_VERSION=0.33.3` on every lifecycle target)
+  (the two qwen3.8 profiles need `OLLAMA_VERSION=0.34.2` on every remote
+  lifecycle target)
 
 ## Apple M5 Max campaign
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
-26.6.2. Initial run date: 2026-08-25; the original inventory re-run in full on
-2026-09-06 at protocol SCHEMA_VERSION 4, which moved both tool-call
-fixtures to automatic tool choice and added the streamed tool call. Two
-rows are dated 2026-09-07: Muse Glimmer, whose 2026-09-06 run refused on
-identity drift and whose reviewed replacement digest was checked the next
-day, and `qwen3.8-flash-next-mlx-nvfp4`, which owed a record and runs on
-the 0.34.2 GGUF runtime rather than the 0.32.14 fleet default.
-Splash rows were added on 2026-09-19 with release 1.0 on macOS 27.0;
-both were rechecked before the full managed AuditBench campaign and again
-on 2026-09-24 on the committed checker. The
-vLLM-Metal `qwen3.6-35b-a3b-4bit` and `qwen3.8-27b-4bit` rows are dated
-2026-09-20 on plugin 0.29.0, as is the Ollama GGUF `qwen3.8-27b` row
-(registry `qwen3.8:27b` on the 0.34.2 GGUF runtime at 262,144). The
-vLLM-Metal `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit` and
-`gemma4-31b-4bit` rows were rechecked 2026-09-21/22 on plugin 0.29.0
-with unchanged verdicts (gemma4's schema check hit the default 600 s
-timeout, the same runaway), and the vLLM-Metal
-`nemotron-3.5-lightning-30b-4bit` row is dated 2026-09-22, the first
-check with the conf's qwen3 dialect parsers declared, as is the
-`mimo-v2.6-9b-4bit` row. LM Studio rows are dated 2026-09-24 on
-LM Studio 0.4.25+1 with its Splash engine 0.0.5 and mlx-llm 1.11.0. The
-managed adapters use the current checker, including schema enforcement.
+27.0. Capability Check v2 (llm-audit-bench v2.0.0, `capability-v2`,
+SCHEMA_VERSION 5), run 2026-09-27/28 from fleet commit `bee4a24`:
+vLLM-Metal 0.30.0, Splash 1.0, LM Studio 0.4.25+1 (Splash engine 0.0.5,
+mlx-llm 1.11.0), Ollama 0.32.14 for MLX and 0.34.2 for the GGUF
+profiles. Audit fitness ran 4 samples per task at each conf's declared
+sampling and fails at 2 failed samples of 12.
 
-Every passing row verified live model identity against the config's pinned
-revision or digest, streamed reasoning separation, one exact structured tool
-call on the non-streaming and the streaming path, a tool-result continuation,
-direct JSON, and an honest answer to
-schema-constrained decoding: the endpoint enforced the fixture schema or
-refused the parameter. The unaided column records, without gating, what the
-model produces when the schema is stated in words instead of a grammar.
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (invented 1) | pass |
+| Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 1/12 (format 1) | fail |
+| LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 3/12 (instruction 1, invented 1, missed_findings 1) | fail |
+| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 1/12 (format 1) | fail |
+| LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | timeout (600 s) | pass 0/12 | fail |
+| vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 12/12 (missed_findings 1, no_reasoning 10, runaway 1) | fail |
+| vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 2/12 (missed_findings 2) | fail |
+| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (runaway 1) | pass |
+| vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 2/12 (invented 1, missed_findings 1) | fail |
+| vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 3/12 (format 1, runaway 2) | fail |
+| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 0/12 | fail |
+| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 5/12 (invented 1, leak 1, missed_findings 2, runaway 1) | fail |
+| Ollama | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail 2/12 (invented 1, missed_findings 1) | fail |
+| Ollama | `qwen3.6-35b-a3b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 1/12 (missed_findings 1) | fail |
+| Ollama | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| Ollama | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 1/12 (leak 1) | fail |
+| Ollama | `qwen3.8-flash-next-gguf` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (invented 1) | pass |
+| Ollama | `qwen3.8-flash-next-mlx-nvfp4` | not run | not run | not run | not run | not run | not run | not run | not run | not run | not run | not run |
 
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
-| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | fail |
-| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | fail |
-| vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
-| vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama MLX | `qwen3.6-35b-a3b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
-| Ollama MLX | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
-| Ollama MLX | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
-| Ollama MLX | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
-| Ollama MLX | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail |
-| Ollama GGUF | `qwen3.8-flash-next-gguf` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama GGUF | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama MLX 0.33.3 | `qwen3.8-flash-next-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
+Every checked row's live identity matched the revision or digest pinned
+in its model config.
 
 ### Findings
 
-Splash 1.0, 2026-09-24 recheck: both pinned packages passed all eight checks
-through the managed uv entry points at 262,144 configured context and
-a 64 GiB memory cap. Both produced valid unaided JSON and passed schema
-enforcement. Qwen3.8 exercised authenticated HTTP transport in the earlier
-integration check; the rechecks used the owned loopback endpoint.
-The thinking-disable control is top-level `reasoning_effort: "none"`;
-the default remains thinking enabled. These are short API fixtures.
-Deep-context capacity is established separately by the retained full
-[AuditBench runs](splash/BENCHMARKS.md), not by the capability gate.
-Qwen3.6 subsequently failed one of two growing-conversation samples;
-that fixture result remains separate from its short API pass.
-
-Reports under `~/.local/state/capability-check/`, from a clean `2bbfce7`
-tree on llm-audit-bench `382760d`, checker file SHA-256
-`2012b9c4332823033b7c526177bbb8b7a0265623a85d680458267d0c008c3e99`:
-
-```text
-20260924T083242.715681+0000_splash_qwen3-6-35b-a3b.json
-20260924T083202.997136+0000_splash_qwen3-8-27b.json
-```
-
-The 2026-09-19 campaign rechecks, with the same verdicts, and the earlier
-authenticated Qwen3.8 report
-(`20260919T192742.892922+0000_splash_qwen3-8-27b.json`, same directory)
-ran on an uncommitted checker snapshot.
-
-LM Studio 0.4.25+1, 2026-09-24: the Splash-engine configs load the native
-Splash packages at their pinned revisions and pass all eight checks, with the
-same top-level `reasoning_effort: "none"` control. The MLX-engine configs load
-the vLLM-Metal checkpoints. Neither `reasoning_effort` nor `enable_thinking`
-disables their thinking, so thinking-off is unsupported. The engine accepts
-the schema parameter, and the model thinks, then stops with empty content,
-so schema enforcement is ignored. Reasoning arrives only in
-`reasoning_content`; these rows pass through the checker's alias for it. The
-tree and checker are the Splash rows'; reports are under
-`~/.local/state/capability-check/`:
-
-```text
-20260924T082154.775587+0000_lmstudio_qwen3-6-35b-a3b-splash.json
-20260924T082102.420159+0000_lmstudio_qwen3-8-27b-splash.json
-20260924T083009.694517+0000_lmstudio_qwen3-6-35b-a3b-mlx.json
-20260924T082509.680783+0000_lmstudio_qwen3-8-27b-mlx.json
-```
-
-- Every vLLM-Metal and Ollama profile that reached inference passes both
-  tool-call checks under automatic tool choice, so the plugin's and both
-  Ollama runners' parsers handle this host's tool dialects on the
-  streaming and the non-streaming path. No M5 row changed verdict on the
-  new check.
-- Qwen3.6, Qwen3.8, Gemma 4, Granite 4.2 and Ornith 1.5 correctly separate
-  reasoning from final content and honor their configured no-thinking
-  controls.
-- `granite4.2-30b-4bit` and `ornith1.5-35b-a3b-4bit` (onboarded 2026-09-05,
-  first rows here) passed every check at plugin 0.28.0, Granite at its
-  declared 131,072 context and Ornith at 262,144. Ornith needs the
-  `qwen3_xml` tool parser it inherits with the Qwen3.5-MoE architecture;
-  Granite needs `qwen3_coder` rather than the `granite4` parser, which
-  targets a dialect this generation no longer emits.
-- `muse-glimmer-30b-mlx` first failed the 2026-09-06 refresh before
-  inference on true identity drift, the tag's second move: the registry
-  served manifest `015fa21845be` against a pin of `ef32a55b4976`. The
-  replacement manifest was reviewed on 2026-09-07 -- safetensors,
-  mixed-precision NVFP4, architecture muse_glimmer, 131,072 native
-  context, the same four declared capabilities, DFlash assistant model
-  still packaged -- then checked under one explicit digest override,
-  where it passed everything except the host-wide MLX enforcement
-  defect. The conf is repinned to that digest. Its weights are ~3 GiB
-  smaller than the previous artifact's and residency fell with them, so
-  no performance number carries across the move.
-- Muse Glimmer runs under its documented `Reasoning strength: low` system
-  control. Its vendor documentation grades reasoning and never turns it
-  off, so this conf declared no disable mode until 2026-09-07; the
-  serving path has one anyway, and Ollama's `think: false` produces
-  correct content with an empty reasoning field on this digest. The conf
-  now declares it and the row records a real result instead of
-  `unsupported`. On the current digest its schema-constrained response
-  leaked raw channel markers into content, which the streaming reasoning
-  check did not show; the conf records it.
-- `qwen3.8-flash-next-mlx-nvfp4` (125B-A6B NVFP4, the MLX sibling of the
-  GGUF flash-next profiles) passes all eight checks on the split 0.33.3
-  runtime, moved there on 2026-09-07 from its 0.33.1 first-light pin to
-  match every other flash-next profile in the fleet. Capability success
-  says nothing about servability here: prefill beyond roughly 3k tokens
-  still dies in a Metal working-set OOM, so the profile stays a tech demo
-  and AuditBench cannot run on it at all.
-- Ollama's `qwen3.6:35b-a3b-coding-nvfp4` and `muse-glimmer:30b-mlx`
-  tags had both moved once before, in the 2026-08-25 campaign. Those
-  replacement manifests were reviewed, tested under explicit digest
-  overrides, passed every applicable capability check, and were then
-  repinned. Muse Glimmer has now consumed that procedure twice.
-- The Muse Glimmer MLX manifests reviewed in both rounds package tensors
-  with an assistant-model config. Capability success proves response
-  semantics only; it does not prove a DFlash speedup.
-- Nemotron 3.5 Lightning (`nemotron-3.5-lightning:30b-a3b-mlx`) passes
-  reasoning, thinking off via `think: false`, and both tool paths with no
-  parser or prompt accommodation -- unlike the Nemotron Nano `<TOOLCALL>`
-  history on CUDA vLLM. No AuditBench numbers exist for it yet.
-- The base Qwen3.6 NVFP4 (`qwen3.6:35b-a3b-nvfp4`) passes every check
-  except schema enforcement at its reduced 131,072 launch context.
-  Capability success says nothing about survivable context depth; the
-  supervised depth probes that proved 131,072 on both qwen3.6 NVFP4
-  digests are recorded in the model configs and `ollama/BENCHMARKS.md`.
-- `qwen3.8-flash-next-gguf` (locally imported artifact, identity by
-  digest, split 0.33.3 runtime) passes all eight checks with JSON-schema
-  enforcement verified, including the streamed tool call. The bare
-  `format: "json"` mode is separately unenforced on this model
-  (returns fenced JSON); the conf documents the distinction. Its
-  known runtime defect -- HTTP 500 on cap-truncated tool calls --
-  still sits outside the capability checks, which never truncate a call
-  on either path.
-- The Ollama MLX runner on the 0.32.14 fleet pin accepts a JSON schema in
-  `format` and returns unconstrained prose: all five rows at that pin fail
-  the enforcement gate as `ignored`, while the llama.cpp runner enforces
-  the same schema in the same binary. The defect is version-scoped, not a
-  property of the MLX runner: `qwen3.8-flash-next-mlx-nvfp4` on the split
-  0.33.3 runtime reports `enforced`, and a same-day control run of
-  `qwen3.6-35b-a3b-mlx-nvfp4` on 0.33.3 -- identical model, identical
-  fixture, only the runtime changed -- flipped from `ignored` to
-  `enforced`. The five rows keep the pinned-runtime result they were
-  measured at; a runtime bump is the way to change them, and that is a
-  pin decision rather than a capability one.
-- Every MLX-row model except Nemotron still produces a valid unaided
-  document when asked in words, so nothing here blocks structured work
-  through prompting alone.
-- Gemma4-31b under the vLLM-Metal grammar backend is
-  `whitespace_runaway`: the grammar permits structural whitespace and
-  the model emits it until the protocol's fixed 16,384-token budget
-  ends. Its 26B CUDA sibling fails identically, so this reads as a
-  Gemma 4 behavior under adversarial constrained decoding. The model
-  decodes slowly enough here that the default 600 s request timeout
-  cannot reach a verdict; the recorded row used `CAPABILITY_TIMEOUT=1500`
-  with the protocol token budget untouched, and spent 1,045 s on that
-  single check.
-- Nemotron 3.5 Lightning MLX pairs `ignored` enforcement with an
-  `unaided` document that is `json_only`: the combination the protocol
-  singles out as unusable for structured work on this host.
-- No serving profile was promoted or demoted on this refresh. The
-  vLLM-Metal `nemotron-3.5-lightning-30b-4bit` profile passes every
-  check on plugin 0.29.0, schema enforcement included in 11.5 s, so the
-  whitespace runaway seen on the 2026-09-18 trial venv did not recur on
-  the pinned venv.
+- Seven profiles pass: Splash `qwen3.6-35b-a3b` (1/12) and `qwen3.8-27b`
+  (0/12), LM Studio `qwen3.8-27b-splash` (0/12), vLLM-Metal
+  `granite4.2-30b-4bit` (0/12) and `ornith1.5-35b-a3b-4bit` (1/12), and
+  Ollama GGUF `qwen3.8-27b` (0/12) and `qwen3.8-flash-next-gguf` (1/12).
+- On vLLM-Metal both Qwen profiles fail audit fitness where Splash and the
+  A100 pass the same models: `qwen3.6-35b-a3b-4bit` 2/12 (an invented path
+  and a finding filed against the wrong file), `qwen3.8-27b-4bit` 3/12
+  (two selection runaways at 32,768 tokens). Their 0.29.0 trial runs
+  failed the same way (qwen3.8 two runaways) or at 1/12 (qwen3.6), and a
+  qwen3.6 sample replayed token for token across the plugin bump, so this
+  is the 4-bit MLX models at sampling, not the 0.30.0 pin.
+- MiMo on vLLM-Metal fails 12 of 12: ten samples answered without
+  reasoning. Its API checks pass.
+- Every MLX-format profile outside vLLM-Metal fails schema enforcement
+  (`ignored`): all five Ollama MLX rows and both LM Studio MLX rows. Their
+  audit fitness passes except nemotron (5/12) and qwen3.6 coding (2/12).
+- LM Studio `qwen3.6-35b-a3b-splash` fails audit fitness (3/12) where
+  Splash's own server passes the same package (1/12).
+- `gemma4-31b-4bit` passes audit fitness (0/12) and fails only schema
+  enforcement, whose check hit the 600 s request timeout: the
+  whitespace runaway v1 recorded.
+- `qwen3.8-flash-next-mlx-nvfp4` did not run: its
+  `qwen3.8-flash-next:125b-a6b-nvfp4` tag is not in the local store.
 
 ## A100-SXM4-80GB campaign
 
 Host: shared A100 test host, reached over ssh through the `HOST` alias
-supplied by `.envrc`. Protocol SCHEMA_VERSION 4. `qwen3.6-35b-a3b-awq` and
-`mimo-v2.6-9b-awq` are dated 2026-09-25 on vLLM 0.30.0; `qwen3.8-27b` and
-`qwen3.8-27b-dflash2` 2026-09-19 on vLLM 0.29.0;
-`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs` the same day on
-Ollama 0.34.2; every other row is the 2026-09-06/07 run on vLLM 0.28.0 and
-Ollama 0.32.14 (`qwen3.8-27b-512k` and `glm4.7-flash-awq` on 2026-09-07,
-the latter after its conf gained the thinking-disable control).
+supplied by `.envrc`. Capability Check v2 (llm-audit-bench v2.0.0,
+`capability-v2`, SCHEMA_VERSION 5), run 2026-09-27 from fleet commit
+`d9ad1a7`: vLLM 0.30.0 with Transformers 5.15.1; Ollama 0.34.2 for
+`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs`, 0.32.14 for the
+rest. Audit fitness ran 4 samples per task at each conf's declared
+sampling and fails at 2 failed samples of 12. Reports are retained in the
+campaign evidence, `auditbench-trials/2026-09-27-v2-canonical/` on the
+host.
 
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
-| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM | `glm4.7-flash-awq` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass |
-| vLLM | `qwen3-coder-30b` | pass | pass | unsupported | fail | fail | not run | pass | valid | whitespace_runaway | fail |
-| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
-| vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | fail |
-| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `qwen3.8-27b-native` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `glm4.7-flash` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass |
-| Ollama | `gemma4-26b` | pass | pass | pass | pass | pass | pass | pass | valid | truncated | fail |
-| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | error | enforced | pass |
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | pass 1/12 (incomplete 1) | fail |
+| vLLM | `glm4.7-flash-awq` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 7/12 (invented 3, missed_findings 3, wrong_verdicts 1) | fail |
+| vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 5/12 (invented 1, runaway 1, wrong_verdicts 3) | fail |
+| vLLM | `qwen3-coder-30b` | pass | pass | unsupported | fail | fail | not run | pass | valid | whitespace_runaway | fail 7/12 (invented 1, loop 2, missed_findings 3, runaway 1) | fail |
+| vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | pass 0/12 | fail |
+| vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| Ollama | `gemma4-26b` | pass | pass | pass | pass | pass | pass | pass | valid | truncated | fail 2/12 (incomplete 1, invented 1) | fail |
+| Ollama | `glm4.7-flash` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 6/12 (incomplete 1, invented 2, missed_findings 2, wrong_verdicts 1) | fail |
+| Ollama | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | fail 8/12 (invented 1, loop 2, missed_findings 4, missed_required 1) | fail |
+| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (invented 1) | pass |
+| Ollama | `qwen3.8-27b-native` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | error | enforced | pass 0/12 | pass |
 
-Every passing row's live identity matched the revision or digest pinned in
-its model config.
+Every row's live identity matched the revision or digest pinned in its
+model config.
 
 ### Findings
 
-- Qwen3 Coder on vLLM fails both tool-call checks under automatic tool
-  choice: asked for one `lookup_issue` call, the endpoint returns two.
-  The same checkpoint passes both checks on Ollama, so this is the vLLM
-  side of the pairing -- the model's own tool syntax through the
-  configured parser -- and not the checkpoint. This failure was invisible
-  under the pre-SCHEMA_VERSION-4 fixture, which named the tool and let
-  guided decoding produce the one call the check wanted. The profile is
-  demoted for agent workloads on vLLM until it emits exactly one call;
-  its serving throughput numbers are unaffected and its Ollama row
-  remains a pass.
-- Every other A100 row passes both tool paths, non-streaming and
-  streamed, on both runtimes.
-- `mimo-v2.6-9b-awq` passes on its fixed chat template
-  (`VLLM_CHAT_TEMPLATE`). On the checkpoint's own template it is 4/8: the
-  model skips reasoning, then writes JSON tool arguments that `qwen3_xml`
-  reads as `{}` (diagnosis and retest condition in its model config).
-- `qwen3.8-flash-next-gguf-iq4xs` passes all eight checks with schema
-  enforcement verified, and is the only row in the fleet whose unaided
-  document is `error`: that request reproducibly (3/3 across Ollama
-  0.33.3 and 0.34.2) kills the model with `CUDA error: an illegal memory
-  access was encountered` and an HTTP 500. The grammar-constrained
-  document over the same fixture completes in the same session, and the
-  M5 Q4_K_XL sibling returns a valid document, so this is the CUDA
-  llama.cpp path on the qwen4exp architecture, not the prompt or the
-  import. `unaided` never gates, so the row passes -- but the crash is a
-  serving risk on unconstrained long generations, recorded in the model
-  conf with its retest condition.
-- `qwen3.8-27b-512k` came up on its first start with a 748,760-token KV
-  pool at max_len 524,288, close to the base profile's measured pool, and
-  passed the first seven checks. Its enforcement result is
-  `whitespace_runaway`, reproducibly (2/2, 343 s per attempt), where the
-  same weights and revision at native context pass `enforced` on the same
-  venv. Static YaRN at factor 2.0 is the only difference between the two
-  profiles, so schema-constrained decoding is not a property this
-  checkpoint keeps across the scaling. The profile still owes the depth
-  and quality evidence its conf demands; this record closes only the
-  capability item.
-- Every vLLM revision pin matched the host's HF cache snapshot before
-  any server start, and every identity check passed live -- the CUDA
-  pin-verification debt is closed.
-- The remote Ollama store needed no manifest recovery this round: every
-  tag resolved to its pinned digest on the first pull. Earlier campaigns
-  hit stale pre-tag-move digests on `qwen3.6:35b-a3b` and `gemma4:26b`,
-  which pulling through the managed server repaired without a repin.
-- The same-instant pair probe passed 0/12 against `qwen3.6-35b-a3b-awq`
-  at 10x concurrency admission -- the Metal plugin's admission bail has
-  no CUDA counterpart, as expected.
-- Qwen3 Coder declares no thinking-disable control on either runtime, and
-  that is now verified against the checkpoint rather than assumed: its
-  chat template defines neither `enable_thinking` nor `reasoning_effort`,
-  so there is nothing to disable and the `unsupported` cell is correct.
-- GLM 4.7 Flash on vLLM was the opposite case. Its conf declared no
-  disable control until 2026-09-07, which cost it the whole gate: with
-  reasoning always on, the constrained document ran out of the fixed
-  16,384-token budget and enforcement recorded `truncated`. The
-  checkpoint's own chat template implements the toggle -- with
-  `enable_thinking` false it emits `<|assistant|></think>` -- and its
-  Ollama pairing had declared the equivalent all along. Declaring
-  `enable-thinking-false` makes thinking off pass and enforcement land
-  `enforced` in 18 s instead of failing at 204 s, so the profile now
-  passes every check. Its unaided document is `ignored`, matching the
-  Ollama pairing: on both runtimes the host carries this model for
-  structured work.
-- Sweeping the fleet for the harness's new graded `reasoning_effort`
-  controls found no profile that needs them. Granite 4.2 and Qwen3.8 are
-  the checkpoints whose templates read the kwarg. Granite uses it only to
-  set `low_effort = reasoning_effort == "low"`, so it grades verbosity.
-  Qwen3.8 grades the thinking instruction with `low`, `medium` or `xhigh`
-  (the default) and rejects any other value. Neither can disable thinking
-  through it; `enable-thinking-false` remains their control.
-  The remaining `unsupported` cells are Qwen3 Coder's, where the model
-  genuinely has no control.
-- `qwen3.8-27b-dflash2` passes every check with the same weights and
-  revision as `qwen3.8-27b` plus the pinned DFlash 2 drafter, so the
+- Six profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` and
+  `qwen3.8-27b-dflash2`, all with no failed fitness sample, and Ollama
+  `qwen3.6-35b-a3b` (1/12), `qwen3.8-27b-native` (0/12) and
+  `qwen3.8-flash-next-gguf-iq4xs` (0/12).
+- Audit fitness is what v1 could not see. GLM 4.7 Flash (6-7/12 on its
+  two runtimes), Ollama Qwen3 Coder (8/12) and MiMo (5/12: wrong triage
+  verdicts, one runaway) passed every v1 check and fail here; Coder's
+  failures are loops and missed findings on both runtimes. Gemma 4 26B on
+  Ollama fails at the limit (2/12).
+- `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` fail only schema
+  enforcement (`whitespace_runaway`, unchanged from v1), with audit
+  fitness passing. The 512k profile differs from `qwen3.8-27b` only by
+  static YaRN at factor 2.0.
+- Qwen3 Coder on vLLM still returns two calls for the one-call tool
+  fixture under automatic tool choice; the same checkpoint passes both
+  tool checks on Ollama.
+- `qwen3.8-flash-next-gguf-iq4xs`'s unaided document is `error`: that
+  request kills the CUDA llama.cpp path with an illegal memory access and
+  an HTTP 500 (reproducible since 0.33.3; diagnosis and retest condition
+  in its conf). `unaided` never gates.
+- `mimo-v2.6-9b-awq` runs on its fixed chat template
+  (`VLLM_CHAT_TEMPLATE`); the API checks pass, audit fitness does not.
+- `qwen3.8-27b-dflash2` matches `qwen3.8-27b` check for check, so the
   drafter changes no response semantics.
-- vLLM's grammar backend permits structural whitespace between JSON
-  tokens: Qwen3 Coder and Gemma 4 emit it until the 16,384-token budget
-  ends (`whitespace_runaway`). Ollama's llama.cpp grammar bounds it, so
-  the same Coder checkpoint passes `enforced` there, and Gemma 4 fails
-  as plain `truncated` instead.
-- No capability row on this host rests on 0.27.1 evidence, and none on
-  pre-SCHEMA_VERSION-4 tool-call evidence.
 
 ## RTX PRO 3000 Blackwell campaign
 
