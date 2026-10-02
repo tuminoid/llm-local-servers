@@ -73,6 +73,16 @@ class ModelConfigInventoryTest(unittest.TestCase):
                     "OLLAMA_CAP_SYSTEM_PROMPT",
                 ),
             ),
+            (
+                REPO_DIR / "ds4" / "models",
+                (
+                    "DS4_CAP_REASONING",
+                    "DS4_CAP_TOOLS",
+                    "DS4_CAP_REASONING_MODE",
+                    "DS4_CAP_DISABLE_MODE",
+                    "DS4_CAP_SYSTEM_PROMPT",
+                ),
+            ),
         )
         for directory, names in inventories:
             configs = sorted(directory.glob("*.conf"))
@@ -99,6 +109,7 @@ class ModelConfigInventoryTest(unittest.TestCase):
             (REPO_DIR / "vllm" / "models", "VLLM_SAMPLING"),
             (REPO_DIR / "vllm-metal" / "models", "VLLM_SAMPLING"),
             (REPO_DIR / "ollama" / "models", "OLLAMA_SAMPLING"),
+            (REPO_DIR / "ds4" / "models", "DS4_SAMPLING"),
         ):
             configs = sorted(directory.glob("*.conf"))
             self.assertTrue(configs, f"no model configs found in {directory}")

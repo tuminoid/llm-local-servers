@@ -17,6 +17,9 @@ re-check a model at v2 before promoting it.
 
 Capability results never rank model quality or serving performance.
 
+The ds4 runtime's interactive-only models are checked too but not
+inventoried here; their results are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
+
 Schema enforcement is gated because audit tooling consumes structured
 verdicts: an endpoint that accepts a JSON schema and returns prose
 corrupts them silently, with no error to catch, so the gate requires

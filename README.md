@@ -1,8 +1,8 @@
 # llm-local-servers
 
-Measured, Makefile-driven local LLM serving. Five managed runtimes --
-vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon) and LM Studio --
-with one portable config per model, host-adaptive launchers, isolated remote-host
+Measured, Makefile-driven local LLM serving. Six managed runtimes --
+vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio and
+ds4 -- with one portable config per model, host-adaptive launchers, isolated remote-host
 operation, and the retained benchmark and capability results for every
 host in the fleet. The workload everything is tuned for is deep-context
 security-audit calls; [AGENTS.md](AGENTS.md) states the mission and the
@@ -30,8 +30,9 @@ adapters, model configs, and results.
    [vllm/README.md](vllm/README.md),
    [ollama/README.md](ollama/README.md),
    [vllm-metal/README.md](vllm-metal/README.md),
-   [splash/README.md](splash/README.md), and
-   [lmstudio/README.md](lmstudio/README.md).
+   [splash/README.md](splash/README.md),
+   [lmstudio/README.md](lmstudio/README.md), and
+   [ds4/README.md](ds4/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
 newer for `make lint` and `make test`.
@@ -50,12 +51,12 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-bench MODEL=<name>` | Run AuditBench v2 |
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v2 |
 
-where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, or `lmstudio`
-(plus `ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,
-`splash-install`, `splash-pull`, `lmstudio-install`, and `lmstudio-pull` for
-runtime and model installation). `MODEL` names a config file in that
-runtime's `models/` directory, never a served model ID or registry tag;
-there is deliberately no default model.
+where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, `lmstudio`,
+or `ds4` (plus `ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,
+`splash-install`, `splash-pull`, `lmstudio-install`, `lmstudio-pull`,
+`ds4-install`, and `ds4-pull` for runtime and model installation).
+`MODEL` names a config file in that runtime's `models/` directory, never a
+served model ID or registry tag; there is deliberately no default model.
 `make status` shows whether each local runtime is running, and with which model.
 
 Every bench and capability run retains its JSON under
@@ -148,6 +149,11 @@ derived. Capability pass/fail is in [CAPABILITIES.md](CAPABILITIES.md).
 Prefill and decode are aggregate tok/s, audit columns are calls/hour,
 `@Nx` names the measured concurrency, and `GPU KV / allocation` is the
 raw vLLM pool or Ollama's measured allocation.
+
+ds4 is not in these tables. Its models (Qwen3.8 Flash Next, DeepSeek V4
+and V4.1 Flash, GLM 5.3 Flash) are too large for any fleet host to run
+audit campaigns on, so it serves them for interactive use on the M5 Max;
+its capability and speed tables are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
 ### Audit throughput per host
 

@@ -17,6 +17,8 @@
 .PHONY: splash-status splash-logs splash-bench splash-capability
 .PHONY: lmstudio-model-check lmstudio-install lmstudio-pull lmstudio-start
 .PHONY: lmstudio-stop lmstudio-status lmstudio-logs lmstudio-bench lmstudio-capability
+.PHONY: ds4-model-check ds4-install ds4-pull ds4-start ds4-stop ds4-status ds4-logs
+.PHONY: ds4-bench ds4-capability
 
 # Every target here is phony, so GNU Make's built-in rules can only do harm.
 # Left on, a mistyped target matches the built-in `%: %.sh` rule and silently
@@ -106,6 +108,7 @@ VLLM_METAL_VLLM_VERSION ?= 0.30.0
 VLLM_METAL_VLLM_WHEEL_SHA256 ?= fd9adfd566a8afa4ecbdf36b04bab10ebf43cd9ca18eca4b0a0bf2013b8de135
 
 SPLASH_DIR := splash
+DS4_DIR := ds4
 SPLASH_VERSION ?= 1.0
 SPLASH_ARCHIVE_SHA256 ?= dc752f0aab8419c46fe2803a0e7059c1515e5df48def11b9d517bbbf1fb2dddc
 export SPLASH_VERSION SPLASH_ARCHIVE_SHA256
@@ -211,6 +214,17 @@ help:
 	@echo "  make splash-stop       - Stop and verify process-group and port release"
 	@echo "  Models: $(patsubst $(SPLASH_DIR)/models/%.conf,%,$(wildcard $(SPLASH_DIR)/models/*.conf))"
 	@echo ""
+	@echo "  ds4 (DwarfStar) on Apple Silicon (port 8023, needs MODEL=<name>):"
+	@echo "  make ds4-install    - Build the pinned source commit"
+	@echo "  make ds4-pull       - Download and verify the model's pinned GGUF"
+	@echo "  make ds4-start      - Start detached with disk KV; SSD streaming when weights do not fit"
+	@echo "  make ds4-status     - Show process, startup profile and live model"
+	@echo "  make ds4-logs       - Follow the server log"
+	@echo "  make ds4-bench      - Run AuditBench v2"
+	@echo "  make ds4-capability - Check API capabilities and audit fitness"
+	@echo "  make ds4-stop       - Stop and verify process-group release"
+	@echo "  Models: $(patsubst $(DS4_DIR)/models/%.conf,%,$(wildcard $(DS4_DIR)/models/*.conf))"
+	@echo ""
 	@echo "  LM Studio (port 1234, needs MODEL=<name>):"
 	@echo "  make lmstudio-install    - Check the app, engines and hf CLI; report pin drift"
 	@echo "  make lmstudio-pull       - Download the model's pinned revision into LM Studio"
@@ -256,7 +270,7 @@ help:
 # Every local runtime's server and model lines, one after another; a failing
 # one does not hide the rest, but fails the target.
 status:
-	@rc=0; for r in vllm vllm-metal splash lmstudio ollama; do \
+	@rc=0; for r in vllm vllm-metal splash lmstudio ollama ds4; do \
 		echo "== $$r"; out="$$($(MAKE) --no-print-directory $$r-status)" || rc=1; \
 		printf '%s\n' "$$out" | grep -E '^(server|model): '; \
 	done; exit $$rc
@@ -641,6 +655,38 @@ splash-bench: splash-model-check audit-bench-check
 splash-capability: splash-model-check audit-bench-check
 	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		bash -c 'source splash/lib.sh; exec uv run --no-project --python "$${SPLASH_RUNTIME}/python/bin/python3" splash/capability.py "$$1"' bash $(MODEL)
+
+# --- ds4 (DwarfStar, Apple Silicon) ---
+
+ds4-model-check:
+	@test -n "$(MODEL)" -a -f "$(DS4_DIR)/models/$(MODEL).conf" || { \
+		echo "error: set MODEL to a ds4 config name:" >&2; \
+		echo "  $(patsubst $(DS4_DIR)/models/%.conf,%,$(wildcard $(DS4_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+
+ds4-install:
+	@./$(DS4_DIR)/install.sh
+
+ds4-pull: ds4-model-check
+	@./$(DS4_DIR)/pull.sh $(MODEL)
+
+ds4-start: ds4-model-check
+	@./$(DS4_DIR)/run.sh $(MODEL)
+
+ds4-stop:
+	@./$(DS4_DIR)/stop.sh
+
+ds4-status:
+	@./$(DS4_DIR)/status.sh
+
+ds4-logs:
+	@tail -f "$${DS4_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/ds4}/server.log"
+
+ds4-bench: ds4-model-check audit-bench-check
+	@$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(DS4_DIR)/bench.py $(MODEL)
+
+ds4-capability: ds4-model-check audit-bench-check
+	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(DS4_DIR)/capability.py $(MODEL)
 
 # --- LM Studio ---
 
