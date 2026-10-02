@@ -22,6 +22,7 @@ PORTS = {
     "lmstudio": ("lmstudio/runtime.py", 'os.environ.get("LMSTUDIO_PORT", "1234")'),
     "ollama": ("ollama/start.sh", 'OLLAMA_HOST="${OLLAMA_HOST:-127.0.0.1:11434}"'),
     "ollama-remote": ("Makefile", "OLLAMA_TUNNEL_PORT ?= 11436"),
+    "ds4": ("ds4/lib.sh", 'DS4_PORT="${DS4_PORT:-8023}"'),
 }
 
 ENTRY = {"name": "Qwen3.8 27B", "tool_call": True,

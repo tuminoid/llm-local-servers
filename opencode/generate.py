@@ -25,6 +25,7 @@ RUNTIMES = {
     "splash": ("SPLASH_MODEL_REPO", "SPLASH_MAX_LEN", "SPLASH", "reasoning"),
     "lmstudio": (None, "LMSTUDIO_CONTEXT", "LMSTUDIO", "reasoning_content"),
     "ollama": ("OLLAMA_MODEL", "OLLAMA_CONTEXT_LENGTH", "OLLAMA", None),
+    "ds4": ("DS4_SERVED_NAME", "DS4_CTX", "DS4", "reasoning_content"),
 }
 
 # Provider: runtime, display name, base URL on the launcher's default port.
@@ -38,11 +39,13 @@ PROVIDERS = {
     "ollama": ("ollama", "Ollama", "http://127.0.0.1:11434/v1"),
     "ollama-remote": ("ollama", "Ollama remote (make ollama-remote-tunnel)",
                       "http://127.0.0.1:11436/v1"),
+    "ds4": ("ds4", "ds4 (DwarfStar)", "http://127.0.0.1:8023/v1"),
 }
 
 UPPER = re.compile(r"awq|gptq|mlx|gguf|ud|bf16|f16|i?q\d[a-z0-9_]*|(nv|mx)?fp\d+"
                    r"|int\d+|w\d+a\d+|[ae]?\d+(\.\d+)?b")
-SPELLING = {"dflash2": "DFlash2", "mimo": "MiMo", "optiq": "OptiQ"}
+SPELLING = {"deepseek": "DeepSeek", "dflash2": "DFlash2", "glm5.3": "GLM5.3", "mimo": "MiMo",
+            "optiq": "OptiQ"}
 
 
 def display(name):

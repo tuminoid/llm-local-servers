@@ -34,6 +34,10 @@ of the pinned commit to build there instead; it must be clean.
 `make ds4-capability` runs Capability Check v2. `make ds4-bench` exists for
 diagnosis only.
 
+From opencode, use the `ds4` provider in
+[opencode/ds4/opencode.json](../opencode/ds4/opencode.json); the model id
+is the served name, for example `ds4/qwen3.8-flash-next`.
+
 ## Knobs
 
 | Variable | Default | Effect |
