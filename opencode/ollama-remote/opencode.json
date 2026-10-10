@@ -72,6 +72,14 @@
             "output": 65536
           }
         },
+        "ornith-1.5:35b": {
+          "name": "Ornith1.5 35B A3B",
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        },
         "qwen3-coder:30b": {
           "name": "Qwen3 Coder 30B",
           "tool_call": true,

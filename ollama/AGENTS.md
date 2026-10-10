@@ -93,6 +93,14 @@ in [README.md](README.md); shared server conventions live in
   `OLLAMA_VERSION=0.34.2` at the make level: the remote fixed environment
   resolves `OLLAMA_BIN` before the conf's `OLLAMA_RUNTIME_VERSION` can
   apply; a forgotten override fails loudly at the version guard.
+- `ornith1.5-35b-a3b` declares `OLLAMA_RUNTIME_VERSION=0.40.1` and needs
+  `OLLAMA_VERSION=0.40.1` on remote lifecycle calls, as above. Keep every
+  other profile off 0.40.x until its pin is re-established there: on first
+  load of an older GGUF, 0.40.x rewrites the tag's manifest in the shared
+  store (a `llamacpp/` runner manifest plus new config and params), so the
+  digest pin stops matching for every runtime that shares the store. Back up
+  `manifests/` before a 0.40.x runtime touches a store. 0.40 also refuses a
+  relative `OLLAMA_MODELS`; start.sh makes it absolute.
 - `qwen3.8-flash-next-gguf` runs a split managed runtime: its conf declares
   `OLLAMA_RUNTIME_VERSION=0.34.2` (the GGUF runtime; qwen4exp needs
   llama.cpp >= b10760) which start.sh applies after the conf, as do the

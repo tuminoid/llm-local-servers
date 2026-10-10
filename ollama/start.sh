@@ -144,6 +144,13 @@ printf 'config: model=%s context=%s parallel=%s aggregate=%s kv=%s\n' \
 printf 'config: host=%s flash_attention=%s fit_target=%sMiB version=%s\n' \
     "${OLLAMA_HOST}" "${OLLAMA_FLASH_ATTENTION}" "${LLAMA_ARG_FIT_TARGET}" \
     "${actual_version}"
+# Ollama 0.40 refuses a relative model directory ("manifest path ... resolves
+# outside manifest directory"), and the remote tree passes one relative to
+# the remote home.
+if [[ -n "${OLLAMA_MODELS:-}" && "${OLLAMA_MODELS}" != /* ]]; then
+    OLLAMA_MODELS="${PWD}/${OLLAMA_MODELS}"
+fi
+
 printf 'config: binary=%s models=%s state=%s\n' \
     "${OLLAMA_EXE}" "${OLLAMA_MODELS:-default}" "${OLLAMA_STATE_DIR}"
 

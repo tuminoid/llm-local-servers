@@ -148,6 +148,15 @@ OLLAMA_ARCHIVE_SHA256_DARWIN ?= c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3
 #     OLLAMA_ARCHIVE_SHA256_DARWIN=f33b2a5aa59bc6c961ed3ec23ba9dc646ca6d99ced8d2a0d46eb3a522167dd3f \
 #     OLLAMA_ARCHIVE_SHA256=e155b83589986d2c581fdbf1381ea3ebdb16549883679cd5a0627f7cdc05b12b \
 #     OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=8edcfe99eb7546d9422cfa8297d341dcd50e090e192ce1a8092a6ab6d182867b
+# GGUF runtime 0.40.1, the same per-profile way: ornith1.5-35b-a3b. Not a
+# default for anything else: on first load of an older GGUF it rewrites the
+# tag's manifest in the shared store (local compat migration), breaking that
+# profile's digest pin, and qwen3-coder-30b's tool calls regress on it.
+# Install with
+#   make ollama-install OLLAMA_VERSION=0.40.1 \
+#     OLLAMA_ARCHIVE_SHA256_DARWIN=66e1587711f3a06315b23782ba74897001da6c8b8edf6c0371f7533015a076dd \
+#     OLLAMA_ARCHIVE_SHA256=a7aebbe3dd76ccf1351a56a3e57218ad4863cb5f9a9938c58de87a37555e355d \
+#     OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=f5cbd9a97e0de9502ef928cb993f6d16468e25be6d55a8529d7fd2b67a130bcb
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0
