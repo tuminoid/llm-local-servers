@@ -57,6 +57,7 @@ VLLM_KV_DTYPE="${VLLM_KV_DTYPE:-}"
 # and keeps the engine default.
 VLLM_PREFIX_CACHING="${VLLM_PREFIX_CACHING:-}"
 VLLM_SPECULATIVE_CONFIG="${VLLM_SPECULATIVE_CONFIG:-}"
+VLLM_STRUCTURED_OUTPUTS_CONFIG="${VLLM_STRUCTURED_OUTPUTS_CONFIG:-}"
 VLLM_ATTN_AUTO="${VLLM_ATTN_AUTO:-}"
 VLLM_MLA="${VLLM_MLA:-}"
 VLLM_MAX_SEQS="${VLLM_MAX_SEQS:-}"
@@ -340,6 +341,14 @@ fi
 # drafter's block size.
 if [[ -n "${VLLM_SPECULATIVE_CONFIG}" ]]; then
     args+=(--speculative-config "${VLLM_SPECULATIVE_CONFIG}")
+fi
+# Structured-output grammar options, e.g.
+# {"backend":"xgrammar","disable_any_whitespace":true} where a model fills
+# the schema grammar's whitespace until the budget runs out. vLLM rejects
+# disable_any_whitespace under the default "auto" backend at startup. One
+# argv element; vLLM validates the shape.
+if [[ -n "${VLLM_STRUCTURED_OUTPUTS_CONFIG}" ]]; then
+    args+=(--structured-outputs-config "${VLLM_STRUCTURED_OUTPUTS_CONFIG}")
 fi
 if [[ -n "${VLLM_REASONING_PARSER}" ]]; then
     # The engine subprocess imports reasoning plugins independently. Loading
