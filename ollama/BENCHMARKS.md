@@ -22,10 +22,11 @@ git history.
 ## AuditBench v2: A100-SXM4-80GB
 
 Isolated remote Ollama, Flash Attention, q8 KV; 0.34.2 for
-`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs`, 0.32.14 for the
-rest. Canonical AuditBench v2 `session` profile (llm-audit-bench v2.0.0 plus
-the amendments released as v2.1.0; each JSON records its harness hash), run
-2026-09-27 from fleet commit `d9ad1a7` at each conf's declared sampling. The
+`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs`, 0.40.1 for
+`ornith1.5-35b-a3b`, 0.32.14 for the rest. Canonical AuditBench v2
+`session` profile (llm-audit-bench v2.0.0 plus the amendments released as
+v2.1.0; each JSON records its harness hash), run 2026-09-27 from fleet
+commit `d9ad1a7` (Ornith: see below) at each conf's declared sampling. The
 harness measured 1 stream and the largest of 2/4/8 that fits admission and
 the KV pool: 16 tool steps from 32k evidence, report at about 165k.
 Sessions/h is the median over 2-3 samples; complete counts sessions whose
@@ -43,12 +44,17 @@ tokens.
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Ollama `gemma4-26b` | 262,144 | 1 | 262,144 | 1x 17.93 | 8,593 | - | 77.8 | 2/3 | unavailable | fail | no | `20260927T214127.278720+0000_ollama_gemma4-26b_session.json` |
 | Ollama `qwen3-coder-30b` | 262,144 | 1 | 262,144 | 1x 17.58 | 1,978 | - | 18.1 | 2/2 | unavailable | fail | yes | `20260927T210532.581384+0000_ollama_qwen3-coder-30b_session.json` |
+| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 31.65 | 3,464 | 2,742.9 | 58.5 | 2/2 | unavailable | pass | yes | `20261011T030953.200721+0000_ollama_ornith1-5-35b-a3b_session.json` |
 | Ollama `qwen3.6-35b-a3b` | 262,144 | 1 | 262,144 | 1x 15.55 | 6,842 | - | 65.8 | 2/2 | 515 / 93.4 | pass | yes | `20260927T135039.620033+0000_ollama_qwen3-6-35b-a3b_session.json` |
 | Ollama `qwen3.8-27b-native` | 262,144 | 1 | 262,144 | 1x 11.89 | 3,914 | 757.7 | 39.8 | 2/2 | unavailable | pass | yes | `20260927T224034.931906+0000_ollama_qwen3-8-27b-native_session.json` |
 | Ollama `glm4.7-flash` | 202,752 | 1 | 202,752 | 1x 7.54 | 4,489 | - | 36.7 | 2/2 | 656 / 103.8 | fail | yes | `20260927T211648.078334+0000_ollama_glm4-7-flash_session.json` |
 | Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 6.36 / 2x 6.43 | 5,783 | 639.0 | 17.8 | 8/9 | unavailable | pass | no | `20260927T152831.321226+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
 
-- Three profiles pass Capability Check v2 here: `qwen3.6-35b-a3b` (15.55
+- `ornith1.5-35b-a3b` runs on the 0.40.1 GGUF runtime, measured
+  2026-10-11 from fleet commit `ad06c70` (JSON under
+  `auditbench-trials/2026-10-10-v2-canonical/`). It is the fastest Ollama
+  profile that passes Capability Check v2 here, at 31.65 sessions/h.
+- Three more profiles pass Capability Check v2 here: `qwen3.6-35b-a3b` (15.55
   sessions/h), `qwen3.8-27b-native` (11.89) and
   `qwen3.8-flash-next-gguf-iq4xs`, whose run is unpublishable: one
   two-stream report ended on its own naming none of its 16 findings.

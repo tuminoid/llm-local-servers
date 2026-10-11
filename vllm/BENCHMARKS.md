@@ -19,48 +19,51 @@ remain, and the figures stay here and in git history.
 
 ## AuditBench v2: A100-SXM4-80GB
 
-sm_80, 81,920 MiB VRAM, vLLM 0.30.0, Transformers 5.15.1, serving-default
+sm_80, 81,920 MiB VRAM, vLLM 0.31.0, Transformers 5.15.1, serving-default
 cache pins. Canonical AuditBench v2 `session` profile (llm-audit-bench
-v2.0.0 plus the amendments released as v2.1.0; each JSON records its harness
-hash), run 2026-09-27 from fleet commit `d9ad1a7` at each conf's declared
-sampling. The harness measured 1 stream and the largest of 2/4/8 that fits
-admission and the KV pool: 16 tool steps from 32k evidence, report at about
-165k. Sessions/h is the median over 2-3 samples; complete counts sessions
-whose report ended on its own and named at least 7/8 of its findings.
-pp512/tg128 is the llama-bench-method reference (one stream, greedy, depth
-~0), not a serving result. JSON files are retained under
-`auditbench-trials/2026-09-27-v2-canonical/` on the host.
+2.1.0; each JSON records its harness hash), run 2026-10-10/11 from fleet
+commit `ad06c70` at each conf's declared sampling. The harness measured 1
+stream and the largest of 2/4/8 that fits admission and the KV pool: 16 tool
+steps from 32k evidence, report at about 165k. Sessions/h is the median over
+2-3 samples; complete counts sessions whose report ended on its own and
+named at least 7/8 of its findings. pp512/tg128 is the llama-bench-method
+reference (one stream, greedy, depth ~0), not a serving result. JSON files
+are retained under `auditbench-trials/2026-10-10-v2-canonical/` on the host.
+The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| vLLM `mimo-v2.6-9b-awq` | 262,144 | 8 | 2,229,526 | 1x 60.11 / 8x 96.99 | 3,141 | 5,108.2 | 108.9 | 22/27 | 8,127 / 173.5 | fail | no | `20260927T195429.218887+0000_vllm-cuda_mimo-v2-6-9b-awq_session.json` |
-| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,798,258 | 1x 41.19 / 8x 59.99 | 4,593 | 6,204.8 | 109.6 | 27/27 | 4,694 / 151.3 | pass | yes | `20260927T215956.262272+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json` |
-| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,909,420 | 1x 35.78 / 8x 46.14 | 1,604 | 2,113.7 | 63.4 | 27/27 | 10,101 / 176.6 | fail | yes | `20260927T190405.588725+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json` |
-| vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,456 | 1x 34.80 / 2x 42.40 | 1,985 | 2,230.4 | 60.7 | 6/6 | 8,364 / 146.1 | fail | yes | `20260927T171631.242715+0000_vllm-cuda_qwen3-coder-30b_session.json` |
-| vLLM `qwen3.8-27b` | 262,144 | 8 | 774,131 | 1x 12.35 / 4x 17.26 | 7,229 | 1,708.5 | 36.7 | 15/15 | 2,534 / 49.1 | pass | yes | `20260927T103444.464367+0000_vllm-cuda_qwen3-8-27b_session.json` |
-| vLLM `qwen3.8-27b-512k` | 524,288 | 8 | 780,606 | 1x 11.92 / 4x 19.70 | 7,863 | 1,717.9 | 36.7 | 10/10 | 2,569 / 49.2 | fail | yes | `20260927T202135.684820+0000_vllm-cuda_qwen3-8-27b-512k_session.json` |
-| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 523,527 | 1x 8.71 / 2x 13.45 | 7,703 | 1,726.7 | 22.9 | 9/9 | 2,484 / 105.7 | pass | yes | `20260927T114754.494400+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json` |
-| vLLM `glm4.7-flash-awq` | 202,752 | 8 | 1,054,976 | 1x 6.06 / 4x 12.27 | 18,282 | 1,705.0 | 35.9 | 9/15 | 5,064 / 103.8 | fail | no | `20260927T173434.506779+0000_vllm-cuda_glm4-7-flash-awq_session.json` |
+| vLLM `mimo-v2.6-9b-awq` | 262,144 | 8 | 2,229,526 | 1x 58.97 / 8x 93.99 | 3,263 | 5,032.5 | 109.1 | 16/27 | 7,663 / 175.5 | fail | no | `20261011T051029.048101+0000_vllm-cuda_mimo-v2-6-9b-awq_session.json` |
+| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,797,230 | 1x 38.49 / 8x 58.67 | 5,328 | 6,219.1 | 111.4 | 27/27 | 4,591 / 152.2 | pass | yes | `20261011T053833.661461+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json` |
+| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,909,862 | 1x 37.20 / 8x 45.99 | 1,388 | 2,116.0 | 63.6 | 27/27 | 9,441 / 176.1 | pass | yes | `20261011T003536.264070+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json` |
+| vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,312 | 1x 36.77 / 2x 38.83 | 1,658 | 2,233.6 | 60.6 | 6/6 | 8,070 / 145.1 | fail | yes | `20261011T031626.644130+0000_vllm-cuda_qwen3-coder-30b_session.json` |
+| vLLM `qwen3.8-27b-512k` | 524,288 | 8 | 779,829 | 1x 14.49 / 4x 19.55 | 5,654 | 1,718.9 | 36.7 | 15/15 | 2,519 / 49.3 | pass | yes | `20261011T014610.294573+0000_vllm-cuda_qwen3-8-27b-512k_session.json` |
+| vLLM `qwen3.8-27b` | 262,144 | 8 | 954,019 | 1x 11.83 / 4x 21.48 | 10,860 | 1,827.6 | 49.8 | 15/15 | 2,870 / 75.4 | pass | yes | `20261010T220419.237789+0000_vllm-cuda_qwen3-8-27b_session.json` |
+| vLLM `glm4.7-flash-awq` | 202,752 | 8 | 1,069,808 | 1x 11.17 / 4x 11.09 | 10,232 | 1,721.4 | 36.8 | 6/15 | 4,632 / 105.1 | fail | no | `20261011T033438.496415+0000_vllm-cuda_glm4-7-flash-awq_session.json` |
+| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 522,956 | 1x 8.40 / 2x 13.04 | 7,744 | 1,736.4 | 22.8 | 9/9 | 2,561 / 110.0 | pass | yes | `20261010T231305.575650+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json` |
 
-- `qwen3.6-35b-a3b-awq` is the fastest profile that passes Capability
-  Check v2: 41.19 sessions/h at one stream, 59.99 at eight, every session
-  complete.
-- DFlash 2 loses at the declared sampling. `qwen3.8-27b-dflash2` decodes
-  the reference 2.2x faster than plain (105.7 against 49.1 tok/s) and the
-  first turn 1.7x faster, but its report at about 165k decodes at 22.9
-  tok/s against plain's 36.7, and it delivers 8.71 sessions/h against
-  12.35. The ~1.25x depth lead recorded for 0.29.0 and 0.30.0 was greedy.
-  For audit serving, plain `qwen3.8-27b` wins.
-- `qwen3.8-27b-512k` matches plain qwen3.8 at one stream (11.92) and
-  reaches 19.70 at four; it fails Capability Check v2 on schema
-  enforcement only.
-- MiMo is the fastest profile (60.11 / 96.99) but 5 of 27 sessions did
+- Five of eight profiles pass Capability Check v2, against three on
+  0.30.0: `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` failed only on
+  json_schema `whitespace_runaway` and now pass with grammar whitespace
+  forbidden in their confs.
+- `qwen3.6-35b-a3b-awq` is the fastest profile that passes: 38.49
+  sessions/h at one stream and 58.67 at eight, every session complete.
+  The campaign's first run measured 41.50 / 59.00 but left one 8x session
+  incomplete (26/27, unpublishable); the row is the rerun. On 0.30.0 it
+  ran 41.19 / 59.99.
+- `qwen3.8-27b` now serves W4A16 (`dbirks/Qwen3.8-27B-W4A16-AutoRound`).
+  Against the FP8 0.30.0 row (12.35 / 17.26) it is 4% slower at one stream
+  and 24% faster at four (21.48); report decode rises from 36.7 to 49.8
+  tok/s and the KV pool from 774,131 to 954,019 tokens.
+  `qwen3.8-27b-512k` keeps FP8; its one-stream 14.49 is a single run
+  (10.62 to 11.92 in the same week's trials).
+- DFlash 2 still loses at the declared sampling: 8.40 / 13.04 sessions/h,
+  report decode 22.8 tok/s.
+- MiMo is the fastest profile (58.97 / 93.99) but 11 of 27 sessions did
   not finish their report's findings and it fails audit fitness, so
   neither its rate nor the model is usable.
-- GLM 4.7 Flash writes 18,282 output tokens per session, 3-6x the
-  others, and 6 of 15 sessions are incomplete.
-- `gemma4-26b-a4b-awq` and `qwen3-coder-30b` publish rates, but both fail
-  Capability Check v2; a rate cannot promote them.
+- GLM 4.7 Flash writes 10,232 output tokens per session and 9 of 15
+  sessions are incomplete; `qwen3-coder-30b` fails both tool-call checks.
 
 ## TL;DR: same-hardware comparisons
 

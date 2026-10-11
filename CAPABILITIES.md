@@ -231,27 +231,31 @@ in its model config.
 ## A100-SXM4-80GB campaign
 
 Host: shared A100 test host, reached over ssh through the `HOST` alias
-supplied by `.envrc`. Capability Check v2 (llm-audit-bench v2.0.0,
-`capability-v2`, SCHEMA_VERSION 5), run 2026-09-27 from fleet commit
-`d9ad1a7`: vLLM 0.30.0 with Transformers 5.15.1; Ollama 0.34.2 for
-`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs`, 0.32.14 for the
-rest. Audit fitness ran 4 samples per task at each conf's declared
-sampling and fails at 2 failed samples of 12. Reports are retained in the
-campaign evidence, `auditbench-trials/2026-09-27-v2-canonical/` on the
-host.
+supplied by `.envrc`. Capability Check v2 (`capability-v2`,
+SCHEMA_VERSION 5). The vLLM rows and Ollama `ornith1.5-35b-a3b` ran
+2026-10-10/11 from fleet commit `ad06c70` (llm-audit-bench 2.1.0): vLLM
+0.31.0 with Transformers 5.15.1, Ollama 0.40.1 for Ornith; reports under
+`auditbench-trials/2026-10-10-v2-canonical/` on the host. The other Ollama
+rows ran 2026-09-27 from `d9ad1a7` (llm-audit-bench v2.0.0) on Ollama
+0.34.2 for `qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs` and
+0.32.14 for the rest, pins unchanged since; reports under
+`auditbench-trials/2026-09-27-v2-canonical/`. Audit fitness ran 4 samples
+per task at each conf's declared sampling and fails at 2 failed samples
+of 12.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | pass 1/12 (incomplete 1) | fail |
-| vLLM | `glm4.7-flash-awq` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 7/12 (invented 3, missed_findings 3, wrong_verdicts 1) | fail |
-| vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 5/12 (invented 1, runaway 1, wrong_verdicts 3) | fail |
-| vLLM | `qwen3-coder-30b` | pass | pass | unsupported | fail | fail | not run | pass | valid | whitespace_runaway | fail 7/12 (invented 1, loop 2, missed_findings 3, runaway 1) | fail |
+| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (missed_findings 1) | pass |
+| vLLM | `glm4.7-flash-awq` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 4/12 (instruction 1, invented 1, missed_findings 2) | fail |
+| vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 7/12 (invented 2, no_reasoning 3, wrong_verdicts 2) | fail |
+| vLLM | `qwen3-coder-30b` | pass | pass | unsupported | fail | fail | not run | pass | valid | whitespace_runaway | fail 8/12 (invented 1, loop 1, missed_findings 4, runaway 2) | fail |
 | vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | pass 0/12 | fail |
+| vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | Ollama | `gemma4-26b` | pass | pass | pass | pass | pass | pass | pass | valid | truncated | fail 2/12 (incomplete 1, invented 1) | fail |
 | Ollama | `glm4.7-flash` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 6/12 (incomplete 1, invented 2, missed_findings 2, wrong_verdicts 1) | fail |
+| Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | Ollama | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | fail 8/12 (invented 1, loop 2, missed_findings 4, missed_required 1) | fail |
 | Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (invented 1) | pass |
 | Ollama | `qwen3.8-27b-native` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
@@ -262,19 +266,23 @@ model config.
 
 ### Findings
 
-- Six profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` and
-  `qwen3.8-27b-dflash2`, all with no failed fitness sample, and Ollama
+- Nine profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the
+  W4A16 checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (0/12 each)
+  and `gemma4-26b-a4b-awq` (1/12), and Ollama `ornith1.5-35b-a3b` (0/12),
   `qwen3.6-35b-a3b` (1/12), `qwen3.8-27b-native` (0/12) and
   `qwen3.8-flash-next-gguf-iq4xs` (0/12).
-- Audit fitness is what v1 could not see. GLM 4.7 Flash (6-7/12 on its
-  two runtimes), Ollama Qwen3 Coder (8/12) and MiMo (5/12: wrong triage
-  verdicts, one runaway) passed every v1 check and fail here; Coder's
-  failures are loops and missed findings on both runtimes. Gemma 4 26B on
-  Ollama fails at the limit (2/12).
-- `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` fail only schema
-  enforcement (`whitespace_runaway`, unchanged from v1), with audit
-  fitness passing. The 512k profile differs from `qwen3.8-27b` only by
-  static YaRN at factor 2.0.
+- Audit fitness is what v1 could not see. GLM 4.7 Flash (4/12 on vLLM
+  0.31.0, 6/12 on Ollama), Qwen3 Coder (8/12 on both runtimes) and MiMo
+  (7/12 on 0.31.0: no reasoning, invented findings, wrong triage verdicts)
+  passed every v1 check and fail here; Coder's failures are loops,
+  runaways and missed findings. Gemma 4 26B on Ollama fails at the limit
+  (2/12).
+- `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` failed only schema
+  enforcement (`whitespace_runaway`) through the 2026-09-27 campaign.
+  Their confs now forbid grammar whitespace
+  (`VLLM_STRUCTURED_OUTPUTS_CONFIG`, xgrammar), and both enforce the
+  schema and pass. The 512k profile keeps the FP8 weights and differs from
+  the former FP8 `qwen3.8-27b` only by static YaRN at factor 2.0.
 - Qwen3 Coder on vLLM still returns two calls for the one-call tool
   fixture under automatic tool choice; the same checkpoint passes both
   tool checks on Ollama.
@@ -284,8 +292,8 @@ model config.
   in its conf). `unaided` never gates.
 - `mimo-v2.6-9b-awq` runs on its fixed chat template
   (`VLLM_CHAT_TEMPLATE`); the API checks pass, audit fitness does not.
-- `qwen3.8-27b-dflash2` matches `qwen3.8-27b` check for check, so the
-  drafter changes no response semantics.
+- `qwen3.8-27b-dflash2` (FP8 target) passes check for check like the plain
+  profiles, so the drafter changes no response semantics.
 
 ## RTX PRO 3000 Blackwell campaign
 
