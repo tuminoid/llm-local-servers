@@ -76,10 +76,11 @@ in [README.md](README.md); shared server conventions live in
   default; q4 is an explicit experiment.
 - Qwen3.5 requires Ollama 0.17.1, Gemma 4 requires 0.30.5, Nemotron 3.5
   Lightning requires 0.32.9, Qwen3.8 requires 0.32.12, and the Qwen3.6
-  manifest declares no minimum. Its profile pins the managed 0.32.14 used for
-  validation. Update the root Makefile's version and all reviewed per-platform
-  GitHub asset digests (`OLLAMA_ARCHIVE_SHA256`, `_LINUX_ARM64`, `_DARWIN`,
-  from the release's `sha256sum.txt`) together.
+  manifest declares no minimum. Profiles run on the root Makefile's default
+  (0.40.3) unless their conf declares `OLLAMA_RUNTIME_VERSION`. Update a
+  runtime's version and all reviewed per-platform GitHub asset digests
+  (`OLLAMA_ARCHIVE_SHA256`, `_LINUX_ARM64`, `_DARWIN`, from the release's
+  `sha256sum.txt`) together.
 - The remote deploy (`ollama-remote-*` targets) rsyncs the repo's ollama/
   directory over `tmp/ollama/` with `--delete`, preserving only `runtime/`,
   `model-cache/`, and `state/`. Never stage import files or anything else
@@ -89,24 +90,25 @@ in [README.md](README.md); shared server conventions live in
 - `qwen3.8-flash-next-gguf-iq4xs` is the A100 Flash-Next profile
   (UD-IQ4_XS, 73 GB VRAM at 2 x 262,144 with q8_0 KV, locked to that
   shape -- llama.cpp has no fungible KV pool, so slots divide the
-  context partition statically). Remote lifecycle calls must pass
-  `OLLAMA_VERSION=0.34.2` at the make level: the remote fixed environment
-  resolves `OLLAMA_BIN` before the conf's `OLLAMA_RUNTIME_VERSION` can
-  apply; a forgotten override fails loudly at the version guard.
-- `ornith1.5-35b-a3b` declares `OLLAMA_RUNTIME_VERSION=0.40.1` and needs
-  `OLLAMA_VERSION=0.40.1` on remote lifecycle calls, as above. Keep every
-  other profile off 0.40.x until its pin is re-established there: on first
-  load of an older GGUF, 0.40.x rewrites the tag's manifest in the shared
-  store (a `llamacpp/` runner manifest plus new config and params), so the
-  digest pin stops matching for every runtime that shares the store. Back up
-  `manifests/` before a 0.40.x runtime touches a store. 0.40 also refuses a
-  relative `OLLAMA_MODELS`; start.sh makes it absolute.
-- `qwen3.8-flash-next-gguf-iq4xs` runs a split managed runtime: its conf
-  declares `OLLAMA_RUNTIME_VERSION=0.34.2` (the GGUF runtime; qwen4exp needs
-  llama.cpp >= b10760) which start.sh applies after the conf, as do the
-  qwen3.8-27b profiles; the other profiles stay on the fleet default. The
-  split is safe because GGUF manifests never dispatch to the MLX runner
-  whose memory runaway keeps the default at 0.32.14. The artifact is a
+  context partition statically).
+- A profile whose conf declares `OLLAMA_RUNTIME_VERSION` (`qwen3-coder-30b`
+  on 0.32.14 among the remote ones) needs the same `OLLAMA_VERSION` at the
+  make level on remote lifecycle calls: the remote fixed environment
+  resolves `OLLAMA_BIN` before the conf is read; a forgotten override fails
+  loudly at the version guard.
+- 0.40.x keeps a second model index, `manifests-v2/` (one symlink per tag
+  to its manifest, stored as a blob), beside `manifests/`, and prefers it.
+  0.40.1 rewrote older GGUF tags on first load (a `llamacpp/` runner
+  manifest plus new config and params), breaking digest pins in a shared
+  store; 0.40.3 kept every pin across its loads. A store 0.40.1 touched can
+  hold v2 links to blobs since removed: 0.40.3 then logs "bad manifest" and
+  drops the tag from `/api/tags`, so the adapter finds no entry. Move such a
+  dangling link aside (it is evidence, not data) and the tag lists again at
+  its legacy manifest. Back up `manifests/` and `manifests-v2/` before a new
+  0.40.x release touches a store. 0.40 also refuses a relative
+  `OLLAMA_MODELS`; start.sh makes it absolute.
+- `qwen3.8-flash-next-gguf-iq4xs` needs llama.cpp >= b10760 (qwen4exp),
+  hence `OLLAMA_MIN_VERSION=0.33.3`. The artifact is a
   LOCAL `ollama create` import, not a registry pull -- pull.sh refuses
   profiles with `OLLAMA_LOCAL_IMPORT=1` -- and its import recipe (real-file
   staging dir, mandatory `use_mmap false`, orphaned shard-upload blob

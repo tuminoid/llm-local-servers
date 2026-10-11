@@ -154,9 +154,8 @@ proves nothing about parser compatibility.
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
 - Ollama: `qwen3-coder-30b`, `glm4.7-flash`, `qwen3.6-35b-a3b`,
   `qwen3.8-27b-native`, `gemma4-26b`, `qwen3.8-flash-next-gguf-iq4xs`,
-  `ornith1.5-35b-a3b` (the two qwen3.8 profiles need
-  `OLLAMA_VERSION=0.34.2` and Ornith `OLLAMA_VERSION=0.40.1` on every
-  remote lifecycle target)
+  `ornith1.5-35b-a3b` (`qwen3-coder-30b` needs `OLLAMA_VERSION=0.32.14`
+  on every remote lifecycle target)
 
 ## Apple M5 Max campaign
 

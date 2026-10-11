@@ -124,39 +124,30 @@ LMSTUDIO_MLX_ENGINE_VERSION ?= 1.11.0
 export LMSTUDIO_VERSION LMSTUDIO_SPLASH_ENGINE_VERSION LMSTUDIO_MLX_ENGINE_VERSION
 
 OLLAMA_DIR := ollama
-# Two managed Ollama runtimes, both reviewed releases with per-platform
-# archive digests from the release's sha256sum.txt (OLLAMA_ARCHIVE_SHA256 is
+# Managed Ollama runtimes, all reviewed releases with per-platform archive
+# digests from the release's sha256sum.txt (OLLAMA_ARCHIVE_SHA256 is
 # ollama-linux-amd64.tar.zst for the A100, _LINUX_ARM64 the arm64 build,
 # _DARWIN the universal ollama-darwin.tgz); ollama-install refuses an
 # unverified archive.
-# Default 0.32.14: the only release whose MLX runner survives the
-# post-prefill commit memory runaway on safetensors profiles (0.33.2,
-# 0.33.3 and 0.34.2 each fail harder; 0.34.2 hard-reset the M5 inside the
-# first conversation). Retest only on a release whose notes name the MLX
-# runner's post-prefill commit or trie memory bound.
-OLLAMA_VERSION ?= 0.32.14
-OLLAMA_ARCHIVE_SHA256 ?= c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f
-OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 7802b739fbdc74df556600f1619f86457b69dce913301cf2d91f7f9d7f7a41b8
-OLLAMA_ARCHIVE_SHA256_DARWIN ?= c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3500366942dc50cd1
-# GGUF runtime 0.34.2 (llama.cpp b10969), selected per profile through
-# OLLAMA_RUNTIME_VERSION in the conf; GGUF never dispatches to the MLX
-# runner. Profiles on it: qwen3.8-27b, qwen3.8-27b-native and
-# qwen3.8-flash-next-gguf-iq4xs. Not qwen3.6-35b-a3b or qwen3-coder-30b (protocol regressions
-# at 0.34.2: coder emits duplicate streaming tool calls, qwen3.6 drops out
-# of the conversation profile). Install with
-#   make ollama-install OLLAMA_VERSION=0.34.2 \
-#     OLLAMA_ARCHIVE_SHA256_DARWIN=f33b2a5aa59bc6c961ed3ec23ba9dc646ca6d99ced8d2a0d46eb3a522167dd3f \
-#     OLLAMA_ARCHIVE_SHA256=e155b83589986d2c581fdbf1381ea3ebdb16549883679cd5a0627f7cdc05b12b \
-#     OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=8edcfe99eb7546d9422cfa8297d341dcd50e090e192ce1a8092a6ab6d182867b
-# GGUF runtime 0.40.1, the same per-profile way: ornith1.5-35b-a3b. Not a
-# default for anything else: on first load of an older GGUF it rewrites the
-# tag's manifest in the shared store (local compat migration), breaking that
-# profile's digest pin, and qwen3-coder-30b's tool calls regress on it.
-# Install with
-#   make ollama-install OLLAMA_VERSION=0.40.1 \
-#     OLLAMA_ARCHIVE_SHA256_DARWIN=66e1587711f3a06315b23782ba74897001da6c8b8edf6c0371f7533015a076dd \
-#     OLLAMA_ARCHIVE_SHA256=a7aebbe3dd76ccf1351a56a3e57218ad4863cb5f9a9938c58de87a37555e355d \
-#     OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=f5cbd9a97e0de9502ef928cb993f6d16468e25be6d55a8529d7fd2b67a130bcb
+# Default 0.40.3. On the A100 and RTX every GGUF profile keeps its digest pin
+# on it and passes Capability Check v2 where it passed on 0.32.14 or 0.34.2
+# (2026-10-11), except qwen3-coder-30b. 0.40.x keeps a second model index,
+# manifests-v2/; 0.40.1's local compat migration rewrote older GGUF tags
+# there, which 0.40.3 no longer does on load (ollama/AGENTS.md).
+OLLAMA_VERSION ?= 0.40.3
+OLLAMA_ARCHIVE_SHA256 ?= ce6f8b671a699bf1ebafb28d60dbbabf4f37b30b499145fa308a8ba72de021d6
+OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 5754700747a93ea14db88888f08072386d2da6fbf7dd75be19a684348b9f28b8
+OLLAMA_ARCHIVE_SHA256_DARWIN ?= a2d1d906a2c8febd9cb18f5c183854d0a6db5dc522940d68b0c0ed048e8dfdea
+# Runtime 0.32.14, selected per profile through OLLAMA_RUNTIME_VERSION in the
+# conf: the M5's MLX (safetensors) profiles, whose MLX runner survives the
+# post-prefill commit memory runaway only here (0.33.2, 0.33.3 and 0.34.2
+# each fail harder; 0.34.2 hard-reset the M5 inside the first conversation;
+# 0.40.x is unproven there), and qwen3-coder-30b, whose tool calls come back
+# duplicated on 0.40.x. Install with
+#   make ollama-install OLLAMA_VERSION=0.32.14 \
+#     OLLAMA_ARCHIVE_SHA256_DARWIN=c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3500366942dc50cd1 \
+#     OLLAMA_ARCHIVE_SHA256=c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f \
+#     OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=7802b739fbdc74df556600f1619f86457b69dce913301cf2d91f7f9d7f7a41b8
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0

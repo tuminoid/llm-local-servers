@@ -27,21 +27,21 @@ GGUF tags keep using llama.cpp. The MLX profiles are named for the artifact
 with an `-mlx` suffix. On the M5, Qwen3.6 and Qwen3.8 are served by Splash,
 not Ollama.
 
+The fleet default runtime is 0.40.3. Profiles that need another release
+declare it per profile with `OLLAMA_RUNTIME_VERSION`: the M5's MLX profiles
+and `qwen3-coder-30b` stay on 0.32.14 (the MLX runner's memory runaway and
+coder's duplicated tool calls on 0.40.x); remote lifecycle calls for such a
+profile also pass its `OLLAMA_VERSION` at the make level.
+
 `qwen3.8-flash-next-gguf-iq4xs` (Qwen3.8-Flash-Next 125B-A6B, locally
 imported UD-IQ4_XS GGUF sized for the A100's 80 GB, locked to 2 x 262,144
-with q8_0 KV) runs a split managed runtime: it needs a qwen4exp-capable
-llama.cpp (Ollama 0.33.3 or later) and declares
-`OLLAMA_RUNTIME_VERSION=0.34.2` in its conf, while the fleet default stays
-0.32.14; remote lifecycle calls additionally pass `OLLAMA_VERSION=0.34.2` at
-the make level. GGUF manifests dispatch to the llama.cpp runner only, so the
-MLX runaway behind the default pin does not apply to it. On the M5 the model
-is served by ds4. The model is imported
+with q8_0 KV) needs a qwen4exp-capable llama.cpp, Ollama 0.33.3 or newer.
+On the M5 the model is served by ds4. The model is imported
 with `ollama create`, never pulled (`make ollama-pull` refuses it); the
 import recipe and the mandatory `use_mmap false` are documented in the
-conf, and the measured 2 x 262,144 q8_0-KV operating point in
-[BENCHMARKS.md](BENCHMARKS.md). Install the secondary
-runtime with the reviewed digests recorded beside the pin in the root
-Makefile.
+conf, and the measured operating point in [BENCHMARKS.md](BENCHMARKS.md).
+Install a per-profile runtime with the reviewed digests recorded beside it in
+the root Makefile.
 
 The 0.32.14 MLX runner serializes requests through a single slot and keeps
 its KV cache at model precision. `OLLAMA_NUM_PARALLEL`,
@@ -80,7 +80,7 @@ writable runtime path or port:
 | Resource | Remote Ollama value |
 | -- | -- |
 | Deployed scripts | `tmp/ollama/` |
-| Pinned binary | `tmp/ollama/runtime/v0.32.14/bin/ollama` |
+| Pinned binary | `tmp/ollama/runtime/v<OLLAMA_VERSION>/bin/ollama` (default 0.40.3) |
 | Model cache | `tmp/ollama/model-cache/` |
 | Pidfile, log, GPU baseline | `tmp/ollama/state/` |
 | Remote API | `127.0.0.1:11435` |
