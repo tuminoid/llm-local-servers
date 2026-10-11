@@ -21,19 +21,17 @@ git history.
 
 ## AuditBench v2: A100-SXM4-80GB
 
-Isolated remote Ollama, Flash Attention, q8 KV; 0.34.2 for
-`qwen3.8-27b-native` and `qwen3.8-flash-next-gguf-iq4xs`, 0.40.1 for
-`ornith1.5-35b-a3b`, 0.32.14 for the rest. Canonical AuditBench v2
-`session` profile (llm-audit-bench v2.0.0 plus the amendments released as
-v2.1.0; each JSON records its harness hash), run 2026-09-27 from fleet
-commit `d9ad1a7` (Ornith: see below) at each conf's declared sampling. The
-harness measured 1 stream and the largest of 2/4/8 that fits admission and
-the KV pool: 16 tool steps from 32k evidence, report at about 165k.
+Isolated remote Ollama, Flash Attention, q8 KV; 0.40.3 for every profile
+except `qwen3-coder-30b` on 0.32.14. Canonical AuditBench v2 `session`
+profile (llm-audit-bench 2.1.0; each JSON records its harness hash), run
+2026-10-11 from fleet commit `98e4052` at each conf's declared sampling.
+The harness measured 1 stream and the largest of 2/4/8 that fits admission
+and the KV pool: 16 tool steps from 32k evidence, report at about 165k.
 Sessions/h is the median over 2-3 samples; complete counts sessions whose
 report ended on its own and named at least 7/8 of its findings. pp512/tg128
 is the llama-bench-method reference (one stream, greedy, depth ~0), not a
 serving result. JSON files are retained under
-`auditbench-trials/2026-09-27-v2-canonical/` on the host. Slots are the
+`auditbench-trials/2026-10-11-ollama-canonical/` on the host. Slots are the
 conf's `OLLAMA_NUM_PARALLEL`: one everywhere except flash-next's two. The KV
 column is configured context times slots, not a measured pool. Ollama has no
 `ignore_eos`, so the reference is unavailable where the model stopped before
@@ -42,26 +40,28 @@ tokens.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `gemma4-26b` | 262,144 | 1 | 262,144 | 1x 17.93 | 8,593 | - | 77.8 | 2/3 | unavailable | fail | no | `20260927T214127.278720+0000_ollama_gemma4-26b_session.json` |
-| Ollama `qwen3-coder-30b` | 262,144 | 1 | 262,144 | 1x 17.58 | 1,978 | - | 18.1 | 2/2 | unavailable | fail | yes | `20260927T210532.581384+0000_ollama_qwen3-coder-30b_session.json` |
-| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 31.65 | 3,464 | 2,742.9 | 58.5 | 2/2 | unavailable | pass | yes | `20261011T030953.200721+0000_ollama_ornith1-5-35b-a3b_session.json` |
-| Ollama `qwen3.6-35b-a3b` | 262,144 | 1 | 262,144 | 1x 15.55 | 6,842 | - | 65.8 | 2/2 | 515 / 93.4 | pass | yes | `20260927T135039.620033+0000_ollama_qwen3-6-35b-a3b_session.json` |
-| Ollama `qwen3.8-27b-native` | 262,144 | 1 | 262,144 | 1x 11.89 | 3,914 | 757.7 | 39.8 | 2/2 | unavailable | pass | yes | `20260927T224034.931906+0000_ollama_qwen3-8-27b-native_session.json` |
-| Ollama `glm4.7-flash` | 202,752 | 1 | 202,752 | 1x 7.54 | 4,489 | - | 36.7 | 2/2 | 656 / 103.8 | fail | yes | `20260927T211648.078334+0000_ollama_glm4-7-flash_session.json` |
-| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 6.36 / 2x 6.43 | 5,783 | 639.0 | 17.8 | 8/9 | unavailable | pass | no | `20260927T152831.321226+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
+| Ollama `gemma4-26b` | 262,144 | 1 | 262,144 | 1x 14.18 | 13,876 | 2,048.2 | 77.6 | 2/3 | unavailable | pass | no | `20261011T183519.907677+0000_ollama_gemma4-26b_session.json` |
+| Ollama `qwen3-coder-30b` | 262,144 | 1 | 262,144 | 1x 18.51 | 1,703 | - | 18.1 | 2/2 | unavailable | fail | yes | `20261011T213025.516563+0000_ollama_qwen3-coder-30b_session.json` |
+| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 27.77 | 4,357.5 | 2,711.6 | 58.3 | 2/2 | unavailable | pass | yes | `20261011T181437.335690+0000_ollama_ornith1-5-35b-a3b_session.json` |
+| Ollama `qwen3.6-35b-a3b` | 262,144 | 1 | 262,144 | 1x 18.06 | 5,449 | 2,209.6 | 75.6 | 3/3 | 1,566 / 107.2 | pass | yes | `20261011T173950.452849+0000_ollama_qwen3-6-35b-a3b_session.json` |
+| Ollama `qwen3.8-27b-native` | 262,144 | 1 | 262,144 | 1x 11.24 | 4,735.5 | 776.4 | 39.5 | 2/2 | unavailable | pass | yes | `20261011T190151.364043+0000_ollama_qwen3-8-27b-native_session.json` |
+| Ollama `glm4.7-flash` | 202,752 | 1 | 202,752 | 1x 7.37 | 6,580.5 | 488.9 | 38.9 | 2/2 | 2,685 / 109.7 | fail | yes | `20261011T210622.723853+0000_ollama_glm4-7-flash_session.json` |
+| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 7.98 / 2x 8.68 | 6,073.5 | 694.8 | 25.8 | 6/6 | unavailable | pass | yes | `20261011T195249.035872+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
 
-- `ornith1.5-35b-a3b` runs on the 0.40.1 GGUF runtime, measured
-  2026-10-11 from fleet commit `ad06c70` (JSON under
-  `auditbench-trials/2026-10-10-v2-canonical/`). It is the fastest Ollama
-  profile that passes Capability Check v2 here, at 31.65 sessions/h.
-- Three more profiles pass Capability Check v2 here: `qwen3.6-35b-a3b` (15.55
-  sessions/h), `qwen3.8-27b-native` (11.89) and
-  `qwen3.8-flash-next-gguf-iq4xs`, whose run is unpublishable: one
-  two-stream report ended on its own naming none of its 16 findings.
-- `qwen3-coder-30b`, `gemma4-26b` and `glm4.7-flash` fail Capability Check
-  v2. They ran at one slot, the conf default; v1 measured them at 4, 8
-  and 8 slots set at start, so their v2 rates are not their v1 operating
-  points.
+- `ornith1.5-35b-a3b` is the fastest Ollama profile that passes Capability
+  Check v2 here, at 27.77 sessions/h; on 0.40.1 (2026-10-11, `ad06c70`) it
+  measured 31.65 with 3,464 output tokens per session against 4,357.5 now.
+- Five profiles pass Capability Check v2: `ornith1.5-35b-a3b`,
+  `qwen3.6-35b-a3b` (18.06 sessions/h, 15.55 on 0.32.14),
+  `qwen3.8-27b-native` (11.24, 11.89 on 0.34.2),
+  `qwen3.8-flash-next-gguf-iq4xs` (7.98 at one stream and 8.68 at two,
+  6.36 / 6.43 and unpublishable on 0.34.2) and `gemma4-26b`, which failed
+  the gate on 0.32.14 and passes on 0.40.3; its run is unpublishable: one
+  of three reports did not end on its own.
+- `qwen3-coder-30b` stays on 0.32.14 (0.40.x returns duplicate tool
+  calls) and `glm4.7-flash` fails audit fitness; both publish rates that
+  cannot promote them. Every profile ran at one slot except flash-next, the
+  conf defaults.
 
 ## AuditBench v2: Apple M5 Max
 

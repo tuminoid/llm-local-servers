@@ -173,15 +173,16 @@ Capability Check v2 and are publishable:
 | --: | -- | -- | --: | --: | --: |
 | 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | 38.49 | 58.67 @8x | 111.4 |
 | 2 | vLLM `gemma4-26b-a4b-awq` | MoE | 37.20 | 45.99 @8x | 63.6 |
-| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 31.65 | -- | 58.5 |
-| 4 | Ollama `qwen3.6-35b-a3b` GGUF | MoE | 15.55 | -- | 65.8 |
+| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 27.77 | -- | 58.3 |
+| 4 | Ollama `qwen3.6-35b-a3b` GGUF | MoE | 18.06 | -- | 75.6 |
 | 5 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 36.7 |
-| 6 | Ollama `qwen3.8-27b-native` | dense | 11.89 | -- | 39.8 |
-| 7 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 49.8 |
+| 6 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 49.8 |
+| 7 | Ollama `qwen3.8-27b-native` | dense | 11.24 | -- | 39.5 |
 | 8 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 22.8 |
+| 9 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 7.98 | 8.68 @2x | 25.8 |
 
 Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and `glm4.7-flash-awq`,
-Ollama `gemma4-26b` and `qwen3.8-flash-next-gguf-iq4xs` are unpublishable
+and Ollama `gemma4-26b` (14.18/h, passes the gate) are unpublishable
 (incomplete sessions); vLLM `qwen3-coder-30b`, and Ollama `qwen3-coder-30b`
 and `glm4.7-flash` publish rates but fail Capability Check v2. DFlash 2
 loses to plain qwen3.8 at sampling; see [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
@@ -220,8 +221,7 @@ qwen3.5-4b stacks and the CPU-assisted qwen3.6.
 ### A100-SXM4-80GB
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.34.2 for qwen3.8-27b-native and flash-next, 0.40.1 for
-ornith1.5-35b-a3b and 0.32.14 for the rest. The AuditBench v2 table with
+isolated Ollama 0.40.3, 0.32.14 for qwen3-coder-30b. The AuditBench v2 table with
 context, slots, KV pool, completion, the pp512/tg128 reference and the
 retained JSON names is in
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
