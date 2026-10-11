@@ -1,9 +1,10 @@
 # vLLM-Metal benchmark results
 
 Measured baselines for the script-managed vLLM-Metal server on Apple
-Silicon. The cross-runtime summary is [../README.md](../README.md); the
-same-host Ollama MLX baselines are in
-[../ollama/BENCHMARKS.md](../ollama/BENCHMARKS.md).
+Silicon. The cross-runtime summary is [../README.md](../README.md). The
+Ollama MLX Qwen figures cited in the v1 sections below come from the NVFP4
+profiles dropped from the M5 on 2026-10-11; their records are in
+`ollama/BENCHMARKS.md` at commit `585842b`.
 
 The AuditBench v1 sections below (operating-point, conversation, replay,
 and concurrent-replay profiles) are
@@ -589,7 +590,8 @@ all verified on this checkpoint.
 
 No MLX conversion of the registry-only `-coding` variant exists (the
 official HF Qwen org never released one), so the base checkpoint is the
-vLLM-Metal profile; the coding variant remains Ollama-only.
+vLLM-Metal profile; the coding variant has had no M5 profile since the
+Ollama one was dropped.
 
 ### NVFP4 checkpoints do not load
 

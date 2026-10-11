@@ -22,21 +22,20 @@ NAX kernels that the official archive uses.
 
 Runner selection is an artifact fact, not a host or env setting: a registry
 tag whose manifest is `model_format: safetensors` (for example
-`qwen3.6:35b-a3b-coding-nvfp4`) is dispatched to the MLX runner, while GGUF
-tags keep using llama.cpp. The MLX profiles are named for the artifact:
-`qwen3.6-35b-a3b-coding-mlx-nvfp4` and `qwen3.8-27b-mlx-nvfp4`. The existing
-GGUF profiles are unchanged and remain valid on this host for same-bytes
-comparisons.
+`nemotron-3.5-lightning:30b-a3b-mlx`) is dispatched to the MLX runner, while
+GGUF tags keep using llama.cpp. The MLX profiles are named for the artifact
+with an `-mlx` suffix. On the M5, Qwen3.6 and Qwen3.8 are served by Splash,
+not Ollama.
 
-Two profiles run a split managed runtime: `qwen3.8-flash-next-gguf`
-(125B-A6B, locally imported UD-Q4_K_XL GGUF, M5) and its A100 sibling
-`qwen3.8-flash-next-gguf-iq4xs` (UD-IQ4_XS sized for the 80 GB card,
-locked to 2 x 262,144 with q8_0 KV; remote lifecycle calls additionally
-pass `OLLAMA_VERSION=0.33.3` at the make level). Both need the
-qwen4exp-capable llama.cpp vendored in Ollama 0.33.3 and declare
-`OLLAMA_RUNTIME_VERSION=0.33.3` in their confs, while the fleet default
-stays 0.32.14. GGUF manifests dispatch to the llama.cpp runner only, so the MLX
-runaway behind the default pin does not apply to it. The model is imported
+`qwen3.8-flash-next-gguf-iq4xs` (Qwen3.8-Flash-Next 125B-A6B, locally
+imported UD-IQ4_XS GGUF sized for the A100's 80 GB, locked to 2 x 262,144
+with q8_0 KV) runs a split managed runtime: it needs a qwen4exp-capable
+llama.cpp (Ollama 0.33.3 or later) and declares
+`OLLAMA_RUNTIME_VERSION=0.34.2` in its conf, while the fleet default stays
+0.32.14; remote lifecycle calls additionally pass `OLLAMA_VERSION=0.34.2` at
+the make level. GGUF manifests dispatch to the llama.cpp runner only, so the
+MLX runaway behind the default pin does not apply to it. On the M5 the model
+is served by ds4. The model is imported
 with `ollama create`, never pulled (`make ollama-pull` refuses it); the
 import recipe and the mandatory `use_mmap false` are documented in the
 conf, and the measured 2 x 262,144 q8_0-KV operating point in

@@ -86,9 +86,9 @@ in [README.md](README.md); shared server conventions live in
   inside `tmp/ollama/` -- a staged 87 GiB GGUF download was silently deleted
   by the next deploy. Stage local-import sources in the remote home
   directory instead.
-- `qwen3.8-flash-next-gguf-iq4xs` is the A100 sibling of the flash-next
-  profile (UD-IQ4_XS, 73 GB VRAM at 2 x 262,144 with q8_0 KV, locked to
-  that shape -- llama.cpp has no fungible KV pool, so slots divide the
+- `qwen3.8-flash-next-gguf-iq4xs` is the A100 Flash-Next profile
+  (UD-IQ4_XS, 73 GB VRAM at 2 x 262,144 with q8_0 KV, locked to that
+  shape -- llama.cpp has no fungible KV pool, so slots divide the
   context partition statically). Remote lifecycle calls must pass
   `OLLAMA_VERSION=0.34.2` at the make level: the remote fixed environment
   resolves `OLLAMA_BIN` before the conf's `OLLAMA_RUNTIME_VERSION` can
@@ -101,8 +101,8 @@ in [README.md](README.md); shared server conventions live in
   digest pin stops matching for every runtime that shares the store. Back up
   `manifests/` before a 0.40.x runtime touches a store. 0.40 also refuses a
   relative `OLLAMA_MODELS`; start.sh makes it absolute.
-- `qwen3.8-flash-next-gguf` runs a split managed runtime: its conf declares
-  `OLLAMA_RUNTIME_VERSION=0.34.2` (the GGUF runtime; qwen4exp needs
+- `qwen3.8-flash-next-gguf-iq4xs` runs a split managed runtime: its conf
+  declares `OLLAMA_RUNTIME_VERSION=0.34.2` (the GGUF runtime; qwen4exp needs
   llama.cpp >= b10760) which start.sh applies after the conf, as do the
   qwen3.8-27b profiles; the other profiles stay on the fleet default. The
   split is safe because GGUF manifests never dispatch to the MLX runner
@@ -111,11 +111,9 @@ in [README.md](README.md); shared server conventions live in
   profiles with `OLLAMA_LOCAL_IMPORT=1` -- and its import recipe (real-file
   staging dir, mandatory `use_mmap false`, orphaned shard-upload blob
   cleanup) lives in the conf comments. Serving
-  default is two full 262,144 slots with q8_0 KV, gated by needle-exact
-  retrieval at 131k/246k at f16 rate parity; qwen4exp has no one-slot
+  default is two full 262,144 slots with q8_0 KV; qwen4exp has no one-slot
   architecture guard and two-slot decode batching is real, but cold deep
-  prefills serialize across slots. f16 KV at this shape leaves the host
-  ~10-14 GiB available and is not the default for that reason.
+  prefills serialize across slots.
 - The macOS install extracts the flat universal `ollama-darwin.tgz` into
   `lib/ollama/` and moves the CLI to `bin/ollama`, recreating the Linux
   layout. The binary resolves its bundled MLX and llama.cpp runtimes from
@@ -124,8 +122,7 @@ in [README.md](README.md); shared server conventions live in
   measured baseline: an M5 report showed it missing NAX kernels.
 - Runner dispatch is decided by the artifact: a `model_format: safetensors`
   manifest takes the MLX runner, GGUF takes llama.cpp. There is no env
-  switch. MLX profiles are named for the artifact
-  (`qwen3.6-35b-a3b-coding-mlx-nvfp4`, `qwen3.8-27b-mlx-nvfp4`) and never
+  switch. MLX profiles are named for the artifact (`-mlx` suffix) and never
   replace the GGUF profiles.
 - The 0.32.14 MLX runner serializes requests through one slot and ignores
   `OLLAMA_NUM_PARALLEL`, `OLLAMA_KV_CACHE_TYPE`, and
@@ -133,17 +130,13 @@ in [README.md](README.md); shared server conventions live in
   `OLLAMA_KV_CACHE_TYPE=mlx-native`, which start.sh accepts as documentation
   and does not export. Do not report queued MLX requests as concurrency; the
   benchmark's effective-runner check treats MLX as one slot.
-- MLX NVFP4 context maxima are measured per model and never copied between
-  models: Qwen3.6 35B-A3B coding runs its native
-  `OLLAMA_CONTEXT_LENGTH=262144` (246,096-token proof, 48.62 GiB MLX peak);
-  Qwen3.8 is capped at 184320 (173,041-token proof, 92.78 GiB peak, ~123 GB
-  system-wide -- no headroom above). Qwen3.8 at native 262,144 exhausted the
-  M5 Max's 128 GB unified memory ~192k tokens into a 246k prefill and
-  hard-reset the machine: the MLX runner wires only the model
+- MLX context maxima are measured per model and digest and never copied
+  between models. A Qwen3.8 NVFP4 profile (since dropped) at native 262,144
+  exhausted the M5 Max's 128 GB unified memory ~192k tokens into a 246k
+  prefill and hard-reset the machine: the MLX runner wires only the model
   and nothing bounds KV growth before the OS dies. Raising any MLX context
-  is a supervised experiment with a memory watchdog, never a config default,
-  and Qwen3.8 near its ceiling needs an otherwise quiet host (override down
-  to 131,072 beside memory-heavy work).
+  is a supervised experiment with a memory watchdog, never a config
+  default.
 - On hosts without `nvidia-smi`, teardown proof is the verified-empty
   process group: unified memory is owned by the group, and there is no
   separate VRAM counter. status.sh reports `footprint` phys footprints per

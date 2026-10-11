@@ -140,8 +140,8 @@ OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 7802b739fbdc74df556600f1619f86457b69dce9133
 OLLAMA_ARCHIVE_SHA256_DARWIN ?= c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3500366942dc50cd1
 # GGUF runtime 0.34.2 (llama.cpp b10969), selected per profile through
 # OLLAMA_RUNTIME_VERSION in the conf; GGUF never dispatches to the MLX
-# runner. Profiles on it: qwen3.8-27b, qwen3.8-27b-native, both flash-next
-# GGUF confs. Not qwen3.6-35b-a3b or qwen3-coder-30b (protocol regressions
+# runner. Profiles on it: qwen3.8-27b, qwen3.8-27b-native and
+# qwen3.8-flash-next-gguf-iq4xs. Not qwen3.6-35b-a3b or qwen3-coder-30b (protocol regressions
 # at 0.34.2: coder emits duplicate streaming tool calls, qwen3.6 drops out
 # of the conversation profile). Install with
 #   make ollama-install OLLAMA_VERSION=0.34.2 \

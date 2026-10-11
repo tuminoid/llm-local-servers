@@ -198,17 +198,15 @@ pass Capability Check v2 and are publishable:
 | --: | -- | -- | --: | --: | --: | --: |
 | 1 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 53.5 |
 | 2 | Splash `qwen3.8-27b` | dense | 262,144 | 7.70 | 7.53 @4x | 55.0 |
-| 3 | Ollama `qwen3.8-27b` GGUF | dense | 131,072 | 5.55 | -- | 15.8 |
-| 4 | Ollama `qwen3.8-flash-next-gguf` (125B-A6B) | MoE | 262,144 | 5.02 | 4.73 @2x | 17.2 |
-| 5 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 1.78 | 2.08 @2x | 4.9 |
+| 3 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 1.78 | 2.08 @2x | 4.9 |
 
 Unranked: Splash `qwen3.6-35b-a3b` (19.77/h) and vLLM-Metal
 `ornith1.5-35b-a3b-4bit` (5.23/h) pass the gate but their runs are
 unpublishable (incomplete sessions). The vLLM-Metal qwen3.6, qwen3.8,
 MiMo, nemotron and gemma4 profiles, LM Studio `qwen3.6-35b-a3b-splash`
 and both MLX-engine profiles, and every Ollama MLX profile fail
-Capability Check v2; the Ollama MLX rates (qwen3.6 NVFP4 23.60/h at
-131k) cannot promote them. Details are in each runtime's BENCHMARKS.md.
+Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)
+cannot promote them. Details are in each runtime's BENCHMARKS.md.
 
 RTX PRO 3000:
 

@@ -12,7 +12,7 @@ v2](https://github.com/tuminoid/llm-audit-bench); every later section is
 AuditBench v1 or older history, never comparable with v2. The RTX PRO 3000
 and later A100 rows use canonical AuditBench v1. The Apple operating-point
 tables use the retired runtime-specific harness; the Apple AuditBench v1
-sections (Nemotron, the qwen3.6 NVFP4 pair, and the conversation profile)
+sections (Nemotron and the conversation profile)
 are canonical and dated per section. Retired A100 measurements remain
 clearly separated later in this file and must not be combined with canonical
 rates. Their top-level retained JSON on the M5 and A100 was removed on
@@ -66,9 +66,8 @@ tokens.
 ## AuditBench v2: Apple M5 Max
 
 Managed Ollama 0.32.14 for the MLX profiles (the runner serializes requests
-to one slot) and 0.34.2 for the GGUF profiles, Flash Attention, q8 KV on
-GGUF. Contexts are the confs': 131,072 for qwen3.6/qwen3.8/Glimmer MLX and
-the GGUF qwen3.8, 262,144 for nemotron MLX and flash-next. Canonical
+to one slot). Contexts are the confs': 131,072 for Glimmer and 262,144 for
+nemotron. Canonical
 AuditBench v2 `session` profile (llm-audit-bench v2.0.0 plus the amendments
 released as v2.1.0; each JSON records its harness hash), run 2026-09-27 to
 2026-09-29 on the M5 Max (128 GB, macOS 27.0) from fleet commit `bee4a24` at
@@ -83,21 +82,14 @@ serving result. JSON files are retained under
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `qwen3.6-35b-a3b-coding-mlx-nvfp4` | 131,072 | 1 | 131,072 | 1x 24.28 | 3,008 | - | 73.8 | 2/2 | 2,598 / 128.3 | fail | yes | `20260929T180722.323977+0000_ollama_qwen3-6-35b-a3b-coding-mlx-nvfp4_session.json` |
-| Ollama `qwen3.6-35b-a3b-mlx-nvfp4` | 131,072 | 1 | 131,072 | 1x 23.60 | 3,222 | - | 81.4 | 2/2 | 2,362 / 159.0 | fail | yes | `20260929T180020.740142+0000_ollama_qwen3-6-35b-a3b-mlx-nvfp4_session.json` |
 | Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 21.12 | 9,913 | - | 86.7 | 2/2 | 2,647 / 157.0 | fail | yes | `20260929T184051.620932+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
 | Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 18.45 | 1,504 | - | 34.8 | 2/2 | unavailable | fail | yes | `20260929T183047.934174+0000_ollama_muse-glimmer-30b-mlx_session.json` |
-| Ollama `qwen3.8-27b-mlx-nvfp4` | 131,072 | 1 | 131,072 | 1x 10.63 | 3,334 | - | 31.2 | 2/2 | unavailable | fail | yes | `20260929T181413.771446+0000_ollama_qwen3-8-27b-mlx-nvfp4_session.json` |
-| Ollama `qwen3.8-27b` | 131,072 | 1 | 131,072 | 1x 5.55 | 3,408 | 231.5 | 15.8 | 3/3 | unavailable | pass | yes | `20260928T070506.810639+0000_ollama_qwen3-8-27b_session.json` |
-| Ollama `qwen3.8-flash-next-gguf` | 262,144 | 2 | 524,288 | 1x 5.02 / 2x 4.73 | 5,970 | 412.0 | 17.2 | 9/9 | unavailable | pass | yes | `20260928T083512.146087+0000_ollama_qwen3-8-flash-next-gguf_session.json` |
 
-- The GGUF profiles pass Capability Check v2 and publish: `qwen3.8-27b`
-  5.55 sessions/h at 131k and `qwen3.8-flash-next-gguf` 5.02 at 262k.
-- Every MLX profile fails Capability Check v2 on schema enforcement
-  (`ignored`); their rates (qwen3.6 23.60, coding 24.28, nemotron 21.12,
-  Glimmer 18.45, qwen3.8 10.63) cannot promote them.
-- `qwen3.8-flash-next-mlx-nvfp4` did not run: its tag is not in the local
-  store.
+- Both MLX profiles fail Capability Check v2 on schema enforcement
+  (`ignored`); their rates (nemotron 21.12, Glimmer 18.45) cannot promote
+  them. The Qwen3.6 and Qwen3.8 Ollama profiles left the M5 on 2026-10-11
+  (Splash serves Qwen3.6 35B-A3B and Qwen3.8 27B there; ds4 serves
+  Flash-Next).
 
 ## RTX PRO 3000 Blackwell laptop GPU operating points
 
@@ -233,9 +225,8 @@ Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU cores, 128 GB unified
 memory, macOS 26.6.2 (25G83), on external power. The MLX rows use the managed
 official Ollama 0.32.14 (`ollama-darwin.tgz`), whose MLX runner loaded the
 `mlx_metal_v4` backend (MLX 0.32.0-213-gadf21de, device gpu) -- the Metal 4
-path on M5. Both models are safetensors NVFP4 registry artifacts dispatched
-to the MLX runner; KV cache is MLX-native model precision, not q8. Each
-operating point is one full sample after a warmup load.
+path on M5. The MLX profiles are safetensors registry artifacts dispatched
+to the MLX runner; KV cache is MLX-native model precision, not q8.
 
 The MLX runner serializes requests through a single slot, so all rows are
 jobs=1. Two concurrent clients measured 1.91x single-request wall time and
@@ -244,41 +235,11 @@ staircase completion times -- queueing, not batching. Concurrency against
 this server is therefore worth nothing beyond queueing convenience; the
 operating points below are single-stream maxima.
 
-Contexts are the measured per-model maxima from supervised runs with a
-memory watchdog, not round numbers: Qwen3.6 completed its full native
-ceiling, while Qwen3.8 tops out at 184,320 with essentially no headroom
-(~123 GB of 128 GB system-wide at peak) -- run it near the ceiling only on
-an otherwise quiet host, and override down to the wide-margin 131,072 when
-working beside it. Allocation is the `/api/ps` value; peak is the runner's
-own logged MLX active+cache high-water mark during the near-full-context
-prefill.
-
-| Profile | Context/request | Allocation CPU / GPU | Peak MLX | Decode | Near-full proof |
-| -- | --: | --: | --: | --: | -- |
-| Qwen3.6 35B-A3B coding NVFP4, 1 job | 262,144 | 0.00 / 20.51 GiB | 48.62 GiB | 122.58 tok/s | 246,096 tokens in 4m 34s |
-| Qwen3.8-27B NVFP4, 1 job | 184,320 | 0.00 / 17.22 GiB | 92.78 GiB | 72.26 tok/s | 173,041 tokens in 8m 13s |
-
-Prefill at the maximum contexts (14,187-token short prompt, half of and
-near the configured ceiling, all tokenizer-reported):
-
-| Profile | Short | Half context | Near ceiling |
-| -- | --: | --: | --: |
-| Qwen3.6 35B-A3B coding NVFP4 | 4,076.5 tok/s | 1,384.7 tok/s (130,920 tok) | 897.9 tok/s (246,096 tok) |
-| Qwen3.8-27B NVFP4 | 827.0 tok/s | 496.0 tok/s (92,058 tok) | 350.6 tok/s (173,041 tok) |
-
-Speculation provenance, established by a bandwidth audit: the MLX
-runner silently enables speculative decoding whenever an artifact
+The MLX runner silently enables speculative decoding whenever an artifact
 packages a draft head -- there is no serving switch and no log line at
-default verbosity. The qwen3.8 NVFP4 registry artifact ships the
-checkpoint's MTP head, so every qwen3.8 MLX rate in this file is
-MTP-speculated. Its 72.26 tok/s decode exceeds the plain-decode ceiling
-implied by the M5 Max's 614 GB/s memory bandwidth over ~14 GiB of dense
-4-bit weights (~44 tok/s), and a live prose probe measured 54.7 tok/s
--- both impossible without speculation. The qwen3.6 NVFP4 artifacts
-ship no draft head and decode plainly, which is why they sit at decode
-parity with the plain vLLM-Metal profile while qwen3.8 appears to lead
-its vLLM-Metal sibling. Cross-runtime comparisons must treat the
-qwen3.8 MLX rates as speculated, not plain.
+default verbosity, so a rate from such an artifact is speculated, not
+plain. A bandwidth audit established it on the since-dropped Qwen3.8 NVFP4
+profile.
 
 ### Nemotron 3.5 Lightning 30B-A3B MLX -- AuditBench v1 canonical
 
@@ -305,50 +266,19 @@ and the concurrent points are unsupported, not unmeasured.
 
 The depth economics are the Mamba/attention hybrid showing through: only
 6 of 52 layers attend, so prefill falls just 2.1x from 32k to the 245,773
-capacity proof where Qwen3.6 coding falls 4.5x over the same span, and the
-near-full ingest completes in 127.4 s against that profile's 274 s. The
+capacity proof, and the near-full ingest completes in 127.4 s. The
 audit cadence (212.8 / 58.3 / 31.1 calls/hour) leads every canonical
 profile on this host at every depth, single-stream against their best
 measured concurrency. Capability gating for this artifact is recorded in
 [../CAPABILITIES.md](../CAPABILITIES.md); the run JSON is retained
 outside the repository.
 
-### Qwen3.6 35B-A3B NVFP4 base and coding -- AuditBench v1 canonical
-
-Measured at repository commit `98f9b2c` with the finalized
-output-control prompt on the managed 0.32.14 MLX runner, at the
-131,072-token operating point both confs pin since the native-262k hard
-reset below. Identity digests `e92a3e94bbca` (base) and `cd2692a833e6`
-(coding, the re-pulled manifest), 140 W adapter contract, battery 100%,
-battery gate active, dedicated server lifecycle per profile. Single
-slot (the runner forces this architecture to one), so every arm is
-single-stream. At this context the plan's prefill rows stop at 65,536
-and the depth targets scale down with it: audit_half is 65,547 and
-audit_deep 114,689 prompt tokens, so these depth labels are NOT
-comparable to the 262,144-context profiles' 131k/229k targets.
-
-| Phase | Base NVFP4 | Coding NVFP4 |
-| -- | --: | --: |
-| Prefill 32,780 | 3,190 tok/s | 3,242 tok/s |
-| Prefill 65,547 | 2,224 tok/s | 2,305 tok/s |
-| Capacity 122,861 | passed, 84.7 s | passed, 78.8 s |
-| Decode | 140.8 tok/s | 126.7 tok/s |
-| audit_32k calls/hour | 188.7 | 180.4 |
-| audit_half (65k) calls/hour | 91.2 | 88.5 |
-| audit_deep (114.7k) calls/hour | 47.7 | 48.7 |
-
-The two digests are rate-identical within a few percent -- the coding
-manifest's earlier operating-point numbers (measured on retired digest
-`e839e5321a76`) carry over to its replacement in shape, and the
-131,072 point is now depth-proven on both current digests (the capacity
-row is exactly the supervised depth-probe territory that the night
-chain died in at 262,144). Against the vLLM-Metal qwen3.6 4-bit
-canonical at the same 32k depth, one NVFP4 MLX stream (188.7/h) beats
-that profile's best four-stream rate (110.8/h) by 1.7x. At matched
-~115-131k depth Lightning remains the host's depth leader: 58.3
-calls/hour at 131k versus 47.7 at 114.7k here.
-
 ### The native-262k hard reset
+
+The two hard-reset records below come from the Qwen3.6 and Qwen3.8 NVFP4
+profiles, dropped from the M5 on 2026-10-11. They stay as the MLX runner's
+memory evidence: they are why raising an MLX context is a supervised
+experiment.
 
 The first Qwen3.8 NVFP4 run used the checkpoint's native 262,144 context.
 Short prefill (810.0 tok/s), half-context prefill (130,920 tokens at 417.4
@@ -370,13 +300,14 @@ prevents it; this incident shows the bound only protects when the
 configured context itself fits in physical memory. Ollama enforces
 `num_ctx` logically and nothing checks it against RAM at load time.
 
-The maxima above were then found with supervised runs: a watchdog sampled
-available memory every 2 s and would kill the server's process group below
-an 18 GiB floor. Qwen3.6 passed its full native ceiling; Qwen3.8's
-184,320 pass had no room left above it. Raising a context above a profile
-default is that kind of supervised experiment, per model -- on unified
-memory the failure mode is the whole machine, not an OOM-killed server
-process, and headroom never transfers between models.
+The dropped profiles' context maxima (Qwen3.6 262,144 with a 246,096-token
+proof, Qwen3.8 184,320) were then found with supervised runs: a watchdog
+sampled available memory every 2 s and would kill the server's process
+group below an 18 GiB floor. Qwen3.6 passed its full native ceiling;
+Qwen3.8's 184,320 pass had no room left above it. Raising a context above
+a profile default is that kind of supervised experiment, per model -- on
+unified memory the failure mode is the whole machine, not an OOM-killed
+server process, and headroom never transfers between models.
 
 ### The re-pulled manifest hard reset
 
@@ -447,20 +378,6 @@ section). The 262,144 ban therefore holds on shape grounds for every
 digest and pin until three consecutive cache-busted near-ceiling
 prefills pass under a watchdog. (The 0.33.2 trial also left the
 131,072 point bounded, consistent with its immunity here.)
-
-API correctness was verified at the operating points: streaming reasoning
-(separate `thinking`/`reasoning` fields, native and OpenAI APIs), structured
-single tool calls on both models, and a multi-turn tool loop on Qwen3.8.
-Qwen3.6's NVFP4 manifest does not declare the `tools` capability, but
-structured tool calls work through the qwen3.5 parser.
-
-Registry identity update: the
-`qwen3.6:35b-a3b-coding-nvfp4` tag moved from manifest
-`e839e5321a76` to `cd2692a833e6`. The replacement remains safetensors NVFP4
-at native 262,144 context and passed Capability Check v1, including tools.
-The 262,144-context operating-point rates above remain evidence for the
-earlier artifact only; the current digests carry their own canonical
-rates at the 131,072 operating point (canonical section above).
 
 ### Muse Glimmer 30B MLX smoke
 
@@ -558,49 +475,12 @@ never-conclude output, which is an alignment property, not a serving
 fault. Audit-shaped calls/hour for Glimmer therefore have no canonical
 number on this runtime.
 
-### Qwen3.8-Flash-Next GGUF -- AuditBench v1 canonical (M5 Max)
+### Qwen3.8-Flash-Next GGUF IQ4_XS -- AuditBench v1 canonical (A100)
 
-The `qwen3.8-flash-next-gguf` profile (125B-A6B, locally imported
-UD-Q4_K_XL, digest `e6ead30bcebd`, llama.cpp runner on the split
-0.33.3 managed runtime, 2 x 262,144 slots, q8_0 KV, use_mmap=false
-baked into the model). Canonical full profile 2026-09-04, 140 W
-contract; Capability Check v1 passed on this digest and operating point,
-re-run 2026-09-06 at protocol SCHEMA_VERSION 4 (all eight checks,
-including the streamed tool call, schema enforcement verified).
-
-| Phase | Result |
-| -- | -- |
-| Prefill 32k / 64k / 128k | 632 / 518 / 406 tok/s |
-| Near-context capacity | 245,748 tokens at 1x (758.8 s) AND 2x (1,524.6 s, ~322 tok/s aggregate) |
-| Decode ceiling 1x / 2x | 38.69 / 57.17 tok/s (1.48x) |
-| Audit 32k 1x / 2x | 43.9 / 47.4 calls/h |
-| Audit half (131k) | 9.7 calls/h |
-| Audit deep (229k) 1x / 2x | 5.1 / 5.0 calls/h |
-
-Weights are fully GPU-resident (49/49 layers, ~81 GiB wired); q8_0 KV
-for the two-slot aggregate is ~9.0 GiB, gated by needle-exact
-retrieval at 131k and 246k at f16 rate parity. Operating notes: cold
-deep prefills serialize across slots (deep 2x adds nothing), a slot's
-decode starves during the sibling's deep cold fill, and the llama.cpp
-slot cache delivers ~36x identical-prefix resend with suffix-only
-prefill on growing conversations. The GGUF ships no MTP head and no
-YaRN parameters are reachable through Ollama, so the profile is
-native-262,144, plain-decode only.
-
-The replay and replay-concurrent profiles CANNOT run canonically on
-this model at this pin: their 32-token probe turns cap-truncate a tool
-call mid-arguments and Ollama 0.33.3 and 0.34.2 return HTTP 500 ("invalid
-tool call arguments ... unexpected end of JSON input") on both endpoints.
-Minimal deterministic repro at temp 0: tools plus max_tokens 32 (16
-stops before the call opens, 200 completes it) -- the same
-truncated-tool-call parser class already documented for GLM 4.7
-Flash, now shown to affect the qwen4exp path too. Retest on a release
-whose parsers degrade truncation gracefully.
-
-The A100 sibling profile (`qwen3.8-flash-next-gguf-iq4xs`, Ollama 0.34.2,
-2 x 262,144 q8_0 shape, 62.84 GiB GPU allocation, 49/49 layers on GPU)
-has canonical AuditBench v1 full and conversation rows; replay is blocked
-by the same truncated-tool-call 500.
+The `qwen3.8-flash-next-gguf-iq4xs` profile (Ollama 0.34.2, 2 x 262,144
+q8_0 shape, 62.84 GiB GPU allocation, 49/49 layers on GPU) has canonical
+AuditBench v1 full and conversation rows; replay is blocked by the
+truncated-tool-call 500 below.
 
 | Metric | 1 slot | 2 slots |
 | -- | --: | --: |
@@ -612,9 +492,8 @@ by the same truncated-tool-call 500.
 | Near-context proof | 245,748 in 424.06 s | 2 x 245,748 in 853.61 s |
 | Conversation | 10.5/h, compliant, 16/16 | |
 
-Prefill runs roughly 1.5x the M5 Q4_K_XL point and decode ~1.3x; the
-model is PLE-over-PCIe and QSA bound, so cold deep prefills serialize
-across slots and starve the sibling slot's decode, as on Metal. The
+The model is PLE-over-PCIe and QSA bound, so cold deep prefills serialize
+across slots and starve the sibling slot's decode. The
 2 x 262,144 shape is locked: an 8 x 65,536 shape batched decode to only
 143.5 tok/s aggregate at 63% GPU utilisation, and a big model on tiny
 windows serves no fleet need.
@@ -626,35 +505,15 @@ JSON schema completes, Ollama restarts the runner in ~10 s, and a later
 12k-token unconstrained generation in the same session completed.
 Constrain long generations with a schema; retest on every runtime bump.
 
-### Qwen3.8 27B GGUF -- AuditBench v1 canonical (M5 Max)
-
-The `qwen3.8-27b` profile (registry `qwen3.8:27b`, Q4_K_M, digest
-`22130167c4c2`, llama.cpp runner on the 0.34.2 GGUF runtime) at
-`OLLAMA_CONTEXT_LENGTH=262144`, one slot, q8_0 KV, 19.28 GiB GPU
-allocation; the conf default stays 131,072. Canonical full,
-conversation and replay profiles 2026-09-20, repo commit `705c493`,
-140 W contract; Capability Check v1 passed the same day (all eight
-checks, schema enforced). Decode is MTP-speculated: the registry
-Modelfile sets `draft_num_predict 4`.
-
-| Phase | Result |
-| -- | -- |
-| Prefill 32k / 64k / 128k | 450 / 327 / 206 tok/s |
-| Near-context capacity | 245,752 tokens at 1x (1,990 s, 123.5 tok/s) |
-| Decode ceiling 1x | 44.66 tok/s |
-| Audit 32k | 34.7 calls/h |
-| Audit half (131k) | 5.2 calls/h |
-| Audit deep (229k) | 2.0 calls/h |
-| Conversation | 3.5/h, compliant 16/16, cached fraction 0.902 |
-| Replay | 1.90/h, 75.3 s cold turn, 27.2 -> 82.3 s, verdict 16,384 tok @ 16.5 tok/s |
-
-Against the same weights on vLLM-Metal align APC
-([../vllm-metal/BENCHMARKS.md](../vllm-metal/BENCHMARKS.md)): MTP gives
-this row the higher short-prompt decode (44.7 vs 28.8 tok/s) and 3x
-the verdict decode at 165k depth (16.5 vs 5.6 tok/s), while vLLM-Metal
-prefills 1.3-1.5x faster and serves 4.2 vs 3.5 conversations/hour on
-its cache. The llama.cpp slot cache engages on the resent conversation
-(suffix-only prefill; turn walls 27 -> 82 s against growing depth).
+The replay and replay-concurrent profiles CANNOT run canonically on
+this model at its pin: their 32-token probe turns cap-truncate a tool
+call mid-arguments and Ollama 0.33.3 and 0.34.2 return HTTP 500 ("invalid
+tool call arguments ... unexpected end of JSON input") on both endpoints.
+Minimal deterministic repro at temp 0: tools plus max_tokens 32 (16
+stops before the call opens, 200 completes it) -- the same
+truncated-tool-call parser class already documented for GLM 4.7
+Flash, now shown to affect the qwen4exp path too. Retest on a release
+whose parsers degrade truncation gracefully.
 
 ## Audit conversation profile
 
@@ -667,30 +526,17 @@ the runner log confirms trie hits (`cache hit ... matched=131,758`)
 but the API reports no cached-token counts. Medians over compliant
 samples.
 
-Local M5 Max MLX profiles (16-file/~165k shape at 262,144 contexts;
-9-file/~109k shape at the qwen3.6 131,072 operating points -- shallower,
-so not directly comparable across context tiers):
+Local M5 Max MLX profile (16-file/~165k shape at 262,144 context):
 
 | Profile | Context | Compliant | Conversations/hour | Recall |
 | -- | --: | -- | --: | -- |
-| `qwen3.6-35b-a3b-coding-mlx-nvfp4` | 131,072 | yes | 50.9 | 9/9 |
-| `qwen3.6-35b-a3b-mlx-nvfp4` | 131,072 | yes | 48.1 | 9/9 |
 | `nemotron-3.5-lightning-30b-mlx` | 262,144 | yes | 34.4 | 16/16 |
-| `qwen3.8-flash-next-gguf` | 262,144 | yes | 7.2 | 16/16 |
-| `qwen3.8-27b` (GGUF, 0.34.2) | 262,144 | yes | 3.5 | 16/16 |
-| `qwen3.8-27b-mlx-nvfp4` | 184,320 | NO | (7.7 sample 1) | 15/15 |
-
-The two GGUF rows (flash-next canonical 2026-09-04, walls 493/506 s;
-qwen3.8-27b canonical 2026-09-20, median wall 1,035 s; cached fraction
-0.902 on both) are the M5 Ollama profiles that serve consecutive deep
-audit conversations at a 262,144 allocation: GGUF dispatches to the
-llama.cpp runner, which is immune to the MLX runner's repeated
-deep-request failures below.
 
 Lightning is the deep-context standout: full 16-file conversations at
-34.4/hour with perfect recall, three for three. The qwen3.8 NVFP4 row is
-a serving finding, not a rate: its first conversation completes cleanly
-(469 s), and the second conversation on the same process fails with an
+34.4/hour with perfect recall, three for three. The since-dropped
+`qwen3.8-27b-mlx-nvfp4` profile (184,320) was a serving finding, not a
+rate: its first conversation completed cleanly
+(469 s), and the second conversation on the same process failed with an
 HTTP 500 after fully prefilling its fresh evidence -- reproduced twice.
 That matches the MLX runner's documented prefix-trie snapshot retention
 at the large 184,320 allocation (see the hard-reset mechanism above):
@@ -740,32 +586,15 @@ align-APC pin -- and align-APC vLLM carries qwen3.6 to 85.9.
 GLM think-runs-away or paraphrases the ledger on both runtimes; gemma4
 alternates between hallucinated file names and clean completions.
 
-## Audit replay profile: M5 Max
-
-The replay profile (AuditBench protocol) scripts every turn, so it
-measures the server with no dependence on model protocol compliance.
-The one M5 Ollama row is `qwen3.8-27b` on the 0.34.2 GGUF runtime at
-262,144 (2026-09-20, repo commit `705c493`). Replays/hour is not
-comparable to conversations/hour.
-
-| Profile | Replays/h | Turn walls | Verdict | Note |
-| -- | --: | -- | -- | -- |
-| `qwen3.8-27b` | 1.90 | 75.3 s cold, 27.2 -> 82.3 s | 16,384 tok @ 16.5 tok/s | slot cache behavioral, MTP drafting |
-
-Both samples filled the verdict cap, so the median is a full-work rate:
-of the 1,899 s wall, 994 s is the verdict decode and 905 s the 16
-turns, whose walls grow 27 -> 82 s as the ~8.2k-token suffix prefills
-against growing depth.
-
 ## Audit replay profile: A100 remote
 
-The replay profile scripts every turn, as above. Gemma and GLM ran at
-harness commit `03b9b2c`, the three Qwen rows at `8425d08` (the replay
-workload is unchanged between the two), the qwen3.8 row on 0.34.2;
-isolated Ollama, 16-file/~165k shape.
-Replays/hour is not
-comparable to conversations/hour (probe turns decode almost nothing;
-the verdict decode is pushed toward the 16,384 cap).
+The replay profile (AuditBench protocol) scripts every turn, so it
+measures the server with no dependence on model protocol compliance. Gemma
+and GLM ran at harness commit `03b9b2c`, the three Qwen rows at `8425d08`
+(the replay workload is unchanged between the two), the qwen3.8 row on
+0.34.2; isolated Ollama, 16-file/~165k shape. Replays/hour is not
+comparable to conversations/hour (probe turns decode almost nothing; the
+verdict decode is pushed toward the 16,384 cap).
 
 | Profile | Replays/h | Turn walls | Verdict | Note |
 | -- | --: | -- | -- | -- |

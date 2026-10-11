@@ -137,14 +137,7 @@ proves nothing about parser compatibility.
   `gemma4-31b-4bit`,
   `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit`
 - vLLM-Metal: `nemotron-3.5-lightning-30b-4bit`, `mimo-v2.6-9b-4bit`
-- Ollama MLX: `qwen3.6-35b-a3b-mlx-nvfp4`,
-  `qwen3.6-35b-a3b-coding-mlx-nvfp4`,
-  `qwen3.8-27b-mlx-nvfp4`, `muse-glimmer-30b-mlx`,
-  `nemotron-3.5-lightning-30b-mlx`
-- Ollama MLX on the split 0.33.3 runtime: `qwen3.8-flash-next-mlx-nvfp4`
-  (tech demo; audit-unusable on this host, see the conf)
-- Ollama GGUF (llama.cpp runner on the 0.34.2 GGUF runtime):
-  `qwen3.8-flash-next-gguf`, `qwen3.8-27b`
+- Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`
 
 ### RTX PRO 3000 Blackwell
 
@@ -171,9 +164,8 @@ Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
 27.0. Capability Check v2 (llm-audit-bench v2.0.0, `capability-v2`,
 SCHEMA_VERSION 5), run 2026-09-27/28 from fleet commit `bee4a24`:
 vLLM-Metal 0.30.0, Splash 1.0, LM Studio 0.4.25+1 (Splash engine 0.0.5,
-mlx-llm 1.11.0), Ollama 0.32.14 for MLX and 0.34.2 for the GGUF
-profiles. Audit fitness ran 4 samples per task at each conf's declared
-sampling and fails at 2 failed samples of 12.
+mlx-llm 1.11.0), Ollama 0.32.14 for MLX. Audit fitness ran 4 samples per
+task at each conf's declared sampling and fails at 2 failed samples of 12.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -192,22 +184,15 @@ sampling and fails at 2 failed samples of 12.
 | vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 3/12 (format 1, runaway 2) | fail |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 0/12 | fail |
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 5/12 (invented 1, leak 1, missed_findings 2, runaway 1) | fail |
-| Ollama | `qwen3.6-35b-a3b-coding-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail 2/12 (invented 1, missed_findings 1) | fail |
-| Ollama | `qwen3.6-35b-a3b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 1/12 (missed_findings 1) | fail |
-| Ollama | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| Ollama | `qwen3.8-27b-mlx-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 1/12 (leak 1) | fail |
-| Ollama | `qwen3.8-flash-next-gguf` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (invented 1) | pass |
-| Ollama | `qwen3.8-flash-next-mlx-nvfp4` | not run | not run | not run | not run | not run | not run | not run | not run | not run | not run | not run |
 
 Every checked row's live identity matched the revision or digest pinned
 in its model config.
 
 ### Findings
 
-- Seven profiles pass: Splash `qwen3.6-35b-a3b` (1/12) and `qwen3.8-27b`
-  (0/12), LM Studio `qwen3.8-27b-splash` (0/12), vLLM-Metal
-  `granite4.2-30b-4bit` (0/12) and `ornith1.5-35b-a3b-4bit` (1/12), and
-  Ollama GGUF `qwen3.8-27b` (0/12) and `qwen3.8-flash-next-gguf` (1/12).
+- Five profiles pass: Splash `qwen3.6-35b-a3b` (1/12) and `qwen3.8-27b`
+  (0/12), LM Studio `qwen3.8-27b-splash` (0/12), and vLLM-Metal
+  `granite4.2-30b-4bit` (0/12) and `ornith1.5-35b-a3b-4bit` (1/12).
 - On vLLM-Metal both Qwen profiles fail audit fitness where Splash and the
   A100 pass the same models: `qwen3.6-35b-a3b-4bit` 2/12 (an invented path
   and a finding filed against the wrong file), `qwen3.8-27b-4bit` 3/12
@@ -218,15 +203,13 @@ in its model config.
 - MiMo on vLLM-Metal fails 12 of 12: ten samples answered without
   reasoning. Its API checks pass.
 - Every MLX-format profile outside vLLM-Metal fails schema enforcement
-  (`ignored`): all five Ollama MLX rows and both LM Studio MLX rows. Their
-  audit fitness passes except nemotron (5/12) and qwen3.6 coding (2/12).
+  (`ignored`): both Ollama MLX rows and both LM Studio MLX rows. Their
+  audit fitness passes except nemotron (5/12).
 - LM Studio `qwen3.6-35b-a3b-splash` fails audit fitness (3/12) where
   Splash's own server passes the same package (1/12).
 - `gemma4-31b-4bit` passes audit fitness (0/12) and fails only schema
   enforcement, whose check hit the 600 s request timeout: the
   whitespace runaway v1 recorded.
-- `qwen3.8-flash-next-mlx-nvfp4` did not run: its
-  `qwen3.8-flash-next:125b-a6b-nvfp4` tag is not in the local store.
 
 ## A100-SXM4-80GB campaign
 
