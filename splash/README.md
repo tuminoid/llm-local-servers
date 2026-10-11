@@ -1,7 +1,7 @@
 # Splash on Apple Silicon
 
-Managed [Splash](https://github.com/incoai/splash) 1.0, with Q4 packed
-targets, bundled DFlash 2 drafts, sparse Q8 KV storage and prefix/state
+Managed [Splash](https://github.com/incoai/splash) 1.3.1, serving MLX
+4-bit targets with pinned DFlash 2 drafts, Q8 KV and prefix/state
 caching. These defaults serve repeated deep agent requests; the measured
 262K operating points are in [BENCHMARKS.md](BENCHMARKS.md).
 
@@ -30,19 +30,18 @@ pulling another model or installing a runtime. `make splash-logs` follows
 the current log. A guard Makefile rejects commands from this directory.
 
 The installer verifies the release archive's SHA-256 and extracts the
-standalone runtime into `~/.local/share/splash/runtime/1.0`. It owns no
+standalone runtime into `~/.local/share/splash/runtime/1.3.1`. It owns no
 Homebrew installation. `uv run` executes the repository's adapters using
 the release's bundled interpreter and dependency set; installation,
 status and teardown use uv-selected Python 3.12. The detached child uses
 `uv python find` then `exec` so its PID remains the session leader.
 
-Pull selects the exact Hugging Face revision in the model config, reuses
-the HF cache, verifies the pinned manifest and every artifact hash, and
-links the snapshot under `~/.local/share/splash/models/`. Startup never
-downloads or follows `main`. Both packed weights and tokenizer files are
-verified again before launch and measurement. The upstream layout hashes
-reported by `/status` are checked separately: they identify headers and
-geometry, not weight contents.
+Pull fetches the exact Hugging Face revisions of the target and its
+draft named in the model config, then runs the release installer, which
+assembles them under `~/.local/share/splash/models/`. Startup never
+downloads or follows `main`. Before launch and measurement the assembly
+is verified with full content hashes, and its recorded target and draft
+sources are checked against the config.
 
 ## Serving settings
 
@@ -57,7 +56,7 @@ geometry, not weight contents.
 | `SPLASH_STATE_DIR` | XDG state root + `/splash` | Managed pidfile and current log |
 
 Host settings can be exported or prefixed to `make`. Model facts live in
-`models/<name>.conf`: immutable repository revision and manifest digest,
+`models/<name>.conf`: immutable target and draft revisions,
 262,144-token context, and capability expectations. `SPLASH_MODEL_CONF`
 can select an alternate config file. Environment values override config
 defaults. Carry `SPLASH_API_KEY` into status, benchmark and capability
@@ -71,8 +70,8 @@ not a claim that every machine can admit four such requests.
 
 The native maximum decode width is four. Larger client queues can wait,
 but they cannot create more active lanes in this release. The adapter
-reads the live memory plan and conservatively bounds sparse virtual KV
-by physical dynamic memory after reserving active state cells. Retained
+reads the live memory plan and conservatively bounds the KV extent pool
+by dynamic memory after reserving active lane state. Retained
 cache states share that memory and may evict. AuditBench admits only
 stream counts that fit both scheduler width and this capacity bound.
 

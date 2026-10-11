@@ -12,7 +12,7 @@ or reimplement benchmark workloads.
 | `install.sh`, `pull.sh` | Root Make entry points for pinned installation |
 | `run.sh`, `start.sh` | Detached launcher and foreground exec |
 | `stop.sh`, `status.sh` | Inspection and verified teardown |
-| `runtime.py` | Lifecycle, package verification, identity and HTTP authentication |
+| `runtime.py` | Lifecycle, model installation and verification, identity and HTTP authentication |
 | `bench.py` | AuditBench transport, live capacity and provenance |
 | `capability.py` | Shared API gate and Splash thinking-control mapping |
 | `models/*.conf` | Immutable model facts and capability expectations |
@@ -23,11 +23,15 @@ or reimplement benchmark workloads.
 
 - Use the standalone archive and checksum pinned in the root Makefile.
   Installation never replaces an existing version tree or global runtime.
-  Model pulls select an immutable HF revision; upstream `prepare` follows
-  `main` and is therefore unsuitable for this repository's pull target.
-- Reuse upstream manifest validation and full artifact hashing. Native
-  `/status` identity hashes describe layout, not content. A matching
-  served name or layout alone cannot establish model identity.
+  Model pulls select immutable HF revisions for the target and its
+  DFlash2 draft. Upstream `prepare` has no draft revision option and
+  installs a draft repository's default branch, so the draft is passed as
+  its pinned snapshot directory, and pinned against cache pruning; the
+  target goes through `--revision`.
+- Reuse the release installer's assembly verification with full content
+  hashes, and check its recorded target source and draft snapshot against
+  the config. Splash packages no longer load (1.3.1). A matching served
+  name alone cannot establish model identity.
 - Use `uv run --no-project` with the bundled interpreter for adapters.
   Resolve the foreground interpreter with uv and exec it, preserving
   the pidfile's session leader across Python and native-engine startup.
@@ -45,15 +49,16 @@ or reimplement benchmark workloads.
   authorization headers apply only to the owned HTTP origin.
 - The 64 GiB cap is launcher policy. Upstream clamps it to the device's
   working-set limit; do not duplicate that host adaptation in model
-  configs. Keep raw sparse virtual KV, conservative benchmark capacity,
+  configs. Keep raw KV capacity, conservative benchmark capacity,
   four native active slots and measured streams distinct.
-- DFlash 2, Q8 KV and state/prefix caching use release defaults. Their
-  memory competes inside one dynamic budget; a virtual pool is not
-  committed GPU memory. Larger queues do not lift the four-lane ceiling.
+- DFlash 2, Q8 KV, state/prefix caching, the dense target's Neural Engine
+  FFN split and idle weight release use release defaults. Their memory
+  competes inside one dynamic budget; KV capacity is not committed GPU
+  memory. Larger queues do not lift the four-lane ceiling.
 - Keep the 7,200-second request timeout. Release 1.0's 1,800-second
-  default aborts healthy four-way Qwen3.8 near-context prefills with
-  HTTP 504. Retest after an upstream timeout/scheduling change, using
-  the same four-way near-context phase before lowering it.
+  default aborted healthy four-way Qwen3.8 near-context prefills with
+  HTTP 504; since 1.2.0 there is no default, so this is the only bound.
+  Lower it only after the same four-way near-context phase fits.
 - Splash expects top-level `reasoning_effort`. Do not use the shared
   vLLM control mapping, which nests it in `chat_template_kwargs`.
 - Keep trial full-run provenance intact: retained v1 full runs are

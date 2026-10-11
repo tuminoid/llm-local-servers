@@ -89,7 +89,7 @@ make splash-start MODEL=qwen3.8-27b           # in this repository
 export OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/splash/opencode.json
 opencode models splash                        # the model ids it offers
 opencode                                      # in your project
-opencode run -m splash/incoai/Qwen3.8-27B-Splash "Summarise the auth flow."
+opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 ```
 
 - `MODEL` names a config in this repository; the opencode model id is its

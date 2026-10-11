@@ -1,7 +1,7 @@
-"""Managed Splash lifecycle, package identity and live capacity evidence.
+"""Managed Splash lifecycle, model identity and live capacity evidence.
 
 No workload logic lives here. The embedded runtime supplies the upstream
-package validator and Hugging Face client; lifecycle inspection is stdlib.
+installer and Hugging Face client; lifecycle inspection is stdlib.
 """
 
 import fcntl
@@ -16,7 +16,6 @@ import shlex
 import shutil
 import signal
 import socket
-import struct
 import subprocess
 import sys
 import tempfile
@@ -29,13 +28,13 @@ DATA = Path(os.environ.get("SPLASH_DATA_DIR", Path(os.environ.get(
     "XDG_DATA_HOME", Path.home() / ".local/share")) / "splash"))
 STATE = Path(os.environ.get("SPLASH_STATE_DIR", Path(os.environ.get(
     "XDG_STATE_HOME", Path.home() / ".local/state")) / "splash"))
-VERSION = os.environ.get("SPLASH_VERSION", "1.0")
+VERSION = os.environ.get("SPLASH_VERSION", "1.3.1")
 RELEASE = DATA / "runtime" / VERSION
 PYTHON = RELEASE / "python/bin/python3"
 PIDFILE = STATE / "server.json"
 LOG = STATE / "server.log"
 CONFIG_KEYS = tuple("SPLASH_" + name for name in (
-    "MODEL_REPO", "MODEL_REVISION", "MANIFEST_SHA256", "MAX_LEN",
+    "MODEL_REPO", "MODEL_REVISION", "DRAFT_REPO", "DRAFT_REVISION", "MAX_LEN",
     "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE", "CAP_DISABLE_MODE",
     "CAP_SYSTEM_PROMPT", "SAMPLING",
 ))
@@ -66,62 +65,60 @@ def config(tag):
     script = 'set -eu; source "$1"; shift; for name; do printf "%s\\0" "${!name}"; done'
     output = subprocess.check_output(["bash", "-c", script, "bash", str(path), *CONFIG_KEYS])
     values = dict(zip(CONFIG_KEYS, output.decode().split("\0")[:-1]))
-    if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+", values["SPLASH_MODEL_REPO"]):
-        raise ValueError("expected a full Hugging Face repository ID")
-    for key, length in (("SPLASH_MODEL_REVISION", 40), ("SPLASH_MANIFEST_SHA256", 64)):
-        if not re.fullmatch(r"[0-9a-f]{" + str(length) + "}", values[key]):
-            raise ValueError(f"{key} must be an immutable digest")
+    for key in ("SPLASH_MODEL_REPO", "SPLASH_DRAFT_REPO"):
+        if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+", values[key]):
+            raise ValueError(f"{key} must be a full Hugging Face repository ID")
+    for key in ("SPLASH_MODEL_REVISION", "SPLASH_DRAFT_REVISION"):
+        if not re.fullmatch(r"[0-9a-f]{40}", values[key]):
+            raise ValueError(f"{key} must be an immutable commit")
     if int(values["SPLASH_MAX_LEN"]) <= 0:
         raise ValueError("SPLASH_MAX_LEN must be positive")
     return values
 
 
-def upstream_models():
-    sys.path.insert(0, str(RELEASE / "install"))
-    import models
-    return models
+def upstream():
+    sys.path.insert(0, str(RELEASE))
+    from install import assembly, hub
+    return assembly, hub
+
+
+def draft_snapshot(values):
+    _assembly, hub = upstream()
+    return hub.snapshot(values["SPLASH_DRAFT_REPO"], values["SPLASH_DRAFT_REVISION"])
+
+
+def installer(values, *command):
+    """Run the release's installer for the pinned target and draft. The
+    installer has no draft revision option and installs a draft repository's
+    default branch, so the draft is passed as its pinned snapshot directory."""
+    return [str(PYTHON), "-m", "install.models", "--models", str(DATA / "models"),
+            "--model", values["SPLASH_MODEL_REPO"], "--revision", values["SPLASH_MODEL_REVISION"],
+            "--draft-model", str(draft_snapshot(values)), *command]
 
 
 def model_path(values):
-    return DATA / "models" / values["SPLASH_MODEL_REPO"]
+    link = subprocess.check_output(installer(values, "link"), cwd=RELEASE, text=True).strip()
+    return Path(link)
 
 
-def fingerprints(path, manifest):
-    records = []
-    for artifact in manifest["artifacts"]:
-        name = artifact["path"]
-        if name.endswith(".bin"):
-            with (path / name).open("rb") as source:
-                header = source.read(16)
-            layer, kind = struct.unpack("<II", header[8:])
-            records.append((name, artifact["size"], header[:8].decode("ascii"), layer, kind))
-
-    def calculate(items):
-        text = "splash-packed-manifest-v1\n" + "".join(
-            "\t".join(map(str, row)) + "\n" for row in sorted(items))
-        return hashlib.sha256(text.encode()).hexdigest()
-
-    return calculate(records), calculate(row for row in records if row[0].startswith("target/"))
-
-
-def verify_model(values, path=None):
-    path = path or model_path(values)
-    upstream = upstream_models()
-    revision = upstream._snapshot_revision(path.resolve(), values["SPLASH_MODEL_REPO"])
-    if revision != values["SPLASH_MODEL_REVISION"]:
-        raise RuntimeError("installed model revision differs from the config; run make splash-pull")
-    manifest_hash = digest(path / "manifest.json")
-    if manifest_hash != values["SPLASH_MANIFEST_SHA256"]:
-        raise RuntimeError("model manifest checksum differs from the config")
-    manifest = upstream.validate_package_manifest(path / "manifest.json")
-    upstream.verify_artifacts(path, manifest, full=True)
-    layout, target = fingerprints(path, manifest)
+def verify_model(values):
+    assembly, hub = upstream()
+    path = model_path(values)
+    record = assembly.verify(path, full=True)
+    target = record["sources"]["target"]
+    if target != {"repo": values["SPLASH_MODEL_REPO"], "revision": values["SPLASH_MODEL_REVISION"]}:
+        raise RuntimeError("installed target differs from the config; run make splash-pull")
+    draft = draft_snapshot(values).resolve()
+    linked = [entry["path"] for name, entry in record["files"].items() if name.startswith("draft/")]
+    if not linked or any(hub.snapshot_of(item) != draft for item in linked):
+        raise RuntimeError("installed draft differs from the config; run make splash-pull")
     return {
-        "source": values["SPLASH_MODEL_REPO"], "revision": revision,
-        "manifest_sha256": manifest_hash,
-        "artifact_set_sha256": manifest["artifact_set_sha256"],
+        "source": values["SPLASH_MODEL_REPO"], "revision": target["revision"],
+        "draft_source": values["SPLASH_DRAFT_REPO"], "draft_revision": values["SPLASH_DRAFT_REVISION"],
+        "family": record["family"], "target_format": record["target_format"],
+        "vision_format": record["vision_format"],
+        "model_record_sha256": digest(path / "model.json"),
         "full_artifact_hash_verification": True,
-        "loaded_model_layout_sha256": layout, "target_model_sha256": target,
     }
 
 
@@ -187,16 +184,15 @@ def pull(values):
     require_stopped()
     verify_release()
     from huggingface_hub import snapshot_download
-    snapshot = Path(snapshot_download(
-        repo_id=values["SPLASH_MODEL_REPO"], revision=values["SPLASH_MODEL_REVISION"],
-        allow_patterns=["manifest.json", "target/*", "draft/*", "vision/*", "tokenizer/*"],
-    ))
-    identity = verify_model(values, snapshot)
-    destination = model_path(values)
-    upstream = upstream_models()
-    upstream._retain_snapshot_ref(snapshot, values["SPLASH_MODEL_REPO"], destination)
-    upstream.install_snapshot(snapshot, destination)
-    print(f"Verified {identity['source']} at {identity['revision']}: {destination}")
+    snapshot_download(repo_id=values["SPLASH_DRAFT_REPO"], revision=values["SPLASH_DRAFT_REVISION"])
+    subprocess.run(installer(values, "prepare"), cwd=RELEASE, check=True)
+    # The installer pins only Hub sources; pin the draft snapshot too, so
+    # pruning the Hub cache cannot remove the files the assembly links.
+    _assembly, hub = upstream()
+    hub.pin(draft_snapshot(values), values["SPLASH_DRAFT_REPO"], model_path(values))
+    identity = verify_model(values)
+    print(f"Verified {identity['source']} at {identity['revision']} with draft "
+          f"{identity['draft_source']} at {identity['draft_revision']}")
 
 
 def command(values):
@@ -207,9 +203,11 @@ def command(values):
     port = int(os.environ.get("SPLASH_PORT", "8022"))
     if not 1 <= port <= 65535:
         raise ValueError("SPLASH_PORT must be 1..65535")
-    path = model_path(values)
-    return [str(PYTHON), "-u", str(RELEASE / "server/server.py"),
-            str(path / "target"), str(path / "draft"), "--tokenizer", str(path / "tokenizer"),
+    # The resolved assembly, as the release launcher serves it: the link may
+    # advance on a later install, the assembly it names does not.
+    path = model_path(values).resolve(strict=True)
+    return [str(PYTHON), "-u", "-P", "-m", "server.server",
+            str(path), "--tokenizer", str(path / "tokenizer"),
             "--model", values["SPLASH_MODEL_REPO"], "--binary", str(RELEASE / "engine/splash"),
             "--host", host, "--port", str(port), "--no-webui",
             "--max-context", values["SPLASH_MAX_LEN"],
@@ -245,7 +243,7 @@ def owned_group(owner):
     if leader and (leader["group"] != pid or leader["started"] != owner["started"]):
         raise RuntimeError("managed PID has been reused; refusing to signal it")
     members = {key: value for key, value in all_processes.items() if value["group"] == pid}
-    allowed = (owner["command"][0], owner["command"][2], str(ROOT / "start.sh"), str(ROOT / "runtime.py"),
+    allowed = (owner["command"][0], str(ROOT / "start.sh"), str(ROOT / "runtime.py"),
                owner["command"][owner["command"].index("--binary") + 1])
     if any(not member.get("state", "").startswith("Z")
            and not any(path in member["command"] for path in allowed)
@@ -304,13 +302,15 @@ def check_live(values, owner, identity):
         raise RuntimeError("selected model/config differs from the managed launch")
     if owner["pid"] not in owned_group(owner):
         raise RuntimeError("managed Splash server is not running")
+    # Identity is the fully hashed assembly verified before launch, served from
+    # its immutable resolved path in the launch argv. The native /status
+    # hashes describe layout, not content; they are retained as evidence.
+    if str(model_path(values).resolve(strict=True)) not in owner["command"]:
+        raise RuntimeError("the managed server does not serve the configured assembly")
     base = connect(owner)
     status = request(base + "/status")
-    live = status["identity"]
-    if (not status["ready"] or status["maximum_context_tokens"] != owner["context"]
-            or live["cache"]["loaded_model_layout_sha256"] != identity["loaded_model_layout_sha256"]
-            or live["q8"]["target_model_sha256"] != identity["target_model_sha256"]):
-        raise RuntimeError("live Splash context or target/draft identity does not match")
+    if not status["ready"] or status["maximum_context_tokens"] != owner["context"]:
+        raise RuntimeError("live Splash readiness or context does not match the launch")
     if [item["id"] for item in request(base + "/v1/models")["data"]] != [values["SPLASH_MODEL_REPO"]]:
         raise RuntimeError("live served model differs from the config")
     return base, status
@@ -425,7 +425,10 @@ def main():
         if owner["pid"] != os.getpid() or os.getpgrp() != os.getpid():
             raise RuntimeError("foreground child does not own the managed session")
         argv = owner["command"]
-        os.execv(argv[0], argv)
+        # The release launcher's environment: -P keeps the working directory
+        # off sys.path and PYTHONPATH names the release root.
+        os.execve(argv[0], argv, {**os.environ, "PYTHONPATH": str(RELEASE),
+                                  "PYTHONUNBUFFERED": "1", "TRANSFORMERS_VERBOSITY": "error"})
     DATA.mkdir(parents=True, exist_ok=True)
     with (DATA / ".lifecycle.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)

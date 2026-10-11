@@ -41,18 +41,49 @@ class SplashTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             runtime.config("../vllm/models/qwen3.8-27b")
 
-    def test_wrong_revision_rejected_before_package_verification(self):
+    def test_installed_assembly_must_match_configured_target_and_draft(self):
         values = runtime.config("qwen3.8-27b")
-        upstream = mock.Mock()
-        upstream._snapshot_revision.return_value = "0" * 40
-        with mock.patch.object(runtime, "upstream_models", return_value=upstream):
-            with self.assertRaisesRegex(RuntimeError, "revision differs"):
+        draft = Path("/hub/draft/snapshots") / values["SPLASH_DRAFT_REVISION"]
+        assembly, hub = mock.Mock(), mock.Mock()
+        assembly.verify.return_value = {
+            "sources": {"target": {"repo": values["SPLASH_MODEL_REPO"], "revision": "0" * 40}},
+            "files": {"draft/model.safetensors": {"path": str(draft / "model.safetensors")}}}
+        hub.snapshot.return_value = draft
+        hub.snapshot_of.return_value = draft.parent / ("1" * 40)
+        with mock.patch.object(runtime, "upstream", return_value=(assembly, hub)), \
+                mock.patch.object(runtime, "model_path", return_value=Path("/models/assembly")), \
+                mock.patch.object(runtime, "digest", return_value="0" * 64):
+            with self.assertRaisesRegex(RuntimeError, "installed target differs"):
                 runtime.verify_model(values)
-        upstream.verify_artifacts.assert_not_called()
+            assembly.verify.assert_called_once_with(Path("/models/assembly"), full=True)
+            assembly.verify.return_value["sources"]["target"]["revision"] = values["SPLASH_MODEL_REVISION"]
+            with self.assertRaisesRegex(RuntimeError, "installed draft differs"):
+                runtime.verify_model(values)
+            hub.snapshot_of.return_value = draft
+            assembly.verify.return_value.update(family="qwen3.8", target_format="mlx", vision_format=None)
+            identity = runtime.verify_model(values)
+            self.assertEqual(identity["draft_revision"], values["SPLASH_DRAFT_REVISION"])
+            assembly.verify.return_value["files"] = {}
+            with self.assertRaisesRegex(RuntimeError, "installed draft differs"):
+                runtime.verify_model(values)
+
+    def test_live_server_must_serve_the_configured_assembly(self):
+        values = runtime.config("qwen3.8-27b")
+        identity = {"source": values["SPLASH_MODEL_REPO"]}
+        owner = {"pid": 123, "model_identity": identity, "context": int(values["SPLASH_MAX_LEN"]),
+                 "command": ["python", "-u", "-P", "-m", "server.server", "/models/.resolved/other"]}
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(runtime, "owned_group", return_value={123: {}}), \
+                mock.patch.object(runtime, "model_path", return_value=Path(directory)), \
+                mock.patch.object(runtime, "connect") as connect:
+            with self.assertRaisesRegex(RuntimeError, "does not serve the configured assembly"):
+                runtime.check_live(values, owner, identity)
+            connect.assert_not_called()
 
     def test_bind_requires_auth_and_does_not_put_key_in_arguments(self):
         values = runtime.config("qwen3.6-35b-a3b")
-        with mock.patch.dict(os.environ, {"SPLASH_HOST": "0.0.0.0", "SPLASH_API_KEY": ""}):
+        with mock.patch.dict(os.environ, {"SPLASH_HOST": "0.0.0.0", "SPLASH_API_KEY": ""}), \
+                mock.patch.object(runtime, "model_path", return_value=Path(tempfile.gettempdir())):
             with self.assertRaisesRegex(RuntimeError, "requires SPLASH_API_KEY"):
                 runtime.command(values)
             os.environ["SPLASH_API_KEY"] = "test-secret"
@@ -106,6 +137,7 @@ class SplashTest(unittest.TestCase):
                     mock.patch.object(runtime, "PIDFILE", state / "server.json"), \
                     mock.patch.object(runtime, "LOG", state / "server.log"), \
                     mock.patch.object(runtime, "port_free"), \
+                    mock.patch.object(runtime, "model_path", return_value=state), \
                     mock.patch.object(runtime, "verify_release"), \
                     mock.patch.object(runtime, "verify_model"), \
                     mock.patch.object(runtime, "processes", return_value={123: {"started": "original"}}), \
@@ -154,14 +186,16 @@ class SplashTest(unittest.TestCase):
 
     def test_shutdown_waits_for_zombie_without_mistaking_it_for_foreign_process(self):
         owner = {"pid": 123, "started": "original",
-                 "command": ["python", "-u", "/runtime/server.py", "--binary", "/runtime/splash"]}
+                 "command": ["/runtime/python", "-u", "-P", "-m", "server.server", "/models/assembly",
+                             "--binary", "/runtime/splash"]}
         processes = {123: {"group": 123, "started": "original", "state": "Z",
                            "command": "<defunct>"}}
         with mock.patch.object(runtime, "processes", return_value=processes):
             self.assertEqual(runtime.owned_group(owner), processes)
-            processes[123].update(state="S", command="unrelated server")
-            with self.assertRaisesRegex(RuntimeError, "unrecognized"):
-                runtime.owned_group(owner)
+            for command in ("unrelated server", "unrelated -P server"):
+                processes[123].update(state="S", command=command)
+                with self.assertRaisesRegex(RuntimeError, "unrecognized"):
+                    runtime.owned_group(owner)
 
     def test_exiting_group_permission_error_does_not_imply_resource_release(self):
         with mock.patch.object(runtime.os, "killpg", side_effect=[
@@ -170,15 +204,15 @@ class SplashTest(unittest.TestCase):
             self.assertTrue(runtime.group_alive(123))
             self.assertFalse(runtime.group_alive(123))
 
-    def test_sparse_virtual_kv_cannot_overstate_physical_admission(self):
-        # Four cells need 400 B. The remaining 624 B fit three 200 B
-        # extents, regardless of the much larger virtual address space.
+    def test_kv_capacity_cannot_overstate_physical_admission(self):
+        # Four lanes' state needs 400 B. The remaining 624 B fit three 200 B
+        # extents, regardless of the much larger reported KV capacity.
         status = {"maximum_context_tokens": 64, "memory_plan": {
             "valid": True, "budget": {
                 "deficit_bytes": 0, "maximum_batch_width": 4,
-                "dynamic_budget_bytes": 1024, "active_state_cell_bytes": 100,
+                "dynamic_budget_bytes": 1024, "lane_state_bytes": 100,
                 "kv_extent_pages": 2, "kv_page_bytes": 100,
-                "kv_page_tokens": 32, "kv_virtual_tokens": 100000,
+                "kv_page_tokens": 32, "kv_capacity_tokens": 100000,
             },
         }}
         with mock.patch.dict(os.environ, {"AUDIT_BENCH_ACTIVE_SLOTS": "", "AUDIT_BENCH_KV_TOKENS": ""}):
@@ -211,6 +245,7 @@ class SplashTest(unittest.TestCase):
                     values, owner, "http://127.0.0.1:8022", status, {})), \
                 mock.patch.object(bench, "capacity", return_value=(4, 4358144)), \
                 mock.patch.object(bench, "run_benchmark") as run, \
+                mock.patch.object(runtime, "model_path", return_value=Path("/models/assembly")), \
                 mock.patch.object(urllib.request, "urlopen", return_value=response) as request:
             bench.main()
             chat = run.call_args.kwargs["openai_chat"]

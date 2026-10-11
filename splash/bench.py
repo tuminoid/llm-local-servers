@@ -16,12 +16,13 @@ def capacity(status):
     if not plan["valid"] or budget["deficit_bytes"]:
         raise RuntimeError("Splash reports an invalid memory plan")
     slots = int(budget["maximum_batch_width"])
-    # Virtual KV is sparse, not committed memory. Reserve the native active
-    # state cells before admitting a workload; retained cache states can evict.
-    available = budget["dynamic_budget_bytes"] - slots * budget["active_state_cell_bytes"]
+    # KV extents and each lane's recurrent state share the dynamic budget.
+    # Reserve the active lanes' state before admitting a workload; retained
+    # cache states can evict.
+    available = budget["dynamic_budget_bytes"] - slots * budget["lane_state_bytes"]
     extent = budget["kv_extent_pages"]
     pages = max(0, available // budget["kv_page_bytes"] // extent * extent)
-    pool = min(budget["kv_virtual_tokens"], pages * budget["kv_page_tokens"])
+    pool = min(budget["kv_capacity_tokens"], pages * budget["kv_page_tokens"])
     if slots <= 0 or pool < status["maximum_context_tokens"]:
         raise RuntimeError("Splash cannot admit one configured full-context request")
     for variable, limit in (("AUDIT_BENCH_ACTIVE_SLOTS", slots), ("AUDIT_BENCH_KV_TOKENS", pool)):
@@ -77,7 +78,7 @@ def main():
                 "active_slots": status["memory_plan"]["budget"]["maximum_batch_width"],
                 "benchmark_active_slots": slots, "kv_pool_tokens": pool,
                 "capacity_source": "/status.memory_plan.budget",
-                "capacity_kind": "sparse virtual KV bounded by dynamic memory minus active state cells",
+                "capacity_kind": "KV extents bounded by dynamic memory minus active lane state",
                 "memory_plan": status["memory_plan"], "release": owner["release"],
                 "prefix_caching": True, "speculative_decoding": "DFlash 2 defaults",
             },
@@ -85,7 +86,7 @@ def main():
         provenance_files={
             "adapter": Path(__file__), "lifecycle": runtime.ROOT / "runtime.py",
             "model_config": runtime.config_path(tag),
-            "package_manifest": runtime.model_path(values) / "manifest.json",
+            "model_record": runtime.model_path(values) / "model.json",
             "runtime_server": runtime.RELEASE / "server/server.py",
             "launcher": runtime.ROOT / "start.sh", "library": runtime.ROOT / "lib.sh",
             "makefile": runtime.ROOT.parent / "Makefile",
