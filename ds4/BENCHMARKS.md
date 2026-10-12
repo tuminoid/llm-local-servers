@@ -22,7 +22,7 @@ pre-commit form of this directory (dirty tree), so every JSON is
 | Structured JSON | pass | pass | pass | pass |
 | `json_schema` | fail (`ignored`) | fail (`ignored`) | fail (`ignored`) | fail (`ignored`) |
 | Unaided document | valid | valid | valid | valid |
-| Audit fitness | pass, 0/12 failed | pass, 1/12 (invented 1) | pass, 1/12 (no reasoning 1) | fail, 5/12 (runaway 4, no reasoning 1) |
+| Audit fitness (passed of 12) | pass, 12/12 | pass, 11/12 (failed: invented 1) | pass, 11/12 (failed: no reasoning 1) | fail, 7/12 (failed: runaway 4, no reasoning 1) |
 
 JSON in `results/`: `20260930T133325.585430+0000_ds4_qwen3-8-flash-next-q4.json`,
 `20260930T104359.910549+0000_ds4_deepseek-v4-flash-q2.json`,

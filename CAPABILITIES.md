@@ -153,46 +153,47 @@ Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
 SCHEMA_VERSION 5), run 2026-09-27/28 from fleet commit `bee4a24`:
 vLLM-Metal 0.30.0, Splash 1.0, LM Studio 0.4.25+1 (Splash engine 0.0.5,
 mlx-llm 1.11.0), Ollama 0.32.14 for MLX. Audit fitness ran 4 samples per
-task at each conf's declared sampling and fails at 2 failed samples of 12.
+task at each conf's declared sampling and passes with at least 11 of 12
+samples passed.
 The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet commit
 `036bfd0` (llm-audit-bench v2.1.0 plus the triage amendment `c0dc34a`),
 serving the mlx-community targets that replaced the packages. Splash 1.0
 passed both on 2026-09-27, but same-day 1.0 qwen3.6 reruns on 2026-10-12
-failed 3/12 and 2/12: that profile sits at the fitness limit on either
+passed only 9 and 10 of 12: that profile sits at the fitness limit on either
 release.
 
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (invented 1) | pass |
-| Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 1/12 (format 1) | fail |
-| LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 3/12 (instruction 1, invented 1, missed_findings 1) | fail |
-| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 1/12 (format 1) | fail |
-| LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | timeout (600 s) | pass 0/12 | fail |
-| vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 12/12 (missed_findings 1, no_reasoning 10, runaway 1) | fail |
-| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (runaway 1) | pass |
-| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 0/12 | fail |
-| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 5/12 (invented 1, leak 1, missed_findings 2, runaway 1) | fail |
+| Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
+| Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: format 1) | fail |
+| LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: instruction 1, invented 1, missed_findings 1) | fail |
+| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: format 1) | fail |
+| LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | timeout (600 s) | pass 12/12 | fail |
+| vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 0/12 (failed: missed_findings 1, no_reasoning 10, runaway 1) | fail |
+| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
+| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
+| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 7/12 (failed: invented 1, leak 1, missed_findings 2, runaway 1) | fail |
 
 Every checked row's live identity matched the revision or digest pinned
 in its model config.
 
 ### Findings
 
-- Five profiles pass: Splash `qwen3.6-35b-a3b` (1/12) and `qwen3.8-27b`
-  (0/12), LM Studio `qwen3.8-27b-splash` (0/12), and vLLM-Metal
-  `granite4.2-30b-4bit` (0/12) and `ornith1.5-35b-a3b-4bit` (1/12).
-- MiMo on vLLM-Metal fails 12 of 12: ten samples answered without
+- Five profiles pass: Splash `qwen3.6-35b-a3b` (11 of 12) and `qwen3.8-27b`
+  (12 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12), and vLLM-Metal
+  `granite4.2-30b-4bit` (12 of 12) and `ornith1.5-35b-a3b-4bit` (11 of 12).
+- MiMo on vLLM-Metal passes 0 of 12: ten samples answered without
   reasoning. Its API checks pass.
 - Every MLX-format profile outside vLLM-Metal fails schema enforcement
   (`ignored`): both Ollama MLX rows and both LM Studio MLX rows. Their
-  audit fitness passes except nemotron (5/12).
-- LM Studio `qwen3.6-35b-a3b-splash` fails audit fitness (3/12); Splash
-  1.0's own server ranged from 1/12 to 3/12 on the same package, so this
+  audit fitness passes except nemotron (7 of 12).
+- LM Studio `qwen3.6-35b-a3b-splash` fails audit fitness (9 of 12); Splash
+  1.0's own server ranged from 11 to 9 of 12 on the same package, so this
   shows no engine difference.
-- `gemma4-31b-4bit` passes audit fitness (0/12) and fails only schema
+- `gemma4-31b-4bit` passes audit fitness (12 of 12) and fails only schema
   enforcement, whose check hit the 600 s request timeout: the
   whitespace runaway v1 recorded.
 
@@ -205,19 +206,19 @@ from fleet commit `ad06c70` on vLLM 0.31.0 with Transformers 5.15.1;
 reports under `auditbench-trials/2026-10-10-v2-canonical/` on the host. The
 Ollama rows ran 2026-10-11 from `98e4052` on Ollama 0.40.3; reports under
 `auditbench-trials/2026-10-11-ollama-canonical/`. Audit fitness ran 4 samples
-per task at each conf's declared sampling and fails at 2 failed samples
-of 12.
+per task at each conf's declared sampling and passes with at least 11 of
+12 samples passed.
 
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (missed_findings 1) | pass |
-| vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 7/12 (invented 2, no_reasoning 3, wrong_verdicts 2) | fail |
-| vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | error | enforced | pass 0/12 | pass |
+| vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: missed_findings 1) | pass |
+| vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 5/12 (failed: invented 2, no_reasoning 3, wrong_verdicts 2) | fail |
+| vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | error | enforced | pass 12/12 | pass |
 
 Every row's live identity matched the revision or digest pinned in its
 model config.
@@ -225,13 +226,13 @@ model config.
 ### Findings
 
 - Seven profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the
-  W4A16 checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (0/12 each)
-  and `gemma4-26b-a4b-awq` (1/12), and Ollama `ornith1.5-35b-a3b` and
-  `qwen3.8-flash-next-gguf-iq4xs` (0/12 each).
-- Audit fitness is what v1 could not see. MiMo (7/12 on 0.31.0: no
+  W4A16 checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each)
+  and `gemma4-26b-a4b-awq` (11 of 12), and Ollama `ornith1.5-35b-a3b` and
+  `qwen3.8-flash-next-gguf-iq4xs` (12 of 12 each).
+- Audit fitness is what v1 could not see. MiMo (5 of 12 on 0.31.0: no
   reasoning, invented findings, wrong triage verdicts) passed every v1
-  check and fails here. So did GLM 4.7 Flash (4/12 on vLLM, 5/12 on
-  Ollama) and Qwen3 Coder (8/12 on vLLM, 7/12 on Ollama, loops, runaways
+  check and fails here. So did GLM 4.7 Flash (8 of 12 on vLLM, 7 on
+  Ollama) and Qwen3 Coder (4 of 12 on vLLM, 5 on Ollama, loops, runaways
   and missed findings); both were dropped from the A100 on 2026-10-12, as
   were the Ollama copies of Qwen3.6, Qwen3.8 27B and Gemma 4 26B, which
   passed but lose to their vLLM profiles. Their rows are in git history.
@@ -262,17 +263,17 @@ Run 2026-10-12 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
 from fleet commit `1e7318d` on Ollama 0.40.3; the report is retained with
 the trial evidence on the host.
 
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (format 1) | pass |
+| Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
 
 Its live identity matched the pinned digest. Saluki's exploratory runs at
-65,536 (q8_0 KV) and 131,072 (q4_0) gave 2/12, 1/12 and 1/12.
+65,536 (q8_0 KV) and 131,072 (q4_0) passed 10, 11 and 11 of 12.
 
 Every other RTX profile was dropped on 2026-10-12. The four that did not fit
 the GPU went first; the small models that passed v1 (Ollama `qwen3.5-4b`,
 `qwen3.5-9b`, `gemma4-e2b`, `gemma4-12b`, vLLM `qwen3.5-4b-awq`,
 `gemma4-e2b-awq`) then failed audit fitness on v2 on every runtime, in every
-run but one 1/12 of `gemma4-12b`'s five (2026-10-08 to 2026-10-12), and the
-vLLM `nemotron-nano-9b-awq` was in no inventory. Their v1 and v2 rows are in
-git history.
+run but one 11-of-12 pass among `gemma4-12b`'s five (2026-10-08 to
+2026-10-12), and the vLLM `nemotron-nano-9b-awq` was in no inventory. Their v1
+and v2 rows are in git history.

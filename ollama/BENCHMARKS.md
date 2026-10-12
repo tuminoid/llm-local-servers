@@ -94,7 +94,7 @@ configured context. Columns as in the A100 table.
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 3.26 | 3,377 | 218.3 | 7.8 | 3/3 | unavailable | pass | yes | `20261012T064953.361627+0000_ollama_saluki-27b_session.json` |
 
-- `saluki-27b` passes Capability Check v2 (1/12): 3.26 sessions/h over 13
+- `saluki-27b` passes Capability Check v2 (11 of 12): 3.26 sessions/h over 13
   steps, all 65 layers and its 10.90 GiB on the GPU. Turn decode falls from
   12.4 to 6.5 tok/s across the session. An exploratory run at 184,320 with
   3 layers on the CPU (15 steps) measured 3.65 with decode 12.7 to 8.4, so

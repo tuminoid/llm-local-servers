@@ -27,10 +27,10 @@ here and in git history.
 | Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 17.95 / 4x 16.88 | 4,309 | 1,652.2 | 185.2 | 13/15 | 4,199 / 370.7 | pass | no | `20261011T200744.932825+0000_splash_qwen3-6-35b-a3b_session.json` |
 | Splash `qwen3.8-27b` | 262,144 | 4 | 1,437,696 | 1x 6.73 / 4x 7.47 | 9,764 | 470.0 | 50.5 | 15/15 | 750 / 101.2 | pass | yes | `20261011T212839.601051+0000_splash_qwen3-8-27b_session.json` |
 
-- Both profiles pass Capability Check v2: `qwen3.6-35b-a3b` 1/12
-  (invented 1), `qwen3.8-27b` 0/12. `qwen3.8-27b` is publishable at 6.73
-  sessions/h; `qwen3.6-35b-a3b` leads the host at 17.95 but two of 15
-  sessions were incomplete.
+- Both profiles pass Capability Check v2: `qwen3.6-35b-a3b` 11 of 12 (failed:
+  invented 1), `qwen3.8-27b` 12 of 12. `qwen3.8-27b` is publishable at 6.73
+  sessions/h; `qwen3.6-35b-a3b` leads the host at 17.95 but two of 15 sessions
+  were incomplete.
 - Four streams beat one on `qwen3.8-27b` (1.11x) and stay just below one
   on `qwen3.6-35b-a3b` (0.94x).
 
@@ -62,10 +62,10 @@ here and in git history.
 - The Mac reached thermal state `fair` within two minutes of each
   canonical start; 1.0 does not report it.
 - `qwen3.6-35b-a3b` sits at the audit-fitness limit on both releases: the
-  same-day 1.0 checks failed 3/12 and 2/12 (invented paths, one
-  instruction miss, one runaway), and a 1.3.1 trial run failed 2/12 before
-  the canonical 1/12 pass. Its gate result is a draw from that rate, not a
-  release property.
+  same-day 1.0 checks passed only 9 and 10 of 12 (invented paths, one
+  instruction miss, one runaway), and a 1.3.1 trial run failed at 10 of 12
+  before the canonical 11-of-12 pass. Its gate result is a draw from that
+  rate, not a release property.
 
 ### Qwen3.8 27B UD-Q4_K_M GGUF, exploratory (2026-10-11)
 
@@ -81,7 +81,7 @@ Check v2 runs and one session on 1.3.1. It was not kept:
   `sk_live_...` token in a finding's evidence string, then repeats a
   180-character alphanumeric cycle until the 16,384-token budget ends, so
   the document never closes. The unaided document is valid; audit fitness
-  passed 0/12 both times. The MLX target passes the same check.
+  passed 12 of 12 both times. The MLX target passes the same check.
 - Its session (1x 6.66 / 4x 7.20 sessions/h, prefill 448.9 tok/s 1x) is
   no faster than the MLX target, which ran 6.41 to 6.73 at 1x and 7.47 to
   7.65 at 4x on 1.3.1.

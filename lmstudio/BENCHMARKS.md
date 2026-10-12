@@ -38,7 +38,7 @@ trial-directory copies remain, and the figures stay here and in git history.
   Capability Check v2 on schema enforcement. `qwen3.8-27b-mlx`'s bench was
   stopped to give the campaign's time to canonical runs.
 - `qwen3.6-35b-a3b-splash` publishes 18.70 sessions/h but fails audit
-  fitness (3/12).
+  fitness (9 of 12).
 
 ## Decode smoke
 
