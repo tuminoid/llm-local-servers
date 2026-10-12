@@ -144,6 +144,7 @@ proves nothing about parser compatibility.
 - vLLM: `qwen3.5-4b-awq`, `gemma4-e2b-awq`
 - Ollama retained profiles: `qwen3.5-4b`, `gemma4-e2b`, `qwen3.5-9b`,
   `gemma4-12b`, `qwen3.6-35b-a3b`, `qwen3.8-27b`
+- Ollama: `saluki-27b`
 - Ollama candidate outside the canonical throughput table:
   `muse-glimmer-30b`
 
@@ -293,7 +294,8 @@ RAM.
 
 Run 2026-10-11 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
 from fleet commit `98e4052` (`35d7343` for `qwen3.5-4b` and `gemma4-e2b`)
-on Ollama 0.40.3; reports retained with the trial evidence on the host.
+on Ollama 0.40.3, `saluki-27b` 2026-10-12 from `1e7318d`; reports
+retained with the trial evidence on the host.
 `qwen3.8-27b` and `muse-glimmer-30b` were not run (CPU-assisted, about
 1.4 tok/s), and the vLLM rows remain the v1 record below.
 
@@ -304,11 +306,14 @@ on Ollama 0.40.3; reports retained with the trial evidence on the host.
 | Ollama | `qwen3.5-9b` | pass | pass | pass | pass | pass | fail | pass | json_only | enforced | fail 3/12 (instruction 1, invented 1, wrong_verdicts 1) | fail |
 | Ollama | `qwen3.5-4b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 4/12 (format 1, instruction 1, missed_findings 1, wrong_verdicts 1) | fail |
 | Ollama | `gemma4-e2b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 11/12 (instruction 2, invented 3, missed_findings 2, wrong_verdicts 4) | fail |
+| Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (format 1) | pass |
 
 Every row's live identity matched its pinned digest.
 
-- Only `qwen3.6-35b-a3b` passes. Every v1 pass among the small models
-  fails audit fitness, the check v1 did not have.
+- `qwen3.6-35b-a3b` and `saluki-27b` pass. Every v1 pass among the small
+  models fails audit fitness, the check v1 did not have. Saluki's
+  exploratory runs at 65,536 (q8_0 KV) and 131,072 (q4_0) gave 2/12, 1/12
+  and 1/12.
 - `gemma4-12b` fails fitness on 0.40.1 too (4/12 and 6/12, two retests
   2026-10-11/12; one 1/12 pass on 2026-10-08), so it takes the 0.40.3
   default.

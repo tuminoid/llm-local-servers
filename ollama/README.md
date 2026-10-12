@@ -383,6 +383,38 @@ explicit experiment rather than the default:
 OLLAMA_KV_CACHE_TYPE=q4_0 make ollama-start MODEL=qwen3.8-27b
 ```
 
+## Underdog Saluki 27B
+
+The `saluki-27b` profile is the RTX's fully GPU-resident Qwen3.8-27B: a
+2-bit mixed-precision GGUF (`Underdog-Saluki-27B-1.0-IQ2-mix.gguf`, 7.9 GB,
+`ConwayResearch/Underdog-Saluki-27B-1.0` at the revision and sha256 in the
+conf). It is a local import, so `make ollama-pull` refuses it. Download the
+file into a staging directory of real files, check its sha256 against the
+conf, and put beside it a Modelfile of:
+
+```text
+FROM ./Underdog-Saluki-27B-1.0-IQ2-mix.gguf
+RENDERER qwen3.8
+PARSER qwen3.5
+```
+
+then import it through the managed server and run the lifecycle:
+
+```bash
+make ollama-start MODEL=saluki-27b
+OLLAMA_HOST=127.0.0.1:11434 ~/.local/share/ollama/runtime/v0.40.3/bin/ollama create saluki:27b-iq2mix -f Modelfile
+make ollama-capability MODEL=saluki-27b
+make ollama-bench MODEL=saluki-27b
+make ollama-stop
+```
+
+The import's manifest digest is pinned in the conf; a different digest
+means a different file or Modelfile. The operating point is 163,840 tokens
+with q4_0 KV, where weights, KV and compute buffer keep all 65 layers on
+the 12 GiB card under the launcher's no-display fit margin. Larger
+contexts move layers to the CPU; measurements are in
+[BENCHMARKS.md](BENCHMARKS.md).
+
 ## Using it from opencode
 
 The generated providers `ollama` (`127.0.0.1:11434`) and `ollama-remote`

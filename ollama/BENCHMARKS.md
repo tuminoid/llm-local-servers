@@ -98,8 +98,9 @@ Local host, RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, 62 GiB
 RAM. Ollama 0.40.3, Flash Attention, q8 KV, one slot. Canonical
 AuditBench v2 `session` profile (llm-audit-bench 2.1.0), run 2026-10-11 at
 each conf's declared sampling from fleet commit `98e4052` (`35d7343` for
-`qwen3.5-4b` and `gemma4-e2b`; it changed only documents). 16 tool steps at
-262,144 configured context, 9 at 131,072. Columns as in the A100 table.
+`qwen3.5-4b` and `gemma4-e2b`; it changed only documents), `saluki-27b`
+2026-10-12 from `1e7318d`. 16 tool steps at 262,144 configured context, 13
+at 163,840, 9 at 131,072. Columns as in the A100 table.
 `qwen3.8-27b` and the `muse-glimmer-30b` candidate were not run: both decode
 at about 1.4 tok/s CPU-assisted here.
 
@@ -109,11 +110,17 @@ at about 1.4 tok/s CPU-assisted here.
 | Ollama `qwen3.5-4b` | 131,072 | 1 | 131,072 | 1x 17.49 | 4,078 | 1,454.2 | 38.0 | 2/2 | 2,641 / 85.5 | fail | yes | `20261011T221046.044580+0000_ollama_qwen3-5-4b_session.json` |
 | Ollama `qwen3.5-9b` | 131,072 | 1 | 131,072 | 1x 14.73 | 2,867 | 1,180.4 | 29.0 | 3/3 | 1,741 / 52.7 | fail | yes | `20261011T213444.961145+0000_ollama_qwen3-5-9b_session.json` |
 | Ollama `gemma4-12b` | 262,144 | 1 | 262,144 | 1x 7.87 | 4,779.5 | 663.8 | 21.3 | 2/2 | unavailable | fail | yes | `20261011T204001.942580+0000_ollama_gemma4-12b_session.json` |
+| Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 3.26 | 3,377 | 218.3 | 7.8 | 3/3 | unavailable | pass | yes | `20261012T064953.361627+0000_ollama_saluki-27b_session.json` |
 | Ollama `qwen3.6-35b-a3b` (CPU-assisted) | 262,144 | 1 | 262,144 | 1x 3.06 | 4,817 | 287.2 | 27.3 | 1/2 | 316 / 34.8 | pass | no | `20261011T183913.645273+0000_ollama_qwen3-6-35b-a3b_session.json` |
 
-- No RTX Ollama profile both passes Capability Check v2 and publishes a
-  rate. `qwen3.6-35b-a3b` passes the gate but holds 14.9 of its 21.7 GiB
-  on the CPU, and one of its two reports did not end on its own.
+- `saluki-27b` is the one RTX Ollama profile that passes Capability Check
+  v2 (1/12) and publishes a rate: 3.26 sessions/h over 13 steps, all 65
+  layers and its 10.90 GiB on the GPU. Turn decode falls from 12.4 to 6.5
+  tok/s across the session. An exploratory run at 184,320 with 3 layers
+  on the CPU (15 steps) measured 3.65 with decode 12.7 to 8.4, so at depth
+  decode is bound by the q4_0 KV reads, not by those layers.
+- `qwen3.6-35b-a3b` passes the gate but holds 14.9 of its 21.7 GiB on the
+  CPU, and one of its two reports did not end on its own.
 - The four GPU-resident profiles fail audit fitness. `gemma4-12b` failed
   it on 0.40.1 as well (4/12 and 6/12, 2026-10-11/12), so its 6/12 on
   0.40.3 is the model, not the runtime.

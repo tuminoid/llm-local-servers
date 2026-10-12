@@ -205,8 +205,14 @@ and both MLX-engine profiles, and every Ollama MLX profile fail
 Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)
 cannot promote them. Details are in each runtime's BENCHMARKS.md.
 
-RTX PRO 3000, Ollama 0.40.3, AuditBench v2 `session` profile: no profile
-is ranked. The CPU-assisted `qwen3.6-35b-a3b` passes Capability Check v2
+RTX PRO 3000, Ollama 0.40.3, AuditBench v2 `session` profile (13 tool
+steps at 163,840 configured context):
+
+| Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Report decode 1x |
+| --: | -- | -- | --: | --: | --: | --: |
+| 1 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 3.26 | -- | 7.8 |
+
+Unranked: the CPU-assisted `qwen3.6-35b-a3b` passes Capability Check v2
 but its run is unpublishable (3.06/h, incomplete session); `gemma4-e2b`
 (40.98/h), `qwen3.5-4b` (17.49), `qwen3.5-9b` (14.73) and `gemma4-12b`
 (7.87) publish rates but fail audit fitness. See
