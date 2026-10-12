@@ -45,6 +45,7 @@ VLLM_TOOL_PARSER="${VLLM_TOOL_PARSER:-}"
 VLLM_KV_BYTES_PER_TOKEN="${VLLM_KV_BYTES_PER_TOKEN:-}"
 VLLM_KV_BYTES_PER_TOKEN_APC="${VLLM_KV_BYTES_PER_TOKEN_APC:-}"
 VLLM_HF_OVERRIDES="${VLLM_HF_OVERRIDES:-}"
+VLLM_STRUCTURED_OUTPUTS_CONFIG="${VLLM_STRUCTURED_OUTPUTS_CONFIG:-}"
 
 # shellcheck source=models/ornith1.5-35b-a3b-4bit.conf disable=SC1091
 source "${CONF_FILE}"
@@ -223,6 +224,14 @@ if [[ -n "${VLLM_HF_OVERRIDES}" ]]; then
     # JSON config patch, e.g. a static YaRN rope_parameters block for a
     # context-extended profile (same shape as the CUDA 512k conf).
     args+=(--hf-overrides "${VLLM_HF_OVERRIDES}")
+fi
+# Structured-output grammar options, e.g.
+# {"backend":"xgrammar","disable_any_whitespace":true} where a model fills
+# the schema grammar's whitespace until the budget runs out. vLLM rejects
+# disable_any_whitespace under the default "auto" backend at startup. One
+# argv element; vLLM validates the shape.
+if [[ -n "${VLLM_STRUCTURED_OUTPUTS_CONFIG}" ]]; then
+    args+=(--structured-outputs-config "${VLLM_STRUCTURED_OUTPUTS_CONFIG}")
 fi
 
 mkdir -p "$(dirname "${VLLM_METAL_PIDFILE}")"
