@@ -162,6 +162,14 @@ Host-specific settings (bind address, port, accelerator backend) belong in
 the launcher, not the model config. A model config should be portable
 between machines; the launcher adapts to the machine.
 
+### State pins and lists once
+
+A runtime version, archive digest, model revision or model list is set in
+code -- the root Makefile, a launcher, or a model config -- and prose points
+there instead of restating it. A version in prose is measurement
+provenance (what a retained result ran on) or dated history, never a claim
+about the current pin, which would go stale at the next bump.
+
 ### Host-adaptive defaults
 
 A launcher must degrade rather than fail when an optional host capability
@@ -299,6 +307,17 @@ pass.
 
 Capability expectations live in model configs and name documented controls.
 Never infer them from a parser name or registry capability list.
+
+### Keep the best provider per model
+
+A host serves each model from one runtime: the best measured one, judged by
+Capability Check v2 first and the AuditBench session rate second. When a
+second runtime on the same host serves the same model, drop the losing
+profile with its benchmark rows, capability rows and generated provider
+entries; launcher rationale that rests on its measurements stays, marked as
+from a dropped profile. LM Studio is the exception: its profiles stay beside
+the best provider as the entry-level option, because it installs cleanly on
+every platform.
 
 ### Client configs are generated
 

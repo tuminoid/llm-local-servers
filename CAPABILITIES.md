@@ -132,10 +132,8 @@ proves nothing about parser compatibility.
 - Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`
 - LM Studio: `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash`,
   `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx`
-- vLLM-Metal: `qwen3.6-35b-a3b-4bit`, `qwen3.8-27b-4bit`,
-  `gemma4-31b-4bit`,
-  `granite4.2-30b-4bit`, `ornith1.5-35b-a3b-4bit`
-- vLLM-Metal: `nemotron-3.5-lightning-30b-4bit`, `mimo-v2.6-9b-4bit`
+- vLLM-Metal: `gemma4-31b-4bit`, `granite4.2-30b-4bit`,
+  `ornith1.5-35b-a3b-4bit`, `mimo-v2.6-9b-4bit`
 - Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`
 
 ### RTX PRO 3000 Blackwell
@@ -174,10 +172,7 @@ release.
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | timeout (600 s) | pass 0/12 | fail |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 12/12 (missed_findings 1, no_reasoning 10, runaway 1) | fail |
-| vLLM-Metal | `nemotron-3.5-lightning-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 2/12 (missed_findings 2) | fail |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (runaway 1) | pass |
-| vLLM-Metal | `qwen3.6-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 2/12 (invented 1, missed_findings 1) | fail |
-| vLLM-Metal | `qwen3.8-27b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 3/12 (format 1, runaway 2) | fail |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 0/12 | fail |
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 5/12 (invented 1, leak 1, missed_findings 2, runaway 1) | fail |
 
@@ -189,13 +184,6 @@ in its model config.
 - Five profiles pass: Splash `qwen3.6-35b-a3b` (1/12) and `qwen3.8-27b`
   (0/12), LM Studio `qwen3.8-27b-splash` (0/12), and vLLM-Metal
   `granite4.2-30b-4bit` (0/12) and `ornith1.5-35b-a3b-4bit` (1/12).
-- On vLLM-Metal both Qwen profiles fail audit fitness where Splash and the
-  A100 pass the same models: `qwen3.6-35b-a3b-4bit` 2/12 (an invented path
-  and a finding filed against the wrong file), `qwen3.8-27b-4bit` 3/12
-  (two selection runaways at 32,768 tokens). Their 0.29.0 trial runs
-  failed the same way (qwen3.8 two runaways) or at 1/12 (qwen3.6), and a
-  qwen3.6 sample replayed token for token across the plugin bump, so this
-  is the 4-bit MLX models at sampling, not the 0.30.0 pin.
 - MiMo on vLLM-Metal fails 12 of 12: ten samples answered without
   reasoning. Its API checks pass.
 - Every MLX-format profile outside vLLM-Metal fails schema enforcement

@@ -31,7 +31,7 @@ fi
 VLLM_MODEL_REPO="${VLLM_MODEL_REPO:-}"
 VLLM_MODEL_REVISION="${VLLM_MODEL_REVISION:-}"
 VLLM_MODEL_INCLUDE="${VLLM_MODEL_INCLUDE:-}"
-# shellcheck source=models/qwen3.8-27b-4bit.conf disable=SC1091
+# shellcheck source=models/ornith1.5-35b-a3b-4bit.conf disable=SC1091
 source "${CONF_FILE}"
 
 for var in VLLM_MODEL_REPO VLLM_MODEL_REVISION; do

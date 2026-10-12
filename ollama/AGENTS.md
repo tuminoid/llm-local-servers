@@ -64,11 +64,10 @@ in [README.md](README.md); shared server conventions live in
 - Keep the benchmark job count equal to `OLLAMA_NUM_PARALLEL`.
 - Keep Flash Attention enabled when using quantized KV. q8 is the quality-safe
   default; q4 is an explicit experiment.
-- Gemma 4 requires Ollama 0.30.5, Nemotron 3.5 Lightning 0.32.9, Qwen3.8
-  0.32.12 and Saluki's local import 0.40.3; the Qwen3.6 manifest declares no
-  minimum. Profiles run on the root Makefile's default
-  (0.40.3) unless their conf declares `OLLAMA_RUNTIME_VERSION`. Update a
-  runtime's version and all reviewed per-platform GitHub asset digests
+- Each conf declares its model's minimum Ollama release as
+  `OLLAMA_MIN_VERSION`. Profiles run on the root Makefile's default unless
+  their conf declares `OLLAMA_RUNTIME_VERSION`. Update a runtime's version
+  and all reviewed per-platform GitHub asset digests
   (`OLLAMA_ARCHIVE_SHA256`, `_LINUX_ARM64`, `_DARWIN`, from the release's
   `sha256sum.txt`) together.
 - The remote deploy (`ollama-remote-*` targets) rsyncs the repo's ollama/

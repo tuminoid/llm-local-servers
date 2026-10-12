@@ -36,9 +36,9 @@ Serving measurements follow
   and recreates the venv from scratch on any pin change. Do not use
   upstream's `curl | bash` installer; it writes an unpinned user-global
   venv.
-- The plugin wheel ABI-locks `mlx==0.32.0` (its prebuilt `_paged_ops.so`
-  links MLX private headers). A pin bump means bumping the plugin wheel,
-  never overriding mlx independently.
+- The plugin wheel ABI-locks an exact mlx release (its prebuilt
+  `_paged_ops.so` links MLX private headers). A pin bump means bumping the
+  plugin wheel, never overriding mlx independently.
 - Model weights are served from `pull.sh`'s explicit per-config directory
   at a pinned HF revision. `start.sh` refuses to start when the directory
   is missing rather than letting vLLM download implicitly; the HF cache is
@@ -48,9 +48,10 @@ Serving measurements follow
 - Keep the server on loopback port 8021 (phase 0 reservation). 8000 is the
   CUDA vLLM server and 8001 its tunnel.
 - The memory budget default at >= 96 GiB is 0.91 with 5 admitted
-  sequences: the measured four-full-context pool for qwen3.8 on the 128 GB
-  M5 Max (1,061,760 tokens, 98 GB footprint, ~28 GB left, pressure
-  nominal), and the measured decode sweet spot on it (5 streams beat both
+  sequences: the measured four-full-context pool for the retired qwen3.8
+  8-bit checkpoint on the 128 GB M5 Max (1,061,760 tokens, 98 GB
+  footprint, ~28 GB left, pressure nominal; BENCHMARKS.md at `a7e8f3f`),
+  and the measured decode sweet spot on it (5 streams beat both
   4 and 6; 6 measured consistently below 5 -- a batch-shape effect, so do
   not "round up" the cap without re-measuring).
   Below 96 GiB the default is 0.50 with 2 sequences. The fraction resolves
@@ -76,13 +77,13 @@ Serving measurements follow
 - Prefix caching is a pinned per-model operating point: every conf sets
   `VLLM_PREFIX_CACHING` explicitly, because vLLM main resolves supported
   hybrids to align-mode APC ON and an unset knob would flip silently on
-  a core bump. Dense models pin `1` (their measured default). qwen3.6
-  pins `1`: align-mode APC was adopted after the plugin pin
-  moved to dev20260826100011, whose PR #634 fixed the decode decay that
+  a core bump. Dense models pin `1` (their measured default). Hybrid
+  confs that passed the align gate pin `1`: align-mode APC was adopted on
+  the qwen3.6 profile (dropped on 2026-10-12; see README.md) after the
+  plugin pin moved to dev20260826100011, whose PR #634 fixed the decode decay that
   blocked it (gates re-passed on every pinned venv since, most recently
   0.28.0: byte-identical cold-vs-hit correctness, 0/12 same-instant
-  bails, capability-v1).
-  The other hybrids pin `0`. The environment still wins over the conf;
+  bails, capability-v1). The environment still wins over the conf;
   `1` opts in, `0` forces off, empty (a conf without a pin) keeps the
   engine default. A hybrid conf that opts in must also declare
   `VLLM_KV_BYTES_PER_TOKEN_APC` (align mode makes every pool block carry
@@ -103,19 +104,14 @@ Serving measurements follow
   release proof.
 - The log is scoped to one run: truncated at start, removed on a clean
   stop, preserved when startup or teardown failed.
-- Model lineup: `qwen3.8-27b-4bit` is the sole serving profile (measured
-  strictly better decode than the retired 8-bit at identical prefill,
-  with a 1,264,961-token pool, 4.83x native). The 8-bit baseline numbers
-  live on in BENCHMARKS.md only.
-- NVFP4 safetensors do not load at this pin: unsloth/Qwen3.8-27B-NVFP4
-  failed engine init with 937 unmapped parameters (mlx-lm has no NVFP4
-  block-scale weight mapping), and the verdict transfers to
-  nvidia/Qwen3.6-35B-A3B-NVFP4 -- same format. Do not re-add an NVFP4
-  profile without re-testing on an mlx-lm bump; the 0.28.0 wheel still
-  pins the same-era mlx-lm 0.31.3 (commit dated 2026-08-05, predating
-  the failed trial), so no bump has occurred yet. The Ollama registry is
-  the only NVFP4 path on this host. Expect and accept loud load failures;
-  never paper over one with a dequantizing fallback.
+- NVFP4 safetensors did not load with an mlx-lm no newer than plugin
+  0.28.0's (0.31.3): unsloth/Qwen3.8-27B-NVFP4 failed engine init with 937
+  unmapped parameters (mlx-lm had no NVFP4 block-scale weight mapping),
+  and the verdict transfers to nvidia/Qwen3.6-35B-A3B-NVFP4 -- same
+  format. mlx-lm has moved since without a retest here; do not re-add an
+  NVFP4 profile until one passes. The Ollama registry is the only NVFP4
+  path on this host. Expect and accept loud load failures; never paper
+  over one with a dequantizing fallback.
 - Serving is text only: `start.sh` always passes `--language-model-only`,
   so a multimodal checkpoint's image processor is never built and its
   processor files (broken or absent in several MLX conversions) are never
@@ -130,11 +126,11 @@ Serving measurements follow
 ```bash
 make lint
 make vllm-metal-install
-make vllm-metal-pull  MODEL=qwen3.8-27b-4bit
-make vllm-metal-start MODEL=qwen3.8-27b-4bit
+make vllm-metal-pull  MODEL=ornith1.5-35b-a3b-4bit
+make vllm-metal-start MODEL=ornith1.5-35b-a3b-4bit
 make vllm-metal-status      # host line, KV sizing, NAX evidence
-make vllm-metal-capability MODEL=qwen3.8-27b-4bit
-make vllm-metal-bench MODEL=qwen3.8-27b-4bit
+make vllm-metal-capability MODEL=ornith1.5-35b-a3b-4bit
+make vllm-metal-bench MODEL=ornith1.5-35b-a3b-4bit
 make vllm-metal-stop        # must report the process group empty
 ```
 

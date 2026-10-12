@@ -27,9 +27,10 @@ GGUF tags keep using llama.cpp. The MLX profiles are named for the artifact
 with an `-mlx` suffix. On the M5, Qwen3.6 and Qwen3.8 are served by Splash,
 not Ollama.
 
-The fleet default runtime is 0.40.3. Profiles that need another release
-declare it per profile with `OLLAMA_RUNTIME_VERSION`: the M5's MLX profiles
-stay on 0.32.14 (the MLX runner's memory runaway is unproven on 0.40.x);
+The fleet default runtime is the root Makefile's `OLLAMA_VERSION`. Profiles
+that need another release declare it per profile with
+`OLLAMA_RUNTIME_VERSION`: the M5's MLX profiles stay on the release their
+runner was validated on (the MLX memory runaway is unproven on 0.40.x);
 remote lifecycle calls for such a profile also pass its `OLLAMA_VERSION` at
 the make level.
 
@@ -80,7 +81,7 @@ writable runtime path or port:
 | Resource | Remote Ollama value |
 | -- | -- |
 | Deployed scripts | `tmp/ollama/` |
-| Pinned binary | `tmp/ollama/runtime/v<OLLAMA_VERSION>/bin/ollama` (default 0.40.3) |
+| Pinned binary | `tmp/ollama/runtime/v<OLLAMA_VERSION>/bin/ollama` |
 | Model cache | `tmp/ollama/model-cache/` |
 | Pidfile, log, GPU baseline | `tmp/ollama/state/` |
 | Remote API | `127.0.0.1:11435` |
@@ -171,8 +172,7 @@ artifact change is intentional.
 
 `make ollama-install` verifies the official release checksum and extracts it
 under `${XDG_DATA_HOME:-~/.local/share}/ollama/runtime/`; it does not need
-root. The fleet's default Ollama release is 0.40.3. Model blobs stay in
-Ollama's normal per-user model store.
+root. Model blobs stay in Ollama's normal per-user model store.
 
 The launcher binds `127.0.0.1:11434`, enables Flash Attention, uses the
 profile's KV type, keeps one model loaded, and gives llama.cpp a 1024 MiB
@@ -218,7 +218,7 @@ then import it through the managed server and run the lifecycle:
 
 ```bash
 make ollama-start MODEL=saluki-27b
-OLLAMA_HOST=127.0.0.1:11434 ~/.local/share/ollama/runtime/v0.40.3/bin/ollama create saluki:27b-iq2mix -f Modelfile
+OLLAMA_HOST=127.0.0.1:11434 ~/.local/share/ollama/runtime/v"${OLLAMA_VERSION:?set to the root Makefile OLLAMA_VERSION}"/bin/ollama create saluki:27b-iq2mix -f Modelfile
 make ollama-capability MODEL=saluki-27b
 make ollama-bench MODEL=saluki-27b
 make ollama-stop

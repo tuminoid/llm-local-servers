@@ -4,7 +4,7 @@
 #
 # Everything is pinned: the vLLM-Metal wheel and the prebuilt vLLM macOS wheel
 # are downloaded from their GitHub releases and checksum-verified before
-# installation. Transitive pins (mlx==0.32.0, the mlx-lm git SHA) are declared
+# installation. Transitive pins (an exact mlx, the mlx-lm git SHA) are declared
 # by the vLLM-Metal wheel itself, whose prebuilt _paged_ops.so is ABI-locked
 # to that exact MLX.
 #

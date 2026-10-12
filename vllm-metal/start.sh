@@ -46,7 +46,7 @@ VLLM_KV_BYTES_PER_TOKEN="${VLLM_KV_BYTES_PER_TOKEN:-}"
 VLLM_KV_BYTES_PER_TOKEN_APC="${VLLM_KV_BYTES_PER_TOKEN_APC:-}"
 VLLM_HF_OVERRIDES="${VLLM_HF_OVERRIDES:-}"
 
-# shellcheck source=models/qwen3.8-27b-4bit.conf disable=SC1091
+# shellcheck source=models/ornith1.5-35b-a3b-4bit.conf disable=SC1091
 source "${CONF_FILE}"
 
 for var in VLLM_MODEL_REPO VLLM_MODEL_REVISION VLLM_SERVED_NAME VLLM_MAX_LEN; do
@@ -73,9 +73,9 @@ VLLM_HOST="${VLLM_HOST:-127.0.0.1}"
 VLLM_PORT="${VLLM_PORT:-8021}"
 
 # Prefix caching. Every model conf pins its decided default explicitly
-# (dense: 1, their measured engine default; qwen3.6: 1, align-mode APC
-# adopted 2026-08-26 at plugin dev20260826100011; qwen3.8: 1, adopted
-# 2026-08-27 on the same gate; other hybrids: 0) so a
+# (dense: 1, their measured engine default; hybrids that passed the align
+# gate: 1, align-mode APC adopted at plugin dev20260826100011 on the
+# since-dropped qwen3.6 (2026-08-26) and qwen3.8 (2026-08-27) profiles) so a
 # core bump cannot silently flip the resolved mode -- vLLM main resolves
 # supported hybrids to align-mode APC ON, unlike the 0.27.1 pin's
 # hybrid-off default. Environment wins over the conf; empty (a conf
@@ -94,8 +94,8 @@ VLLM_PREFIX_CACHING="${VLLM_PREFIX_CACHING:-}"
 # Metal paged path since plugin PR #514). That up-front bound is the
 # property whose absence in the Ollama MLX runner hard-reset this host.
 #
-# 0.91 is the measured four-full-context operating point for qwen3.8 on
-# the 128 GB M5 Max: 1,061,760-token pool (4.05x a native 262,144
+# 0.91 is the measured four-full-context operating point for the retired
+# qwen3.8 8-bit checkpoint on the 128 GB M5 Max: 1,061,760-token pool (4.05x a native 262,144
 # sequence), 98 GB planned footprint, ~28 GB left for everything else,
 # smoke-tested under load. The budget buys KV capacity only -- prefill and
 # decode rates measured identical at 0.60, 0.80, and this point. The
@@ -131,10 +131,11 @@ fi
 # in for the engine's measured ~4.3 GB overhead plus GDN reserve. The
 # result is rounded up to the next 0.01 and clamped to the host cap, so a
 # KV-cheap model (hybrid MoE at 20 KiB/token) gets a low bound and a
-# KV-expensive one lands back on the cap. Verified against the planner:
-# qwen3.6-35b-a3b-4bit (align APC, plugin 0.30.0) computes 0.46 ->
-# 1,403,241-token pool >= 5 x 262,144, while qwen3.8-27b-4bit computes
-# past the cap and keeps 0.91.
+# KV-expensive one lands back on the cap. Verified against the planner on
+# the since-dropped profiles: qwen3.6-35b-a3b-4bit (align APC, plugin
+# 0.30.0) computed 0.46 -> 1,403,241-token pool >= 5 x 262,144, the pool
+# ornith1.5-35b-a3b-4bit plans too, while qwen3.8-27b-4bit computed past
+# the cap and kept 0.91.
 if [[ -z "${VLLM_GPU_UTIL:-}" && -n "${VLLM_KV_BYTES_PER_TOKEN}" ]]; then
     # Align-mode prefix caching makes every pool block carry GDN state
     # besides its KV pages, so the effective per-token cost is the conf's

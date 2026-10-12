@@ -16,13 +16,14 @@ One config per artifact; the artifact decides the engine.
 | Other Apple Silicon | MLX (mlx-llm) | `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx` |
 | Linux, Windows | llama.cpp (GGUF) | none yet |
 
-The Splash configs load the packages [splash/](../splash/README.md) serves and
-the MLX configs the checkpoints [vllm-metal/](../vllm-metal/README.md) serves,
-at the same revisions. On an M3+ host use the Splash engine: its configs pass
-Capability Check v1 and decode 2.2-2.4x faster at one stream, while the MLX
-configs ignore schema enforcement. LM Studio runs Splash one request at a
-time, so the MLX engine only catches up at four streams; it remains the path
-for older Apple Silicon. Measurements are in [BENCHMARKS.md](BENCHMARKS.md).
+The Splash configs load the Splash packages [splash/](../splash/README.md)
+served before 1.3.1, and the MLX configs the mlx-community checkpoints it now
+serves, at the same revisions. On an M3+ host use the Splash engine: its
+configs pass Capability Check v1 and decode 2.2-2.4x faster at one stream,
+while the MLX configs ignore schema enforcement. LM Studio runs Splash one
+request at a time, so the MLX engine only catches up at four streams; it
+remains the path for older Apple Silicon. Measurements are in
+[BENCHMARKS.md](BENCHMARKS.md).
 
 ## Usage
 

@@ -19,18 +19,16 @@ start instead of taking the host down mid-prefill.
 The M5 NAX prefill kernel (merged upstream 2026-08-19) engages
 automatically on M5 GPUs for fp16/bf16 MHA/GQA/MQA prefill;
 `VLLM_METAL_DISABLE_NAX=1` forces the tiled fallback for A/B comparison.
-Hybrid GDN layers do not use it, so Qwen3.8-class models gain little --
-that checkpoint is here as the same-model comparison against the Ollama
-MLX baseline, not as the NAX showcase.
+Hybrid GDN layers do not use it, so Qwen3.x-class hybrids gain little.
 
 ## Usage
 
 ```bash
 make vllm-metal-install                        # pinned venv (one time)
-make vllm-metal-pull  MODEL=qwen3.8-27b-4bit   # pinned model revision
-make vllm-metal-start MODEL=qwen3.8-27b-4bit
+make vllm-metal-pull  MODEL=ornith1.5-35b-a3b-4bit   # pinned model revision
+make vllm-metal-start MODEL=ornith1.5-35b-a3b-4bit
 make vllm-metal-status
-make vllm-metal-bench MODEL=qwen3.8-27b-4bit
+make vllm-metal-bench MODEL=ornith1.5-35b-a3b-4bit
 make vllm-metal-stop
 ```
 
@@ -60,7 +58,7 @@ Everything is pinned in the root Makefile and verified by `install.sh`:
 | -- | -- |
 | vllm-metal | `VLLM_METAL_VERSION`, wheel sha256 from the GitHub release |
 | vllm | `VLLM_METAL_VLLM_VERSION`, the prebuilt macOS arm64 wheel, sha256 verified |
-| mlx | 0.32.0 exact, declared by the plugin wheel (ABI-locked) |
+| mlx | exact release declared by the plugin wheel (ABI-locked) |
 | mlx-lm | git SHA declared by the plugin wheel |
 | model weights | HF revision in `models/<name>.conf`, fetched by `pull.sh` |
 
@@ -79,7 +77,8 @@ The HF cache is treated as read-only and never served from.
 On unified memory the utilization fraction is the engine's whole footprint
 budget, resolved against Metal's recommended working-set limit (~106 GB on
 a 128 GB host). The default on hosts with 96 GB or more is 0.91 -- the
-measured four-full-context operating point for qwen3.8 on the M5 Max:
+measured four-full-context operating point for the retired qwen3.8 8-bit
+checkpoint on the M5 Max (its records in BENCHMARKS.md at `a7e8f3f`):
 a 1,061,760-token paged pool (4.05x a native 262,144 sequence), a 98 GB
 footprint planned at startup, and ~28 GB left over, with memory pressure
 nominal under load. The default admission cap is 5 sequences, the measured
@@ -109,13 +108,14 @@ models; for hybrid GDN models the resolved default depends on the core
 version -- off at 0.27.1, where align-mode caching was opt-in and
 experimental). Every model conf
 pins its decided value explicitly so a core bump cannot silently change
-the resolved mode: dense models pin `1` (their measured default),
-qwen3.6 pins `1` (align-mode APC adopted 2026-08-26 for audit
-workloads, see below), and the other hybrids pin `0`. The environment
-override below still wins.
+the resolved mode: dense models pin `1` (their measured default), and
+the hybrids pin `1` too, following the align-mode APC decision below,
+made on the qwen3.6 and qwen3.8 profiles that have since left this
+runtime (Splash serves both models on the M5). The environment override
+below still wins.
 
 ```bash
-VLLM_PREFIX_CACHING=1 make vllm-metal-start MODEL=qwen3.6-35b-a3b-4bit
+VLLM_PREFIX_CACHING=1 make vllm-metal-start MODEL=ornith1.5-35b-a3b-4bit
 ```
 
 For hybrid GDN models the opt-in carries GDN state in the pool. Align mode
@@ -124,9 +124,14 @@ state slab besides its KV pages; the conf declares the effective figure as
 `VLLM_KV_BYTES_PER_TOKEN_APC` and the launcher's utilization inversion uses
 it, so the full-native-sequence budget stays honest. Since plugin 0.30.0
 KV and state share one cache, and the figure is the planner's backing over
-its pool: for qwen3.6-35b-a3b-4bit 21,039 B/token against 20,480 plain, so
-the computed utilization is 0.46 and the pool 1,403,241 tokens (5.35x
-admission). Plugin 0.29.0 kept separate state pools at 42,838 B/token.
+its pool: for ornith1.5-35b-a3b-4bit 21,038 B/token against 20,480 plain,
+which plans a 1,403,241-token pool (5.35x admission). Plugin 0.29.0 kept
+separate state pools (42,838 B/token on the since-dropped qwen3.6
+profile).
+
+The history below was measured mostly on the qwen3.6, qwen3.8 and
+nemotron profiles dropped from this runtime on 2026-10-12; the confs and
+BENCHMARKS.md tables it cites are at `a7e8f3f`.
 
 Correctness was gated on 2026-08-24 with divergent conversations sharing
 a 15k-token prefix at temperature 0: cold compute and cache-hit compute
@@ -165,7 +170,7 @@ the pinned venv: the divergent-conversation correctness gate re-passed
 (byte-identical cold vs hit in both directions across a restart, TTFT
 4.26 s cold vs 0.22 s hit on a ~10k shared prefix), the same-instant
 pair probe passed 0/12, and capability-v1 passed on all three serving
-profiles. qwen3.6 now serves with APC ON by default (its conf pins
+profiles. qwen3.6 then served with APC ON by default (its conf pinned
 VLLM_PREFIX_CACHING=1): for audit workloads that resend the whole
 conversation each step, the warm-prefix TTFT win dominates the flat
 decode cost. The cache-off canonical rates stay authoritative for
@@ -216,8 +221,8 @@ that is host state, not the plugin. 0.29.0 loads the HF processor at
 startup, which forced the qwen3.8 conf revision to the mlx-community
 Hub fix 10c35caa (processor_config.json only, identical weights); the
 uncensored orcarouter profile, which failed the same load with no Hub
-fix available, was removed from the fleet. Nemotron-H serves for the
-first time (see its conf).
+fix available, was removed from the fleet. Nemotron-H served for the
+first time (conf at `a7e8f3f`).
 
 2026-09-27 re-gate at plugin 0.30.0 (paired core vLLM 0.30.0, MLX 0.32.1,
 mlx-lm `9e6acca`). Every profile starts. KV and Gated DeltaNet state now

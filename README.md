@@ -8,6 +8,11 @@ host in the fleet. The workload everything is tuned for is deep-context
 security-audit calls; [AGENTS.md](AGENTS.md) states the mission and the
 invariants.
 
+Each host keeps the best provider per model: one runtime, chosen by
+Capability Check v2 and then the AuditBench session rate. LM Studio is kept
+beside it as the entry-level option, since it installs cleanly on every
+platform.
+
 Serving performance is measured with AuditBench (v1 rows until each host
 is re-measured at v2), and API compatibility and audit fitness are gated
 with Capability Check v2 (v1 rows until each model is re-checked). Both
@@ -96,7 +101,7 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
   served name. Only the model the server was started with answers.
 - To give one project a provider permanently, copy the file to that
   project's root as `opencode.json`.
-- The Qwen3.8 vLLM and vLLM-Metal entries take a reasoning effort:
+- The Qwen3.8 vLLM entries take a reasoning effort:
   `opencode run --variant low|medium|xhigh`, default `xhigh`.
 - The remote providers need their tunnel running (`make vllm-remote-tunnel`
   or `make ollama-remote-tunnel`).
@@ -194,9 +199,9 @@ pass Capability Check v2 and are publishable:
 
 Unranked: Splash `qwen3.6-35b-a3b` (17.95/h) and vLLM-Metal
 `ornith1.5-35b-a3b-4bit` (5.23/h) pass the gate but their runs are
-unpublishable (incomplete sessions). The vLLM-Metal qwen3.6, qwen3.8,
-MiMo, nemotron and gemma4 profiles, LM Studio `qwen3.6-35b-a3b-splash`
-and both MLX-engine profiles, and every Ollama MLX profile fail
+unpublishable (incomplete sessions). The vLLM-Metal MiMo and gemma4
+profiles, LM Studio `qwen3.6-35b-a3b-splash` and both MLX-engine
+profiles, and every Ollama MLX profile fail
 Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)
 cannot promote them. Details are in each runtime's BENCHMARKS.md.
 

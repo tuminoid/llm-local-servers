@@ -1,6 +1,6 @@
 # Splash on Apple Silicon
 
-Managed [Splash](https://github.com/incoai/splash) 1.3.1, serving MLX
+Managed [Splash](https://github.com/incoai/splash), serving MLX
 4-bit targets with pinned DFlash 2 drafts, Q8 KV and prefix/state
 caching. These defaults serve repeated deep agent requests; the measured
 262K operating points are in [BENCHMARKS.md](BENCHMARKS.md).
@@ -29,8 +29,9 @@ The other profile is `qwen3.8-27b`. There is no default model. Stop before
 pulling another model or installing a runtime. `make splash-logs` follows
 the current log. A guard Makefile rejects commands from this directory.
 
-The installer verifies the release archive's SHA-256 and extracts the
-standalone runtime into `~/.local/share/splash/runtime/1.3.1`. It owns no
+The installer verifies the release archive pinned in the root Makefile
+(`SPLASH_VERSION`, `SPLASH_ARCHIVE_SHA256`) and extracts the standalone
+runtime into `~/.local/share/splash/runtime/<SPLASH_VERSION>`. It owns no
 Homebrew installation. `uv run` executes the repository's adapters using
 the release's bundled interpreter and dependency set; installation,
 status and teardown use uv-selected Python 3.12. The detached child uses

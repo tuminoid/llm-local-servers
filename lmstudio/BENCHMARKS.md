@@ -3,8 +3,9 @@
 Apple M5 Max, 128 GB, macOS 27.0, 140 W adapter behind the standard battery
 gate, 2026-09-24. LM Studio 0.4.25+1 with the Splash engine 0.0.5 (Splash
 1.0.2 source) and mlx-llm 1.11.0 (NAX build), 262,144 configured context.
-Checkpoints and revisions are those of the native `splash/` and `vllm-metal/`
-profiles.
+Checkpoints and revisions were those of the native `splash/` and
+`vllm-metal/` profiles; the vLLM-Metal comparison rows are in
+`vllm-metal/BENCHMARKS.md` at `a7e8f3f`.
 
 ## AuditBench v2: Apple M5 Max
 
@@ -50,8 +51,8 @@ tree on llm-audit-bench `382760d`.
 | -- | --: | -- | -- |
 | `qwen3.6-35b-a3b-splash` | 1 | 302.9 | Splash 1.0: 301.1 / 375.1 / 515.4 |
 | `qwen3.8-27b-splash` | 1 | 79.6 | Splash 1.0: 67.3 / 119.6 / 152.0 |
-| `qwen3.6-35b-a3b-mlx` | 4 | 134.5 / 212.6 / 307.5 | vLLM-Metal APC: 102.0 / 174.3 / 265.0 |
-| `qwen3.8-27b-mlx` | 4 | 33.1 / 54.6 / 80.8 | vLLM-Metal APC: 28.8 / 52.8 / 82.6 |
+| `qwen3.6-35b-a3b-mlx` | 4 | 134.5 / 212.6 / 307.5 | vLLM-Metal APC: 102.0 / 174.3 / 265.0 (dropped profile) |
+| `qwen3.8-27b-mlx` | 4 | 33.1 / 54.6 / 80.8 | vLLM-Metal APC: 28.8 / 52.8 / 82.6 (dropped profile) |
 
 - LM Studio serves Splash one request at a time and ignores `--parallel`.
   A trial run from the uncommitted tree admitted four qwen3.8 streams and
