@@ -129,9 +129,9 @@ OLLAMA_DIR := ollama
 # ollama-linux-amd64.tar.zst for the A100, _LINUX_ARM64 the arm64 build,
 # _DARWIN the universal ollama-darwin.tgz); ollama-install refuses an
 # unverified archive.
-# Default 0.40.3. On the A100 and RTX every GGUF profile keeps its digest pin
-# on it and passes Capability Check v2 where it passed on 0.32.14 or 0.34.2
-# (2026-10-11), except qwen3-coder-30b. 0.40.x keeps a second model index,
+# Default 0.40.3. On the A100 and RTX every GGUF profile kept its digest pin
+# on it and passed Capability Check v2 where it passed on 0.32.14 or 0.34.2
+# (2026-10-11). 0.40.x keeps a second model index,
 # manifests-v2/; 0.40.1's local compat migration rewrote older GGUF tags
 # there, which 0.40.3 no longer does on load (ollama/AGENTS.md).
 OLLAMA_VERSION ?= 0.40.3
@@ -142,8 +142,7 @@ OLLAMA_ARCHIVE_SHA256_DARWIN ?= a2d1d906a2c8febd9cb18f5c183854d0a6db5dc522940d68
 # conf: the M5's MLX (safetensors) profiles, whose MLX runner survives the
 # post-prefill commit memory runaway only here (0.33.2, 0.33.3 and 0.34.2
 # each fail harder; 0.34.2 hard-reset the M5 inside the first conversation;
-# 0.40.x is unproven there), and qwen3-coder-30b, whose tool calls come back
-# duplicated on 0.40.x. Install with
+# 0.40.x is unproven there). Install with
 #   make ollama-install OLLAMA_VERSION=0.32.14 \
 #     OLLAMA_ARCHIVE_SHA256_DARWIN=c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3500366942dc50cd1 \
 #     OLLAMA_ARCHIVE_SHA256=c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f \

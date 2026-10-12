@@ -73,7 +73,7 @@ short version, because each one aborts startup if reintroduced:
   config says so with `VLLM_ATTN_AUTO=1` (`VLLM_MLA=1` implies it). vLLM
   *raises* on an explicitly selected backend where it would skip one it chose
   itself, so a wrong guess aborts engine init instead of falling back. Two
-  distinct causes are already live here: MLA models take a disjoint backend
+  distinct causes were measured here: MLA models take a disjoint backend
   family (`Reason: ['MLA not supported']`), and multimodal models using
   PrefixLM bidirectional attention need a backend implementing `mm_prefix`
   (`Reason: ['partial multimodal token full attention not supported', ...]`).
@@ -158,7 +158,8 @@ sized as if that memory were free.
 
 The failure therefore arrives long after a clean start, and it kills the
 engine rather than failing the request. Measured on A100 with
-`glm4.7-flash-awq` at 0.98, after an ~11k prefill had already succeeded:
+`glm4.7-flash-awq` (since dropped) at 0.98, after an ~11k prefill had
+already succeeded:
 
 ```text
 torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 342.00 MiB.
@@ -302,9 +303,7 @@ decide what fits; use the baselines to see what a run actually consumed.
 | -- | -- | -- | -- | -- | -- |
 | `gemma4-26b-a4b-awq` | 15.4 | 10.2 @256k | 28.1 | yes | yes |
 | `qwen3.6-35b-a3b-awq` | 23.7 | 5.0 @256k | 31.2 | yes | yes |
-| `glm4.7-flash-awq` | 18.8 | 10.2 @198k | 31.5 | yes | yes |
 | `qwen3.8-27b` | 28.7 | 16.0 @256k | 47.4 | no | yes |
-| `qwen3-coder-30b` | 28.4 | 24.0 @256k | 54.9 | no | yes |
 
 Qwen3.8 serves only its native-context config: the 160k/320k/720k context
 profiles were retired as unused variants (measured capacity

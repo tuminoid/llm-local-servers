@@ -144,13 +144,9 @@ proves nothing about parser compatibility.
 
 ### A100-SXM4-80GB
 
-- vLLM: `qwen3-coder-30b`, `glm4.7-flash-awq`,
-  `qwen3.6-35b-a3b-awq`, `qwen3.8-27b`, `qwen3.8-27b-dflash2`,
+- vLLM: `qwen3.6-35b-a3b-awq`, `qwen3.8-27b`, `qwen3.8-27b-dflash2`,
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
-- Ollama: `qwen3-coder-30b`, `glm4.7-flash`, `qwen3.6-35b-a3b`,
-  `qwen3.8-27b-native`, `gemma4-26b`, `qwen3.8-flash-next-gguf-iq4xs`,
-  `ornith1.5-35b-a3b` (`qwen3-coder-30b` needs `OLLAMA_VERSION=0.32.14`
-  on every remote lifecycle target)
+- Ollama: `qwen3.8-flash-next-gguf-iq4xs`, `ornith1.5-35b-a3b`
 
 ## Apple M5 Max campaign
 
@@ -219,8 +215,7 @@ supplied by `.envrc`. Capability Check v2 (`capability-v2`,
 SCHEMA_VERSION 5), llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11
 from fleet commit `ad06c70` on vLLM 0.31.0 with Transformers 5.15.1;
 reports under `auditbench-trials/2026-10-10-v2-canonical/` on the host. The
-Ollama rows ran 2026-10-11 from `98e4052` on Ollama 0.40.3, 0.32.14 for
-`qwen3-coder-30b`; reports under
+Ollama rows ran 2026-10-11 from `98e4052` on Ollama 0.40.3; reports under
 `auditbench-trials/2026-10-11-ollama-canonical/`. Audit fitness ran 4 samples
 per task at each conf's declared sampling and fails at 2 failed samples
 of 12.
@@ -228,19 +223,12 @@ of 12.
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (missed_findings 1) | pass |
-| vLLM | `glm4.7-flash-awq` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 4/12 (instruction 1, invented 1, missed_findings 2) | fail |
 | vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 7/12 (invented 2, no_reasoning 3, wrong_verdicts 2) | fail |
-| vLLM | `qwen3-coder-30b` | pass | pass | unsupported | fail | fail | not run | pass | valid | whitespace_runaway | fail 8/12 (invented 1, loop 1, missed_findings 4, runaway 2) | fail |
 | vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| Ollama | `gemma4-26b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (invented 1) | pass |
-| Ollama | `glm4.7-flash` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 5/12 (incomplete 1, instruction 1, invented 1, wrong_verdicts 2) | fail |
 | Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| Ollama | `qwen3-coder-30b` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | fail 7/12 (invented 2, loop 1, missed_findings 3, missed_required 1) | fail |
-| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
-| Ollama | `qwen3.8-27b-native` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (format 1) | pass |
 | Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | error | enforced | pass 0/12 | pass |
 
 Every row's live identity matched the revision or digest pinned in its
@@ -248,27 +236,23 @@ model config.
 
 ### Findings
 
-- Ten profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the
+- Seven profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the
   W4A16 checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (0/12 each)
-  and `gemma4-26b-a4b-awq` (1/12), and Ollama `ornith1.5-35b-a3b`,
-  `qwen3.6-35b-a3b`, `qwen3.8-flash-next-gguf-iq4xs` (0/12 each),
-  `qwen3.8-27b-native` and `gemma4-26b` (1/12 each).
-- Audit fitness is what v1 could not see. GLM 4.7 Flash (4/12 on vLLM
-  0.31.0, 5/12 on Ollama), Qwen3 Coder (8/12 on vLLM, 7/12 on Ollama) and MiMo
-  (7/12 on 0.31.0: no reasoning, invented findings, wrong triage verdicts)
-  passed every v1 check and fail here; Coder's failures are loops,
-  runaways and missed findings. Gemma 4 26B on Ollama, which failed at
-  the limit (2/12) and schema enforcement (`truncated`) on 0.32.14, passes
-  both on 0.40.3.
+  and `gemma4-26b-a4b-awq` (1/12), and Ollama `ornith1.5-35b-a3b` and
+  `qwen3.8-flash-next-gguf-iq4xs` (0/12 each).
+- Audit fitness is what v1 could not see. MiMo (7/12 on 0.31.0: no
+  reasoning, invented findings, wrong triage verdicts) passed every v1
+  check and fails here. So did GLM 4.7 Flash (4/12 on vLLM, 5/12 on
+  Ollama) and Qwen3 Coder (8/12 on vLLM, 7/12 on Ollama, loops, runaways
+  and missed findings); both were dropped from the A100 on 2026-10-12, as
+  were the Ollama copies of Qwen3.6, Qwen3.8 27B and Gemma 4 26B, which
+  passed but lose to their vLLM profiles. Their rows are in git history.
 - `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` failed only schema
   enforcement (`whitespace_runaway`) through the 2026-09-27 campaign.
   Their confs now forbid grammar whitespace
   (`VLLM_STRUCTURED_OUTPUTS_CONFIG`, xgrammar), and both enforce the
   schema and pass. The 512k profile keeps the FP8 weights and differs from
   the former FP8 `qwen3.8-27b` only by static YaRN at factor 2.0.
-- Qwen3 Coder on vLLM still returns two calls for the one-call tool
-  fixture under automatic tool choice; the same checkpoint passes both
-  tool checks on Ollama.
 - `qwen3.8-flash-next-gguf-iq4xs`'s unaided document is `error`: that
   request kills the CUDA llama.cpp path with an illegal memory access and
   an HTTP 500 (reproducible since 0.33.3; diagnosis and retest condition

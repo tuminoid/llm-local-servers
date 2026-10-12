@@ -54,9 +54,9 @@ platform-specific CUDA wheels.
 
 ```bash
 make vllm-remote-bootstrap HOST=gpu-box   # create venv, install pinned vllm
-make vllm-remote-start     HOST=gpu-box MODEL=qwen3-coder-30b  # syncs, then starts
+make vllm-remote-start     HOST=gpu-box MODEL=qwen3.6-35b-a3b-awq  # syncs, then starts
 make vllm-remote-status    HOST=gpu-box
-make vllm-remote-bench     HOST=gpu-box MODEL=qwen3-coder-30b
+make vllm-remote-bench     HOST=gpu-box MODEL=qwen3.6-35b-a3b-awq
 make vllm-remote-stop      HOST=gpu-box
 ```
 
@@ -131,8 +131,7 @@ server was started with is live; `/v1/models` lists it. Limits come from
 An entry declares reasoning only where the model populates the field with no
 request control, since opencode sends no thinking toggle:
 `VLLM_CAP_REASONING=required` with `VLLM_CAP_REASONING_MODE=default`.
-`qwen3-coder-30b` is a non-thinking model and returns `reasoning: None`. Gemma
-4 inverts the usual sense: with `enable_thinking` false, the template default,
+Gemma 4 inverts the usual sense: with `enable_thinking` false, the template default,
 it pre-fills an empty closed thought block into the generation prompt, which
 actively suppresses reasoning. The model then reasons inline in the content
 and `message.reasoning` stays empty. Its configs therefore check reasoning
@@ -284,12 +283,13 @@ Which attention backends are legal depends on the model's architecture as much
 as on the GPU, and `start.sh` deliberately does not read `config.json` to find
 out. Such a model's config sets `VLLM_ATTN_AUTO=1`, `start.sh` then passes no
 `--attention-backend` at all, and vLLM's own capability-aware priority list
-chooses. Two live cases, from different causes:
+chooses. Two measured cases, from different causes:
 
-- `glm4.7-flash-awq` uses multi-head latent attention, which draws from a
+- `glm4.7-flash-awq` (dropped 2026-10-12; no current config uses MLA) used
+  multi-head latent attention, which draws from a
   disjoint family (`FLASH_ATTN_MLA`, `FLASHMLA`, `FLASHINFER_MLA`,
   `TRITON_MLA`) whose membership varies by compute capability just like the
-  dense one. Its config sets `VLLM_MLA=1`, which implies `VLLM_ATTN_AUTO`.
+  dense one. Its config set `VLLM_MLA=1`, which implies `VLLM_ATTN_AUTO`.
 - `gemma4-26b-a4b-awq` is multimodal and uses PrefixLM bidirectional attention
   over the image prefix. That needs a backend implementing `mm_prefix`:
   `TRITON_ATTN` does unconditionally, while `FLASH_ATTN` requires

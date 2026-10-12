@@ -29,9 +29,9 @@ not Ollama.
 
 The fleet default runtime is 0.40.3. Profiles that need another release
 declare it per profile with `OLLAMA_RUNTIME_VERSION`: the M5's MLX profiles
-and `qwen3-coder-30b` stay on 0.32.14 (the MLX runner's memory runaway and
-coder's duplicated tool calls on 0.40.x); remote lifecycle calls for such a
-profile also pass its `OLLAMA_VERSION` at the make level.
+stay on 0.32.14 (the MLX runner's memory runaway is unproven on 0.40.x);
+remote lifecycle calls for such a profile also pass its `OLLAMA_VERSION` at
+the make level.
 
 `qwen3.8-flash-next-gguf-iq4xs` (Qwen3.8-Flash-Next 125B-A6B, locally
 imported UD-IQ4_XS GGUF sized for the A100's 80 GB, locked to 2 x 262,144
@@ -124,19 +124,16 @@ The tunnel uses local port 11436, not local Ollama's 11434 or the vLLM
 tunnel's 8001. It uses `ExitOnForwardFailure=yes`, so a bind conflict exits
 instead of leaving a misleading SSH process.
 
-### A100 comparison profiles
+### A100 profiles
 
-The official profiles below were pulled, loaded, and benchmarked on A100.
-Detailed throughput, residency, and full-context proofs are in
+The A100 runs on Ollama only the two models no vLLM profile serves there;
+throughput, residency and full-context proofs are in
 [BENCHMARKS.md](BENCHMARKS.md):
 
-| A100 vLLM profile | Ollama config | Official Ollama model | Context | Retained slots |
-| -- | -- | -- | --: | --: |
-| `qwen3-coder-30b` | `qwen3-coder-30b` | `qwen3-coder:30b` | 262,144 | 4 |
-| `glm4.7-flash-awq` | `glm4.7-flash` | `glm-4.7-flash` | 202,752 | 8 |
-| `qwen3.6-35b-a3b-awq` | `qwen3.6-35b-a3b` | `qwen3.6:35b-a3b` | 262,144 | 1 |
-| `qwen3.8-27b` native | `qwen3.8-27b-native` | `qwen3.8:27b` | 262,144 | 1 |
-| `gemma4-26b-a4b-awq` | `gemma4-26b` | `gemma4:26b` | 262,144 | 8 |
+| Ollama config | Ollama model | Context | Slots |
+| -- | -- | --: | --: |
+| `ornith1.5-35b-a3b` | `ornith-1.5:35b` | 262,144 | 1 |
+| `qwen3.8-flash-next-gguf-iq4xs` | `qwen3.8-flash-next:ud-iq4xs` (local import) | 262,144 | 2 |
 
 ### Remote workflow
 
@@ -150,11 +147,9 @@ Only after the host is confirmed idle, the isolated lifecycle is:
 
 ```bash
 make ollama-remote-bootstrap HOST=<ssh-host>
-make ollama-remote-start MODEL=qwen3-coder-30b \
-  OLLAMA_NUM_PARALLEL=4 HOST=<ssh-host>
-make ollama-remote-pull MODEL=qwen3-coder-30b HOST=<ssh-host>
-make ollama-remote-bench MODEL=qwen3-coder-30b \
-  OLLAMA_NUM_PARALLEL=4 OLLAMA_BENCH_JOBS=4 HOST=<ssh-host>
+make ollama-remote-start MODEL=ornith1.5-35b-a3b HOST=<ssh-host>
+make ollama-remote-pull MODEL=ornith1.5-35b-a3b HOST=<ssh-host>
+make ollama-remote-bench MODEL=ornith1.5-35b-a3b HOST=<ssh-host>
 make ollama-remote-stop HOST=<ssh-host>
 ```
 

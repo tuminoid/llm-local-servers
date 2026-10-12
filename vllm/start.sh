@@ -117,7 +117,8 @@ fi
 #
 # This is not a preference. validate_configuration *raises* on a backend named
 # explicitly where it would merely skip one it chose itself, so a wrong guess
-# aborts engine init rather than degrading. Both live configs hit it:
+# aborts engine init rather than degrading. Both measured configs hit it
+# (glm4.7-flash-awq was dropped 2026-10-12):
 #
 #   glm4.7-flash-awq (MLA, a disjoint backend family):
 #     ValueError: Selected backend AttentionBackendEnum.FLASH_ATTN is not valid
@@ -226,7 +227,7 @@ fi
 #
 # The failure is therefore not at startup but at the first long prompt, and it
 # kills the engine rather than failing the request. Measured on A100 with
-# glm4.7-flash-awq at 0.98: a ~47k-token prefill dies with
+# glm4.7-flash-awq (since dropped) at 0.98: a ~47k-token prefill dies with
 #   torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 342.00 MiB.
 #   GPU 0 has a total capacity of 79.25 GiB of which 237.88 MiB is free.
 # followed by EngineDeadError, while an ~11k prefill had already succeeded.

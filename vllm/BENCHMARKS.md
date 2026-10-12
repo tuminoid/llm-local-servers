@@ -38,10 +38,8 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
 | vLLM `mimo-v2.6-9b-awq` | 262,144 | 8 | 2,229,526 | 1x 58.97 / 8x 93.99 | 3,263 | 5,032.5 | 109.1 | 16/27 | 7,663 / 175.5 | fail | no | `20261011T051029.048101+0000_vllm-cuda_mimo-v2-6-9b-awq_session.json` |
 | vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,797,230 | 1x 38.49 / 8x 58.67 | 5,328 | 6,219.1 | 111.4 | 27/27 | 4,591 / 152.2 | pass | yes | `20261011T053833.661461+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json` |
 | vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,909,862 | 1x 37.20 / 8x 45.99 | 1,388 | 2,116.0 | 63.6 | 27/27 | 9,441 / 176.1 | pass | yes | `20261011T003536.264070+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json` |
-| vLLM `qwen3-coder-30b` | 262,144 | 8 | 513,312 | 1x 36.77 / 2x 38.83 | 1,658 | 2,233.6 | 60.6 | 6/6 | 8,070 / 145.1 | fail | yes | `20261011T031626.644130+0000_vllm-cuda_qwen3-coder-30b_session.json` |
 | vLLM `qwen3.8-27b-512k` | 524,288 | 8 | 779,829 | 1x 14.49 / 4x 19.55 | 5,654 | 1,718.9 | 36.7 | 15/15 | 2,519 / 49.3 | pass | yes | `20261011T014610.294573+0000_vllm-cuda_qwen3-8-27b-512k_session.json` |
 | vLLM `qwen3.8-27b` | 262,144 | 8 | 954,019 | 1x 11.83 / 4x 21.48 | 10,860 | 1,827.6 | 49.8 | 15/15 | 2,870 / 75.4 | pass | yes | `20261010T220419.237789+0000_vllm-cuda_qwen3-8-27b_session.json` |
-| vLLM `glm4.7-flash-awq` | 202,752 | 8 | 1,069,808 | 1x 11.17 / 4x 11.09 | 10,232 | 1,721.4 | 36.8 | 6/15 | 4,632 / 105.1 | fail | no | `20261011T033438.496415+0000_vllm-cuda_glm4-7-flash-awq_session.json` |
 | vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 522,956 | 1x 8.40 / 2x 13.04 | 7,744 | 1,736.4 | 22.8 | 9/9 | 2,561 / 110.0 | pass | yes | `20261010T231305.575650+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json` |
 
 - Five of eight profiles pass Capability Check v2, against three on
@@ -64,8 +62,11 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
 - MiMo is the fastest profile (58.97 / 93.99) but 11 of 27 sessions did
   not finish their report's findings and it fails audit fitness, so
   neither its rate nor the model is usable.
-- GLM 4.7 Flash writes 10,232 output tokens per session and 9 of 15
-  sessions are incomplete; `qwen3-coder-30b` fails both tool-call checks.
+- `qwen3-coder-30b` (36.77 / 38.83 @2x, fails both tool-call checks and
+  fitness) and `glm4.7-flash-awq` (11.17 / 11.09 @4x, 9 of 15 sessions
+  incomplete, fails fitness) were also measured; both models were dropped
+  from the A100 on 2026-10-12, and their rows here and below are in git
+  history.
 
 ## TL;DR: same-hardware comparisons
 
@@ -92,8 +93,6 @@ queued pseudo-concurrency.
 
 | Model | Context | Raw KV pool | Pool/context | Near-context capacity proof |
 | -- | --: | --: | --: | -- |
-| `qwen3-coder-30b` | 262,144 | 513,152 | 1.96x | 2 x 245,762 in 289.67s |
-| `glm4.7-flash-awq` | 202,752 | 1,050,624 | 5.18x | 4 x 190,092 in 419.78s |
 | `qwen3.6-35b-a3b-awq` | 262,144 | 2,798,258 | 10.67x | 8 x 245,752 in 359.53s |
 | `mimo-v2.6-9b-awq` | 262,144 | 2,229,526 | 8.50x | 8 x 245,751 in 389.62s |
 | `qwen3.8-27b` | 262,144 | 746,456 | 2.85x | 2 x 245,748 in 326.04s |
@@ -105,17 +104,14 @@ one token; decode generates exactly 1,024 tokens per stream.
 
 | Model | 32k prefill | 64k prefill | 128k prefill | Decode 1x | Decode 2x | Decode 4x | Decode 8x |
 | -- | --: | --: | --: | --: | --: | --: | --: |
-| `qwen3-coder-30b` | 8,551.3 [8,537.7-8,565.0] | 5,275.6 [5,264.5-5,286.8] | 3,011.2 [3,010.0-3,012.4] | 149.49 [147.80-149.51] | 268.36 [268.35-289.43] | 521.63 [521.61-521.66] | 1,019.74 [1,019.57-1,019.95] |
-| `glm4.7-flash-awq` | 7,346.1 [7,333.5-7,358.8] | 4,367.1 [4,364.1-4,370.1] | 2,546.5 [2,546.5-2,546.6] | 87.41 [87.23-87.59] | 149.80 [149.57-150.02] | 230.77 [229.98-231.56] | 365.23 [364.08-366.39] |
 | `qwen3.6-35b-a3b-awq` | 15,733.8 [15,731.3-15,736.4] | 12,213.1 [12,162.5-12,263.7] | 8,388.9 [8,361.9-8,415.9] | 148.49 [148.45-148.53] | 275.57 [275.27-275.87] | 511.03 [510.14-511.93] | 879.80 [876.74-882.86] |
 | `mimo-v2.6-9b-awq` | 9,612.6 [9,612.0-9,613.3] | 8,424.6 [8,416.6-8,432.6] | 6,758.3 [6,738.1-6,778.6] | 172.62 [172.51-172.73] | 326.96 [326.93-327.00] | 628.27 [628.18-628.35] | 1,172.99 [1,172.96-1,173.02] |
 | `qwen3.8-27b` | 2,700.3 [2,693.4-2,707.1] | 2,407.7 [2,402.0-2,413.4] | 1,978.8 [1,978.7-1,978.9] | 48.88 [48.88-48.89] | 93.90 [93.90-93.91] | 181.88 [181.87-181.89] | 344.97 [344.86-345.09] |
 | `qwen3.8-27b-dflash2` | 2,702.5 [2,702.1-2,703.0] | 2,414.6 [2,414.4-2,414.8] | 1,991.6 [1,988.6-1,994.6] | 124.16 [122.44-125.88] | 243.83 [241.10-246.56] | 404.89 [402.96-406.82] | 597.01 [596.79-597.24] |
 | `gemma4-26b-a4b-awq` | 7,603.9 [7,601.4-7,606.4] | 4,820.9 [4,819.5-4,822.3] | 2,760.6 [2,759.3-2,761.8] | 169.40 [169.30-169.50] | 320.94 [315.21-326.66] | 589.79 [589.65-589.94] | 1,072.38 [1,072.06-1,072.71] |
 
-Observed 32k/64k/128k prompt counts were respectively 32,762/65,543/131,068
-for Qwen Coder, 32,766/65,547/131,060 for GLM, 32,780/65,547/131,071 for
-Qwen3.6, 32,779/65,546/131,070 for MiMo, 32,784/65,556/131,075 for Qwen3.8
+Observed 32k/64k/128k prompt counts were respectively 32,780/65,547/131,071
+for Qwen3.6, 32,779/65,546/131,070 for MiMo, 32,784/65,556/131,075 for Qwen3.8
 (both profiles), and 32,776/65,532/131,055 for Gemma.
 
 Audit cells are median calls/hour followed by `[min-max]`. The 32k and
@@ -123,8 +119,6 @@ half-context phases generate 1,024 tokens; deep generates 256.
 
 | Model | Audit 32k 1x | Audit 32k 2x | Audit 32k 4x | Audit 32k 8x | Audit half 1x | Audit deep 1x | Audit deep max |
 | -- | --: | --: | --: | --: | --: | --: | --: |
-| `qwen3-coder-30b` | 283.07 [283.06-283.08] | 378.34 [378.14-378.54] | 461.41 [460.63-462.19] | 515.11 [514.73-515.49] | 61.55 [61.51-61.58] | 27.20 [27.08-27.32] | 2x: 26.73 [26.68-26.78] |
-| `glm4.7-flash-awq` | 185.50 [185.33-185.66] | 241.23 [240.73-241.73] | 311.39 [310.91-311.88] | 367.58 [367.54-367.61] | 66.04 [65.96-66.12] | 36.37 [36.29-36.46] | 4x: 37.28 [37.22-37.35] |
 | `qwen3.6-35b-a3b-awq` | 379.64 [379.58-379.71] | 586.44 [584.23-588.64] | 820.55 [818.95-822.14] | 1,001.46 [1,000.17-1,002.76] | 148.35 [148.10-148.59] | 84.17 [84.01-84.33] | 4x: 84.80 [84.62-84.98] |
 | `mimo-v2.6-9b-awq` | 357.21 [357.05-357.37] | 504.21 [503.60-504.82] | 641.04 [640.65-641.42] | 736.33 [735.60-737.05] | 128.51 [128.33-128.69] | 76.11 [75.65-76.56] | 4x: 77.20 [77.07-77.34] |
 | `qwen3.8-27b` | 103.80 | 147.72 | 188.50 | 218.65 | 38.94 | 23.25 | 2x: 23.49 |
@@ -138,8 +132,7 @@ simultaneous near-full requests; on 0.30.0 its audit rates reproduce the
 cyber and agentic fine-tune of Qwen3.5-9B) is the decode leader at 1,172.99
 tok/s but trails qwen3.6 on every audit phase: 736.33 cold-32k at eight
 streams (-26%), 128.51 half-context (-13%), 77.20 deep (-9%). Gemma's
-1,072.38 and Qwen Coder's 1,019.74 decode wins likewise do not survive the
-prompt-heavy phases.
+1,072.38 decode win likewise does not survive the prompt-heavy phases.
 
 The DFlash 2 profile's gain is depth-dependent: 2.5x decode and +28%
 cold-32k calls at one stream, fading to +5% at eight, and a 9% audit_half
@@ -212,11 +205,9 @@ Medians over compliant samples; cached fraction from engine counters.
 | -- | -- | -- | --: | --: | -- |
 | `mimo-v2.6-9b-awq` | APC on | yes | 88.5 | 0.900 | 16/16 |
 | `qwen3.6-35b-a3b-awq` | APC on | 1/2 | 89.1 | 0.898 | 16/16 |
-| `qwen3-coder-30b` | APC on | yes | 45.2 | 0.902 | 16/16 |
 | `gemma4-26b-a4b-awq` | APC on | yes | 43.8 | 0.906 | 16/16 |
 | `qwen3.8-27b-dflash2` | APC on | yes | 23.3 | 0.890 | 16/16 |
 | `qwen3.8-27b` | APC on | yes | 21.5 | 0.899 | 16/16 |
-| `glm4.7-flash-awq` | APC on | NO | -- | 0.902 | 0/16 |
 
 Findings:
 
@@ -240,11 +231,6 @@ Findings:
   zone (see the operating-point section) only touches the verdict
   turn. This is the recommended qwen3.8 audit serving profile; plain
   stays the control and the choice for deep single-shots.
-- GLM 4.7 Flash is the one profile that cannot execute the shape: one
-  sample think-ran-away without a single tool call (16,384 reasoning
-  tokens, `finish_reason: length`), and the sample that completed all
-  17 turns recalled 0 of 16 findings -- it paraphrases the ledger
-  instead of reproducing it. Recorded non-compliant, not padded.
 - Gemma 4 26B completes with perfect recall but needed 18-20 turns for
   16 files: it occasionally calls hallucinated file names, recovers on
   the "no such file" reply, and finishes within the turn budget.
@@ -312,16 +298,12 @@ different lengths; v2 at sampling reverses it). On 0.28.0 the same legs
 measured 30.5 vs ~29.5 tok/s (depth-neutral); the difference is the
 0.29.0 core, not the drafter or the fixture.
 
-### First GLM serving data, and the qwen3.6 anchor
+### The qwen3.6 anchor
 
 | Profile | Cache pin | Replays/h | Turn walls | Cached | Verdict decode |
 | -- | -- | --: | -- | --: | -- |
 | `qwen3.6-35b-a3b-awq` | APC on | 18.3 | flat 2.3-2.5 s | 0.824 | 16,384 tok @ 98.0 tok/s |
-| `glm4.7-flash-awq` | APC on | 6.43 | 5.2 -> 9.2 s | 0.902 | 16,384 tok @ 35.3 tok/s |
 
-- GLM 4.7 Flash finally has serving numbers: the server side is healthy
-  (0.902 cached, clean 16k verdict decode). Its conversation-profile
-  non-compliance is model protocol behavior, not a serving defect.
 - The qwen3.6 anchor shows what a cache-friendly MoE looks like under
   replay: turns are nearly free and 85% of the 196.7 s wall is the
   forced verdict decode itself (167.0 s).
@@ -435,36 +417,6 @@ The measurements below predate AuditBench v1. They remain only as historical
 architecture and failure evidence; none of their rates feed the canonical
 tables above or the cross-runtime overview.
 
-### `qwen3-coder-30b`
-
-The process used 29.53 GiB for weights and 47.01 GiB for KV. Its four-stream
-decode result was 505 tok/s aggregate, or 3.44x the single-stream rate.
-
-Concurrency behaves differently by phase. Aggregate prefill stayed flat:
-2,745 tok/s for one stream, 2,795 for two, and 2,764 for four. Prefill was
-already compute-saturated, while decode still benefited from batching and
-phase overlap.
-
-Because 513,408 is less than two times 262,144, two absolute-maximum requests
-cannot coexist. At the earlier 0.90 utilization, four concurrent 140k prompts
-requested 563k tokens against a 444k pool and all completed through staged
-admission. Exceeding the pool queued rather than failed.
-
-fp8 KV would double the pool but is unavailable on sm_80.
-
-### `glm4.7-flash-awq`
-
-Three samples agreed within 0.1%. Decode was about 40% slower than
-Qwen3-Coder. AWQ weights are dequantized through Marlin on sm_80, which has no
-native 4-bit path, and Triton MLA is the only legal attention backend:
-
-```text
-out of potential backends: ['TRITON_MLA']
-```
-
-The MLA workspace requires utilization 0.92 rather than 0.98, but the remaining
-KV pool still holds 5.28 configured contexts. The cap costs no request capacity.
-
 ### `qwen3.6-35b-a3b-awq`
 
 Three samples kept prefill and decode within 1.6%. This is the fastest A100 row
@@ -539,15 +491,13 @@ Prompt text and token counts are identical where the tokenizer permits it.
 | Model | Prompt | 1 request | 2 concurrent | Aggregate |
 | -- | --: | --: | --: | --: |
 | `qwen3.6-35b-a3b-awq` | 249,684 | 48.6 s | 96.9 s | 5,156 tok/s |
-| `glm4.7-flash-awq` | 192,718 | 116.2 s | 229.2 s | 1,681 tok/s |
 | `gemma4-26b-a4b-awq` | 249,684 | 164.1 s | 326.1 s | 1,531 tok/s |
 
 Qwen3.6 is the clear full-context throughput leader. At approximately 250k it
-is 3.4x Gemma's aggregate rate. GLM cannot run the same token count because its
-native maximum is 202,752.
+is 3.4x Gemma's aggregate rate.
 
 Two concurrent requests took 1.00-1.01x as long as running them sequentially
-for all three models. Neither queued and neither was preempted; both shared an
+for both models. Neither queued and neither was preempted; both shared an
 already saturated GPU. Concurrency buys nothing at full context.
 
 That is the endpoint of a curve rather than a universal rule. On Qwen3.6,
@@ -573,41 +523,21 @@ The default of eight sequences exceeds what most pools hold at full context:
 
 | Model | Full configured contexts in pool |
 | -- | --: |
-| `qwen3-coder-30b` | 1.96x |
 | `qwen3.8-27b` | 2.86x |
-| `glm4.7-flash-awq` | 5.28x |
 | `gemma4-26b-a4b-awq` | 7.15x |
 | `qwen3.6-35b-a3b-awq` | 10.48x |
 
 That is not a misconfiguration. vLLM admits only sequences for which it can
 allocate blocks.
 
-The worst case was Qwen3-Coder with four concurrent 249,787-token requests:
-999,148 tokens of demand against a 513,408-token pool.
+The worst case measured was Qwen3-Coder (since dropped) with four concurrent
+249,787-token requests against a 513,408-token pool: the scheduler ran two,
+queued the rest with zero preemptions, and tail latency rose from 323 to
+659 seconds without thrashing.
 
-```text
-Running: 2 reqs
-Waiting: 1..3
-```
-
-The scheduler never ran more than two requests and queued the rest. The log
-showed zero preemptions, so no work was recomputed. Oversubscription increased
-tail latency from 323 to 659 seconds but did not thrash.
-
-It also added no separate throughput loss. Four requests measured 0.91x
-sequential throughput and two measured 0.92x. The loss belongs to concurrent
-full-context attention on this model, not to queueing.
-
-KV cost explains why full-context concurrency is free for one model and not
-another:
-
-| Model | KV per token | N=2 at ~250k |
-| -- | --: | --: |
-| `qwen3.6-35b-a3b-awq` | 20 KiB | 1.00x |
-| `qwen3-coder-30b` | 96 KiB | 0.92x |
-
-Two Qwen3-Coder sequences put about 48 GiB of cache under the attention kernel,
-while Qwen3.6's cheap hybrid cache breaks even.
+KV cost explains why full-context concurrency is free here: Qwen3.6's hybrid
+cache costs 20 KiB per token, and two ~250k sequences ran at 1.00x
+sequential.
 
 Short-prompt prefill does not extrapolate. Qwen3.6 falls from 12,355 tok/s at
 about 66k to 5,137 at 250k; Gemma falls from 5,067 to 1,522. Attention cost
@@ -620,8 +550,6 @@ The practical full-context conclusions are:
   has memory for roughly ten configured contexts.
 - `qwen3.8-27b` has measured cache capacity for two 256k requests, but that
   exact concurrent full-context load has not been timed.
-- `glm4.7-flash-awq` stops at 202,752 tokens.
-- `qwen3-coder-30b` cannot hold two 256k requests; the second queues.
 
 ## Benchmark pitfalls
 

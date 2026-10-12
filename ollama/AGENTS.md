@@ -81,9 +81,9 @@ in [README.md](README.md); shared server conventions live in
   (UD-IQ4_XS, 73 GB VRAM at 2 x 262,144 with q8_0 KV, locked to that
   shape -- llama.cpp has no fungible KV pool, so slots divide the
   context partition statically).
-- A profile whose conf declares `OLLAMA_RUNTIME_VERSION` (`qwen3-coder-30b`
-  on 0.32.14 among the remote ones) needs the same `OLLAMA_VERSION` at the
-  make level on remote lifecycle calls: the remote fixed environment
+- A remote profile whose conf declares `OLLAMA_RUNTIME_VERSION` (none
+  today) needs the same `OLLAMA_VERSION` at the make level on remote
+  lifecycle calls: the remote fixed environment
   resolves `OLLAMA_BIN` before the conf is read; a forgotten override fails
   loudly at the version guard.
 - 0.40.x keeps a second model index, `manifests-v2/` (one symlink per tag
@@ -134,10 +134,10 @@ in [README.md](README.md); shared server conventions live in
   separate VRAM counter. status.sh reports `footprint` phys footprints per
   group member there. macOS has no `setsid`; run.sh falls back to bash job
   control for the detached process group.
-- Qwen3 Coder 30B, GLM-4.7-Flash, Qwen3.6, Qwen3.8 native, and Gemma 4 26B
-  have canonical A100 baselines. The retained operating points prove four
-  near-full Coder slots and eight each for GLM and Gemma; Qwen3.6 and Qwen3.8
-  remain one-slot architectures under Ollama 0.32.14.
+- The A100 serves only what vLLM cannot there: Ornith 1.5 35B-A3B and
+  Qwen3.8-Flash-Next IQ4_XS. The Ollama copies of Qwen3.6, Qwen3.8 27B and
+  Gemma 4 26B lost to their vLLM profiles, and Qwen3 Coder and GLM-4.7-Flash
+  failed the gate on both runtimes; all five were dropped on 2026-10-12.
 - New and replacement measurements follow
   [AuditBench v2](https://github.com/tuminoid/llm-audit-bench).
   Publish only canonical results and update [../README.md](../README.md)
