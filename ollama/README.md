@@ -321,15 +321,15 @@ For a quick allocation check without the throughput workloads:
 make ollama-bench MODEL=qwen3.8-27b OLLAMA_BENCH_LOAD_ONLY=1
 ```
 
-The pinned Ollama release is 0.32.14. The model manifest requires at least
-0.32.12, so the older system binary is not used. `ollama-install` verifies the
-official release checksum and extracts it under
+The fleet's default Ollama release is 0.40.3. The model manifest requires
+at least 0.32.12, so the older system binary is not used. `ollama-install`
+verifies the official release checksum and extracts it under
 `${XDG_DATA_HOME:-~/.local/share}/ollama/runtime/`; it does not need root.
 Model blobs stay in Ollama's normal per-user model store.
 
 The launcher binds `127.0.0.1:11434`, enables Flash Attention, uses the
 profile's KV type, keeps one model loaded, and gives llama.cpp a 1024 MiB
-GPU-fit margin.
+GPU-fit margin, 256 MiB on a CUDA GPU that drives no display.
 
 ### Parallelism limitation
 

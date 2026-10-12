@@ -56,7 +56,18 @@ OLLAMA_KEEP_ALIVE="${OLLAMA_KEEP_ALIVE:--1}"
 OLLAMA_NO_CLOUD="${OLLAMA_NO_CLOUD:-1}"
 OLLAMA_LOAD_TIMEOUT="${OLLAMA_LOAD_TIMEOUT:-30m}"
 LLAMA_ARG_FIT="${LLAMA_ARG_FIT:-1}"
-LLAMA_ARG_FIT_TARGET="${LLAMA_ARG_FIT_TARGET:-1024}"
+# Device memory llama.cpp's fit leaves free. 1024 MiB leaves room for a
+# display compositor sharing the GPU (and for the rest of unified memory on
+# Apple Silicon); a CUDA GPU that drives no display needs only allocator
+# slack, and on a 12 GiB card the difference decides whether the last
+# layers stay on the GPU.
+if [[ -z "${LLAMA_ARG_FIT_TARGET:-}" ]]; then
+    LLAMA_ARG_FIT_TARGET=1024
+    if command -v nvidia-smi > /dev/null 2>&1 \
+        && [[ "$(nvidia-smi --query-gpu=display_active --format=csv,noheader 2> /dev/null | head -1)" == Disabled ]]; then
+        LLAMA_ARG_FIT_TARGET=256
+    fi
+fi
 
 for var in OLLAMA_MODEL OLLAMA_MIN_VERSION OLLAMA_CONTEXT_LENGTH OLLAMA_KV_CACHE_TYPE; do
     if [[ -z "${!var}" ]]; then
