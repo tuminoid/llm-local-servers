@@ -166,6 +166,12 @@ SCHEMA_VERSION 5), run 2026-09-27/28 from fleet commit `bee4a24`:
 vLLM-Metal 0.30.0, Splash 1.0, LM Studio 0.4.25+1 (Splash engine 0.0.5,
 mlx-llm 1.11.0), Ollama 0.32.14 for MLX. Audit fitness ran 4 samples per
 task at each conf's declared sampling and fails at 2 failed samples of 12.
+The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet commit
+`036bfd0` (llm-audit-bench v2.1.0 plus the triage amendment `c0dc34a`),
+serving the mlx-community targets that replaced the packages. Splash 1.0
+passed both on 2026-09-27, but same-day 1.0 qwen3.6 reruns on 2026-10-12
+failed 3/12 and 2/12: that profile sits at the fitness limit on either
+release.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -205,8 +211,9 @@ in its model config.
 - Every MLX-format profile outside vLLM-Metal fails schema enforcement
   (`ignored`): both Ollama MLX rows and both LM Studio MLX rows. Their
   audit fitness passes except nemotron (5/12).
-- LM Studio `qwen3.6-35b-a3b-splash` fails audit fitness (3/12) where
-  Splash's own server passes the same package (1/12).
+- LM Studio `qwen3.6-35b-a3b-splash` fails audit fitness (3/12); Splash
+  1.0's own server ranged from 1/12 to 3/12 on the same package, so this
+  shows no engine difference.
 - `gemma4-31b-4bit` passes audit fitness (0/12) and fails only schema
   enforcement, whose check hit the 600 s request timeout: the
   whitespace runaway v1 recorded.

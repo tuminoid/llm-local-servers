@@ -2,33 +2,91 @@
 
 ## AuditBench v2: Apple M5 Max
 
-Splash 1.0, 64 GiB native memory cap, four active slots, DFlash 2, Q8 KV and
-state/prefix caching at release defaults. Canonical AuditBench v2 `session`
-profile (llm-audit-bench v2.0.0 plus the amendments released as v2.1.0; each
-JSON records its harness hash), run 2026-09-27 to 2026-09-29 on the M5 Max
-(128 GB, macOS 27.0) from fleet commit `bee4a24` at each conf's declared
-sampling. The harness measured 1 stream and the largest of 2/4/8 that fits
-admission and the KV pool: tool steps from 32k evidence, 16 at 262,144
-configured context and 9 at 131,072, report at depth. Sessions/h is the
-median over 2-3 samples; complete counts sessions whose report ended on its
-own and named at least 7/8 of its findings. pp512/tg128 is the
+Splash 1.3.1, 64 GiB native memory cap, four active slots, DFlash 2, Q8 KV,
+state/prefix caching, the dense target's Neural Engine FFN split and idle
+weight release at release defaults; mlx-community 4-bit targets with their
+DFlash2 drafts pinned in the model configs. Canonical AuditBench v2
+`session` profile (llm-audit-bench v2.1.0 plus the triage amendment
+`c0dc34a`; each JSON records its harness hash), run 2026-10-11 to
+2026-10-12 on the M5 Max (128 GB, macOS 27.0.1) from fleet commit `036bfd0`
+at each conf's declared sampling. The harness measured 1 stream and the
+largest of 2/4/8 that fits admission and the KV pool: tool steps from 32k
+evidence, 16 at 262,144 configured context, report at depth. Sessions/h is
+the median over 3 samples; complete counts sessions whose report ended on
+its own and named at least 7/8 of its findings. pp512/tg128 is the
 llama-bench-method reference (one stream, greedy, depth ~0), not a serving
 result. JSON files are retained under
-`~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`. Every later
-section of this file is AuditBench v1 or older, never comparable with v2.
-Their top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
-trial-directory copies remain, and the figures stay here and in git history.
+`~/.local/state/auditbench/trials/2026-10-11-splash-1.3.1/canonical/`.
+Every later top-level section of this file is AuditBench v1 or older,
+never comparable with v2. Their top-level retained JSON on the M5 and A100 was
+removed on 2026-09-30; trial-directory copies remain, and the figures stay
+here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 19.77 / 4x 15.93 | 5,055 | 1,874.4 | 186.0 | 13/15 | 3,766 / 333.1 | pass | no | `20260927T233225.886443+0000_splash_qwen3-6-35b-a3b_session.json` |
-| Splash `qwen3.8-27b` | 262,144 | 4 | 1,445,888 | 1x 7.70 / 4x 7.53 | 8,601 | 502.2 | 55.0 | 15/15 | unavailable | pass | yes | `20260928T005848.757558+0000_splash_qwen3-8-27b_session.json` |
+| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 17.95 / 4x 16.88 | 4,309 | 1,652.2 | 185.2 | 13/15 | 4,199 / 370.7 | pass | no | `20261011T200744.932825+0000_splash_qwen3-6-35b-a3b_session.json` |
+| Splash `qwen3.8-27b` | 262,144 | 4 | 1,437,696 | 1x 6.73 / 4x 7.47 | 9,764 | 470.0 | 50.5 | 15/15 | 750 / 101.2 | pass | yes | `20261011T212839.601051+0000_splash_qwen3-8-27b_session.json` |
 
-- Both profiles pass Capability Check v2. `qwen3.8-27b` is publishable at
-  7.70 sessions/h; `qwen3.6-35b-a3b` leads the host at 19.77 but two of
-  15 sessions were incomplete.
-- Four streams lose to one on both models (qwen3.6 15.93, qwen3.8 7.53):
-  on this workload Splash serves one session best.
+- Both profiles pass Capability Check v2: `qwen3.6-35b-a3b` 1/12
+  (invented 1), `qwen3.8-27b` 0/12. `qwen3.8-27b` is publishable at 6.73
+  sessions/h; `qwen3.6-35b-a3b` leads the host at 17.95 but two of 15
+  sessions were incomplete.
+- Four streams beat one on `qwen3.8-27b` (1.11x) and stay just below one
+  on `qwen3.6-35b-a3b` (0.94x).
+
+### Against Splash 1.0
+
+- The 1.0 rows of 2026-09-27 served the Splash packages that 1.3.1 no
+  longer loads (upstream #335), from fleet commit `bee4a24` on macOS 27.0
+  (`20260927T233225.886443+0000_splash_qwen3-6-35b-a3b_session.json` and
+  `20260928T005848.757558+0000_splash_qwen3-8-27b_session.json` under
+  `~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`). Against
+  them one stream fell on both models (qwen3.6 19.77 to 17.95, qwen3.8
+  7.70 to 6.73), four streams held or rose (15.93 to 16.88, 7.53 to 7.47),
+  and near-context input fell (qwen3.6 1,436 / 1,449 to 1,371 / 1,316
+  tok/s at 1x / 4x, qwen3.8 405 / 405 to 376 / 375). The host moved from
+  macOS 27.0 to 27.0.1 in between.
+- For `qwen3.6-35b-a3b` that loss is the host on the day, not the
+  release. A same-day 1.0 session from fleet commit `862ec7d`, run on
+  2026-10-12 right after the 1.3.1 rows, measured 1x 16.79 / 4x 14.15
+  sessions/h, near-context 1,321 / 1,297 tok/s and pp512 3,647, each below
+  1.3.1 (`20261012T003601.579185+0000_splash_qwen3-6-35b-a3b_session.json`,
+  in the trial's `ab-1.0/`). An earlier 1.3.1 trial session that day
+  reached 1,434 tok/s near-context at 1x
+  (`20261011T114855.523321+0000_splash_qwen3-6-35b-a3b_session.json`, in
+  `results/`).
+- The `qwen3.8-27b` drop is not attributed: its target (package to
+  mlx-community 4-bit), the Neural Engine FFN split new in 1.3.0 and the
+  OS all changed, and there is no same-day 1.0 qwen3.8 run. Its 1.3.1
+  trial session measured 384 tok/s near-context at 1x.
+- The Mac reached thermal state `fair` within two minutes of each
+  canonical start; 1.0 does not report it.
+- `qwen3.6-35b-a3b` sits at the audit-fitness limit on both releases: the
+  same-day 1.0 checks failed 3/12 and 2/12 (invented paths, one
+  instruction miss, one runaway), and a 1.3.1 trial run failed 2/12 before
+  the canonical 1/12 pass. Its gate result is a draw from that rate, not a
+  release property.
+
+### Qwen3.8 27B UD-Q4_K_M GGUF, exploratory (2026-10-11)
+
+Splash 1.1.0 and later also serve `unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_M`,
+which upstream recommends over the uniform 4-bit MLX checkpoint for
+thinking loops (upstream #326). An uncommitted profile at revision
+`4ca72078` with the same DFlash2 draft and sampling ran two Capability
+Check v2 runs and one session on 1.3.1. It was not kept:
+
+- `json_schema` failed both runs with identical retained output (the
+  first 8,000 of 17,721 characters; equal length): the check decodes
+  greedily, and under the schema grammar the model invents a
+  `sk_live_...` token in a finding's evidence string, then repeats a
+  180-character alphanumeric cycle until the 16,384-token budget ends, so
+  the document never closes. The unaided document is valid; audit fitness
+  passed 0/12 both times. The MLX target passes the same check.
+- Its session (1x 6.66 / 4x 7.20 sessions/h, prefill 448.9 tok/s 1x) is
+  no faster than the MLX target, which ran 6.41 to 6.73 at 1x and 7.47 to
+  7.65 at 4x on 1.3.1.
+- Retest when a release changes grammar-constrained decoding or the GGUF
+  target kernels: rerun Capability Check v2 first.
 
 ## Managed campaign, Apple M5 Max, 2026-09-19 to 2026-09-20
 
