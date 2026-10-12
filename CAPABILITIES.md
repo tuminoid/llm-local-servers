@@ -11,9 +11,8 @@ the tables below -- is defined in
 (`docs/CAPABILITY.md`); this file holds the fleet's campaign inventory and
 retained results.
 
-The M5 and A100 tables are Capability Check v2 campaigns; the RTX table
-below is v1 until its v2 campaign lands. A v1 pass is not a v2 pass:
-re-check a model at v2 before promoting it.
+Every host table is a Capability Check v2 campaign. A v1 pass is not a v2
+pass: re-check a model at v2 before promoting it.
 
 Capability results never rank model quality or serving performance.
 
@@ -141,9 +140,7 @@ proves nothing about parser compatibility.
 
 ### RTX PRO 3000 Blackwell
 
-- vLLM: `qwen3.5-4b-awq`, `gemma4-e2b-awq`
-- Ollama: `qwen3.5-4b`, `gemma4-e2b`, `qwen3.5-9b`, `gemma4-12b`,
-  `saluki-27b`
+- Ollama: `saluki-27b`
 
 ### A100-SXM4-80GB
 
@@ -289,101 +286,21 @@ RAM.
 
 ### Capability Check v2, Ollama 0.40.3
 
-Run 2026-10-11 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
-from fleet commit `98e4052` (`35d7343` for `qwen3.5-4b` and `gemma4-e2b`)
-on Ollama 0.40.3, `saluki-27b` 2026-10-12 from `1e7318d`; reports
-retained with the trial evidence on the host. The vLLM rows remain the v1
-record below.
+Run 2026-10-12 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
+from fleet commit `1e7318d` on Ollama 0.40.3; the report is retained with
+the trial evidence on the host.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Ollama | `gemma4-12b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 6/12 (instruction 1, missed_findings 1, runaway 1, wrong_verdicts 3) | fail |
-| Ollama | `qwen3.5-9b` | pass | pass | pass | pass | pass | fail | pass | json_only | enforced | fail 3/12 (instruction 1, invented 1, wrong_verdicts 1) | fail |
-| Ollama | `qwen3.5-4b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 4/12 (format 1, instruction 1, missed_findings 1, wrong_verdicts 1) | fail |
-| Ollama | `gemma4-e2b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 11/12 (instruction 2, invented 3, missed_findings 2, wrong_verdicts 4) | fail |
 | Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 1/12 (format 1) | pass |
 
-Every row's live identity matched its pinned digest.
+Its live identity matched the pinned digest. Saluki's exploratory runs at
+65,536 (q8_0 KV) and 131,072 (q4_0) gave 2/12, 1/12 and 1/12.
 
-- Only `saluki-27b` passes. Every v1 pass among the small models fails
-  audit fitness, the check v1 did not have. Saluki's
-  exploratory runs at 65,536 (q8_0 KV) and 131,072 (q4_0) gave 2/12, 1/12
-  and 1/12.
-- `gemma4-12b` fails fitness on 0.40.1 too (4/12 and 6/12, two retests
-  2026-10-11/12; one 1/12 pass on 2026-10-08), so it takes the 0.40.3
-  default.
-- `qwen3.5-9b` fails the tool loop on 0.40.3 in both runs (2026-10-11)
-  and passed it on 0.32.14 (2026-10-10, re-pinned digest) and in v1; it
-  fails audit fitness on both runtimes.
-
-### Capability Check v1, 2026-09-10
-
-Run date: 2026-09-10, protocol SCHEMA_VERSION 4, vLLM 0.27.1 and Ollama
-0.32.14; rows for profiles since dropped from this host are removed. This
-is the host's first Capability Check v1 record; the partial manual parser and
-tool-call notes in the benchmark documents are superseded and were not
-promoted into it.
-
-Both vLLM rows were re-run on 2026-09-11 after the host's local vLLM
-pin was aligned to the fleet default, 0.28.0 with Transformers 5.15.1,
-and the table carries those results. `qwen3.5-4b-awq` is unchanged;
-`gemma4-e2b-awq` changed failure shape, which is the finding below. The
-Ollama rows are untouched by that bump, and the AuditBench rows in
-`vllm/BENCHMARKS.md` remain 0.27.1 measurements until re-canonicalized,
-so capability and throughput provenance differ on this host for now.
-
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Result |
-| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| vLLM | `qwen3.5-4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| vLLM | `gemma4-e2b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
-| Ollama | `qwen3.5-4b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `gemma4-e2b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `qwen3.5-9b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `gemma4-12b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-
-Every row verified live model identity against its config's pinned
-revision or digest, and every row produced a valid unaided document.
-The one failure is an enforcement failure after seven passing checks.
-
-### Findings
-
-- Five of six profiles pass. Every profile on both runtimes passes
-  both tool-call checks under automatic tool choice, the tool-result
-  continuation, and its configured reasoning semantics, so this host's
-  vLLM parsers and Ollama's llama.cpp runner handle every dialect in
-  its inventory. No profile is demoted for tool behavior.
-- `gemma4-e2b-awq` on vLLM fails schema enforcement on both engine
-  versions this host has run, but by different mechanisms, and the pin
-  bump made it worse. On 0.27.1 with Transformers 5.14.1 it was
-  `whitespace_runaway`: the grammar was applied and the model emitted
-  structural whitespace until the protocol's 16,384-token budget ended,
-  123 s in. On 0.28.0 with Transformers 5.15.1 the schema is simply
-  `ignored` -- the endpoint accepts it, returns HTTP 200 and a 5.9k-character
-  Markdown audit report in about 10 s, `finish_reason` `stop`.
-  Reproducible 3/3, and the server logs nothing about a grammar
-  fallback: startup reports `structured_outputs_config` with
-  `backend='auto'`, and the failing request produces no grammar-related
-  line at any level. `qwen3.5-4b-awq` enforced correctly on the same
-  0.28.0 engine minutes earlier, so grammars work in general here and
-  this is specific to the Gemma 4 path.
-- That is a regression in kind, not just in verdict. A loud failure that
-  burns the budget is visible; silent non-enforcement is the exact shape
-  this gate exists to catch, because a caller receives prose while
-  believing a schema was applied. It is also the first time a vLLM CUDA
-  profile has produced the `ignored` outcome anywhere in the fleet --
-  previously only Ollama's MLX runner did. Neither engine version is
-  usable for schema-constrained work with this checkpoint; 0.28.0 is
-  kept for the Gemma 4 per-layer head-dim fix and fleet alignment, since
-  the gate result is a failure either way.
-- Gemma 4's Ollama pairings are unaffected and pass: `gemma4-e2b` and
-  `gemma4-12b` both report `enforced`, where the A100's larger
-  `gemma4-26b` under the same llama.cpp runner fails as plain
-  `truncated`. Bounded grammar whitespace is enough for the small and
-  mid Gemma 4 tiers to finish the document in budget. Gemma 4 remains
-  usable for structured work on this host only through Ollama.
-- Capability residency is not the benchmark allocation: `gemma4-e2b`
-  loaded 1.90 GiB against 2.66 GiB measured at four slots. Capability
-  loads one slot and proves response semantics; it establishes neither an
-  operating point nor a survivable context depth.
-- Every teardown released the GPU to the host's 14 MiB baseline,
-  including after the failed check.
+Every other RTX profile was dropped on 2026-10-12. The four that did not fit
+the GPU went first; the small models that passed v1 (Ollama `qwen3.5-4b`,
+`qwen3.5-9b`, `gemma4-e2b`, `gemma4-12b`, vLLM `qwen3.5-4b-awq`,
+`gemma4-e2b-awq`) then failed audit fitness on v2 on every runtime, in every
+run but one 1/12 of `gemma4-12b`'s five (2026-10-08 to 2026-10-12), and the
+vLLM `nemotron-nano-9b-awq` was in no inventory. Their v1 and v2 rows are in
+git history.

@@ -10,12 +10,14 @@ preserve the measurements, architectural explanations, full-context tests, and
 failure modes behind those summaries.
 
 The A100 rows at the top use canonical [AuditBench
-v2](https://github.com/tuminoid/llm-audit-bench); every later section, and
-the RTX PRO 3000 rows, are AuditBench v1 or older history, never comparable
-with v2. Retired A100 measurements remain clearly separated later in this
-file and must not be combined with canonical rates. Their top-level retained
-JSON on the M5 and A100 was removed on 2026-09-30; trial-directory copies
-remain, and the figures stay here and in git history.
+v2](https://github.com/tuminoid/llm-audit-bench); every later section is
+AuditBench v1 or older history, never comparable with v2. The RTX PRO 3000
+vLLM profiles were dropped on 2026-10-12 (two failed Capability Check v2,
+Nemotron Nano was in no inventory); their rows are in git history. Retired
+A100 measurements remain clearly separated later in this file and must not be
+combined with canonical rates. Their top-level retained JSON on the M5 and
+A100 was removed on 2026-09-30; trial-directory copies remain, and the figures
+stay here and in git history.
 
 ## AuditBench v2: A100-SXM4-80GB
 
@@ -69,45 +71,6 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
 
 All throughput figures are observed rates, not model-quality scores. Compare
 rows within one host table; do not compare a Blackwell row with an A100 row.
-
-### Small card
-
-RTX PRO 3000 Blackwell laptop GPU (sm_120), 12,227 MiB VRAM. Canonical
-AuditBench v1 ran with three measured samples, vLLM 0.27.1,
-Transformers 5.14.1, the full profile, and the proper power adapter. The host
-profile reserved 1,024 MiB, resolved to utilization 0.916, and admitted two
-sequences. Qwen used FlashInfer with fp8 KV; Gemma used vLLM-selected Triton
-attention with automatic 16-bit KV.
-
-Capacity is one proof sample. Input rate is aggregate prompt tok/s.
-
-| Model | Context | Active slots | Raw KV pool | Near-context capacity proof |
-| -- | --: | --: | --: | -- |
-| `qwen3.5-4b-awq` | 131,072 | 2 | 274,432 | 1 x 122,861 in 43.56s at 2,820.6 tok/s; 2 x in 87.77s at 2,799.6 tok/s |
-| `gemma4-e2b-awq` | 131,072 | 2 | 450,444 | 1 x 122,896 in 62.49s at 1,966.7 tok/s; 2 x in 124.89s at 1,968.0 tok/s |
-
-Performance cells are median tok/s followed by `[min-max]`. Prefill output is
-one token; decode output is exactly 1,024 tokens per stream.
-
-| Model | 32k prefill | 64k prefill | Decode 1x | Decode 2x |
-| -- | --: | --: | --: | --: |
-| `qwen3.5-4b-awq` | 4,686.9 [3,760.1-4,691.2] @ 32,780 | 3,774.3 [3,757.3-3,788.7] @ 65,547 | 87.41 [87.29-87.67] | 176.12 [158.21-176.38] (2.01x) |
-| `gemma4-e2b-awq` | 4,835.1 [4,800.7-4,846.9] @ 32,772 | 3,168.8 [3,152.6-3,174.0] @ 65,528 | 145.44 [145.34-148.63] | 303.54 [275.09-304.18] (2.09x) |
-
-Audit cells are median calls/hour followed by `[min-max] / median output
-tok/s`. The 32k and half-context phases generate 1,024 tokens; deep generates
-256.
-
-| Model | Audit 32k 1x | Audit 32k 2x | Audit half 1x | Audit deep 1x | Audit deep 2x |
-| -- | --: | --: | --: | --: | --: |
-| `qwen3.5-4b-awq` | 180.18 [178.97-183.54] / 51.25 | 250.94 [248.33-251.66] / 71.38 | 113.76 [113.67-113.92] / 32.36 | 83.20 [82.83-83.24] / 5.92 | 85.82 [85.37-85.97] / 6.10 |
-| `gemma4-e2b-awq` | 215.06 [206.74-218.29] / 61.17 | 289.55 [287.69-306.29] / 82.36 | 113.31 [106.53-113.38] / 32.23 | 56.22 [55.54-56.29] / 4.00 | 56.89 [56.80-57.13] / 4.05 |
-
-Gemma is the decode and cold-32k leader. Qwen is slightly faster at common
-64k prefill and substantially faster near the end of a 128k audit, reaching
-85.82 deep calls/hour against Gemma's 56.89. Both operating points are capped
-at two admitted streams; canonical 4x and 8x candidates are omitted rather
-than queued.
 
 ### 80 GB A100
 
@@ -193,7 +156,7 @@ model gives better answers.
 
 ## Comparability and benchmark method
 
-The RTX and A100 canonical rows use AuditBench v1 exactly as defined in the
+The A100 canonical v1 rows use AuditBench v1 exactly as defined in the
 shared protocol: interleaved samples per its sample rule, common absolute
 prompts, relative long-context prompts, fixed outputs, and only stream counts
 that fit both admission and the raw KV pool. Compare models within one host.
@@ -465,75 +428,6 @@ qwen3.6 ran on a trial copy of the scripts with admission raised to 16
 - MiMo's rates carry the short-turn caveat above (one of its sixteen
   8-agent verdicts also stopped early, at 337 tokens); its per-agent
   verdict decode at eight agents is 32.8 tok/s.
-
-## Audit conversation and replay: RTX PRO 3000
-
-Canonical clean-fixture runs (finalized fixture, both profiles, both
-cache modes, conversation and replay; 9-step chain at the 131,072
-context, ~107k final depth). The earlier overnight runs at `bf27151`
-predate fixture finalization and are superseded: their qwen3.5
-collapses were the planted decode-control, since fixed; those JSONs
-remain retained only as fixture-bug evidence.
-
-Conversation (model-usability smoke):
-
-- `qwen3.5-4b-awq`, APC off: **2/2 compliant**, 9/9 files and 9/9
-  recall per sample, 279.8 s median, 12.9 conversations/hour.
-- `qwen3.5-4b-awq`, align APC on: 0/2. It drives the chain correctly
-  (one read per turn, cached fractions 0.81-0.83) and then reliably
-  derails on a late turn into a 16,384-token `finish_reason: length`
-  runaway that regurgitates evidence text. Same fixture, same
-  temperature 0; the only variable is the cache mode. Align mode's
-  documented output-changing numerics break this checkpoint's
-  compliance.
-- `gemma4-e2b-awq`, both modes: 0/2. It calls `read_file` on a
-  filename appearing inside the evidence text instead of the
-  instructed `file_001`, then gives up (9-18 s). Deterministic in both
-  cache modes; the A100 26B became compliant on the clean corpus, the
-  E2B did not -- a genuine capability limit of the edge variant.
-
-Replay (scripted server benchmark, same fixture; verdict decode forced
-toward the 16,384-token cap):
-
-| Profile | Cache | Replays/h | Turn walls | Cached | Verdict decode |
-| -- | -- | --: | -- | --: | --: |
-| `qwen3.5-4b-awq` | align on | 7.35 | flat ~6 s | 0.700 | 37 tok/s |
-| `qwen3.5-4b-awq` | off | 5.56 | 9.5 -> 39.5 s | -- | 37 tok/s |
-| `gemma4-e2b-awq` | on | 10.17 | flat ~8 s | 0.847 | 55 tok/s |
-| `gemma4-e2b-awq` | off | 5.89 | 8.8 -> 52.6 s | -- | 46 tok/s |
-
-APC is worth 1.32x (qwen) and 1.73x (gemma) end to end on the resent
-shape, and verdict decode is cache-neutral once the final-turn prefill
-is separated out. Align-mode costs on the GDN hybrid, measured the same
-day: KV pool 274,432 -> 268,147 tokens (-2.3%), decode -0.4% at 1x and
--0.3% at 2x (non-canonical decode-profile pair).
-
-Pin decision, `qwen3.5-4b-awq`: 0 -> 1 on the morning cost math, then
-**back to 0** the same day on the conversation evidence above. The
-1.32x scripted-replay win does not outweigh the model reliably breaking
-its own tool loop under align mode; compliance is a capability gate no
-throughput number overrides. `gemma4-e2b-awq` keeps APC 1: regular
-attention, no align numerics, identical (non-)compliance in both modes,
-and a 1.73x replay win. Run JSONs: retained under
-`${XDG_STATE_HOME:-~/.local/state}/auditbench/`.
-
-## Small-card model notes
-
-### `qwen3.5-4b-awq`
-
-This 4B hybrid decodes quickly because 24 of 32 layers are GatedDeltaNet
-linear attention. At the retained 131,072-token point, fp8 KV and the
-utilization 0.916 host profile produced a 274,432-token pool, enough for two
-full audit streams. The native 262,144-token context remains an explicit
-single-stream experiment rather than the serving baseline.
-
-### `gemma4-e2b-awq`
-
-Gemma's multimodal PrefixLM path requires vLLM-selected Triton attention and
-automatic 16-bit KV. Its 450,444-token pool is ample for two 131,072-token
-requests. It leads decode and cold 32k audit throughput, while Qwen overtakes
-it on late-audit calls. Structured tool calling remains verified through the
-bundled `gemma4` parser.
 
 ## Retired A100 harness notes
 

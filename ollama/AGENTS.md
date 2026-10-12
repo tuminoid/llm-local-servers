@@ -50,27 +50,23 @@ in [README.md](README.md); shared server conventions live in
   an unmanaged process must never receive a model pull.
 - Do not force `num_gpu`. llama.cpp automatic fit decides which layers and
   caches reside on the 12 GiB GPU after accounting for the full context slot.
-- Keep Gemma 4 E2B and Qwen3.5 4B at 131,072 tokens. That is native for E2B
-  and deliberately matches the local vLLM operating point for Qwen3.5 4B.
 - An RTX profile runs entirely on the GPU, ahead of context length. The
   profiles that spilled weights to the CPU (Qwen3.6 35B-A3B, the Qwen3.8 27B
   Q4_K_M, the Muse Glimmer and Nemotron 3.5 Lightning GGUFs) were dropped on
-  2026-10-12; Qwen3.8-27B is served there as `saluki-27b`.
+  2026-10-12; Qwen3.8-27B is served there as `saluki-27b`. The small
+  models that did fit (Qwen3.5 4B and 9B, Gemma 4 E2B and 12B) failed audit
+  fitness and went the same day, so Saluki is the RTX's one profile.
 - Keep every Qwen profile at `OLLAMA_NUM_PARALLEL=1`. Official Ollama 0.32.14
   forces both `qwen35` and `qwen35moe` architectures to one request slot.
   Requested 2x and 4x profiles were explicitly rejected by the benchmark's
   effective-runner check. Do not claim multi-slot Qwen support without
   replacing the runtime and repeating full-context correctness tests.
-- Gemma 4 12B defaults to its native 262,144-token context. Jobs 1, 2, and 4
-  have each completed a near-full-context request per slot on the 12 GiB host.
-  Keep the benchmark job count equal to `OLLAMA_NUM_PARALLEL`.
-- Gemma 4 E2B supports the same tested job counts at 131,072 tokens per slot
-  and kept all 36 reported layers on GPU through four jobs.
+- Keep the benchmark job count equal to `OLLAMA_NUM_PARALLEL`.
 - Keep Flash Attention enabled when using quantized KV. q8 is the quality-safe
   default; q4 is an explicit experiment.
-- Qwen3.5 requires Ollama 0.17.1, Gemma 4 requires 0.30.5, Nemotron 3.5
-  Lightning requires 0.32.9, Qwen3.8 requires 0.32.12, and the Qwen3.6
-  manifest declares no minimum. Profiles run on the root Makefile's default
+- Gemma 4 requires Ollama 0.30.5, Nemotron 3.5 Lightning 0.32.9, Qwen3.8
+  0.32.12 and Saluki's local import 0.40.3; the Qwen3.6 manifest declares no
+  minimum. Profiles run on the root Makefile's default
   (0.40.3) unless their conf declares `OLLAMA_RUNTIME_VERSION`. Update a
   runtime's version and all reviewed per-platform GitHub asset digests
   (`OLLAMA_ARCHIVE_SHA256`, `_LINUX_ARM64`, `_DARWIN`, from the release's
@@ -180,11 +176,10 @@ Run the complete lifecycle:
 ```bash
 make lint
 make ollama-install
-make ollama-start MODEL=qwen3.5-9b
-make ollama-pull MODEL=qwen3.5-9b
+make ollama-start MODEL=saluki-27b
 make ollama-status
-make ollama-capability MODEL=qwen3.5-9b
-make ollama-bench MODEL=qwen3.5-9b
+make ollama-capability MODEL=saluki-27b
+make ollama-bench MODEL=saluki-27b
 make ollama-stop
 ```
 

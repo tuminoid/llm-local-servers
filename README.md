@@ -140,8 +140,7 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 
 ## Measured overview
 
-The A100, M5 and RTX Ollama are measured with AuditBench v2; the RTX vLLM
-rows are AuditBench v1 until re-measured. Canonical medians copied from
+Every host is measured with AuditBench v2. Canonical medians copied from
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md), and
@@ -212,9 +211,7 @@ steps at 163,840 configured context):
 | --: | -- | -- | --: | --: | --: | --: |
 | 1 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 3.26 | -- | 7.8 |
 
-Unranked: `gemma4-e2b` (40.98/h), `qwen3.5-4b` (17.49), `qwen3.5-9b`
-(14.73) and `gemma4-12b` (7.87) publish rates but fail audit fitness. See
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+It is the one RTX profile. See [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ### A100-SXM4-80GB
 
@@ -240,15 +237,6 @@ overview above.
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. The table
-below is the AuditBench v1 operating points (Ollama 0.32.14); the Ollama v2
-result is in the overview above.
-
-| Runtime and profile | Context | Slots | GPU KV / allocation | 32k prefill | Peak decode | Audit 32k | Audit half | Audit deep | Near-context proof |
-| -- | --: | --: | -- | --: | --: | --: | --: | --: | -- |
-| vLLM `gemma4-e2b-awq` | 131,072 | 2 | 450,444 KV | 4,835.1 | 303.54 @2x | 289.55 @2x | 113.31 | 56.89 @2x | 2 x 122,896 in 124.89s |
-| vLLM `qwen3.5-4b-awq` | 131,072 | 2 | 274,432 KV | 4,686.9 | 176.12 @2x | 250.94 @2x | 113.76 | 85.82 @2x | 2 x 122,861 in 87.77s |
-| Ollama `gemma4:e2b` | 131,072 | 4 | 0.00 / 2.66 GiB | 3,582.5 | 247.40 @4x | 184.88 @4x | 99.42 | 67.33 @1x | 4 x 122,903 in 217.03s |
-| Ollama `qwen3.5:9b` | 262,144 | 1 | 0.00 / 10.21 GiB | 1,654.8 | 37.83 | 70.34 | 22.10 | 12.26 | 245,752 in 311.57s |
-| Ollama `qwen3.5:4b` | 131,072 | 1 | 0.00 / 6.04 GiB | 2,057.6 | 67.43 | 100.55 | 59.19 | 41.92 | 122,861 in 84.87s |
-| Ollama `gemma4:12b` | 262,144 | 1 | 0.00 / 7.96 GiB | 1,242.8 | 32.36 | 59.82 | 16.67 | 8.31 | 245,777 in 462.12s |
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. Its one
+profile, `saluki-27b`, is in the overview above and in
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).

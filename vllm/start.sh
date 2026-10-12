@@ -70,7 +70,7 @@ VLLM_TOOL_PARSER="${VLLM_TOOL_PARSER:-}"
 VLLM_TOOL_PLUGIN="${VLLM_TOOL_PLUGIN:-}"
 VLLM_CHAT_TEMPLATE="${VLLM_CHAT_TEMPLATE:-}"
 
-# shellcheck source=models/qwen3.5-4b-awq.conf disable=SC1091
+# shellcheck source=models/qwen3.6-35b-a3b-awq.conf disable=SC1091
 source "${CONF_FILE}"
 
 # Not in the model conf: everything below describes the host, not the model.

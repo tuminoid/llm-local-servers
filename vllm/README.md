@@ -13,11 +13,11 @@ mandatory -- there is no default, so `MODEL` must name a config in
 `models/`:
 
 ```bash
-make vllm-start MODEL=qwen3.5-4b-awq  # start detached, wait until serving
-make vllm-status                      # process, GPU use, KV cache sizing
-make vllm-logs                        # follow the server log
-make vllm-bench MODEL=qwen3.5-4b-awq  # AuditBench v2
-make vllm-stop                        # stop, verify the GPU was released
+make vllm-start MODEL=qwen3.6-35b-a3b-awq  # start detached, wait until serving
+make vllm-status                           # process, GPU use, KV cache sizing
+make vllm-logs                             # follow the server log
+make vllm-bench MODEL=qwen3.6-35b-a3b-awq  # AuditBench v2
+make vllm-stop                             # stop, verify the GPU was released
 ```
 
 `vllm-status`, `vllm-logs` and `vllm-stop` act on the running server, so they
@@ -28,7 +28,7 @@ Any `VLLM_*` variable in a model config can be overridden from the
 environment, since each uses `${VAR:-default}`:
 
 ```bash
-VLLM_MAX_LEN=32768 VLLM_PORT=8002 make vllm-start MODEL=qwen3.5-4b-awq
+VLLM_MAX_LEN=32768 VLLM_PORT=8002 make vllm-start MODEL=qwen3.6-35b-a3b-awq
 ```
 
 ## Qwen3.8 context profiles
@@ -114,9 +114,9 @@ The generated providers `vllm` (`127.0.0.1:8000`) and `vllm-remote`
 here; see [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
 
 ```bash
-make vllm-start MODEL=qwen3.5-4b-awq
+make vllm-start MODEL=qwen3.6-35b-a3b-awq
 export OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/vllm/opencode.json
-opencode run -m vllm/qwen3.5-4b-awq "Summarise the auth flow."
+opencode run -m vllm/qwen3.6-35b-a3b-awq "Summarise the auth flow."
 
 make vllm-remote-start  HOST=gpu-box MODEL=qwen3.8-27b
 make vllm-remote-tunnel HOST=gpu-box      # separate shell; holds the tunnel
@@ -184,6 +184,12 @@ memory policy; the environment still overrides any of it. A model config
 carries only portable facts: repo id, served name, native context length, KV
 preference, and parsers.
 
+The small-card figures below were measured on the RTX PRO 3000 with the
+`qwen3.5-4b-awq` profile. The RTX vLLM profiles were dropped on 2026-10-12
+(every one failed Capability Check v2); the measurements stay as the
+launcher's rationale, and the confs and their result rows are in git
+history.
+
 ### Host profiles
 
 Two memory profiles, split at 24 GiB of VRAM, each measured rather than
@@ -209,8 +215,7 @@ This replaced a flat 0.80 with `max-num-seqs` 1, which was the one memory figure
 here with no measured refusal behind it. Both parts cost real capability on
 `qwen3.5-4b-awq`: 0.80 could not hold that model's native 262,144 context at all
 (4.06 GiB of KV needed, 3.17 GiB offered), and `max-num-seqs` 1 forfeited a ~2x
-aggregate decode gain that two streams deliver and four do not improve on. The
-measurements are in [BENCHMARKS.md](BENCHMARKS.md#small-card).
+aggregate decode gain that two streams deliver and four do not improve on.
 
 ### Capability gating
 
@@ -355,8 +360,9 @@ vLLM has no auto-detection for reasoning or tool-call parsers -- there is no
 default and it does not inspect the chat template. Both must be named
 explicitly, per model.
 
-For `qwen3.5-4b-awq` the chat template pre-opens a `<think>` block in the
-generation prompt, so output is reasoning, then `</think>`, then the answer.
+For the Qwen3.6 and Qwen3.8 profiles the chat template pre-opens a `<think>`
+block in the generation prompt, so output is reasoning, then `</think>`, then
+the answer.
 Unparsed, that closing tag leaks into `message.content`. The `qwen3` parser
 puts the reasoning in `message.reasoning`; that field was renamed from
 `reasoning_content` in vLLM 0.26.
@@ -369,7 +375,7 @@ structured `tool_calls` array.
 Copy an existing config and adjust:
 
 ```bash
-cp models/qwen3.5-4b-awq.conf models/my-model.conf
+cp models/qwen3.6-35b-a3b-awq.conf models/my-model.conf
 make vllm-start MODEL=my-model
 ```
 
@@ -391,8 +397,7 @@ What needs checking per model:
 Three cases the memory arithmetic above does **not** cover. Hybrid models
 store recurrent state per sequence rather than per token, so the formula is
 wrong rather than merely imprecise -- `qwen3.6-35b-a3b-awq` is one, at
-31.4 MiB per sequence across its 30 GatedDeltaNet layers, while
-`qwen3.5-4b-awq` uses about 48 MiB across 24 such layers. Sliding-window layers
+31.4 MiB per sequence across its 30 GatedDeltaNet layers. Sliding-window layers
 cap their cache at the window instead of growing with the sequence, so counting
 all layers overstates them badly --
 `gemma4-26b-a4b-awq` pays for 5 of its 30 layers per token and a fixed

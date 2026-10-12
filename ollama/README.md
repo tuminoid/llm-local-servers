@@ -172,81 +172,6 @@ local pull fails explicitly instead of producing a result under the old model
 name. Review and update the config expectation, then pull and rerun when an
 artifact change is intentional.
 
-## Gemma 4 E2B and Qwen3.5 4B
-
-These profiles match the model and 131,072-token request limit of the
-corresponding local vLLM profiles:
-
-```bash
-make ollama-start MODEL=gemma4-e2b
-make ollama-pull MODEL=gemma4-e2b
-make ollama-bench MODEL=gemma4-e2b
-make ollama-stop
-
-make ollama-start MODEL=qwen3.5-4b
-make ollama-pull MODEL=qwen3.5-4b
-make ollama-bench MODEL=qwen3.5-4b
-make ollama-stop
-```
-
-The 128k limit is native for Gemma E2B. Qwen3.5 4B supports 262,144 tokens,
-but this comparison profile deliberately uses 128k to match vLLM.
-
-Gemma E2B supports real Ollama concurrency. Jobs 1, 2, and 4 each completed a
-near-full-context request per slot while keeping all 36 reported layers on
-GPU. Qwen3.5 4B completed one 123,030-token prompt with all 34 layers on GPU,
-but explicit 2x and 4x probes were forced back to one effective slot by the
-`qwen35` architecture guard. Measured allocations and throughput are in
-[BENCHMARKS.md](BENCHMARKS.md).
-
-## Nemotron Nano 9B v2 availability
-
-Ollama has no official NVIDIA Nemotron Nano 9B v2 artifact. Its official
-Nemotron 3 Nano library contains 4B and 30B variants instead.
-
-Two community uploads were found, but neither is an official like-for-like
-artifact for the existing 6.23 GiB vLLM AWQ profile:
-
-- `oamazonasgabriel/nemotron-nano-9b-v2`: 18 GB, 1M context, one tag.
-- `mirage335/NVIDIA-Nemotron-Nano-9B-v2-virtuoso`: 9.1 GB, 1M context, one
-  tag.
-
-They are not wired or benchmarked here.
-
-## Gemma 4 12B
-
-The `gemma4-12b` profile runs the official `gemma4:12b` Q4_K_M artifact with
-q8 KV and its native 262,144-token context:
-
-```bash
-make ollama-install
-make ollama-start MODEL=gemma4-12b
-make ollama-pull MODEL=gemma4-12b
-make ollama-status
-make ollama-bench MODEL=gemma4-12b
-make ollama-stop
-```
-
-The manifest requires Ollama 0.30.5 or newer. One 262,144-token slot remains
-fully GPU-resident on this host. Gemma 4 supports real parallel requests, but
-additional 262k slots force CPU offload. The canonical RTX inventory therefore
-retains jobs=1 rather than treating redundant offloaded slot counts as serving
-profiles. The measured residency and AuditBench throughput are in
-[BENCHMARKS.md](BENCHMARKS.md).
-
-## Qwen3.5 9B
-
-```bash
-make ollama-start MODEL=qwen3.5-9b
-make ollama-pull MODEL=qwen3.5-9b
-make ollama-bench MODEL=qwen3.5-9b
-make ollama-stop
-```
-
-The official Qwen3.5 9B manifest requires Ollama 0.17.1 or newer. Since its
-2026-10-11 repin the profile runs 131,072 tokens with q8 KV, where all its
-layers stay on the RTX's GPU. Results are in [BENCHMARKS.md](BENCHMARKS.md).
-
 ## Install and launcher
 
 `make ollama-install` verifies the official release checksum and extracts it
@@ -265,8 +190,8 @@ make ollama-bench MODEL=saluki-27b OLLAMA_BENCH_LOAD_ONLY=1
 
 ### Parallelism limitation
 
-Qwen3.5 and Qwen3.8 (Saluki) declare the internal `qwen35` architecture, and
-Qwen3.6 and Ornith `qwen35moe`. Ollama's scheduler blocklists both families
+Qwen3.8 (Saluki) declares the internal `qwen35` architecture, and Qwen3.6
+and Ornith `qwen35moe`. Ollama's scheduler blocklists both families
 from parallel requests and forces `-np 1` even when `OLLAMA_NUM_PARALLEL=2`:
 
 ```text

@@ -18,7 +18,6 @@ Tree conventions are in [AGENTS.md](../AGENTS.md).
 | `status.sh` | Introspection | Process, GPU, pinned model revision, backend, KV sizing, plus a live `/v1/models` probe |
 | `bench.py` | Benchmark | CUDA adapter for shared AuditBench v2; records model identity, exact configs, and the resolved host profile |
 | `capability.py` | Capability gate | OpenAI-compatible adapter for shared Capability Check v2 |
-| `nemotron_tool_parser.py` | Parser plugin | Loaded when the Nemotron config sets `VLLM_TOOL_PLUGIN`. Registers its Olmo3-derived reasoning adapter, buffers `<TOOLCALL>`, and repairs the AWQ checkpoint's malformed JSON |
 | `mimo-v2.6-chat-template.jinja` | Chat template | Loaded when the MiMo config sets `VLLM_CHAT_TEMPLATE`. The checkpoint's template with the thinking opener prefilled; the config records why |
 | `models/*.conf` | Per-model settings | Portable model facts, including an immutable HF revision; all `${VAR:-default}` so env wins |
 | `Makefile` | Guard, defines no targets | Fails with the root target list. Present only to disable Make's built-in `%: %.sh` rule, which turns `make stop` here into an executable copy of `stop.sh` |
@@ -101,7 +100,8 @@ others, so change them together and re-measure:
 context length -> KV cache dtype -> attention backend -> toolkit requirement
 ```
 
-For `qwen3.5-4b-awq` on a 12 GB card, the native 256k context at the verified
+For `qwen3.5-4b-awq` on the 12 GB RTX (served there until 2026-10-12), the
+native 256k context at the verified
 0.92 utilization requires fp8 KV: bf16 needs 8.0 GiB, while fp8 needs
 4.06 GiB. fp8 KV eliminates FlashAttention on sm_120; that leaves FlashInfer,
 which JIT-compiles and needs `nvcc`, or Triton, which does not.
@@ -217,7 +217,7 @@ request rather than assuming, since the field appears in the delta objects:
 
 ```bash
 curl -sN localhost:8000/v1/chat/completions -H 'Content-Type: application/json' \
-  -d '{"model":"qwen3.5-4b-awq","messages":[{"role":"user","content":"hi"}],"stream":true}'
+  -d '{"model":"qwen3.6-35b-a3b-awq","messages":[{"role":"user","content":"hi"}],"stream":true}'
 ```
 
 ### Startup profiling is a memory event
@@ -265,7 +265,7 @@ means beyond disk: `vllm_pid` and the GPU both looked healthy, so nothing in
 | State or log location | `lib.sh` |
 | Readiness detection or timeout | `run.sh` (`VLLM_READY_TIMEOUT`) |
 | Benchmark shape | `bench.py` |
-| One-off experiment | Env override, no file edit: `VLLM_MAX_LEN=32768 make vllm-start MODEL=qwen3.5-4b-awq` |
+| One-off experiment | Env override, no file edit: `VLLM_MAX_LEN=32768 make vllm-start MODEL=qwen3.6-35b-a3b-awq` |
 
 ## Known limits
 
@@ -274,8 +274,9 @@ layers. Two cases it does not cover:
 
 - **Hybrid mamba models** store recurrent state per sequence rather than
   per token, so the formula is wrong rather than imprecise.
-  `nemotron-nano-9b-awq` is one; use its measured recurrent-state footprint
-  rather than the pure-attention formula.
+  Nemotron Nano 9B v2 (served on the RTX until 2026-10-12) billed about
+  135 MiB per sequence inside the KV pool; measure the recurrent-state
+  footprint rather than use the pure-attention formula.
 - **Quantized checkpoints** (AWQ, GPTQ, compressed-tensors) change both
   weight size and which attention backends are legal.
 
@@ -299,8 +300,6 @@ decide what fits; use the baselines to see what a run actually consumed.
 
 | Config | Weights | KV | Total | Two instances | Tools |
 | -- | -- | -- | -- | -- | -- |
-| `nemotron-nano-9b-awq` | 6.2 | 2.0 @128k | 10.7 | yes | yes |
-| `qwen3.5-4b-awq` | 3.8 | 8.0 @256k | 14.3 | yes | yes |
 | `gemma4-26b-a4b-awq` | 15.4 | 10.2 @256k | 28.1 | yes | yes |
 | `qwen3.6-35b-a3b-awq` | 23.7 | 5.0 @256k | 31.2 | yes | yes |
 | `glm4.7-flash-awq` | 18.8 | 10.2 @198k | 31.5 | yes | yes |
@@ -316,21 +315,9 @@ Every listed model has an explicit tool path. Agentic work -- vulnerability
 discovery and anything else that drives a tool loop -- depends on that path
 working in streaming requests, not merely existing in a chat template.
 
-`nemotron-nano-9b-awq` emits `<TOOLCALL>[...]</TOOLCALL>`, which no bundled vLLM
-0.26 parser matches; [nemotron_tool_parser.py](nemotron_tool_parser.py) in this
-directory supplies one, named by that config's `VLLM_TOOL_PLUGIN`. It handles
-both streaming and non-streaming requests by buffering each tool block before
-repairing malformed JSON strings and container closers. The same file registers
-a reasoning adapter because stock `olmo3` extracts this model's stream correctly
-but does not signal vLLM's composite parser to enter its tool phase. Adding
-another model whose tool dialect is unmatched means supplying a parser plugin,
-not teaching `start.sh` model-specific syntax.
-
-**Pipeline verdict:** do not use `nemotron-nano-9b-awq` for long-horizon
-pipeline work. In a multi-module modeling run it failed to produce the required
-artifacts, variously skipping writes, emitting literal or malformed tool calls,
-asking questions, and collapsing into repetition. The parser makes tool
-transport possible; it does not make this checkpoint a reliable agent.
+A model whose tool dialect no bundled parser matches gets a parser plugin,
+named by its config's `VLLM_TOOL_PLUGIN` (and `VLLM_REASONING_PLUGIN`), not
+model-specific syntax in `start.sh`. No current config needs one.
 
 Two instances of the *same* config is rarely the right move: vLLM already
 batches continuously, so one engine with the whole KV pool serves more
@@ -403,10 +390,10 @@ launcher reads, so make-level names such as `MODEL` are excluded.
 
 ```bash
 make lint
-make vllm-start  MODEL=qwen3.5-4b-awq  # must reach ready, note GPU MiB and KV tokens
-make vllm-status                              # backend, KV sizing, and a live model-name probe
-make vllm-capability MODEL=qwen3.5-4b-awq     # reasoning, tools, tool loop, JSON
-make vllm-stop                                # must report GPU back to idle
+make vllm-start  MODEL=<model>       # must reach ready, note GPU MiB and KV tokens
+make vllm-status                     # backend, KV sizing, and a live model-name probe
+make vllm-capability MODEL=<model>   # reasoning, tools, tool loop, JSON
+make vllm-stop                       # must report GPU back to idle
 ```
 
 Also send one real request and confirm `message.reasoning` is populated
@@ -415,7 +402,11 @@ and `message.content` carries no `</think>`.
 A change to `lib.sh` or `start.sh` touches host adaptation, so it must be
 exercised on more than one GPU generation before it is done. One machine cannot
 show that the derivation is right -- it only shows that one branch of it is.
-The second host is the A100 described above:
+The two generations are the RTX PRO 3000 (sm_120) and the A100 described
+above. The RTX carries no vLLM profile since 2026-10-12, so exercising its
+branch takes a temporary small conf on that host (the retired
+`qwen3.5-4b-awq` in git history is the measured one); `VLLM_VRAM_MIB` can
+fake a smaller card on the A100 for the utilization split only. The A100:
 
 ```bash
 make vllm-remote-start  HOST=<ssh-host> MODEL=<model>   # deploys first
@@ -455,9 +446,9 @@ deferred; the backend actually chosen appears in vLLM's own log and in
 
 ### Measured baselines
 
-The measured throughput, memory and concurrency numbers for both GPU
-generations live in [BENCHMARKS.md](BENCHMARKS.md), grouped by host (small card
-and A100). Both host summaries use canonical AuditBench v1. New and replacement
+The measured throughput, memory and concurrency numbers live in
+[BENCHMARKS.md](BENCHMARKS.md); only the A100 has current vLLM rows (the
+small-card rows left with the RTX profiles on 2026-10-12). New and replacement
 results follow
 [AuditBench v2](https://github.com/tuminoid/llm-audit-bench)
 and must have
