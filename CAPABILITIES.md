@@ -138,7 +138,7 @@ proves nothing about parser compatibility.
 
 ### RTX PRO 3000 Blackwell
 
-- Ollama: `saluki-27b`
+- Ollama: `qwen3.6-35b-a3b-reap48`, `saluki-27b`
 
 ### A100-SXM4-80GB
 
@@ -260,15 +260,20 @@ RAM.
 ### Capability Check v2, Ollama 0.40.3
 
 Run 2026-10-12 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
-from fleet commit `1e7318d` on Ollama 0.40.3; the report is retained with
-the trial evidence on the host.
+on Ollama 0.40.3, Saluki from fleet commit `1e7318d` and REAP-48 from
+`81c4c9b`; the reports are retained with the trial evidence on the host.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Ollama | `qwen3.6-35b-a3b-reap48` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: instruction 1) | pass |
 | Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
 
-Its live identity matched the pinned digest. Saluki's exploratory runs at
-65,536 (q8_0 KV) and 131,072 (q4_0) passed 10, 11 and 11 of 12.
+Both live identities matched the pinned digests. REAP-48's three runs
+passed 11, 12 and 11 of 12; the row is the last. Saluki's exploratory runs
+at 65,536 (q8_0 KV) and 131,072 (q4_0) passed 10, 11 and 11 of 12. Two
+other candidates fit the GPU and failed audit fitness and were not
+committed: the byteshape IQ2_S Qwen3.6 35B-A3B (10 of 12) and Ornith 1.5
+9B (9 of 12).
 
 Every other RTX profile was dropped on 2026-10-12. The four that did not fit
 the GPU went first; the small models that passed v1 (Ollama `qwen3.5-4b`,

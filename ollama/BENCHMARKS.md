@@ -86,25 +86,42 @@ serving result. JSON files are retained under
 
 Local host, RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, 62 GiB
 RAM. Ollama 0.40.3, Flash Attention, one slot. Canonical AuditBench v2
-`session` profile (llm-audit-bench 2.1.0), run 2026-10-12 at the conf's
-declared sampling from fleet commit `1e7318d`: 13 tool steps at 163,840
-configured context. Columns as in the A100 table.
+`session` profile (llm-audit-bench 2.1.0), run 2026-10-12 at each conf's
+declared sampling, Saluki from fleet commit `1e7318d` and REAP-48 from
+`81c4c9b`: 16 tool steps at 262,144 configured context, 13 at 163,840.
+Columns as in the A100 table.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| Ollama `qwen3.6-35b-a3b-reap48` (q4_0 KV) | 262,144 | 1 | 262,144 | 1x 7.37 | 4,296 | 904.7 | 22.6 | 2/2 | unavailable | pass | yes | `20261012T213637.644671+0000_ollama_qwen3-6-35b-a3b-reap48_session.json` |
 | Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 3.26 | 3,377 | 218.3 | 7.8 | 3/3 | unavailable | pass | yes | `20261012T064953.361627+0000_ollama_saluki-27b_session.json` |
 
+- `qwen3.6-35b-a3b-reap48` passes Capability Check v2 in three runs (11, 12
+  and 11 of 12): 7.37 sessions/h over 16 steps with all 10.77 GiB on the
+  GPU, 2.3x Saluki's rate at 1.6x its context. Turn decode falls from 60.3
+  to 29.7 tok/s across the session. q8_0 KV fits entirely only up to 163,840
+  (196,608 puts 0.7 GB of experts on the CPU); an exploratory run there
+  passed 11 of 12 and measured 11.68 over 13 steps. Both KV types completed
+  every session with no truncated tool call and every finding recalled, so
+  the model card's warning against sub-bf16 KV did not reproduce, and the
+  profile keeps 262,144 with q4_0. Its sessions skip reasoning on most tool
+  calls (11 or 12 unreasoned of 13 to 16, at either KV type), where the
+  unpruned Qwen3.6 GGUF on the same renderer skipped 0 to 4 of 16 and
+  Saluki none; the count never gates.
 - `saluki-27b` passes Capability Check v2 (11 of 12): 3.26 sessions/h over 13
   steps, all 65 layers and its 10.90 GiB on the GPU. Turn decode falls from
   12.4 to 6.5 tok/s across the session. An exploratory run at 184,320 with
   3 layers on the CPU (15 steps) measured 3.65 with decode 12.7 to 8.4, so
   at depth decode is bound by the q4_0 KV reads, not by those layers.
-- It is the host's one profile. The 2026-10-11 campaign also measured
-  `gemma4-e2b` (40.98 sessions/h), `qwen3.5-4b` (17.49), `qwen3.5-9b`
-  (14.73) and `gemma4-12b` (7.87), all fully on the GPU and all failing
-  audit fitness, and the CPU-assisted `qwen3.6-35b-a3b` (3.06,
-  unpublishable). They were dropped on 2026-10-12; their rows and the
-  host's AuditBench v1 operating points are in git history.
+- The byteshape IQ2_S Qwen3.6 35B-A3B also ran entirely on the GPU at
+  262,144 with q4_0 KV (4.32 sessions/h, unpublishable) and failed audit
+  fitness; it was not committed.
+- The 2026-10-11 campaign also measured `gemma4-e2b` (40.98 sessions/h),
+  `qwen3.5-4b` (17.49), `qwen3.5-9b` (14.73) and `gemma4-12b` (7.87), all
+  fully on the GPU and all failing audit fitness, and the CPU-assisted
+  `qwen3.6-35b-a3b` (3.06, unpublishable). They were dropped on 2026-10-12;
+  their rows and the host's AuditBench v1 operating points are in git
+  history.
 
 ## Apple M5 Max MLX operating points
 

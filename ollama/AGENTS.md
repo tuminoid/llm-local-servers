@@ -55,7 +55,9 @@ in [README.md](README.md); shared server conventions live in
   Q4_K_M, the Muse Glimmer and Nemotron 3.5 Lightning GGUFs) were dropped on
   2026-10-12; Qwen3.8-27B is served there as `saluki-27b`. The small
   models that did fit (Qwen3.5 4B and 9B, Gemma 4 E2B and 12B) failed audit
-  fitness and went the same day, so Saluki is the RTX's one profile.
+  fitness and went the same day. Qwen3.6 35B-A3B came back as
+  `qwen3.6-35b-a3b-reap48`, an expert-pruned GGUF that fits entirely at
+  262,144 with q4_0 KV; it and Saluki are the RTX's two profiles.
 - Keep every Qwen profile at `OLLAMA_NUM_PARALLEL=1`. Official Ollama 0.32.14
   forces both `qwen35` and `qwen35moe` architectures to one request slot.
   Requested 2x and 4x profiles were explicitly rejected by the benchmark's

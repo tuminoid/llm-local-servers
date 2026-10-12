@@ -231,6 +231,16 @@ the 12 GiB card under the launcher's no-display fit margin. Larger
 contexts move layers to the CPU; measurements are in
 [BENCHMARKS.md](BENCHMARKS.md).
 
+## Qwen3.6 35B-A3B REAP-48
+
+The `qwen3.6-35b-a3b-reap48` profile is the RTX's fully GPU-resident
+Qwen3.6-35B-A3B: `Qwen3.6-35B-A3B-REAP-48-v2.gguf` (9.4 GB, 48% of the
+routed experts pruned), from `crucible-labs/Qwen3.6-35B-A3B-REAP-48-v2-GGUF`
+at the revision and sha256 in the conf. It is imported like Saluki, as
+`qwen3.6:35b-a3b-reap48` with the Modelfile in its conf, and runs at
+262,144 with q4_0 KV, weights and KV all on the GPU; measurements are in
+[BENCHMARKS.md](BENCHMARKS.md).
+
 ## Using it from opencode
 
 The generated providers `ollama` (`127.0.0.1:11434`) and `ollama-remote`

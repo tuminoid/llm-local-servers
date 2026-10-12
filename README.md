@@ -205,14 +205,15 @@ profiles, and every Ollama MLX profile fail
 Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)
 cannot promote them. Details are in each runtime's BENCHMARKS.md.
 
-RTX PRO 3000, Ollama 0.40.3, AuditBench v2 `session` profile (13 tool
-steps at 163,840 configured context):
+RTX PRO 3000, Ollama 0.40.3, AuditBench v2 `session` profile (16 tool
+steps at 262,144 configured context, 13 at 163,840):
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | --: |
-| 1 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 3.26 | -- | 7.8 |
+| 1 | Ollama `qwen3.6-35b-a3b-reap48` (expert-pruned Qwen3.6-35B-A3B, all on GPU) | MoE | 262,144 | 7.37 | -- | 22.6 |
+| 2 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 3.26 | -- | 7.8 |
 
-It is the one RTX profile. See [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+These are the two RTX profiles. See [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ### A100-SXM4-80GB
 
@@ -238,6 +239,6 @@ overview above.
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. Its one
-profile, `saluki-27b`, is in the overview above and in
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. Its two
+profiles, `qwen3.6-35b-a3b-reap48` and `saluki-27b`, are in the overview
+above and in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
