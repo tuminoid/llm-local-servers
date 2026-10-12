@@ -140,8 +140,8 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 
 ## Measured overview
 
-The A100 and M5 are measured with AuditBench v2; the RTX rows are
-AuditBench v1 until re-measured. Canonical medians copied from
+The A100, M5 and RTX Ollama are measured with AuditBench v2; the RTX vLLM
+rows are AuditBench v1 until re-measured. Canonical medians copied from
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md), and
@@ -187,10 +187,6 @@ and Ollama `gemma4-26b` (14.18/h, passes the gate) are unpublishable
 and `glm4.7-flash` publish rates but fail Capability Check v2. DFlash 2
 loses to plain qwen3.8 at sampling; see [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 
-The RTX table below is AuditBench v1 conversations per hour until that
-host is re-measured; never compare it with the v2 rows. `Decode 1x` is the
-operating point's short-prompt decode ceiling.
-
 Apple M5 Max, AuditBench v2 `session` profile (same method as the A100;
 16 tool steps at 262,144 configured context, 9 at 131,072). Ranked rows
 pass Capability Check v2 and are publishable:
@@ -209,14 +205,12 @@ and both MLX-engine profiles, and every Ollama MLX profile fail
 Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)
 cannot promote them. Details are in each runtime's BENCHMARKS.md.
 
-RTX PRO 3000:
-
-| Rank | Runtime and profile | Tier | Cache | Decode 1x | Conv/hour |
-| --: | -- | -- | -- | --: | --: |
-| 1 | Ollama `qwen3.5:9b` | dense | slot cache | 37.83 | 9.8 |
-
-Excluded from the RTX v1 ranking for fixture non-compliance: both
-qwen3.5-4b stacks and the CPU-assisted qwen3.6.
+RTX PRO 3000, Ollama 0.40.3, AuditBench v2 `session` profile: no profile
+is ranked. The CPU-assisted `qwen3.6-35b-a3b` passes Capability Check v2
+but its run is unpublishable (3.06/h, incomplete session); `gemma4-e2b`
+(40.98/h), `qwen3.5-4b` (17.49), `qwen3.5-9b` (14.73) and `gemma4-12b`
+(7.87) publish rates but fail audit fitness. See
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ### A100-SXM4-80GB
 
@@ -242,7 +236,9 @@ overview above.
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM.
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. The table
+below is the AuditBench v1 operating points (Ollama 0.32.14); the Ollama v2
+result is in the overview above.
 
 | Runtime and profile | Context | Slots | GPU KV / allocation | 32k prefill | Peak decode | Audit 32k | Audit half | Audit deep | Near-context proof |
 | -- | --: | --: | -- | --: | --: | --: | --: | --: | -- |

@@ -7,10 +7,11 @@ Use each host's operating-point table for its measured hardware. The later
 sections preserve the measurements and memory explanations behind those
 recommendations.
 
-The A100 rows at the top use canonical [AuditBench
-v2](https://github.com/tuminoid/llm-audit-bench); every later section is
-AuditBench v1 or older history, never comparable with v2. The RTX PRO 3000
-and later A100 rows use canonical AuditBench v1. The Apple operating-point
+The A100, M5 and RTX PRO 3000 sections titled AuditBench v2 use canonical
+[AuditBench v2](https://github.com/tuminoid/llm-audit-bench); every other
+section is AuditBench v1 or older history, never comparable with v2. The
+RTX PRO 3000 operating points and later A100 rows use canonical AuditBench
+v1. The Apple operating-point
 tables use the retired runtime-specific harness; the Apple AuditBench v1
 sections (Nemotron and the conversation profile)
 are canonical and dated per section. Retired A100 measurements remain
@@ -90,6 +91,32 @@ serving result. JSON files are retained under
   them. The Qwen3.6 and Qwen3.8 Ollama profiles left the M5 on 2026-10-11
   (Splash serves Qwen3.6 35B-A3B and Qwen3.8 27B there; ds4 serves
   Flash-Next).
+
+## AuditBench v2: RTX PRO 3000 Blackwell
+
+Local host, RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, 62 GiB
+RAM. Ollama 0.40.3, Flash Attention, q8 KV, one slot. Canonical
+AuditBench v2 `session` profile (llm-audit-bench 2.1.0), run 2026-10-11 at
+each conf's declared sampling from fleet commit `98e4052` (`35d7343` for
+`qwen3.5-4b` and `gemma4-e2b`; it changed only documents). 16 tool steps at
+262,144 configured context, 9 at 131,072. Columns as in the A100 table.
+`qwen3.8-27b` and the `muse-glimmer-30b` candidate were not run: both decode
+at about 1.4 tok/s CPU-assisted here.
+
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| Ollama `gemma4-e2b` | 131,072 | 1 | 131,072 | 1x 40.98 | 4,189 | 2,300.5 | 92.4 | 3/3 | unavailable | fail | yes | `20261011T222503.098975+0000_ollama_gemma4-e2b_session.json` |
+| Ollama `qwen3.5-4b` | 131,072 | 1 | 131,072 | 1x 17.49 | 4,078 | 1,454.2 | 38.0 | 2/2 | 2,641 / 85.5 | fail | yes | `20261011T221046.044580+0000_ollama_qwen3-5-4b_session.json` |
+| Ollama `qwen3.5-9b` | 131,072 | 1 | 131,072 | 1x 14.73 | 2,867 | 1,180.4 | 29.0 | 3/3 | 1,741 / 52.7 | fail | yes | `20261011T213444.961145+0000_ollama_qwen3-5-9b_session.json` |
+| Ollama `gemma4-12b` | 262,144 | 1 | 262,144 | 1x 7.87 | 4,779.5 | 663.8 | 21.3 | 2/2 | unavailable | fail | yes | `20261011T204001.942580+0000_ollama_gemma4-12b_session.json` |
+| Ollama `qwen3.6-35b-a3b` (CPU-assisted) | 262,144 | 1 | 262,144 | 1x 3.06 | 4,817 | 287.2 | 27.3 | 1/2 | 316 / 34.8 | pass | no | `20261011T183913.645273+0000_ollama_qwen3-6-35b-a3b_session.json` |
+
+- No RTX Ollama profile both passes Capability Check v2 and publishes a
+  rate. `qwen3.6-35b-a3b` passes the gate but holds 14.9 of its 21.7 GiB
+  on the CPU, and one of its two reports did not end on its own.
+- The four GPU-resident profiles fail audit fitness. `gemma4-12b` failed
+  it on 0.40.1 as well (4/12 and 6/12, 2026-10-11/12), so its 6/12 on
+  0.40.3 is the model, not the runtime.
 
 ## RTX PRO 3000 Blackwell laptop GPU operating points
 

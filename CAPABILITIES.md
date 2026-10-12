@@ -287,7 +287,38 @@ model config.
 
 Host: local laptop, RTX PRO 3000 Blackwell Generation
 Laptop GPU, sm_120, 12,227 MiB VRAM, Intel Core Ultra 9 285H, 62 GiB
-RAM. Run date: 2026-09-10, protocol SCHEMA_VERSION 4, all nine managed
+RAM.
+
+### Capability Check v2, Ollama 0.40.3
+
+Run 2026-10-11 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
+from fleet commit `98e4052` (`35d7343` for `qwen3.5-4b` and `gemma4-e2b`)
+on Ollama 0.40.3; reports retained with the trial evidence on the host.
+`qwen3.8-27b` and `muse-glimmer-30b` were not run (CPU-assisted, about
+1.4 tok/s), and the vLLM rows remain the v1 record below.
+
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
+| Ollama | `gemma4-12b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 6/12 (instruction 1, missed_findings 1, runaway 1, wrong_verdicts 3) | fail |
+| Ollama | `qwen3.5-9b` | pass | pass | pass | pass | pass | fail | pass | json_only | enforced | fail 3/12 (instruction 1, invented 1, wrong_verdicts 1) | fail |
+| Ollama | `qwen3.5-4b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 4/12 (format 1, instruction 1, missed_findings 1, wrong_verdicts 1) | fail |
+| Ollama | `gemma4-e2b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 11/12 (instruction 2, invented 3, missed_findings 2, wrong_verdicts 4) | fail |
+
+Every row's live identity matched its pinned digest.
+
+- Only `qwen3.6-35b-a3b` passes. Every v1 pass among the small models
+  fails audit fitness, the check v1 did not have.
+- `gemma4-12b` fails fitness on 0.40.1 too (4/12 and 6/12, two retests
+  2026-10-11/12; one 1/12 pass on 2026-10-08), so it takes the 0.40.3
+  default.
+- `qwen3.5-9b` fails the tool loop on 0.40.3 in both runs (2026-10-11)
+  and passed it on 0.32.14 (2026-10-10, re-pinned digest) and in v1; it
+  fails audit fitness on both runtimes.
+
+### Capability Check v1, 2026-09-10
+
+Run date: 2026-09-10, protocol SCHEMA_VERSION 4, all nine managed
 operating points, vLLM 0.27.1 and Ollama 0.32.14. This is the host's
 first Capability Check v1 record; the partial manual parser and
 tool-call notes in the benchmark documents are superseded and were not
