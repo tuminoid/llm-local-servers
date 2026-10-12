@@ -212,10 +212,8 @@ steps at 163,840 configured context):
 | --: | -- | -- | --: | --: | --: | --: |
 | 1 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 3.26 | -- | 7.8 |
 
-Unranked: the CPU-assisted `qwen3.6-35b-a3b` passes Capability Check v2
-but its run is unpublishable (3.06/h, incomplete session); `gemma4-e2b`
-(40.98/h), `qwen3.5-4b` (17.49), `qwen3.5-9b` (14.73) and `gemma4-12b`
-(7.87) publish rates but fail audit fitness. See
+Unranked: `gemma4-e2b` (40.98/h), `qwen3.5-4b` (17.49), `qwen3.5-9b`
+(14.73) and `gemma4-12b` (7.87) publish rates but fail audit fitness. See
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ### A100-SXM4-80GB
@@ -254,5 +252,3 @@ result is in the overview above.
 | Ollama `qwen3.5:9b` | 262,144 | 1 | 0.00 / 10.21 GiB | 1,654.8 | 37.83 | 70.34 | 22.10 | 12.26 | 245,752 in 311.57s |
 | Ollama `qwen3.5:4b` | 131,072 | 1 | 0.00 / 6.04 GiB | 2,057.6 | 67.43 | 100.55 | 59.19 | 41.92 | 122,861 in 84.87s |
 | Ollama `gemma4:12b` | 262,144 | 1 | 0.00 / 7.96 GiB | 1,242.8 | 32.36 | 59.82 | 16.67 | 8.31 | 245,777 in 462.12s |
-| Ollama `qwen3.6:35b-a3b` (CPU-assisted) | 262,144 | 1 | 14.53 / 10.21 GiB | 303.4 | 30.99 | 25.09 | 7.00 | 4.00 | 245,752 in 927.94s |
-| Ollama `qwen3.8:27b` (CPU-assisted) | 131,072 | 1 | 12.49 / 7.64 GiB | 188.3 | 2.93 | 2.70 | 1.83 | 2.15 | 122,861 in 745.62s |

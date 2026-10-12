@@ -186,7 +186,7 @@ class OllamaIdentityTest(unittest.TestCase):
                 )
 
     def test_config_environment_override_wins(self):
-        conf = MODELS_DIR / "qwen3.8-27b.conf"
+        conf = MODELS_DIR / "saluki-27b.conf"
         with mock.patch.dict(
             os.environ, {"OLLAMA_EXPECTED_DIGEST": "f" * 64}, clear=False
         ):

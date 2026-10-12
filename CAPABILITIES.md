@@ -142,11 +142,8 @@ proves nothing about parser compatibility.
 ### RTX PRO 3000 Blackwell
 
 - vLLM: `qwen3.5-4b-awq`, `gemma4-e2b-awq`
-- Ollama retained profiles: `qwen3.5-4b`, `gemma4-e2b`, `qwen3.5-9b`,
-  `gemma4-12b`, `qwen3.6-35b-a3b`, `qwen3.8-27b`
-- Ollama: `saluki-27b`
-- Ollama candidate outside the canonical throughput table:
-  `muse-glimmer-30b`
+- Ollama: `qwen3.5-4b`, `gemma4-e2b`, `qwen3.5-9b`, `gemma4-12b`,
+  `saluki-27b`
 
 ### A100-SXM4-80GB
 
@@ -295,13 +292,11 @@ RAM.
 Run 2026-10-11 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
 from fleet commit `98e4052` (`35d7343` for `qwen3.5-4b` and `gemma4-e2b`)
 on Ollama 0.40.3, `saluki-27b` 2026-10-12 from `1e7318d`; reports
-retained with the trial evidence on the host.
-`qwen3.8-27b` and `muse-glimmer-30b` were not run (CPU-assisted, about
-1.4 tok/s), and the vLLM rows remain the v1 record below.
+retained with the trial evidence on the host. The vLLM rows remain the v1
+record below.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (failed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 0/12 | pass |
 | Ollama | `gemma4-12b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 6/12 (instruction 1, missed_findings 1, runaway 1, wrong_verdicts 3) | fail |
 | Ollama | `qwen3.5-9b` | pass | pass | pass | pass | pass | fail | pass | json_only | enforced | fail 3/12 (instruction 1, invented 1, wrong_verdicts 1) | fail |
 | Ollama | `qwen3.5-4b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 4/12 (format 1, instruction 1, missed_findings 1, wrong_verdicts 1) | fail |
@@ -310,8 +305,8 @@ retained with the trial evidence on the host.
 
 Every row's live identity matched its pinned digest.
 
-- `qwen3.6-35b-a3b` and `saluki-27b` pass. Every v1 pass among the small
-  models fails audit fitness, the check v1 did not have. Saluki's
+- Only `saluki-27b` passes. Every v1 pass among the small models fails
+  audit fitness, the check v1 did not have. Saluki's
   exploratory runs at 65,536 (q8_0 KV) and 131,072 (q4_0) gave 2/12, 1/12
   and 1/12.
 - `gemma4-12b` fails fitness on 0.40.1 too (4/12 and 6/12, two retests
@@ -323,9 +318,9 @@ Every row's live identity matched its pinned digest.
 
 ### Capability Check v1, 2026-09-10
 
-Run date: 2026-09-10, protocol SCHEMA_VERSION 4, all nine managed
-operating points, vLLM 0.27.1 and Ollama 0.32.14. This is the host's
-first Capability Check v1 record; the partial manual parser and
+Run date: 2026-09-10, protocol SCHEMA_VERSION 4, vLLM 0.27.1 and Ollama
+0.32.14; rows for profiles since dropped from this host are removed. This
+is the host's first Capability Check v1 record; the partial manual parser and
 tool-call notes in the benchmark documents are superseded and were not
 promoted into it.
 
@@ -345,17 +340,14 @@ so capability and throughput provenance differ on this host for now.
 | Ollama | `gemma4-e2b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Ollama | `qwen3.5-9b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
 | Ollama | `gemma4-12b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass |
-| Ollama | `muse-glimmer-30b` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | fail |
 
 Every row verified live model identity against its config's pinned
 revision or digest, and every row produced a valid unaided document.
-Both failures are enforcement failures after seven passing checks.
+The one failure is an enforcement failure after seven passing checks.
 
 ### Findings
 
-- Seven of nine profiles pass. Every profile on both runtimes passes
+- Five of six profiles pass. Every profile on both runtimes passes
   both tool-call checks under automatic tool choice, the tool-result
   continuation, and its configured reasoning semantics, so this host's
   vLLM parsers and Ollama's llama.cpp runner handle every dialect in
@@ -389,40 +381,9 @@ Both failures are enforcement failures after seven passing checks.
   `truncated`. Bounded grammar whitespace is enough for the small and
   mid Gemma 4 tiers to finish the document in budget. Gemma 4 remains
   usable for structured work on this host only through Ollama.
-- `muse-glimmer-30b` fails `json_schema` as `ignored`, reproducibly
-  (2/2, 183.0 s and 183.8 s). The retained document shows the recorded
-  classification understates it: the schema-constrained response is
-  complete, structurally valid JSON of 1,905 characters, but the raw
-  `<|eot|>` end-of-turn marker is left in `content`, so the payload does
-  not parse. `finish_reason` is `stop`, not `length`, so this is neither
-  budget truncation nor the vLLM whitespace runaway. Its MLX sibling
-  leaks raw channel markers on the same family, so this is a
-  muse-glimmer template/parser mismatch in Ollama rather than a
-  property of either runner. The diagnosis and retest condition are in
-  the model config.
-- `muse-glimmer-30b` was absent from the local store and was pulled
-  through the managed server for this campaign. Its identity matched the
-  pinned digest `de878ce3` on the first pull -- no drift, unlike the two
-  tag moves its MLX sibling has consumed on the M5.
-- That conf declared no thinking-disable control, with a note to try
-  `think-false` on this host first. It works: `think: false` returns
-  correct content with an empty reasoning field, so the conf is repinned
-  from `none` and the row records a real result instead of
-  `unsupported`. The recorded run is the conf-declared one, not the
-  override that established the control.
-- The default 600 s request timeout does not fit this host's
-  CPU-offloaded profiles. `qwen3.8-27b`, at 2.93 tok/s decode, spent
-  430 s on `json_schema` and 353 s on `structured_json`; it was checked
-  at `CAPABILITY_TIMEOUT=5400`, `qwen3.6-35b-a3b` at 1800, and
-  `muse-glimmer-30b` at 3600, with the protocol token budget untouched.
-  Both CPU-offloaded profiles pass every check, so partial GPU residency
-  costs latency here and nothing else.
-- Capability residency is not the benchmark allocation, and two rows
-  differ from their retained bench cells at the same digest:
-  `qwen3.6-35b-a3b` loaded 15.39 GiB CPU + 6.31 GiB GPU against a bench
-  row of 14.53/10.21, and `gemma4-e2b` loaded 1.90 GiB against 2.66 GiB
-  measured at four slots. Capability loads one slot and proves response
-  semantics; it establishes neither an operating point nor a survivable
-  context depth.
+- Capability residency is not the benchmark allocation: `gemma4-e2b`
+  loaded 1.90 GiB against 2.66 GiB measured at four slots. Capability
+  loads one slot and proves response semantics; it establishes neither an
+  operating point nor a survivable context depth.
 - Every teardown released the GPU to the host's 14 MiB baseline,
-  including after both failed checks.
+  including after the failed check.

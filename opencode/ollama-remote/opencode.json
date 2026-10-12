@@ -40,14 +40,6 @@
             "output": 50688
           }
         },
-        "muse-glimmer:30b": {
-          "name": "Muse Glimmer 30B",
-          "tool_call": true,
-          "limit": {
-            "context": 131072,
-            "output": 32768
-          }
-        },
         "muse-glimmer:30b-mlx": {
           "name": "Muse Glimmer 30B MLX",
           "tool_call": true,
@@ -58,14 +50,6 @@
         },
         "nemotron-3.5-lightning:30b-a3b-mlx": {
           "name": "Nemotron 3.5 Lightning 30B MLX",
-          "tool_call": true,
-          "limit": {
-            "context": 262144,
-            "output": 65536
-          }
-        },
-        "nemotron-3.5-lightning:30b-a3b-q4_K_M": {
-          "name": "Nemotron 3.5 Lightning 30B",
           "tool_call": true,
           "limit": {
             "context": 262144,
@@ -121,11 +105,11 @@
           }
         },
         "qwen3.8:27b": {
-          "name": "Qwen3.8 27B",
+          "name": "Qwen3.8 27B Native",
           "tool_call": true,
           "limit": {
-            "context": 131072,
-            "output": 32768
+            "context": 262144,
+            "output": 65536
           }
         },
         "saluki:27b-iq2mix": {

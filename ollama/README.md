@@ -199,36 +199,6 @@ but explicit 2x and 4x probes were forced back to one effective slot by the
 `qwen35` architecture guard. Measured allocations and throughput are in
 [BENCHMARKS.md](BENCHMARKS.md).
 
-## Nemotron 3.5 Lightning 30B-A3B
-
-The `nemotron-3.5-lightning-30b` profile uses the official explicit
-`nemotron-3.5-lightning:30b-a3b-q4_K_M` GGUF artifact. It is separate from the
-Apple-only `nemotron-3.5-lightning-30b-mlx` safetensors profile:
-
-```bash
-make ollama-start MODEL=nemotron-3.5-lightning-30b
-make ollama-pull MODEL=nemotron-3.5-lightning-30b
-make ollama-status
-make ollama-capability MODEL=nemotron-3.5-lightning-30b
-make ollama-stop
-```
-
-The 23.68 GiB Q4_K_M weights cannot reside fully on the 12 GiB RTX. The
-profile leaves placement to llama.cpp automatic fit, uses one request slot,
-and caps the artifact's native 1,048,576-token context at 262,144 to match the
-proven MLX operating point. At that limit the managed 0.32.14 runner allocated
-432 MiB of q4 KV, down from 816 MiB with q8, plus 142.85 MiB of recurrent
-state. The one-layer MTP draft keeps a separate 256 MiB f16 cache.
-
-The local load-only run on 2026-08-25 verified the pinned digest, GGUF
-identity, `nemotron_h_moe` architecture, 1M native context, llama.cpp
-dispatch, one effective slot, and the 262,144-token q4 allocation. The host's
-NVIDIA device was unavailable to NVML during that run, so Ollama loaded
-25.17 GiB entirely in CPU RAM. That is not a GPU residency or performance
-result. Keep this as a direct server experiment, absent from OpenCode and the
-retained capability/benchmark inventories, until the same lifecycle passes
-with CUDA available.
-
 ## Nemotron Nano 9B v2 availability
 
 Ollama has no official NVIDIA Nemotron Nano 9B v2 artifact. Its official
@@ -264,80 +234,40 @@ retains jobs=1 rather than treating redundant offloaded slot counts as serving
 profiles. The measured residency and AuditBench throughput are in
 [BENCHMARKS.md](BENCHMARKS.md).
 
-## Qwen3.5 9B and Qwen3.6 35B-A3B
-
-Both profiles expose their native 262,144-token context with q8 KV:
+## Qwen3.5 9B
 
 ```bash
 make ollama-start MODEL=qwen3.5-9b
 make ollama-pull MODEL=qwen3.5-9b
 make ollama-bench MODEL=qwen3.5-9b
 make ollama-stop
-
-make ollama-start MODEL=qwen3.6-35b-a3b
-make ollama-pull MODEL=qwen3.6-35b-a3b
-make ollama-bench MODEL=qwen3.6-35b-a3b
-make ollama-stop
 ```
 
-The official Qwen3.5 9B manifest requires Ollama 0.17.1 or newer. The Qwen3.6
-manifest declares no minimum; its profile requires the managed 0.32.14 runtime
-against which it was validated.
+The official Qwen3.5 9B manifest requires Ollama 0.17.1 or newer. Since its
+2026-10-11 repin the profile runs 131,072 tokens with q8 KV, where all its
+layers stay on the RTX's GPU. Results are in [BENCHMARKS.md](BENCHMARKS.md).
 
-Qwen3.5 9B stays fully GPU-resident at 10.21 GiB with its native 262k request
-limit. Qwen3.6 allocates 14.53 GiB to CPU and 10.21 GiB to GPU; it has
-similar raw decode but substantially slower prefill and end-to-end audit
-throughput. Canonical 32k audit throughput is 70.34 calls/hour for Qwen3.5 9B
-and 25.09 for Qwen3.6. Full results are in [BENCHMARKS.md](BENCHMARKS.md).
+## Install and launcher
 
-Neither model supports parallel requests under official Ollama 0.32.14.
-Qwen3.5 uses the internal `qwen35` architecture and Qwen3.6 uses
-`qwen35moe`; both are covered by the scheduler guard that forces `-np 1`.
-Requested 2-slot and 4-slot profiles were tested for each model and remained
-one effective slot. Their maximum verified operating point is therefore one
-262,144-token request.
-
-Qwen3.5 9B is the sole local Ollama model registered in OpenCode, as
-`ollama-local/qwen3.5:9b`. Qwen3.6 remains available as a direct server
-experiment.
-
-## Qwen3.8-27B
-
-The default config runs one `qwen3.8:27b` Q4_K_M model allocation with one
-131,072-token request slot:
-
-```bash
-make ollama-install
-make ollama-start MODEL=qwen3.8-27b
-make ollama-pull MODEL=qwen3.8-27b
-make ollama-status
-make ollama-bench MODEL=qwen3.8-27b
-make ollama-stop
-```
-
-For a quick allocation check without the throughput workloads:
-
-```bash
-make ollama-bench MODEL=qwen3.8-27b OLLAMA_BENCH_LOAD_ONLY=1
-```
-
-The fleet's default Ollama release is 0.40.3. The model manifest requires
-at least 0.32.12, so the older system binary is not used. `ollama-install`
-verifies the official release checksum and extracts it under
-`${XDG_DATA_HOME:-~/.local/share}/ollama/runtime/`; it does not need root.
-Model blobs stay in Ollama's normal per-user model store.
+`make ollama-install` verifies the official release checksum and extracts it
+under `${XDG_DATA_HOME:-~/.local/share}/ollama/runtime/`; it does not need
+root. The fleet's default Ollama release is 0.40.3. Model blobs stay in
+Ollama's normal per-user model store.
 
 The launcher binds `127.0.0.1:11434`, enables Flash Attention, uses the
 profile's KV type, keeps one model loaded, and gives llama.cpp a 1024 MiB
-GPU-fit margin, 256 MiB on a CUDA GPU that drives no display.
+GPU-fit margin, 256 MiB on a CUDA GPU that drives no display. For a quick
+allocation check without the throughput workloads:
+
+```bash
+make ollama-bench MODEL=saluki-27b OLLAMA_BENCH_LOAD_ONLY=1
+```
 
 ### Parallelism limitation
 
-The target was two concurrent 262,144-token slots. Official Ollama 0.32.14
-cannot provide them for this model. Qwen3.8's public name differs from its
-internal architecture family: its manifest declares `model_family: qwen35`.
-Ollama's scheduler blocklists that architecture family from parallel requests
-and forces `-np 1` even when `OLLAMA_NUM_PARALLEL=2`:
+Qwen3.5 and Qwen3.8 (Saluki) declare the internal `qwen35` architecture, and
+Qwen3.6 and Ornith `qwen35moe`. Ollama's scheduler blocklists both families
+from parallel requests and forces `-np 1` even when `OLLAMA_NUM_PARALLEL=2`:
 
 ```text
 model architecture does not currently support parallel requests
@@ -347,41 +277,7 @@ architecture=qwen35
 Upstream issue `ollama/ollama#4165` tracks the limitation. Unmerged PR
 `ollama/ollama#17144` removes the guard after the original llama.cpp recurrent
 state crash was fixed, but this server stays on an official binary for now.
-The managed default and all recorded benchmarks therefore use jobs=1. Context
-defaults to 131,072 because the measured GPU offload and throughput are
-materially better there; the model's native 262,144 remains an explicit
-override.
-
-## Why the split is unavoidable on this host
-
-Qwen3.8-27B has 64 language layers, but only 16 use full attention. At the
-131,072-token default, measured q8 target KV is 4.25 GiB and MTP draft KV is
-512 MiB. The Q4_K_M language weights and vision projector add about 16.5 GiB
-before runtime buffers.
-
-The host has 12,227 MiB of VRAM and 62 GiB of RAM. Even jobs=1 cannot be wholly
-GPU-resident; Ollama's automatic fit places 12.49 GiB in system RAM and
-7.64 GiB on GPU at the retained 128k point. Canonical AuditBench measures only
-2.93 decode tok/s and 2.70 cold-32k calls/hour there, so this is a
-model-capability profile rather than a throughput choice. `make ollama-status`
-reports Ollama's exact CPU/GPU byte split, effective job count, and runner RSS.
-Measured throughput and residency are in [BENCHMARKS.md](BENCHMARKS.md).
-
-The native context remains an explicit capability override, not a retained RTX
-benchmark point:
-
-```bash
-OLLAMA_CONTEXT_LENGTH=262144 make ollama-start MODEL=qwen3.8-27b
-```
-
-q8 KV is deliberate: Ollama documents it as roughly half the f16 memory with
-little quality loss. `q4_0` would halve KV again, but its quality loss is more
-visible at long context and on grouped-query-attention models. It remains an
-explicit experiment rather than the default:
-
-```bash
-OLLAMA_KV_CACHE_TYPE=q4_0 make ollama-start MODEL=qwen3.8-27b
-```
+These profiles and all their recorded benchmarks therefore use one slot.
 
 ## Underdog Saluki 27B
 

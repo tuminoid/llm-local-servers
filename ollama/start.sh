@@ -33,7 +33,7 @@ OLLAMA_CONTEXT_LENGTH="${OLLAMA_CONTEXT_LENGTH:-}"
 OLLAMA_KV_CACHE_TYPE="${OLLAMA_KV_CACHE_TYPE:-}"
 OLLAMA_RUNTIME_VERSION="${OLLAMA_RUNTIME_VERSION:-}"
 
-# shellcheck source=models/qwen3.8-27b.conf disable=SC1091
+# shellcheck source=models/saluki-27b.conf disable=SC1091
 source "${CONF_FILE}"
 
 # Per-profile managed runtime pin. lib.sh defaults OLLAMA_VERSION before the

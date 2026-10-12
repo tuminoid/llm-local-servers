@@ -101,8 +101,6 @@ each conf's declared sampling from fleet commit `98e4052` (`35d7343` for
 `qwen3.5-4b` and `gemma4-e2b`; it changed only documents), `saluki-27b`
 2026-10-12 from `1e7318d`. 16 tool steps at 262,144 configured context, 13
 at 163,840, 9 at 131,072. Columns as in the A100 table.
-`qwen3.8-27b` and the `muse-glimmer-30b` candidate were not run: both decode
-at about 1.4 tok/s CPU-assisted here.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
@@ -111,17 +109,14 @@ at about 1.4 tok/s CPU-assisted here.
 | Ollama `qwen3.5-9b` | 131,072 | 1 | 131,072 | 1x 14.73 | 2,867 | 1,180.4 | 29.0 | 3/3 | 1,741 / 52.7 | fail | yes | `20261011T213444.961145+0000_ollama_qwen3-5-9b_session.json` |
 | Ollama `gemma4-12b` | 262,144 | 1 | 262,144 | 1x 7.87 | 4,779.5 | 663.8 | 21.3 | 2/2 | unavailable | fail | yes | `20261011T204001.942580+0000_ollama_gemma4-12b_session.json` |
 | Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 3.26 | 3,377 | 218.3 | 7.8 | 3/3 | unavailable | pass | yes | `20261012T064953.361627+0000_ollama_saluki-27b_session.json` |
-| Ollama `qwen3.6-35b-a3b` (CPU-assisted) | 262,144 | 1 | 262,144 | 1x 3.06 | 4,817 | 287.2 | 27.3 | 1/2 | 316 / 34.8 | pass | no | `20261011T183913.645273+0000_ollama_qwen3-6-35b-a3b_session.json` |
 
-- `saluki-27b` is the one RTX Ollama profile that passes Capability Check
-  v2 (1/12) and publishes a rate: 3.26 sessions/h over 13 steps, all 65
+- `saluki-27b` is the one RTX profile that passes Capability Check v2
+  (1/12): 3.26 sessions/h over 13 steps, all 65
   layers and its 10.90 GiB on the GPU. Turn decode falls from 12.4 to 6.5
   tok/s across the session. An exploratory run at 184,320 with 3 layers
   on the CPU (15 steps) measured 3.65 with decode 12.7 to 8.4, so at depth
   decode is bound by the q4_0 KV reads, not by those layers.
-- `qwen3.6-35b-a3b` passes the gate but holds 14.9 of its 21.7 GiB on the
-  CPU, and one of its two reports did not end on its own.
-- The four GPU-resident profiles fail audit fitness. `gemma4-12b` failed
+- The other four profiles fail audit fitness. `gemma4-12b` failed
   it on 0.40.1 as well (4/12 and 6/12, 2026-10-11/12), so its 6/12 on
   0.40.3 is the model, not the runtime.
 
@@ -131,8 +126,8 @@ Host: RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, Intel Core Ultra
 9 285H, 62 GiB RAM, and no swap. All rows use Ollama 0.32.14, Flash Attention,
 and q8 KV. Canonical AuditBench v1 ran with the
 full profile and three measured samples. Only retained operating points are
-shown: redundant Gemma slot counts, Nemotron, and native-context Qwen3.8 are
-not part of this inventory.
+shown: redundant Gemma slot counts and the profiles that did not fit the GPU
+(Nemotron, Qwen3.6 35B-A3B, Qwen3.8 27B) are not part of this inventory.
 
 Capacity is one proof sample. Input rate is aggregate prompt tok/s. Ollama
 exposes an allocated context per effective slot, not a fungible KV pool.
@@ -143,8 +138,6 @@ exposes an allocated context per effective slot, not a fungible KV pool.
 | Gemma 4 E2B | 131,072 | 4 | 524,288 | 0.00 / 2.66 GiB | 1 x 122,903 in 56.73s at 2,166.4 tok/s; 4 x in 217.03s at 2,265.2 tok/s |
 | Qwen3.5 9B | 262,144 | 1 | 262,144 | 0.00 / 10.21 GiB | 1 x 245,752 in 311.57s at 788.7 tok/s |
 | Gemma 4 12B | 262,144 | 1 | 262,144 | 0.00 / 7.96 GiB | 1 x 245,777 in 462.12s at 531.9 tok/s |
-| Qwen3.6 35B-A3B | 262,144 | 1 | 262,144 | 14.53 / 10.21 GiB | 1 x 245,752 in 927.94s at 264.8 tok/s |
-| Qwen3.8 27B | 131,072 | 1 | 131,072 | 12.49 / 7.64 GiB | 1 x 122,861 in 745.62s at 164.8 tok/s |
 
 Performance cells are median tok/s followed by `[min-max]`. Prefill output is
 one token; decode output is exactly 1,024 tokens per stream.
@@ -155,8 +148,6 @@ one token; decode output is exactly 1,024 tokens per stream.
 | Gemma 4 E2B | 3,582.5 [3,522.8-3,587.2] | 2,971.1 [2,903.0-2,971.3] | - | 110.35 [96.62-112.55] | 184.07 [158.29-188.40] | 247.40 [240.31-252.47] |
 | Qwen3.5 9B | 1,654.8 [1,631.6-1,766.6] | 1,518.9 [1,486.5-1,525.8] | 1,139.2 [1,134.3-1,142.6] | 37.83 [31.73-38.58] | - | - |
 | Gemma 4 12B | 1,242.8 [1,227.5-1,246.7] | 1,042.9 [1,024.8-1,044.7] | 767.4 [762.0-769.8] | 32.36 [31.07-32.73] | - | - |
-| Qwen3.6 35B-A3B | 303.4 [295.5-303.7] | 299.1 [297.9-302.4] | 288.4 [286.5-288.4] | 30.99 [28.35-31.15] | - | - |
-| Qwen3.8 27B | 188.3 [182.9-198.1] | 178.3 [176.9-179.7] | - | 2.93 [2.69-3.42] | - | - |
 
 Qwen prompt counts were 32,780, 65,547, and 131,071 where included; Gemma
 counts were 32,779, 65,535, and 131,058. Decode control prompts were 66 tokens
@@ -172,8 +163,6 @@ tok/s`. The 32k and half-context phases generate 1,024 tokens; deep generates
 | Gemma 4 E2B | 171.85 [165.90-182.62] / 48.88 | 179.66 [157.69-187.89] / 51.10 | 184.88 [181.99-197.10] / 52.59 | 99.42 [96.27-99.88] / 28.28 | 67.33 [65.52-68.46] / 4.79 | 4x: 64.57 [64.53-65.11] / 4.59 |
 | Qwen3.5 9B | 70.34 [69.14-73.91] / 20.01 | - | - | 22.10 [22.09-22.24] / 6.29 | 12.26 [12.23-12.36] / 0.872 | 1x |
 | Gemma 4 12B | 59.82 [59.53-60.60] / 17.01 | - | - | 16.67 [16.28-16.75] / 4.74 | 8.31 [8.31-8.43] / 0.591 | 1x |
-| Qwen3.6 35B-A3B | 25.09 [25.07-25.14] / 7.14 | - | - | 7.00 [6.96-7.11] / 1.99 | 4.00 [4.00-4.00] / 0.284 | 1x |
-| Qwen3.8 27B | 2.70 [2.31-2.86] / 0.769 | - | - | 1.83 [1.69-1.87] / 0.521 | 2.15 [1.96-2.30] / 0.153 | 1x |
 
 The serving-performance recommendation is:
 
@@ -186,13 +175,8 @@ The serving-performance recommendation is:
   12B at every AuditBench audit phase.
 - Gemma 4 12B remains the retained larger-model Gemma point at one slot.
   Higher slot counts force CPU offload and are not useful baselines here.
-- Qwen3.6 is a model-capability choice. The runner reports 41 of 42 layers on
-  GPU, but byte allocation is 14.53 GiB CPU plus 10.21 GiB GPU and its audit
-  throughput is far below the fully resident 9B model.
-- Qwen3.8 at 128k is host-memory bound: decode falls to 2.93 tok/s and the
-  32k audit reaches only 2.70 calls/hour. The 262k profile is not retained.
 
-All Qwen profiles are forced to one slot by Ollama's `qwen35` or `qwen35moe`
+Both Qwen profiles are forced to one slot by Ollama's `qwen35`
 architecture guard. These recommendations describe serving performance and
 capacity only; they do not establish answer quality.
 
@@ -212,7 +196,6 @@ visible only in per-turn walls, never as a measured fraction.
 | -- | --: | -- | --: | --: | --: | --: |
 | Qwen3.5 4B | 9 | 1 of 2 | 159.0 s | 22.6 | 907.4 s | 3.97 |
 | Qwen3.5 9B | 16 | 3 of 3 | 367.1 s | 9.8 | 1,659.0 s | 2.17 |
-| Qwen3.6 35B-A3B | 16 | 1 of 2 | 818.8 s | 4.4 | not run | - |
 | Gemma 4 12B | 16 | 0 of 2 | - | - | 1,430.2 s | 2.52 |
 | Gemma 4 E2B (4 slots) | 9 | 0 of 2 | - | - | 172.7 s | 20.85 |
 
@@ -237,19 +220,6 @@ Per profile:
   read. Gemma 4 E2B reads a filename embedded in the evidence text
   instead of `file_001`, in both stacks. Both behaviors survive the
   corpus fix: genuine model limits, cleanly attributed.
-- Qwen3.6 35B-A3B ran on the finalized fixture after an
-  identity refusal was resolved: this host held an artifact
-  (`07d35212...`) pulled before the digest pin was recorded
-  (`096fdbd0...`). A re-pull fetched exactly the pinned digest (the
-  tag had not moved since the pin) and pruned the old layers, so the
-  canonical RTX rows above for this profile -- measured on the older
-  artifact -- describe a digest no longer present locally. On the
-  pinned artifact the compliant variant ran
-  the full 16-step chain with 16/16 recall at ~40 s per tool turn
-  despite the 14.53 GiB CPU offload; the other variant produced a
-  graceful near-miss (15/16, verdict one file early). Its replay and
-  Qwen3.8 27B (2.93 tok/s decode) await a separately approved
-  CPU-offload batch.
 
 Run JSONs: retained under `${XDG_STATE_HOME:-~/.local/state}/auditbench/`.
 

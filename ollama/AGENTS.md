@@ -52,16 +52,10 @@ in [README.md](README.md); shared server conventions live in
   caches reside on the 12 GiB GPU after accounting for the full context slot.
 - Keep Gemma 4 E2B and Qwen3.5 4B at 131,072 tokens. That is native for E2B
   and deliberately matches the local vLLM operating point for Qwen3.5 4B.
-- Keep Qwen3.5 9B and Qwen3.6 35B-A3B at their native
-  `OLLAMA_CONTEXT_LENGTH=262144`; each completed a 246k-token prompt. Keep
-  Qwen3.8 at its faster `OLLAMA_CONTEXT_LENGTH=131072` default.
-- Keep the Nemotron 3.5 Lightning GGUF profile at 262,144 tokens, q4 KV, and
-  one request slot until its CPU-assisted RTX operating point passes
-  Capability Check and AuditBench. Its artifact declares 1,048,576 tokens,
-  but the lower default matches the proven MLX comparison point. This is the
-  explicit q4 experiment allowed by the general q8 quality-safe default: only
-  6 layers use attention, and preserving 262k context is more useful here than
-  spending another 384 MiB on q8 KV.
+- An RTX profile runs entirely on the GPU, ahead of context length. The
+  profiles that spilled weights to the CPU (Qwen3.6 35B-A3B, the Qwen3.8 27B
+  Q4_K_M, the Muse Glimmer and Nemotron 3.5 Lightning GGUFs) were dropped on
+  2026-10-12; Qwen3.8-27B is served there as `saluki-27b`.
 - Keep every Qwen profile at `OLLAMA_NUM_PARALLEL=1`. Official Ollama 0.32.14
   forces both `qwen35` and `qwen35moe` architectures to one request slot.
   Requested 2x and 4x profiles were explicitly rejected by the benchmark's

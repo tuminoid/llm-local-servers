@@ -21,7 +21,7 @@ fi
 
 OLLAMA_MODEL="${OLLAMA_MODEL:-}"
 OLLAMA_LOCAL_IMPORT="${OLLAMA_LOCAL_IMPORT:-}"
-# shellcheck source=models/qwen3.8-27b.conf disable=SC1091
+# shellcheck source=models/saluki-27b.conf disable=SC1091
 source "${CONF_FILE}"
 
 if [[ "${OLLAMA_LOCAL_IMPORT}" == "1" ]]; then
