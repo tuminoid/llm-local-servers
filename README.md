@@ -101,8 +101,8 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
   served name. Only the model the server was started with answers.
 - To give one project a provider permanently, copy the file to that
   project's root as `opencode.json`.
-- The Qwen3.8 vLLM entries take a reasoning effort:
-  `opencode run --variant low|medium|xhigh`, default `xhigh`.
+- Entries with reasoning-effort variants take `opencode run --variant
+  <effort>`; no variant leaves the model's default.
 - The remote providers need their tunnel running (`make vllm-remote-tunnel`
   or `make ollama-remote-tunnel`).
 - Do not point `OPENCODE_CONFIG_DIR` at these directories: opencode writes

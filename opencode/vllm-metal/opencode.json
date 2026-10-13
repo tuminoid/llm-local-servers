@@ -18,10 +18,19 @@
         },
         "granite-4.2-30b-mlx": {
           "name": "Granite4.2 30B 4bit",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
           "tool_call": true,
           "limit": {
             "context": 131072,
             "output": 32768
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            }
           }
         },
         "mimo-v2.6-9b-mlx": {

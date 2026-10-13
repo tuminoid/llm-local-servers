@@ -156,7 +156,7 @@ vLLM-Metal 0.30.0, LM Studio 0.4.25+1 with its Splash engine 0.0.5, Ollama
 0.32.14 for MLX. JSON files are retained under
 `~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`. Audit
 fitness ran 4 samples per task at each conf's declared sampling and passes
-with at least 11 of 12 samples passed. Two groups keep earlier runs:
+with at least 11 of 12 samples passed. Three groups differ:
 
 - The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet
   commit `036bfd0`, on the same harness, serving the mlx-community targets
@@ -168,6 +168,10 @@ with at least 11 of 12 samples passed. Two groups keep earlier runs:
   1.11.0. LM
   Studio installed mlx-llm 1.13.1 itself on 2026-10-12, and the adapter
   refuses to measure off the pin.
+- The vLLM-Metal `granite4.2-30b-4bit` row is the 2026-10-13 rerun after
+  its conf moved to the default reasoning mode its template already used
+  (the JSON records `c4ae9b3`, that change before a squash), under
+  `~/.local/state/auditbench/trials/2026-10-13-effort-check/results/`.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |

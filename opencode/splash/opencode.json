@@ -30,6 +30,17 @@
           "limit": {
             "context": 262144,
             "output": 65536
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "medium": {
+              "reasoningEffort": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh"
+            }
           }
         }
       }
