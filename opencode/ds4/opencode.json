@@ -60,8 +60,8 @@
           },
           "tool_call": true,
           "limit": {
-            "context": 262144,
-            "output": 65536
+            "context": 524288,
+            "output": 131072
           },
           "variants": {
             "low": {

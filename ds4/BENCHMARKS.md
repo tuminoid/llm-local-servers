@@ -90,3 +90,22 @@ times from the `results/` session runs, which ran before disk KV.
 - **SSD streaming runs V4.1 on 128 GB** at a third of V4 Flash's decode;
   its tables read from the GGUF on every token, so speed depends on the
   SSD.
+
+## Qwen3.8 Flash Next at 524,288
+
+The tables above ran Qwen at the native 262,144. Its config now serves
+524,288 with static YaRN factor 2, rechecked 2026-10-13 on the same host
+and pin from the uncommitted change (`publishable: false`, one sample).
+Retained under `~/.local/state/auditbench/trials/2026-10-13-ds4-512k/`.
+
+- **Capability Check v2:** as at 262,144; audit fitness pass, 12/12, and
+  `json_schema` fails (`ignored`).
+  `results/20261013T174602.562772+0000_ds4_qwen3-8-flash-next-q4-512k.json`.
+- **Deep session** (exploratory `AUDIT_BENCH_CONV_MAX_STEPS=50`, one
+  stream): complete, the report decoded from 444,683 prompt tokens to its
+  own stop, recalled 50 of 50 findings, no truncated or unreasoned calls;
+  4.18 sessions/h, prefill 1,196 tok/s, turn decode 63.2/58.6/62.0, report
+  57.0 tok/s, cached 0.935. A 491,538-token cold prompt took 427 s.
+  `results/20261013T175206.079488+0000_ds4_qwen3-8-flash-next-q4-512k_session.json`.
+- **Memory:** KV 16.66 GiB (raw 13.01 + compressed 3.66) + buffers
+  15.24 GiB + model 69.73 GiB = 101.63 GiB planned; pressure stayed normal.
