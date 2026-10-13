@@ -50,19 +50,14 @@ in [README.md](README.md); shared server conventions live in
   an unmanaged process must never receive a model pull.
 - Do not force `num_gpu`. llama.cpp automatic fit decides which layers and
   caches reside on the 12 GiB GPU after accounting for the full context slot.
-- An RTX profile runs entirely on the GPU, ahead of context length. The
-  profiles that spilled weights to the CPU (Qwen3.6 35B-A3B, the Qwen3.8 27B
-  Q4_K_M, the Muse Glimmer and Nemotron 3.5 Lightning GGUFs) were dropped on
-  2026-10-12; Qwen3.8-27B is served there as `saluki-27b`. The small
-  models that did fit (Qwen3.5 4B and 9B, Gemma 4 E2B and 12B) failed audit
-  fitness and went the same day. Qwen3.6 35B-A3B came back as
-  `qwen3.6-35b-a3b-reap48`, an expert-pruned GGUF that fits entirely at
-  262,144 with q4_0 KV; it and Saluki are the RTX's two profiles.
-- Keep every Qwen profile at `OLLAMA_NUM_PARALLEL=1`. Official Ollama 0.32.14
-  forces both `qwen35` and `qwen35moe` architectures to one request slot.
-  Requested 2x and 4x profiles were explicitly rejected by the benchmark's
-  effective-runner check. Do not claim multi-slot Qwen support without
-  replacing the runtime and repeating full-context correctness tests.
+- An RTX profile runs entirely on the GPU, ahead of context length: a
+  model whose weights spill to the CPU gets a smaller artifact (a lower-bit
+  or expert-pruned GGUF) or leaves the host.
+- Keep every Qwen profile at `OLLAMA_NUM_PARALLEL=1`. Ollama 0.32.14 forced
+  both `qwen35` and `qwen35moe` architectures to one request slot, and the
+  benchmark's effective-runner check rejected requested 2x and 4x
+  profiles; no later release has been tested for more. Do not claim
+  multi-slot Qwen support without repeating full-context correctness tests.
 - Keep the benchmark job count equal to `OLLAMA_NUM_PARALLEL`.
 - Keep Flash Attention enabled when using quantized KV. q8 is the quality-safe
   default; q4 is an explicit experiment.

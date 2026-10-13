@@ -36,14 +36,21 @@ trial-directory copies remain, and the figures stay here and in git history.
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | vLLM-Metal `mimo-v2.6-9b-4bit` | 262,144 | 5 | 1,376,386 | 1x 8.08 / 4x 2.41 | 3,978 | 821.9 | 15.5 | 4/15 | 2,500 / 67.1 | fail | no | `20260929T055959.096871+0000_vllm-metal_mimo-v2-6-9b-4bit_session.json` |
-| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,403,241 | 1x 5.23 / 4x 5.30 | 6,211 | 861.5 | 11.3 | 13/15 | 3,064 / 99.3 | pass | no | `20260927T193210.121914+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
-| vLLM-Metal `gemma4-31b-4bit` | 262,144 | 5 | 617,308 | 1x 1.83 / 2x 1.84 | 1,435 | 118.2 | 2.3 | 9/9 | 651 / 27.1 | fail | yes | `20260929T222048.059806+0000_vllm-metal_gemma4-31b-4bit_session.json` |
+| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,403,241 | 1x 5.23 / 4x 5.30 | 6,211 | 861.5 | 11.3 | 13/15 | 3,064 / 99.3 | fail | no | `20260927T193210.121914+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
+| vLLM-Metal `gemma4-31b-4bit` | 262,144 | 5 | 617,308 | 1x 1.83 / 2x 1.84 | 1,435 | 118.2 | 2.3 | 9/9 | 651 / 27.1 | pass | yes | `20260929T222048.059806+0000_vllm-metal_gemma4-31b-4bit_session.json` |
 | vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 1.78 / 2x 2.08 | 13,459 | 346.7 | 4.9 | 9/9 | 853 / 30.9 | pass | yes | `20260927T123506.314386+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
 
-- `granite4.2-30b-4bit` and `ornith1.5-35b-a3b-4bit` are the profiles that
-  pass Capability Check v2. Granite's run is publishable but slow (1.78
-  sessions/h, 13,459 output tokens per session at 131k); ornith's is not:
-  two of its 4-stream reports named 9 and 7 of 16 findings.
+- `gemma4-31b-4bit` and `granite4.2-30b-4bit` pass Capability Check v2
+  (2026-10-12 rerun, [CAPABILITIES.md](../CAPABILITIES.md)); both runs are
+  publishable but slow: gemma4 1.83 sessions/h with 2.3 tok/s report
+  decode at depth, granite 1.78 with 13,459 output tokens per session at
+  131k. Gemma 4 passes since its conf forbids grammar whitespace, a setting
+  that applies only to schema-constrained requests, which AuditBench
+  sessions never send, so its 2026-09-29 session row stands.
+- `ornith1.5-35b-a3b-4bit` fails the 2026-10-12 rerun at 10 of 12 (11 on
+  2026-09-27), and an exploratory 36-sample run passed 31 (86%), every
+  failure in the selection task. Its run is also unpublishable: two of its
+  4-stream reports named 9 and 7 of 16 findings.
 - Streams barely help on this runtime: ornith 5.23 to 5.30, and MiMo
   loses at four streams.
 - MiMo fails Capability Check v2; its run is also unpublishable
@@ -163,8 +170,13 @@ Received 937 parameters not in model` -- mlx-lm had no weight mapping for
 NVFP4 block-scale safetensors of this architecture. The verdict transfers
 to `nvidia/Qwen3.6-35B-A3B-NVFP4` (same quantization format), so no NVFP4
 profile exists here and the Ollama registry remains the only NVFP4 path on
-this host. mlx-lm has moved since without a retest here; retest before
-assuming this is permanent.
+this host. Plugin 0.30.0's mlx-lm (`9e6acca`) still cannot load it, by
+code reading on 2026-10-12: it maps compressed-tensors
+`nvfp4-pack-quantized` checkpoints, but this one declares
+`mixed-precision` (FP8 attention, `lm_head` and the last eight layers' MLP;
+NVFP4 MLP elsewhere), which falls to the affine path, and its `qwen3_5`
+model has no `weight_packed` mapping. Retest when the plugin's mlx-lm pin
+maps that format.
 
 ### Candidate smoke verdicts
 

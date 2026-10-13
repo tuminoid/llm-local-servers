@@ -195,11 +195,11 @@ pass Capability Check v2 and are publishable:
 | --: | -- | -- | --: | --: | --: | --: |
 | 1 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 53.5 |
 | 2 | Splash `qwen3.8-27b` | dense | 262,144 | 6.73 | 7.47 @4x | 50.5 |
-| 3 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 1.78 | 2.08 @2x | 4.9 |
+| 3 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.83 | 1.84 @2x | 2.3 |
+| 4 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 1.78 | 2.08 @2x | 4.9 |
 
-Unranked: Splash `qwen3.6-35b-a3b` (17.95/h) and vLLM-Metal
-`ornith1.5-35b-a3b-4bit` (5.23/h) pass the gate but their runs are
-unpublishable (incomplete sessions). The vLLM-Metal MiMo and gemma4
+Unranked: Splash `qwen3.6-35b-a3b` (17.95/h) passes the gate but its run
+is unpublishable (incomplete sessions). The vLLM-Metal MiMo and ornith
 profiles, LM Studio `qwen3.6-35b-a3b-splash` and both MLX-engine
 profiles, and every Ollama MLX profile fail
 Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)

@@ -149,33 +149,40 @@ proves nothing about parser compatibility.
 ## Apple M5 Max campaign
 
 Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
-27.0. Capability Check v2 (llm-audit-bench v2.0.0, `capability-v2`,
-SCHEMA_VERSION 5), run 2026-09-27/28 from fleet commit `bee4a24`:
-vLLM-Metal 0.30.0, Splash 1.0, LM Studio 0.4.25+1 (Splash engine 0.0.5,
-mlx-llm 1.11.0), Ollama 0.32.14 for MLX. Audit fitness ran 4 samples per
-task at each conf's declared sampling and passes with at least 11 of 12
-samples passed.
-The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet commit
-`036bfd0` (llm-audit-bench v2.1.0 plus the triage amendment `c0dc34a`),
-serving the mlx-community targets that replaced the packages. Splash 1.0
-passed both on 2026-09-27, but same-day 1.0 qwen3.6 reruns on 2026-10-12
-passed only 9 and 10 of 12: that profile sits at the fitness limit on either
-release.
+27.0.1 except where noted. Capability Check v2 (llm-audit-bench v2.1.0
+plus the triage amendment `c0dc34a`), rerun 2026-10-12 from fleet commit
+`4c5f585` (the JSON records `2bd6885`, the same change before a rebase):
+vLLM-Metal 0.30.0, LM Studio 0.4.25+1 with its Splash engine 0.0.5, Ollama
+0.32.14 for MLX. JSON files are retained under
+`~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`. Audit
+fitness ran 4 samples per task at each conf's declared sampling and passes
+with at least 11 of 12 samples passed. Two groups keep earlier runs:
+
+- The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet
+  commit `036bfd0`, on the same harness, serving the mlx-community targets
+  that replaced the packages. Splash 1.0 passed both on 2026-09-27, but
+  same-day 1.0 qwen3.6 reruns on 2026-10-12 passed only 9 and 10 of 12:
+  that profile sits at the fitness limit on either release.
+- The LM Studio MLX rows are the 2026-09-28 runs from fleet commit
+  `bee4a24` (llm-audit-bench v2.0.0, macOS 27.0) on the pinned mlx-llm
+  1.11.0. LM
+  Studio installed mlx-llm 1.13.1 itself on 2026-10-12, and the adapter
+  refuses to measure off the pin.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: format 1) | fail |
-| LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: instruction 1, invented 1, missed_findings 1) | fail |
+| LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: instruction 1, missed_findings 1, runaway 1) | fail |
 | LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: format 1) | fail |
 | LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | timeout (600 s) | pass 12/12 | fail |
+| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 0/12 (failed: missed_findings 1, no_reasoning 10, runaway 1) | fail |
-| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
+| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 0/12 (failed: no_reasoning 11, runaway 1) | fail |
+| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 10/12 (failed: error 1, runaway 1) | fail |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
-| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 7/12 (failed: invented 1, leak 1, missed_findings 2, runaway 1) | fail |
+| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 7/12 (failed: missed_findings 2, missed_required 1, runaway 2) | fail |
 
 Every checked row's live identity matched the revision or digest pinned
 in its model config.
@@ -184,18 +191,34 @@ in its model config.
 
 - Five profiles pass: Splash `qwen3.6-35b-a3b` (11 of 12) and `qwen3.8-27b`
   (12 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12), and vLLM-Metal
-  `granite4.2-30b-4bit` (12 of 12) and `ornith1.5-35b-a3b-4bit` (11 of 12).
-- MiMo on vLLM-Metal passes 0 of 12: ten samples answered without
+  `gemma4-31b-4bit` and `granite4.2-30b-4bit` (12 of 12 each).
+- `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
+  whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
+  does). On 2026-09-27 the check hit the 600 s request timeout in the
+  whitespace runaway.
+- `ornith1.5-35b-a3b-4bit` falls to 10 of 12 (11 on 2026-09-27): one
+  selection sample ran to the 32,768-token cap, and one workflow sample
+  wrote its report through a tool call whose arguments were not valid JSON.
+  A canonical rerun after a restart drew the same 12 samples in another
+  order: vLLM-Metal replays its sampled draws, so it is not a second
+  result. An exploratory run at 12 samples per task passed 31 of 36 (86%,
+  against the gate's 11 of 12): all five failures were selection samples
+  (3 runaways, 2 invented), with triage and workflow 12 of 12 each.
+- MiMo on vLLM-Metal passes 0 of 12: eleven samples answered without
   reasoning. Its API checks pass.
 - Every MLX-format profile outside vLLM-Metal fails schema enforcement
   (`ignored`): both Ollama MLX rows and both LM Studio MLX rows. Their
   audit fitness passes except nemotron (7 of 12).
-- LM Studio `qwen3.6-35b-a3b-splash` fails audit fitness (9 of 12); Splash
-  1.0's own server ranged from 11 to 9 of 12 on the same package, so this
-  shows no engine difference.
-- `gemma4-31b-4bit` passes audit fitness (12 of 12) and fails only schema
-  enforcement, whose check hit the 600 s request timeout: the
-  whitespace runaway v1 recorded.
+- LM Studio `qwen3.6-35b-a3b-splash` sits at the fitness limit: two draws
+  on 2026-10-12 passed 11 and 9 of 12, after 9 on 2026-09-28. The row is
+  the later draw; two of the three draws fail. Splash 1.0's own server
+  ranged from 11 to 9 of 12 on the same package, so this shows no engine
+  difference.
+- Exploratory runs on LM Studio's mlx-llm 1.13.1 (the pin overridden in the
+  environment) still return empty content for the schema request. Audit
+  fitness passed 12 of 12 on `qwen3.8-27b-mlx` and failed at 10 of 12 on
+  `qwen3.6-35b-a3b-mlx` (failed: instruction 1, invented 1); both rows
+  fail either way.
 
 ## A100-SXM4-80GB campaign
 

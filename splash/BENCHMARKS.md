@@ -67,6 +67,18 @@ here and in git history.
   before the canonical 11-of-12 pass. Its gate result is a draw from that
   rate, not a release property.
 
+### Growing conversation (2026-10-12)
+
+The canonical `conversation` profile on 1.3.1, from fleet commit
+`a0bd505` with the same harness: `qwen3.6-35b-a3b` complied in both
+samples, reading all 16 files and recalling all 16 findings, at 96.0 s
+per conversation (37.5 conversations/h), final prompts of 165,418 to
+165,643 tokens and 90.2% of prompt tokens from cache. It is canonical and
+publishable (`20261012T181255.410214+0000_splash_qwen3-6-35b-a3b_conversation.json`,
+under `~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`).
+The 1.0 failure of one sample in two, below, was an AuditBench v1 run;
+two compliant samples do not show that the failure rate fell.
+
 ### Qwen3.8 27B UD-Q4_K_M GGUF, exploratory (2026-10-11)
 
 Splash 1.1.0 and later also serve `unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_M`,
