@@ -242,3 +242,17 @@ overview above.
 Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. Its two
 profiles, `qwen3.6-35b-a3b-reap48` and `saluki-27b`, are in the overview
 above and in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+
+### ds4 on the Apple M5 Max (interactive use)
+
+ds4 serves large MoE models for interactive agentic sessions, one slot,
+never ranked for audits. Speed is from the 262,144 runs, one stream, in
+tok/s; Qwen's 524,288 deep session decoded its report at 57.0 tok/s from
+444,683 tokens. Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
+
+| Model | Context | Audit fitness | Tool calls | Turn decode, mid session | Report decode, ~160k deep | Session prefill | Interactive use |
+| -- | --: | -- | -- | --: | --: | --: | -- |
+| `qwen3.8-flash-next-q4` | 524,288 (YaRN) | pass, 12/12 | pass | 69.3 | 60.9 | 1,277 | yes, the pick |
+| `deepseek-v4-flash-q2` | 524,288 | 11/12 at 262,144, 10/12 at 524,288 | pass | 33.4 | 27.2 | 420 | yes, slower |
+| `glm5.3-flash-q2` | 262,144 | pass, 11/12 | fail: string-typed arguments | 54.2 | 26.9 | 364 | no |
+| `deepseek-v4.1-flash-q2` | 262,144 | fail, 7/12 | pass | 21.8 | 13.4 | 544 | no: slow, SSD streaming |

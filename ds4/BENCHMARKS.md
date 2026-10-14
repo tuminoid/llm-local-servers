@@ -91,21 +91,50 @@ times from the `results/` session runs, which ran before disk KV.
   its tables read from the GGUF on every token, so speed depends on the
   SSD.
 
-## Qwen3.8 Flash Next at 524,288
+## 524,288 context
 
-The tables above ran Qwen at the native 262,144. Its config now serves
-524,288 with static YaRN factor 2, rechecked 2026-10-13 on the same host
-and pin from the uncommitted change (`publishable: false`, one sample).
-Retained under `~/.local/state/auditbench/trials/2026-10-13-ds4-512k/`.
+The tables above ran at 262,144. The Qwen and V4 Flash configs now serve
+524,288, rechecked 2026-10-13 on the same host and pin from uncommitted
+changes (`publishable: false`, one sample each). Deep sessions are
+exploratory `AUDIT_BENCH_CONV_MAX_STEPS=50` at one stream. Retained under
+`~/.local/state/auditbench/trials/2026-10-13-ds4-512k/`.
+
+### Qwen3.8 Flash Next, static YaRN factor 2
 
 - **Capability Check v2:** as at 262,144; audit fitness pass, 12/12, and
   `json_schema` fails (`ignored`).
   `results/20261013T174602.562772+0000_ds4_qwen3-8-flash-next-q4-512k.json`.
-- **Deep session** (exploratory `AUDIT_BENCH_CONV_MAX_STEPS=50`, one
-  stream): complete, the report decoded from 444,683 prompt tokens to its
+- **Deep session:** complete, the report decoded from 444,683 prompt tokens to its
   own stop, recalled 50 of 50 findings, no truncated or unreasoned calls;
   4.18 sessions/h, prefill 1,196 tok/s, turn decode 63.2/58.6/62.0, report
   57.0 tok/s, cached 0.935. A 491,538-token cold prompt took 427 s.
   `results/20261013T175206.079488+0000_ds4_qwen3-8-flash-next-q4-512k_session.json`.
 - **Memory:** KV 16.66 GiB (raw 13.01 + compressed 3.66) + buffers
   15.24 GiB + model 69.73 GiB = 101.63 GiB planned; pressure stayed normal.
+
+### DeepSeek V4 Flash and GLM 5.3 Flash
+
+Both are trained to 1,048,576, so they need no YaRN. Above 393,216 ds4
+stops downgrading `reasoning_effort` max to high; traced requests rendered
+V4's max-effort prefix and GLM's "Reasoning Effort: Max".
+
+- **V4 Flash capability:** audit fitness fail, 10/12 (selection: invented
+  2), against 11/12 at 262,144; its prompts are far below either context,
+  so this is sampling at the gate. `json_schema` fails (`ignored`).
+  `results/20261013T191613.651852+0000_ds4_deepseek-v4-flash-q2.json`.
+- **V4 Flash deep session:** complete, the report from 447,366 prompt
+  tokens recalled 50 of 50 findings, but 0.20 sessions/h (5 h), prefill
+  280 tok/s, cached 0.594, 12 unreasoned calls. The 32 GiB disk budget of
+  the time evicted every deep checkpoint before its first hit, so later
+  steps restored from 102,400 tokens; the report's first token took
+  1,478 s. The config's budget is now sized for a full session, not yet
+  retested.
+  `results/20261013T191613.869606+0000_ds4_deepseek-v4-flash-q2_session.json`.
+- **GLM 5.3 deep session:** incomplete; the report from 445,103 prompt
+  tokens recalled 0 of 50 findings in 1,989 characters, and 48 of 51 calls
+  streamed no reasoning, at cached 0.963. Its capability check matched
+  262,144 (audit fitness 11/12, string-typed tool arguments). GLM stays at
+  262,144, where the 16-step session recalled 16 of 16.
+  `results/20261014T012312.788040+0000_ds4_glm5-3-flash-q2_session.json`.
+- **Memory planned at 524,288:** V4 Flash 89.13 GiB (85.13 at 262,144),
+  GLM 98.88 GiB (95.96).

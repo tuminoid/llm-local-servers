@@ -12,11 +12,11 @@ DS4_DATA_DIR="${DS4_DATA_DIR:-${XDG_DATA_HOME:-${HOME}/.local/share}/ds4}"
 DS4_COMMIT="${DS4_COMMIT:-0aaea5a238fb41a35106a551e73c8409dfb751ac}"
 DS4_SRC="${DS4_SRC:-${DS4_DATA_DIR}/src/${DS4_COMMIT}}"
 DS4_PORT="${DS4_PORT:-8023}"
-# Serving knobs, host settings; each model config declares DS4_MTP.
+# Serving knobs, host settings; each model config declares DS4_MTP and
+# DS4_KV_DISK_MB.
 DS4_SLOTS="${DS4_SLOTS:-1}"
 DS4_KV_DISK="${DS4_KV_DISK:-1}"
 DS4_KV_DISK_DIR="${DS4_KV_DISK_DIR:-${XDG_CACHE_HOME:-${HOME}/.cache}/ds4/kv}"
-DS4_KV_DISK_MB="${DS4_KV_DISK_MB:-32768}"
 
 # Succeeds when DS4_SRC is a clean tree at the pin. A tree at another
 # commit, or with local edits, would build or serve under the pin's name.

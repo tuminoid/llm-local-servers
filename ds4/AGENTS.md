@@ -41,6 +41,13 @@ in [BENCHMARKS.md](BENCHMARKS.md).
   restarts. Each model config gets its own directory and budget; the
   files hold prompt text. The server runs from the build tree, so the
   launcher rejects relative checkpoint and trace paths.
+- A checkpoint records no RoPE scaling, and ds4 loads one saved at a
+  smaller context (`ds4_kvstore.c` skips only larger ones). A change to a
+  config's YaRN factor therefore needs its checkpoint directory cleared;
+  the same text under different positions would load silently.
+- The checkpoint budget is per config: one is saved every 20,480 tokens of
+  a session, so the budget must hold a full-context chain of the model's
+  checkpoint size, or deep checkpoints are evicted before their first hit.
 - One slot by default. Concurrent sessions interleave prefill in 128-token
   chunks with decode and lost on every measured model.
 - Metal kernels load relative to the build tree; `start.sh` changes into

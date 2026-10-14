@@ -45,7 +45,7 @@ is the served name, for example `ds4/qwen3.8-flash-next`.
 | `DS4_SLOTS` | 1 | Resident sessions (`--batched-session`); each costs its full-context KV |
 | `DS4_KV_DISK` | 1 | Disk KV checkpoints; 0 turns them off |
 | `DS4_KV_DISK_DIR` | `~/.cache/ds4/kv` | Checkpoint root, one subdirectory per model config |
-| `DS4_KV_DISK_MB` | 32768 | Checkpoint budget per model config |
+| `DS4_KV_DISK_MB` | per config | Checkpoint budget per model config |
 | `DS4_MTP` | per config | Built-in MTP speculative decoding at exact sampling (Qwen and GLM only) |
 | `DS4_TRACE` | unset | Trace file for prompt rendering, cache decisions and tool parsing |
 | `DS4_PORT` | 8023 | Loopback port |
