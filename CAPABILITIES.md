@@ -163,11 +163,10 @@ with at least 11 of 12 samples passed. Three groups differ:
   that replaced the packages. Splash 1.0 passed both on 2026-09-27, but
   same-day 1.0 qwen3.6 reruns on 2026-10-12 passed only 9 and 10 of 12:
   that profile sits at the fitness limit on either release.
-- The LM Studio MLX rows are the 2026-09-28 runs from fleet commit
-  `bee4a24` (llm-audit-bench v2.0.0, macOS 27.0) on the pinned mlx-llm
-  1.11.0. LM
-  Studio installed mlx-llm 1.13.1 itself on 2026-10-12; the rows stand
-  for 1.11.0 until a rerun moves the pin.
+- The LM Studio MLX rows are the 2026-10-14 runs from fleet commit
+  `eec6b44` on mlx-llm 1.13.1, which LM Studio installed itself on
+  2026-10-12, under
+  `~/.local/state/auditbench/trials/2026-10-14-m5-day/results/`.
 - The vLLM-Metal `granite4.2-30b-4bit` row is the 2026-10-13 rerun after
   its conf moved to the default reasoning mode its template already used
   (the JSON records `c4ae9b3`, that change before a squash), under
@@ -177,9 +176,9 @@ with at least 11 of 12 samples passed. Three groups differ:
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: format 1) | fail |
+| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: runaway 1) | fail |
 | LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: instruction 1, missed_findings 1, runaway 1) | fail |
-| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: format 1) | fail |
+| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
 | LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
@@ -218,11 +217,11 @@ in its model config.
   the later draw; two of the three draws fail. Splash 1.0's own server
   ranged from 11 to 9 of 12 on the same package, so this shows no engine
   difference.
-- Exploratory runs on LM Studio's mlx-llm 1.13.1 (the pin overridden in the
-  environment) still return empty content for the schema request. Audit
-  fitness passed 12 of 12 on `qwen3.8-27b-mlx` and failed at 10 of 12 on
-  `qwen3.6-35b-a3b-mlx` (failed: instruction 1, invented 1); both rows
-  fail either way.
+- On mlx-llm 1.13.1 both MLX profiles still return empty content for the
+  schema request. `qwen3.6-35b-a3b-mlx` sits at the fitness limit: an
+  exploratory 2026-10-12 draw with the pin overridden failed at 10 of 12
+  (instruction 1, invented 1); `qwen3.8-27b-mlx` passed 12 of 12 both
+  times. On 1.11.0 (2026-09-28, `bee4a24`) both passed 11 of 12.
 
 ## A100-SXM4-80GB campaign
 

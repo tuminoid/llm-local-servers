@@ -38,9 +38,9 @@ trial-directory copies remain, and the figures stay here and in git history.
 - The MLX-engine profiles declare the protocol's off-by-one token
   allowance, so their runs are `canonical: false` by design; both fail
   Capability Check v2 on schema enforcement. `qwen3.8-27b-mlx`'s bench was
-  stopped to give the campaign's time to canonical runs. LM Studio installed
-  mlx-llm 1.13.1 itself on 2026-10-12; these rows stand for 1.11.0 until a
-  rerun moves the pin.
+  stopped to give the campaign's time to canonical runs. These sessions ran
+  on mlx-llm 1.11.0; the pin moved to 1.13.1 on its capability rerun
+  (2026-10-14), without a session rerun.
 - `qwen3.6-35b-a3b-splash` publishes 18.70 sessions/h but fails audit
   fitness (9 of 12).
 
@@ -65,7 +65,7 @@ tree on llm-audit-bench `382760d`.
   lanes.
 - The MLX rows ran with `AUDIT_BENCH_TOLERATE_OFF_BY_ONE=1`: mlx-llm 1.11.0
   reported every length-capped response one token short, exactly, with
-  `finish_reason` `length`.
+  `finish_reason` `length`; 1.13.1 still does (2026-10-14).
 
 JSON names, removed from `~/.local/state/auditbench/` with the other v1
 results on 2026-09-30 (no trial-directory copies):

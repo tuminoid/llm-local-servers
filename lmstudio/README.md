@@ -84,7 +84,7 @@ times active slots as allocation, not as a measured pool.
 
 ## The MLX engine's token accounting
 
-mlx-llm 1.11.0 reports `completion_tokens` one low whenever the length cap cuts
+mlx-llm reports `completion_tokens` one low whenever the length cap cuts
 a response. The MLX configs therefore run AuditBench with
 `AUDIT_BENCH_TOLERATE_OFF_BY_ONE=1`: exact at that offset, and
 `canonical: false` by protocol. The Splash engine reports exact counts.
