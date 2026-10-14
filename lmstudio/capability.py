@@ -1,4 +1,4 @@
-"""Capability Check v2 against the owned, pinned LM Studio server."""
+"""Capability Check v2 against the owned LM Studio server."""
 
 import os
 import sys

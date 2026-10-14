@@ -118,7 +118,7 @@ def verify_install():
 
 def pin_drift(app, engines):
     """Differences from the measured release. The operator owns LM Studio and
-    it updates itself, so serving accepts drift; bench and capability do not."""
+    it updates itself, so every verb accepts drift and names it."""
     drift = [] if app == pin("LMSTUDIO_VERSION") else [
         f"LM Studio {app}, pinned LMSTUDIO_VERSION={pin('LMSTUDIO_VERSION')}"]
     for fmt, selected in engines.items():
@@ -291,7 +291,7 @@ def start(tag, values):
     print(f"ready: {tag} ({entry['path']}, {owner['engine']}) at {base}/v1")
     drift = pin_drift(owner["app"], {fmt: owner["engine"]})
     if drift:
-        print(f"note: {'; '.join(drift)}; bench and capability need the pinned release")
+        print(f"note: {'; '.join(drift)}")
     if reused:
         exposure = ", which is not loopback-only without CORS" if exposed else ""
         print(f"note: serving on LM Studio's running server{exposure}; stop leaves it running")

@@ -76,15 +76,16 @@ class LMStudioTest(unittest.TestCase):
             runtime.stop()
         lms.assert_not_called()
 
-    def test_pins_gate_measurements_not_serving(self):
+    def test_measurements_record_pin_drift(self):
         pins = {"LMSTUDIO_VERSION": "0.4.25+1", "LMSTUDIO_MLX_ENGINE_VERSION": "1.11.0"}
-        owner = {**OWNER, "format": "mlx", "app": "0.4.26+1", "engine": "mlx-llm@1.12.0"}
+        owner = {**OWNER, "format": "mlx", "app": "0.4.26+1", "engine": "mlx-llm@1.12.0",
+                 "context": 262144}
         prefs = [{"model_format": "safetensors", "name": "mlx-llm", "version": "1.12.0"},
                  {"model_format": "splash", "name": "splash", "version": "0.0.6"}]
         with mock.patch.dict(os.environ, pins), \
                 mock.patch.object(runtime, "internal", return_value=prefs), \
                 mock.patch("shutil.which", return_value="/bin/hf"):
-            runtime.verify_install()  # serving accepts an updated LM Studio
+            runtime.verify_install()  # every verb accepts an updated LM Studio
             self.assertEqual(runtime.pin_drift("0.4.25+1", {"mlx": "mlx-llm@1.11.0"}), [])
             with tempfile.TemporaryDirectory() as directory:
                 record = Path(directory) / "server.json"
@@ -92,9 +93,16 @@ class LMStudioTest(unittest.TestCase):
                 with mock.patch.object(runtime, "RECORD", record), \
                         mock.patch.object(runtime, "verify_install",
                                           return_value={"mlx": owner["engine"]}), \
-                        mock.patch.object(runtime, "app_version", return_value=owner["app"]):
-                    with self.assertRaisesRegex(RuntimeError, "pinned release: LM Studio 0.4.26"):
-                        bench.evidence("qwen3.8-27b-mlx")
+                        mock.patch.object(runtime, "app_version", return_value=owner["app"]), \
+                        mock.patch.object(runtime, "loaded", return_value=[ENTRY]), \
+                        mock.patch.object(runtime, "verify_model", return_value={}), \
+                        mock.patch.object(runtime, "check_live",
+                                          return_value=("http://127.0.0.1:1234", ENTRY)), \
+                        mock.patch("sys.stderr", io.StringIO()):
+                    identity = bench.evidence("qwen3.8-27b-mlx")[3]
+        self.assertEqual(identity["pin_drift"], [
+            "LM Studio 0.4.26+1, pinned LMSTUDIO_VERSION=0.4.25+1",
+            "mlx-llm@1.12.0, pinned LMSTUDIO_MLX_ENGINE_VERSION=1.11.0"])
 
     def test_stop_leaves_the_operators_server(self):
         with tempfile.TemporaryDirectory() as directory:

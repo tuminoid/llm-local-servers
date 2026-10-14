@@ -2,9 +2,9 @@
 
 [LM Studio](https://lmstudio.ai) serves models through its desktop service and
 its engines: Splash and MLX on Apple Silicon, llama.cpp everywhere. This
-runtime drives that service with pinned versions and pinned checkpoints, so
-its rows compare directly against the native runtimes serving the same
-weights.
+runtime drives that service with pinned checkpoints and records the app and
+engine versions every result ran on, so its rows compare directly against
+the native runtimes serving the same weights.
 
 ## Engines per platform
 
@@ -12,15 +12,17 @@ One config per artifact; the artifact decides the engine.
 
 | Host | Engine | Configs |
 | -- | -- | -- |
-| Apple Silicon M3 or newer, macOS 26.4+ | Splash (Splash 1.0.2) | `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash` |
+| Apple Silicon M3 or newer, macOS 26.4+ | Splash | `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash` |
 | Other Apple Silicon | MLX (mlx-llm) | `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx` |
 | Linux, Windows | llama.cpp (GGUF) | none yet |
 
 The Splash configs load the Splash packages [splash/](../splash/README.md)
 served before 1.3.1, and the MLX configs the mlx-community checkpoints it now
-serves, at the same revisions. On an M3+ host use the Splash engine: its
-configs pass Capability Check v1 and decode 2.2-2.4x faster at one stream,
-while the MLX configs ignore schema enforcement. LM Studio runs Splash one
+serves, at the same revisions. On an M3+ host use the Splash engine: it
+enforces schemas and decodes 2.2-2.4x faster at one stream, and
+`qwen3.8-27b-splash` passes Capability Check v2, while the MLX engine ignores
+schema enforcement and fails the gate on that alone; results are in
+[CAPABILITIES.md](../CAPABILITIES.md). LM Studio runs Splash one
 request at a time, so the MLX engine only catches up at four streams; it
 remains the path for older Apple Silicon. Measurements are in
 [BENCHMARKS.md](BENCHMARKS.md).
@@ -28,7 +30,7 @@ remains the path for older Apple Silicon. Measurements are in
 ## Usage
 
 ```bash
-make lmstudio-install                          # verify the pinned app and engines
+make lmstudio-install                          # report the app and engines against the pins
 make lmstudio-pull MODEL=qwen3.8-27b-splash    # pinned, hash-verified download
 make lmstudio-start MODEL=qwen3.8-27b-splash
 make lmstudio-status
@@ -50,8 +52,9 @@ OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/lmstudio/opencode.json openc
 The app auto-updates and installs its engines itself, so the root Makefile pins
 versions instead of archives: `LMSTUDIO_VERSION` for the app and one engine
 version per format. They name the release the results here were measured on.
-Bench and capability refuse any other; install and start report the drift and
-serve whatever LM Studio selects. Re-gate before moving a pin.
+Every verb runs on whatever LM Studio selects and reports the drift; bench and
+capability also record it in their JSON as `pin_drift`. A result published
+from another release moves the pin with it.
 
 A pull downloads the pinned Hugging Face revision into LM Studio's models
 folder under `llm-local-servers/<config>`. `hf download` hashes every file

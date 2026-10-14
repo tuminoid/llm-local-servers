@@ -32,11 +32,15 @@ trial-directory copies remain, and the figures stay here and in git history.
 | LM Studio `qwen3.8-27b-splash` | 262,144 | 1 | 262,144 | 1x 8.12 | 6,547 | - | 53.5 | 3/3 | unavailable | pass | yes | `20260928T040933.905525+0000_lmstudio_qwen3-8-27b-splash_session.json` |
 
 - `qwen3.8-27b-splash` passes Capability Check v2 and is publishable at
-  8.12 sessions/h, beside native Splash's 7.70.
+  8.12 sessions/h, beside native Splash's 7.70 on the same Splash 1.0
+  package; native Splash now serves the mlx-community target, at 6.73
+  ([../splash/BENCHMARKS.md](../splash/BENCHMARKS.md)).
 - The MLX-engine profiles declare the protocol's off-by-one token
   allowance, so their runs are `canonical: false` by design; both fail
   Capability Check v2 on schema enforcement. `qwen3.8-27b-mlx`'s bench was
-  stopped to give the campaign's time to canonical runs.
+  stopped to give the campaign's time to canonical runs. LM Studio installed
+  mlx-llm 1.13.1 itself on 2026-10-12; these rows stand for 1.11.0 until a
+  rerun moves the pin.
 - `qwen3.6-35b-a3b-splash` publishes 18.70 sessions/h but fails audit
   fitness (9 of 12).
 
@@ -63,7 +67,8 @@ tree on llm-audit-bench `382760d`.
   reported every length-capped response one token short, exactly, with
   `finish_reason` `length`.
 
-Retained JSON, `~/.local/state/auditbench/`:
+JSON names, removed from `~/.local/state/auditbench/` with the other v1
+results on 2026-09-30 (no trial-directory copies):
 
 ```text
 20260924T082155.198028+0000_lmstudio_qwen3-6-35b-a3b-splash_decode.json

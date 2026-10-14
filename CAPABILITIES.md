@@ -166,8 +166,8 @@ with at least 11 of 12 samples passed. Three groups differ:
 - The LM Studio MLX rows are the 2026-09-28 runs from fleet commit
   `bee4a24` (llm-audit-bench v2.0.0, macOS 27.0) on the pinned mlx-llm
   1.11.0. LM
-  Studio installed mlx-llm 1.13.1 itself on 2026-10-12, and the adapter
-  refuses to measure off the pin.
+  Studio installed mlx-llm 1.13.1 itself on 2026-10-12; the rows stand
+  for 1.11.0 until a rerun moves the pin.
 - The vLLM-Metal `granite4.2-30b-4bit` row is the 2026-10-13 rerun after
   its conf moved to the default reasoning mode its template already used
   (the JSON records `c4ae9b3`, that change before a squash), under

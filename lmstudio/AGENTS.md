@@ -26,10 +26,11 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and rationale are in
 - **Install verifies, it does not install.** The app installs and updates its
   engines. `lmstudio-install` reports the app and selected engines against
   the pins; selecting an engine is the operator's `lms runtime select`.
-- **Pins gate measurements, not serving.** The operator owns LM Studio and
-  it updates itself, so start serves whatever engine is selected and names
-  any drift. Bench and capability refuse drift: their rows are only
-  comparable at the measured release.
+- **Pins name the measured release, they gate nothing.** The operator owns
+  LM Studio and it updates itself, so start, bench and capability run on
+  whatever engine is selected and name any drift; the result JSON records
+  it as `pin_drift` in the model identity. Rows are comparable only at one
+  release, so publishing a drifted result moves the pin in the same change.
 
 ## Invariants
 

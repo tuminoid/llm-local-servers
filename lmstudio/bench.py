@@ -20,9 +20,11 @@ def evidence(tag):
     engines = runtime.verify_install()
     if runtime.app_version() != owner["app"] or engines[owner["format"]] != owner["engine"]:
         raise RuntimeError("LM Studio or its engine changed since the managed start")
+    # LM Studio updates itself, so a measurement runs on what it selected and
+    # records how that differs from the measured release.
     drift = runtime.pin_drift(owner["app"], {owner["format"]: owner["engine"]})
     if drift:
-        raise RuntimeError(f"measurements need the pinned release: {'; '.join(drift)}")
+        print(f"note: {'; '.join(drift)}; recorded as pin_drift", file=sys.stderr)
     # Serving coexists with the operator's loads; a measurement does not.
     others = [item["identifier"] for item in runtime.loaded() if item["identifier"] != tag]
     if others:
@@ -32,7 +34,8 @@ def evidence(tag):
     base, entry = runtime.check_live(tag, values, owner)
     identity.update(checked=True, matched=True, served_name=tag,
                     configured_context=owner["context"], live_path=entry["path"],
-                    live_format=entry["format"], live_context=entry["contextLength"])
+                    live_format=entry["format"], live_context=entry["contextLength"],
+                    pin_drift=drift)
     return values, owner, base, identity
 
 
