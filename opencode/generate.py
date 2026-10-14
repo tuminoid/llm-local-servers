@@ -44,8 +44,8 @@ PROVIDERS = {
 
 UPPER = re.compile(r"awq|gptq|mlx|gguf|ud|bf16|f16|i?q\d[a-z0-9_]*|(nv|mx)?fp\d+"
                    r"|int\d+|w\d+a\d+|[ae]?\d+(\.\d+)?b")
-SPELLING = {"deepseek": "DeepSeek", "dflash2": "DFlash2", "glm5.3": "GLM5.3", "mimo": "MiMo",
-            "optiq": "OptiQ"}
+SPELLING = {"deepseek": "DeepSeek", "dflash2": "DFlash2", "glm5.3": "GLM5.3", "lfm2.5": "LFM2.5",
+            "mimo": "MiMo", "optiq": "OptiQ"}
 
 
 def display(name):
