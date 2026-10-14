@@ -250,8 +250,9 @@ profiles, `qwen3.6-35b-a3b-reap48`, `saluki-27b` and the interactive
 
 ds4 serves large MoE models for interactive agentic sessions, one slot,
 never ranked for audits. Speed is from the 262,144 runs, one stream, in
-tok/s; Qwen's 524,288 deep session decoded its report at 57.0 tok/s from
-444,683 tokens. Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
+tok/s. At 524,288 a 50-step session to about 445k tokens took Qwen 14 min
+(report 57.0 tok/s) and V4 Flash 2.2 h, its checkpoints evicted at depth.
+Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
 | Model | Context | Audit fitness | Tool calls | Turn decode, mid session | Report decode, ~160k deep | Session prefill | Interactive use |
 | -- | --: | -- | -- | --: | --: | --: | -- |

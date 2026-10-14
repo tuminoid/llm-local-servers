@@ -56,6 +56,9 @@ Qwen only.
 | AuditBench session, diagnostic | 10.83/h (7.99 canonical median without MTP) | 4.80/h | 4.56/h | 3.36/h |
 | Interactive agentic use | yes, the pick | yes, slower, larger model | no: string-typed tool arguments | no: slow, fails audit fitness |
 
+Qwen3.8 Flash Next and V4 Flash now serve 524,288; their deep-context
+runs are in [524,288 context](#524288-context).
+
 Speed JSON: Qwen `night/results/20261001T215057.822889+0000_ds4_qwen3-8-flash-next-q4_session.json`
 (MTP) and `night/results/20261001T200439.042603+0000_ds4_qwen3-8-flash-next-q4_session.json`
 (canonical, three samples); the others in `results-diskkv/`; cold-prompt
@@ -122,14 +125,26 @@ V4's max-effort prefix and GLM's "Reasoning Effort: Max".
   2), against 11/12 at 262,144; its prompts are far below either context,
   so this is sampling at the gate. `json_schema` fails (`ignored`).
   `results/20261013T191613.651852+0000_ds4_deepseek-v4-flash-q2.json`.
-- **V4 Flash deep session:** complete, the report from 447,366 prompt
-  tokens recalled 50 of 50 findings, but 0.20 sessions/h (5 h), prefill
-  280 tok/s, cached 0.594, 12 unreasoned calls. The 32 GiB disk budget of
-  the time evicted every deep checkpoint before its first hit, so later
-  steps restored from 102,400 tokens; the report's first token took
-  1,478 s. The config's budget is now sized for a full session, not yet
-  retested.
-  `results/20261013T191613.869606+0000_ds4_deepseek-v4-flash-q2_session.json`.
+- **V4 Flash deep session,** twice: both complete, the report from 447,366
+  prompt tokens recalling 50 of 50 findings.
+
+  | Checkpoint budget | Wall | Sessions/h | Cached | Report: restored from, first token | Prefill | Turn decode first/mid/last | Report decode |
+  | --: | --: | --: | --: | -- | --: | -- | --: |
+  | 32 GiB (2026-10-13) | 5.0 h | 0.20 | 0.594 | 102,400, 1,478 s | 280 tok/s | 38.0/24.9/18.6 | 17.7 |
+  | 128 GiB (2026-10-14, the config) | 2.2 h | 0.45 | 0.854 | 245,760, 1,018 s | 232 tok/s | 38.9/25.0/18.6 | 17.6 |
+
+  The budget sets how deep the waypoints survive, not whether they do.
+  V4's live state misses every step (the renderer keeps reasoning that
+  clients drop), ds4 saves each diverged live state as an `evict`
+  checkpoint (38 in the second run, 4.8-5.8 GiB each at depth), and its
+  eviction score doubles for such anchors, so a full budget evicts the
+  mid-prompt waypoints first. From about 245k every step restored the
+  245,760 waypoint. The 491,518-token cold prompt that precedes the
+  session filled part of the budget both times (1,953 s, 252 tok/s).
+  `results/20261013T191613.869606+0000_ds4_deepseek-v4-flash-q2_session.json`,
+  and from a clean tree (the JSON records `8200c38`, the merged config
+  before a rebase) `results/20261014T090808.397409+0000_ds4_deepseek-v4-flash-q2_session.json`
+  under `~/.local/state/auditbench/trials/2026-10-14-m5-day/`.
 - **GLM 5.3 deep session:** incomplete; the report from 445,103 prompt
   tokens recalled 0 of 50 findings in 1,989 characters, and 48 of 51 calls
   streamed no reasoning, at cached 0.963. Its capability check matched
