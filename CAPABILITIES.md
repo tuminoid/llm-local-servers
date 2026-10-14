@@ -138,7 +138,7 @@ proves nothing about parser compatibility.
 
 ### RTX PRO 3000 Blackwell
 
-- Ollama: `qwen3.6-35b-a3b-reap48`, `saluki-27b`
+- Ollama: `qwen3.6-35b-a3b-reap48`, `saluki-27b`, `lfm2.5-24b-a2b`
 
 ### A100-SXM4-80GB
 
@@ -288,14 +288,20 @@ RAM.
 
 Run 2026-10-12 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
 on Ollama 0.40.3, Saluki from fleet commit `1e7318d` and REAP-48 from
-`81c4c9b`; the reports are retained with the trial evidence on the host.
+`81c4c9b`, and 2026-10-14 for LFM2.5 from `e4869ea` (llm-audit-bench 2.1.0
+plus the passed-count report `c8622de`); the reports are retained with the
+trial evidence on the host.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Ollama | `lfm2.5-24b-a2b` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | fail 4/12 (failed: format 2, instruction 1, invented 1, missed_findings 1, missed_required 3) | fail |
 | Ollama | `qwen3.6-35b-a3b-reap48` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: instruction 1) | pass |
 | Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
 
-Both live identities matched the pinned digests. REAP-48's three runs
+Every live identity matched its pinned digest. `lfm2.5-24b-a2b` fails
+audit fitness (4 of 12; 3 of 12 in the trial run on the uncommitted conf)
+and has no thinking-off check, since its card documents no control; it is
+kept for interactive use, not for audit work. REAP-48's three runs
 passed 11, 12 and 11 of 12; the row is the last. Saluki's exploratory runs
 at 65,536 (q8_0 KV) and 131,072 (q4_0) passed 10, 11 and 11 of 12. Two
 other candidates fit the GPU and failed audit fitness and were not

@@ -88,12 +88,14 @@ Local host, RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, 62 GiB
 RAM. Ollama 0.40.3, Flash Attention, one slot. Canonical AuditBench v2
 `session` profile (llm-audit-bench 2.1.0), run 2026-10-12 at each conf's
 declared sampling, Saluki from fleet commit `1e7318d` and REAP-48 from
-`81c4c9b`: 16 tool steps at 262,144 configured context, 13 at 163,840.
+`81c4c9b`, and 2026-10-14 for LFM2.5 from `e4869ea`: 16 tool steps at
+262,144 configured context, 13 at 163,840 and 9 at 131,072.
 Columns as in the A100 table.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Ollama `qwen3.6-35b-a3b-reap48` (q4_0 KV) | 262,144 | 1 | 262,144 | 1x 7.37 | 4,296 | 904.7 | 22.6 | 2/2 | unavailable | pass | yes | `20261012T213637.644671+0000_ollama_qwen3-6-35b-a3b-reap48_session.json` |
+| Ollama `lfm2.5-24b-a2b` (f16 KV) | 131,072 | 1 | 131,072 | 1x 8.21 | 14,181 | 976.4 | 33.5 | 2/2 | 1,232 / 84.7 | fail | yes | `20261014T112457.346274+0000_ollama_lfm2-5-24b-a2b_session.json` |
 | Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 3.26 | 3,377 | 218.3 | 7.8 | 3/3 | unavailable | pass | yes | `20261012T064953.361627+0000_ollama_saluki-27b_session.json` |
 
 - `qwen3.6-35b-a3b-reap48` passes Capability Check v2 in three runs (11, 12
@@ -113,6 +115,13 @@ Columns as in the A100 table.
   12.4 to 6.5 tok/s across the session. An exploratory run at 184,320 with
   3 layers on the CPU (15 steps) measured 3.65 with decode 12.7 to 8.4, so
   at depth decode is bound by the q4_0 KV reads, not by those layers.
+- `lfm2.5-24b-a2b` fails Capability Check v2 (4 of 12), so its 8.21
+  sessions/h over 9 steps cannot rank it; it is the host's interactive
+  profile. Its 14,181 output tokens per session are 3.3x REAP-48's at half
+  the steps: 4 of 9 turns per session hit the 2,048-token turn limit, and
+  every call counts as unreasoned, its reasoning reaching the client
+  unseparated. A trial run on the uncommitted conf completed 0 of 2 (both
+  reports hit the 16,384-token limit).
 - The byteshape IQ2_S Qwen3.6 35B-A3B also ran entirely on the GPU at
   262,144 with q4_0 KV (4.32 sessions/h, unpublishable) and failed audit
   fitness; it was not committed.

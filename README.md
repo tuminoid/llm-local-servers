@@ -213,7 +213,9 @@ steps at 262,144 configured context, 13 at 163,840):
 | 1 | Ollama `qwen3.6-35b-a3b-reap48` (expert-pruned Qwen3.6-35B-A3B, all on GPU) | MoE | 262,144 | 7.37 | -- | 22.6 |
 | 2 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 3.26 | -- | 7.8 |
 
-These are the two RTX profiles. See [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+Unranked: Ollama `lfm2.5-24b-a2b` (8.21/h at 131,072, all on GPU) fails
+Capability Check v2 audit fitness and is the RTX's interactive profile. See
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ### A100-SXM4-80GB
 
@@ -239,9 +241,10 @@ overview above.
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. Its two
-profiles, `qwen3.6-35b-a3b-reap48` and `saluki-27b`, are in the overview
-above and in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.3. Its
+profiles, `qwen3.6-35b-a3b-reap48`, `saluki-27b` and the interactive
+`lfm2.5-24b-a2b`, are in the overview above and in
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ### ds4 on the Apple M5 Max (interactive use)
 
