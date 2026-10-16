@@ -85,7 +85,10 @@ def _identity_expectations(conf: pathlib.Path) -> dict:
     expectations = {}
     for field, variable in fields.items():
         value = _config_setting(conf, variable)
-        if value:
+        # Some MLX tags publish no context_length; the conf then pins that.
+        if field == "native_context" and value == "unspecified":
+            expectations[field] = None
+        elif value:
             expectations[field] = int(value) if field == "native_context" else value
     missing = {"digest", "format", "native_context"} - expectations.keys()
     if missing:
@@ -485,6 +488,11 @@ def main() -> int:
     )
     if system:
         os.environ["AUDIT_BENCH_SYSTEM_PROMPT"] = system
+    # The same standing: a reasoning_effort for templates that default
+    # thinking off.
+    effort = _config_setting(conf, "OLLAMA_BENCH_REASONING_EFFORT")
+    if effort:
+        os.environ["AUDIT_BENCH_REASONING_EFFORT"] = effort
     # The checkpoint's sampling, a model fact; the harness decodes at it.
     os.environ["AUDIT_BENCH_SAMPLING"] = os.environ.get(
         "OLLAMA_SAMPLING"
@@ -588,6 +596,7 @@ def main() -> int:
         openai_chat=openai_chat_fn(
             f"{BASE}/v1", model,
             int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200")),
+            reasoning_effort=effort or None,
         ),
         active_slots=effective_slots,
         kv_pool_tokens=context * effective_slots,

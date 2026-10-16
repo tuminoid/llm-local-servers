@@ -105,6 +105,37 @@ class OllamaIdentityTest(unittest.TestCase):
                 },
             )
 
+    def test_unspecified_native_context_must_be_absent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            conf = pathlib.Path(tmp) / "demo.conf"
+            values = {
+                "OLLAMA_EXPECTED_DIGEST": "a" * 64,
+                "OLLAMA_EXPECTED_FORMAT": "safetensors",
+                "OLLAMA_EXPECTED_NATIVE_CONTEXT": "unspecified",
+            }
+            conf.write_text(
+                "".join(f'{k}="${{{k}:-{v}}}"\n' for k, v in values.items()),
+                encoding="utf-8",
+            )
+            with mock.patch.dict(os.environ):
+                for name in values:
+                    os.environ.pop(name, None)
+                expectations = OLLAMA_BENCH._identity_expectations(conf)
+        self.assertIsNone(expectations["native_context"])
+        identity = {
+            "requested_tag": "demo:latest",
+            "digest": "a" * 64,
+            "format": "safetensors",
+            "native_context": None,
+        }
+        self.assertTrue(
+            OLLAMA_BENCH._validate_identity(identity, expectations)["matched"]
+        )
+        with self.assertRaisesRegex(RuntimeError, "identity mismatch"):
+            OLLAMA_BENCH._validate_identity(
+                {**identity, "native_context": 262144}, expectations
+            )
+
     def test_mismatch_classification_gates_auto_recovery(self):
         # Registry still serves the pin: the local store is merely stale
         # and pulling lands the reviewed artifact.

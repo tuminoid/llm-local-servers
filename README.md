@@ -203,7 +203,10 @@ is unpublishable (incomplete sessions). The vLLM-Metal MiMo and ornith
 profiles, LM Studio `qwen3.6-35b-a3b-splash` and both MLX-engine
 profiles, and every Ollama MLX profile fail
 Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)
-cannot promote them. Details are in each runtime's BENCHMARKS.md.
+cannot promote them. Ollama `nemotron-3.5-super-mlx` (120B-A12B, 9.08/h at
+524,288) fails only `json_schema`, the Ollama MLX engine's schema gap, and
+its run is unpublishable (uncommitted tree). Details are in each
+runtime's BENCHMARKS.md.
 
 RTX PRO 3000, Ollama 0.40.3, AuditBench v2 `session` profile (16 tool
 steps at 262,144 configured context, 13 at 163,840):
