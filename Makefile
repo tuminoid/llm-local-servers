@@ -97,16 +97,17 @@ CAPABILITY_ENV = CAPABILITY_TIMEOUT=$(CAPABILITY_TIMEOUT) \
 	CAPABILITY_FITNESS_SAMPLES=$(CAPABILITY_FITNESS_SAMPLES)
 
 VLLM_METAL_DIR := vllm-metal
-# vLLM-Metal runs on Apple Silicon only. Plugin 0.30.0 paired with the
-# prebuilt vLLM 0.30.0 macOS arm64 wheel; the plugin wheel pins mlx==0.32.1
-# (ABI-locked) and an mlx-lm git SHA. Digests match the GitHub release
-# assets and are verified by install.sh. The plugin loads the HF processor at
-# startup, so confs pin processor-compatible revisions. Canonical rows in
-# vllm-metal/BENCHMARKS.md are 0.29.0 measurements until re-run at this pin.
-VLLM_METAL_VERSION ?= 0.30.0
-VLLM_METAL_WHEEL_SHA256 ?= 3955de8b2c75b633ef889b70fa469a4db661a0c5bb2f78e36272d68b16da9353
-VLLM_METAL_VLLM_VERSION ?= 0.30.0
-VLLM_METAL_VLLM_WHEEL_SHA256 ?= fd9adfd566a8afa4ecbdf36b04bab10ebf43cd9ca18eca4b0a0bf2013b8de135
+# vLLM-Metal runs on Apple Silicon only. The plugin paired with the prebuilt
+# vLLM macOS arm64 wheel of the same version; the plugin wheel pins an exact
+# mlx (ABI-locked), an mlx-lm git SHA and a Transformers range. Digests match
+# the GitHub release assets and are verified by install.sh. The plugin loads
+# the HF processor at startup, so confs pin processor-compatible revisions.
+# Canonical rows in vllm-metal/BENCHMARKS.md are 0.30.0 measurements until
+# re-run at this pin.
+VLLM_METAL_VERSION ?= 0.31.0
+VLLM_METAL_WHEEL_SHA256 ?= e2ab31296f8c42d8b65c8d5f5490f160087d1070178444870a5672e44aaacf6e
+VLLM_METAL_VLLM_VERSION ?= 0.31.0
+VLLM_METAL_VLLM_WHEEL_SHA256 ?= 21378516a51ff15029f71168e827b94660e21b39484eb52277166f01ac7dd686
 
 SPLASH_DIR := splash
 DS4_DIR := ds4
