@@ -6,8 +6,9 @@
 # so a long dense-model batch started just above a low floor can drain far
 # below it mid-batch (an audit_deep 4x batch runs an hour and costs ~25%);
 # the high default floor makes every batch start near a full charge.
-# This host caps charging at 90% for battery health, so a resume level
-# above 90 never triggers; 90 is a full reading, not a low one.
+# macOS may hold the charge at a limit below the resume level (80% on
+# 2026-10-14 stalled a campaign for 7 h), so "AC attached; not charging"
+# also counts as full.
 # Arguments override per run for campaigns with shorter batches. Inserts
 # wait time only; never touches the benchmark. Use via:
 #   AUDIT_BENCH_GATE_CMD="vllm-metal/battery-gate.sh [floor] [resume]"
@@ -28,6 +29,8 @@ watt_min=140
 
 pct() { pmset -g batt | grep -Eo '[0-9]+%' | head -n1 | tr -d '%'; }
 watt() { pmset -g ac | grep -Eo 'Wattage = [0-9]+' | grep -Eo '[0-9]+' || echo 0; }
+# On AC but not charging: macOS holds the charge at its limit, so it is full.
+held() { pmset -g batt | grep -q 'AC attached; not charging'; }
 
 watts="$(watt)"
 if [[ "${watts}" -lt "${watt_min}" ]]; then
@@ -39,11 +42,11 @@ if [[ "${watts}" -lt "${watt_min}" ]]; then
 fi
 
 charge="$(pct)"
-if [[ "${charge}" -ge "${floor}" ]]; then
+if [[ "${charge}" -ge "${floor}" ]] || held; then
   exit 0
 fi
 echo "gate: battery ${charge}% below ${floor}%, waiting for ${resume}%" >&2
-while [[ "$(pct)" -lt "${resume}" ]]; do
+while [[ "$(pct)" -lt "${resume}" ]] && ! held; do
   sleep 60
 done
 echo "gate: battery recharged to $(pct)%, resuming" >&2
