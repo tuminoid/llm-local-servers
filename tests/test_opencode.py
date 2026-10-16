@@ -21,6 +21,7 @@ PORTS = {
     "splash": ("splash/runtime.py", 'os.environ.get("SPLASH_PORT", "8022")'),
     "lmstudio": ("lmstudio/runtime.py", 'os.environ.get("LMSTUDIO_PORT", "1234")'),
     "ollama": ("ollama/start.sh", 'OLLAMA_HOST="${OLLAMA_HOST:-127.0.0.1:11434}"'),
+    "ollama-mlx": ("ollama/start.sh", 'OLLAMA_HOST="${OLLAMA_HOST:-127.0.0.1:11434}"'),
     "ollama-remote": ("Makefile", "OLLAMA_TUNNEL_PORT ?= 11436"),
     "ds4": ("ds4/lib.sh", 'DS4_PORT="${DS4_PORT:-8023}"'),
 }
@@ -43,12 +44,25 @@ class OpencodeConfigTest(unittest.TestCase):
 
     def test_ports_are_the_launcher_defaults(self):
         self.assertEqual(sorted(PORTS), sorted(generate.PROVIDERS))
-        for provider, (_, _, url) in generate.PROVIDERS.items():
+        for provider, (_, _, url, _) in generate.PROVIDERS.items():
             file, default = PORTS[provider]
             with self.subTest(provider=provider):
                 self.assertIn(default, (REPO / file).read_text())
                 port = re.search(r"(\d+)\D*$", default).group(1)
                 self.assertEqual(url, f"http://127.0.0.1:{port}/v1")
+
+    def test_ollama_formats_split_by_provider(self):
+        # MLX (safetensors) profiles run on Apple Silicon only.
+        providers = generate.providers()
+        for conf in sorted((REPO / "ollama/models").glob("*.conf")):
+            fmt = generate.artifact_format("ollama", conf)
+            key, _ = generate.model("ollama", conf)
+            listed = {pid for pid in ("ollama", "ollama-mlx", "ollama-remote")
+                      if key in providers[pid]["models"]}
+            expected = ({"ollama-mlx"} if fmt == "safetensors"
+                        else {"ollama", "ollama-remote"})
+            with self.subTest(conf=conf.name):
+                self.assertEqual(listed, expected)
 
     def test_shared_ids_take_the_smallest_context_and_shortest_name(self):
         # The shorter name carries the larger context, so the two choices

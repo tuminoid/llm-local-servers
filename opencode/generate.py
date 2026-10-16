@@ -28,19 +28,25 @@ RUNTIMES = {
     "ds4": ("DS4_SERVED_NAME", "DS4_CTX", "DS4", "reasoning_content"),
 }
 
-# Provider: runtime, display name, base URL on the launcher's default port.
+# Provider: runtime, display name, base URL on the launcher's default port,
+# and for Ollama the artifact format it lists. Ollama dispatches safetensors
+# tags to its MLX runner, which the fleet runs on Apple Silicon only, so those
+# profiles are their own provider and stay off the GGUF and remote ones.
 PROVIDERS = {
-    "vllm": ("vllm", "vLLM", "http://127.0.0.1:8000/v1"),
+    "vllm": ("vllm", "vLLM", "http://127.0.0.1:8000/v1", None),
     "vllm-remote": ("vllm", "vLLM remote (make vllm-remote-tunnel)",
-                    "http://127.0.0.1:8001/v1"),
-    "vllm-metal": ("vllm-metal", "vLLM-Metal", "http://127.0.0.1:8021/v1"),
-    "splash": ("splash", "Splash", "http://127.0.0.1:8022/v1"),
-    "lmstudio": ("lmstudio", "LM Studio", "http://127.0.0.1:1234/v1"),
-    "ollama": ("ollama", "Ollama", "http://127.0.0.1:11434/v1"),
+                    "http://127.0.0.1:8001/v1", None),
+    "vllm-metal": ("vllm-metal", "vLLM-Metal", "http://127.0.0.1:8021/v1", None),
+    "splash": ("splash", "Splash", "http://127.0.0.1:8022/v1", None),
+    "lmstudio": ("lmstudio", "LM Studio", "http://127.0.0.1:1234/v1", None),
+    "ollama": ("ollama", "Ollama", "http://127.0.0.1:11434/v1", "gguf"),
+    "ollama-mlx": ("ollama", "Ollama MLX", "http://127.0.0.1:11434/v1",
+                   "safetensors"),
     "ollama-remote": ("ollama", "Ollama remote (make ollama-remote-tunnel)",
-                      "http://127.0.0.1:11436/v1"),
-    "ds4": ("ds4", "ds4 (DwarfStar)", "http://127.0.0.1:8023/v1"),
+                      "http://127.0.0.1:11436/v1", "gguf"),
+    "ds4": ("ds4", "ds4 (DwarfStar)", "http://127.0.0.1:8023/v1", None),
 }
+FORMATS = {"gguf", "safetensors"}
 
 UPPER = re.compile(r"awq|gptq|mlx|gguf|ud|bf16|f16|i?q\d[a-z0-9_]*|(nv|mx)?fp\d+"
                    r"|int\d+|w\d+a\d+|[ae]?\d+(\.\d+)?b")
@@ -105,20 +111,34 @@ def add(models, key, name, entry):
     models[key] = (other_name, other)
 
 
+def artifact_format(runtime, conf):
+    if runtime != "ollama":
+        return None
+    value = resolve(conf, ("OLLAMA_EXPECTED_FORMAT",))["OLLAMA_EXPECTED_FORMAT"]
+    if value not in FORMATS:
+        raise RuntimeError(f"{conf.name}: OLLAMA_EXPECTED_FORMAT {value!r} is not "
+                           f"one of {sorted(FORMATS)}")
+    return value
+
+
 def providers():
-    catalog = {}
+    entries = {}
     for runtime in RUNTIMES:
         confs = sorted((REPO / runtime / "models").glob("*.conf"))
         if not confs:
             raise RuntimeError(f"no model configs in {runtime}/models")
+        entries[runtime] = [(artifact_format(runtime, conf), conf.stem,
+                             *model(runtime, conf)) for conf in confs]
+    result = {}
+    for pid, (runtime, name, url, fmt) in PROVIDERS.items():
         models = {}
-        for conf in confs:
-            key, entry = model(runtime, conf)
-            add(models, key, conf.stem, entry)
-        catalog[runtime] = {key: models[key][1] for key in sorted(models)}
-    return {pid: {"npm": "@ai-sdk/openai-compatible", "name": name,
-                  "options": {"baseURL": url}, "models": catalog[runtime]}
-            for pid, (runtime, name, url) in PROVIDERS.items()}
+        for conf_fmt, stem, key, entry in entries[runtime]:
+            if fmt is None or conf_fmt == fmt:
+                add(models, key, stem, entry)
+        result[pid] = {"npm": "@ai-sdk/openai-compatible", "name": name,
+                       "options": {"baseURL": url},
+                       "models": {key: models[key][1] for key in sorted(models)}}
+    return result
 
 
 def render(provider):

@@ -325,7 +325,10 @@ every platform.
 `make opencode-config`, and `make test` fails when it is stale. Never edit it
 by hand: change the config, or `opencode/generate.py` for a provider's base
 URL or a runtime rule. A provider is an access path and carries no host
-names; its port is the launcher's default, which the test checks.
+names; its port is the launcher's default, which the test checks. Split a
+provider by a platform fact of the artifact, never by host: Ollama's MLX
+(safetensors) profiles are their own provider because the fleet runs that
+runner on Apple Silicon only, so a client on a CUDA host never lists them.
 
 ### Diagnose upstream bugs, do not report them
 

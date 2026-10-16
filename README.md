@@ -116,6 +116,7 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 | `splash` | `http://127.0.0.1:8022/v1` | [splash/opencode.json](opencode/splash/opencode.json) | `reasoning` |
 | `lmstudio` | `http://127.0.0.1:1234/v1` | [lmstudio/opencode.json](opencode/lmstudio/opencode.json) | `reasoning_content` |
 | `ollama` | `http://127.0.0.1:11434/v1` | [ollama/opencode.json](opencode/ollama/opencode.json) | not declared |
+| `ollama-mlx` | `http://127.0.0.1:11434/v1` | [ollama-mlx/opencode.json](opencode/ollama-mlx/opencode.json) | not declared |
 | `ollama-remote` | `http://127.0.0.1:11436/v1`, `make ollama-remote-tunnel` | [ollama-remote/opencode.json](opencode/ollama-remote/opencode.json) | not declared |
 | `ds4` | `http://127.0.0.1:8023/v1` | [ds4/opencode.json](opencode/ds4/opencode.json) | `reasoning_content` |
 
@@ -124,9 +125,12 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 `make opencode-config` generates them from the model configs, and
 `make test` fails when they are stale, so never edit them by hand.
 
-- Every config of a runtime is a model of each of its providers.
-  [CAPABILITIES.md](CAPABILITIES.md) lists which configs run on which
-  host.
+- Every config of a runtime is a model of each of its providers, except
+  that Ollama splits by artifact format: safetensors tags run on the MLX
+  runner, which the fleet serves on Apple Silicon only, so they are
+  `ollama-mlx` models and stay off `ollama` and `ollama-remote`, which list
+  the GGUF configs. [CAPABILITIES.md](CAPABILITIES.md) lists which configs
+  run on which host.
 - The id is `VLLM_SERVED_NAME`, the `OLLAMA_MODEL` tag, the
   `SPLASH_MODEL_REPO` repository, `DS4_SERVED_NAME`, or for LM Studio the
   config name.
