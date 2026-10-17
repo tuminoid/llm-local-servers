@@ -129,24 +129,16 @@ OLLAMA_DIR := ollama
 # ollama-linux-amd64.tar.zst for the A100, _LINUX_ARM64 the arm64 build,
 # _DARWIN the universal ollama-darwin.tgz); ollama-install refuses an
 # unverified archive.
-# Default 0.40.3. On the A100 and RTX every GGUF profile kept its digest pin
-# on it and passed Capability Check v2 where it passed on 0.32.14 or 0.34.2
-# (2026-10-11). 0.40.x keeps a second model index,
-# manifests-v2/; 0.40.1's local compat migration rewrote older GGUF tags
-# there, which 0.40.3 no longer does on load (ollama/AGENTS.md).
-OLLAMA_VERSION ?= 0.40.3
-OLLAMA_ARCHIVE_SHA256 ?= ce6f8b671a699bf1ebafb28d60dbbabf4f37b30b499145fa308a8ba72de021d6
-OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 5754700747a93ea14db88888f08072386d2da6fbf7dd75be19a684348b9f28b8
-OLLAMA_ARCHIVE_SHA256_DARWIN ?= a2d1d906a2c8febd9cb18f5c183854d0a6db5dc522940d68b0c0ed048e8dfdea
-# Runtime 0.32.14, selected per profile through OLLAMA_RUNTIME_VERSION in the
-# conf: the M5's MLX (safetensors) profiles, whose MLX runner survives the
-# post-prefill commit memory runaway only here (0.33.2, 0.33.3 and 0.34.2
-# each fail harder; 0.34.2 hard-reset the M5 inside the first conversation;
-# 0.40.x is unproven there). Install with
-#   make ollama-install OLLAMA_VERSION=0.32.14 \
-#     OLLAMA_ARCHIVE_SHA256_DARWIN=c7e8b91485943785bc6d295d96551e971ec94c6829d0d6b3500366942dc50cd1 \
-#     OLLAMA_ARCHIVE_SHA256=c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f \
-#     OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=7802b739fbdc74df556600f1619f86457b69dce913301cf2d91f7f9d7f7a41b8
+# Default 0.40.6, for every profile. The M5's MLX profiles passed the
+# post-prefill commit memory runaway retest on it (2026-10-17: three
+# cache-busted deep prefills under a watchdog), which 0.33.2, 0.33.3 and
+# 0.34.2 failed. 0.40.x keeps a second model index, manifests-v2/; 0.40.1's
+# local compat migration rewrote older GGUF tags there, which 0.40.3 and
+# later no longer do on load (ollama/AGENTS.md).
+OLLAMA_VERSION ?= 0.40.6
+OLLAMA_ARCHIVE_SHA256 ?= c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0
+OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 0a279d9428ad17b06fdb7dddf3b059b2c148433585fa3b30676a102fc459bb9f
+OLLAMA_ARCHIVE_SHA256_DARWIN ?= b2b55434865a668decb494110d7fd970eed3ecc8837be2872f672ccbb95df974
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0

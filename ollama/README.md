@@ -44,7 +44,7 @@ conf, and the measured operating point in [BENCHMARKS.md](BENCHMARKS.md).
 Install a per-profile runtime with the reviewed digests recorded beside it in
 the root Makefile.
 
-The 0.32.14 MLX runner serializes requests through a single slot and keeps
+The MLX runner serializes requests through a single slot and keeps
 its KV cache at model precision. `OLLAMA_NUM_PARALLEL`,
 `OLLAMA_KV_CACHE_TYPE`, and `OLLAMA_FLASH_ATTENTION` are ignored on that
 path, which is why the MLX profiles carry `OLLAMA_KV_CACHE_TYPE=mlx-native`:

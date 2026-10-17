@@ -112,7 +112,7 @@ in [README.md](README.md); shared server conventions live in
   manifest takes the MLX runner, GGUF takes llama.cpp. There is no env
   switch. MLX profiles are named for the artifact (`-mlx` suffix) and never
   replace the GGUF profiles.
-- The 0.32.14 MLX runner serializes requests through one slot and ignores
+- The MLX runner serializes requests through one slot and ignores
   `OLLAMA_NUM_PARALLEL`, `OLLAMA_KV_CACHE_TYPE`, and
   `OLLAMA_FLASH_ATTENTION`. MLX profiles set
   `OLLAMA_KV_CACHE_TYPE=mlx-native`, which start.sh accepts as documentation
