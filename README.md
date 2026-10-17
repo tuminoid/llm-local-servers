@@ -193,20 +193,20 @@ pass Capability Check v2 and are publishable:
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | --: |
-| 1 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 53.5 |
-| 2 | Splash `qwen3.8-27b` | dense | 262,144 | 6.73 | 7.47 @4x | 50.5 |
-| 3 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.83 | 1.84 @2x | 2.3 |
-| 4 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 1.78 | 2.08 @2x | 4.9 |
+| 1 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 9.62 | -- | 41.0 |
+| 2 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 53.5 |
+| 3 | Splash `qwen3.8-27b` | dense | 262,144 | 6.73 | 7.47 @4x | 50.5 |
+| 4 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 10.5 |
+| 5 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2.8 |
 
-Unranked: Splash `qwen3.6-35b-a3b` (17.95/h) passes the gate but its run
-is unpublishable (incomplete sessions). The vLLM-Metal MiMo and ornith
-profiles, LM Studio `qwen3.6-35b-a3b-splash` and both MLX-engine
-profiles, and every Ollama MLX profile fail
-Capability Check v2; the Ollama MLX rates (nemotron 21.12/h at 262k)
-cannot promote them. Ollama `nemotron-3.5-super-mlx` (120B-A12B, 9.08/h at
-524,288) fails only `json_schema`, the Ollama MLX engine's schema gap, and
-its run is unpublishable (uncommitted tree). Details are in each
-runtime's BENCHMARKS.md.
+Unranked: Splash `qwen3.6-35b-a3b` (17.95/h) and vLLM-Metal
+`ornith1.5-35b-a3b-4bit` (9.15 / 10.52 @4x) pass the gate but their runs
+are unpublishable (incomplete sessions). The vLLM-Metal MiMo profile, LM
+Studio `qwen3.6-35b-a3b-splash` and both MLX-engine profiles, and the
+Ollama Glimmer and Lightning MLX profiles fail Capability Check v2; the
+Ollama ones on `json_schema`, the Ollama MLX engine's schema gap, and
+Lightning also on audit fitness. Their rates (Lightning 21.12/h at 262k)
+cannot promote them. Details are in each runtime's BENCHMARKS.md.
 
 RTX PRO 3000, Ollama 0.40.3, AuditBench v2 `session` profile (16 tool
 steps at 262,144 configured context, 13 at 163,840):
@@ -233,7 +233,8 @@ overview above.
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
-0.30.0, Splash 1.3.1, LM Studio 0.4.25+1, Ollama 0.32.14 (MLX). The
+0.31.0, Splash 1.3.1, LM Studio 0.4.25+1, Ollama 0.32.14 (MLX) and 0.40.5
+(Super VL). The
 AuditBench v2 tables with context, slots, KV pool,
 completion, the pp512/tg128 reference and the retained JSON names are in
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),

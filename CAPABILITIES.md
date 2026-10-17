@@ -153,11 +153,11 @@ Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
 27.0.1 except where noted. Capability Check v2 (llm-audit-bench v2.1.0
 plus the triage amendment `c0dc34a`), rerun 2026-10-12 from fleet commit
 `4c5f585` (the JSON records `2bd6885`, the same change before a rebase):
-vLLM-Metal 0.30.0, LM Studio 0.4.25+1 with its Splash engine 0.0.5, Ollama
-0.32.14 for MLX. JSON files are retained under
+LM Studio 0.4.25+1 with its Splash engine 0.0.5, Ollama 0.32.14 for MLX.
+JSON files are retained under
 `~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`. Audit
 fitness ran 4 samples per task at each conf's declared sampling and passes
-with at least 11 of 12 samples passed. Four groups differ:
+with at least 11 of 12 samples passed. Three groups differ:
 
 - The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet
   commit `036bfd0`, on the same harness, serving the mlx-community targets
@@ -168,13 +168,10 @@ with at least 11 of 12 samples passed. Four groups differ:
   `eec6b44` on mlx-llm 1.13.1, which LM Studio installed itself on
   2026-10-12, under
   `~/.local/state/auditbench/trials/2026-10-14-m5-day/results/`.
-- The Ollama `nemotron-3.5-super-mlx` row ran 2026-10-16 on Ollama 0.40.5
-  from an uncommitted tree, under
-  `~/.local/state/auditbench/trials/2026-10-16-m5-queue/results/`.
-- The vLLM-Metal `granite4.2-30b-4bit` row is the 2026-10-13 rerun after
-  its conf moved to the default reasoning mode its template already used
-  (the JSON records `c4ae9b3`, that change before a squash), under
-  `~/.local/state/auditbench/trials/2026-10-13-effort-check/results/`.
+- The vLLM-Metal rows and the Ollama `nemotron-3.5-super-mlx` row are the
+  canonical runs of 2026-10-16 and 2026-10-17 from fleet commit `2e990d6`,
+  on vLLM-Metal 0.31.0 and Ollama 0.40.5, under
+  `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -185,43 +182,48 @@ with at least 11 of 12 samples passed. Four groups differ:
 | LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
 | LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | fail 0/12 (failed: no_reasoning 11, runaway 1) | fail |
-| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 10/12 (failed: error 1, runaway 1) | fail |
+| vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
+| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
+| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 7/12 (failed: missed_findings 2, missed_required 1, runaway 2) | fail |
-| Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace_runaway | pass 12/12 | fail |
+| Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 
 Every checked row's live identity matched the revision or digest pinned
 in its model config.
 
 ### Findings
 
-- Five profiles pass: Splash `qwen3.6-35b-a3b` (11 of 12) and `qwen3.8-27b`
-  (12 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12), and vLLM-Metal
-  `gemma4-31b-4bit` and `granite4.2-30b-4bit` (12 of 12 each).
+- Eight profiles pass: Splash `qwen3.6-35b-a3b` (11 of 12) and
+  `qwen3.8-27b` (12 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12),
+  vLLM-Metal `gemma4-31b-4bit` (12 of 12), `granite4.2-30b-4bit` and
+  `ornith1.5-35b-a3b-4bit` (11 of 12 each), and Ollama
+  `nemotron-3.5-super-mlx` (12 of 12).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the
   whitespace runaway.
-- `ornith1.5-35b-a3b-4bit` falls to 10 of 12 (11 on 2026-09-27): one
-  selection sample ran to the 32,768-token cap, and one workflow sample
-  wrote its report through a tool call whose arguments were not valid JSON.
-  A canonical rerun after a restart drew the same 12 samples in another
-  order: vLLM-Metal replays its sampled draws, so it is not a second
-  result. An exploratory run at 12 samples per task passed 31 of 36 (86%,
-  against the gate's 11 of 12): all five failures were selection samples
-  (3 runaways, 2 invented), with triage and workflow 12 of 12 each.
-- MiMo on vLLM-Metal passes 0 of 12: eleven samples answered without
-  reasoning. Its API checks pass.
-- Every MLX-format profile outside vLLM-Metal fails schema enforcement:
-  Glimmer, Lightning and both LM Studio MLX rows ignore the schema, and
-  Super VL runs away in structural whitespace. Their audit fitness passes
-  except Lightning (7 of 12).
-- Ollama `nemotron-3.5-super-mlx` fails only `json_schema`, the Ollama MLX
-  engine's schema gap shared by every Ollama MLX profile, not a model
-  fault. It is the M5 route for Nemotron 3.5 Super VL
-  (9.08 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
+- `ornith1.5-35b-a3b-4bit` passes 11 of 12 on 0.31.0 (one selection
+  runaway), after 10 of 12 on 0.30.0 (2026-10-12) and 11 on 2026-09-27: it
+  sits at the fitness limit. vLLM-Metal replays its sampled draws after a
+  restart, so a rerun is not a second result. An exploratory 0.30.0 run at
+  12 samples per task passed 31 of 36 (86%, against the gate's 11 of 12):
+  all five failures were selection samples (3 runaways, 2 invented).
+- MiMo on vLLM-Metal 0.31.0 fails both tool calls with arguments `{}` and
+  passes 0 of 12 fitness samples (10 without reasoning). The tool-call
+  regression against 0.30.0 is in what the model generates, not in
+  parsing: the prompt tokens are identical and greedy decoding diverges
+  right after `<function=lookup_issue>`, where 0.31.0 writes a JSON body
+  that the `qwen3_xml` parser does not read instead of
+  `<parameter=issue_number>`. Retest on the next plugin or mlx-lm bump.
+- Glimmer, Lightning and both LM Studio MLX rows ignore the schema. Their
+  audit fitness passes except Lightning (7 of 12).
+- Ollama `nemotron-3.5-super-mlx` passes with the schema enforced; an
+  earlier same-day run from an uncommitted tree failed only `json_schema`
+  in structural whitespace, the Ollama MLX engine's schema gap, so that
+  check is intermittent on this engine. It is the M5 route for Nemotron
+  3.5 Super VL (9.62 sessions/h at 524,288,
+  [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
 - LM Studio `qwen3.6-35b-a3b-splash` sits at the fitness limit: two draws
   on 2026-10-12 passed 11 and 9 of 12, after 9 on 2026-09-28. The row is
   the later draw; two of the three draws fail. Splash 1.0's own server

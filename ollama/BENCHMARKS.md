@@ -75,7 +75,7 @@ serving result. JSON files are retained under
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 21.12 | 9,913 | - | 86.7 | 2/2 | 2,647 / 157.0 | fail | yes | `20260929T184051.620932+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
 | Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 18.45 | 1,504 | - | 34.8 | 2/2 | unavailable | fail | yes | `20260929T183047.934174+0000_ollama_muse-glimmer-30b-mlx_session.json` |
-| Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 9.08 | 8,104 | 861.8 | 38.2 | 2/2 | unavailable | fail | no | `20261016T140018.756828+0000_ollama_nemotron-3-5-super-mlx_session.json` |
+| Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 9.62 | 8,484 | 940.4 | 41.0 | 2/2 | unavailable | pass | yes | `20261016T171329.504783+0000_ollama_nemotron-3-5-super-mlx_session.json` |
 
 - The Lightning and Glimmer MLX profiles fail Capability Check v2 on
   schema enforcement (`ignored`); their rates (nemotron 21.12, Glimmer
@@ -83,16 +83,17 @@ serving result. JSON files are retained under
   the M5 on 2026-10-11 (Splash serves Qwen3.6 35B-A3B and Qwen3.8 27B
   there; ds4 serves Flash-Next).
 - `nemotron-3.5-super-mlx` (Nemotron 3.5 Super VL 120B-A12B, NVFP4) ran
-  2026-10-16 on Ollama 0.40.5 from an uncommitted tree, so it is not
-  publishable; JSON under
-  `~/.local/state/auditbench/trials/2026-10-16-m5-queue/results/`. It holds
-  74.08 GiB on the GPU at 524,288 and prefills a 491,520-token cold prompt
-  in 855 s (575 tok/s). The pp512/tg128 reference is unavailable (80 of
-  128 tokens). Capability Check v2 fails only `json_schema`: the endpoint
-  emits structural whitespace to the 16,384-token budget. Its tag's
-  `model_info` has no `context_length`, so the conf pins
-  `OLLAMA_EXPECTED_NATIVE_CONTEXT=unspecified`. The `json_schema` failure is
-  the MLX engine's schema gap, not the model's. This is the M5 route for
+  2026-10-16 on Ollama 0.40.5 from fleet commit `2e990d6`, with harness
+  llm-audit-bench v2.1.0 plus `c0dc34a`; JSON under
+  `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`. It
+  holds 74.08 GiB on the GPU at 524,288 and prefills a 491,520-token cold
+  prompt in 795 s (619 tok/s). The pp512/tg128 reference is unavailable (80
+  of 128 tokens). It passes Capability Check v2, schema enforced; an
+  earlier same-day run from an uncommitted tree failed only `json_schema`
+  (structural whitespace to the 16,384-token budget), the MLX engine's
+  schema gap, so that check is intermittent here. Its tag's `model_info`
+  has no `context_length`, so the conf pins
+  `OLLAMA_EXPECTED_NATIVE_CONTEXT=unspecified`. This is the M5 route for
   Super VL: it beats the llama.cpp Q4_0 GGUF tried the same day (5.83
   sessions/h), which is not a fleet runtime.
 

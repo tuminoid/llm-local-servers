@@ -16,11 +16,11 @@ legacy rates with canonical results.
 
 ## AuditBench v2: Apple M5 Max
 
-Plugin 0.30.0 with core vLLM 0.30.0, serving-default cache pins (align APC
+Plugin 0.31.0 with core vLLM 0.31.0, serving-default cache pins (align APC
 on the hybrids). Canonical AuditBench v2 `session`
-profile (llm-audit-bench v2.0.0 plus the amendments released as v2.1.0; each
-JSON records its harness hash), run 2026-09-27 to 2026-09-29 on the M5 Max
-(128 GB, macOS 27.0) from fleet commit `bee4a24` at each conf's declared
+profile (llm-audit-bench v2.1.0 plus the triage amendment `c0dc34a`; each
+JSON records its harness hash), run 2026-10-16 to 2026-10-17 on the M5 Max
+(128 GB, macOS 27.0) from fleet commit `2e990d6` at each conf's declared
 sampling. The harness measured 1 stream and the largest of 2/4/8 that fits
 admission and the KV pool: tool steps from 32k evidence, 16 at 262,144
 configured context and 9 at 131,072, report at depth. Sessions/h is the
@@ -28,33 +28,29 @@ median over 2-3 samples; complete counts sessions whose report ended on its
 own and named at least 7/8 of its findings. pp512/tg128 is the
 llama-bench-method reference (one stream, greedy, depth ~0), not a serving
 result. JSON files are retained under
-`~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`. Every later
+`~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`; the
+plugin 0.30.0 rows they replace are in git history. Every later
 section of this file is AuditBench v1 or older, never comparable with v2.
 Their top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
 trial-directory copies remain, and the figures stay here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| vLLM-Metal `mimo-v2.6-9b-4bit` | 262,144 | 5 | 1,376,386 | 1x 8.08 / 4x 2.41 | 3,978 | 821.9 | 15.5 | 4/15 | 2,500 / 67.1 | fail | no | `20260929T055959.096871+0000_vllm-metal_mimo-v2-6-9b-4bit_session.json` |
-| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,403,241 | 1x 5.23 / 4x 5.30 | 6,211 | 861.5 | 11.3 | 13/15 | 3,064 / 99.3 | fail | no | `20260927T193210.121914+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
-| vLLM-Metal `gemma4-31b-4bit` | 262,144 | 5 | 617,308 | 1x 1.83 / 2x 1.84 | 1,435 | 118.2 | 2.3 | 9/9 | 651 / 27.1 | pass | yes | `20260929T222048.059806+0000_vllm-metal_gemma4-31b-4bit_session.json` |
-| vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 1.78 / 2x 2.08 | 13,459 | 346.7 | 4.9 | 9/9 | 853 / 30.9 | pass | yes | `20260927T123506.314386+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
+| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,398,101 | 1x 9.15 / 4x 10.52 | 7,042 | 883.0 | 33.9 | 11/15 | 2,966 / 98.3 | pass | no | `20261016T180845.140792+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
+| vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 2.14 / 2x 3.18 | 17,456 | 330.0 | 10.5 | 9/9 | 759 / 30.9 | pass | yes | `20261016T205227.908811+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
+| vLLM-Metal `gemma4-31b-4bit` | 262,144 | 5 | 585,801 | 1x 1.80 / 2x 1.89 | 1,557 | 110.3 | 2.8 | 9/9 | 661 / 27.8 | pass | yes | `20261017T004920.426416+0000_vllm-metal_gemma4-31b-4bit_session.json` |
+| vLLM-Metal `mimo-v2.6-9b-4bit` | 262,144 | 5 | 1,378,992 | 1x 1.56 / 4x 2.25 | 43,097 | 891.7 | 16.9 | 0/15 | 2,429 / 69.0 | fail | no | `20261017T083034.292323+0000_vllm-metal_mimo-v2-6-9b-4bit_session.json` |
 
-- `gemma4-31b-4bit` and `granite4.2-30b-4bit` pass Capability Check v2
-  (2026-10-12 rerun, [CAPABILITIES.md](../CAPABILITIES.md)); both runs are
-  publishable but slow: gemma4 1.83 sessions/h with 2.3 tok/s report
-  decode at depth, granite 1.78 with 13,459 output tokens per session at
-  131k. Gemma 4 passes since its conf forbids grammar whitespace, a setting
-  that applies only to schema-constrained requests, which AuditBench
-  sessions never send, so its 2026-09-29 session row stands.
-- `ornith1.5-35b-a3b-4bit` fails the 2026-10-12 rerun at 10 of 12 (11 on
-  2026-09-27), and an exploratory 36-sample run passed 31 (86%), every
-  failure in the selection task. Its run is also unpublishable: two of its
-  4-stream reports named 9 and 7 of 16 findings.
-- Streams barely help on this runtime: ornith 5.23 to 5.30, and MiMo
-  loses at four streams.
-- MiMo fails Capability Check v2; its run is also unpublishable
-  (incomplete sessions).
+- `granite4.2-30b-4bit` and `gemma4-31b-4bit` pass Capability Check v2
+  and are publishable but slow: granite 2.14 sessions/h (3.18 at two
+  streams) with 17,456 output tokens per session at 131k, gemma4 1.80
+  with 2.8 tok/s report decode at depth.
+- `ornith1.5-35b-a3b-4bit` passes Capability Check v2 at this pin (11 of
+  12 fitness samples, one selection runaway) and is the fastest profile,
+  9.15 sessions/h and 10.52 at four streams, but its run is unpublishable:
+  4 of its 12 four-stream reports hit the output cap or missed findings.
+- MiMo fails Capability Check v2 (tool arguments `{}`, 0 of 12 fitness
+  samples) and completes no session: its reports run to the output cap.
 
 ## Audit conversation profile
 

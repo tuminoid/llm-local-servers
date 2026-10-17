@@ -102,8 +102,6 @@ VLLM_METAL_DIR := vllm-metal
 # mlx (ABI-locked), an mlx-lm git SHA and a Transformers range. Digests match
 # the GitHub release assets and are verified by install.sh. The plugin loads
 # the HF processor at startup, so confs pin processor-compatible revisions.
-# Canonical rows in vllm-metal/BENCHMARKS.md are 0.30.0 measurements until
-# re-run at this pin.
 VLLM_METAL_VERSION ?= 0.31.0
 VLLM_METAL_WHEEL_SHA256 ?= e2ab31296f8c42d8b65c8d5f5490f160087d1070178444870a5672e44aaacf6e
 VLLM_METAL_VLLM_VERSION ?= 0.31.0
