@@ -153,11 +153,10 @@ Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
 27.0.1 except where noted. Capability Check v2 (llm-audit-bench v2.1.0
 plus the triage amendment `c0dc34a`), rerun 2026-10-12 from fleet commit
 `4c5f585` (the JSON records `2bd6885`, the same change before a rebase):
-LM Studio 0.4.25+1 with its Splash engine 0.0.5, Ollama 0.32.14 for MLX.
-JSON files are retained under
+LM Studio 0.4.25+1 with its Splash engine 0.0.5. JSON files are retained under
 `~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`. Audit
 fitness ran 4 samples per task at each conf's declared sampling and passes
-with at least 11 of 12 samples passed. Three groups differ:
+with at least 11 of 12 samples passed. Four groups differ:
 
 - The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet
   commit `036bfd0`, on the same harness, serving the mlx-community targets
@@ -168,10 +167,12 @@ with at least 11 of 12 samples passed. Three groups differ:
   `eec6b44` on mlx-llm 1.13.1, which LM Studio installed itself on
   2026-10-12, under
   `~/.local/state/auditbench/trials/2026-10-14-m5-day/results/`.
-- The vLLM-Metal rows and the Ollama `nemotron-3.5-super-mlx` row are the
-  canonical runs of 2026-10-16 and 2026-10-17 from fleet commit `2e990d6`,
-  on vLLM-Metal 0.31.0 and Ollama 0.40.5, under
+- The vLLM-Metal rows are the canonical runs of 2026-10-16 and 2026-10-17
+  from fleet commit `2e990d6` on vLLM-Metal 0.31.0, under
   `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`.
+- The Ollama rows are the canonical runs of 2026-10-17 from fleet commit
+  `7fd982d` on Ollama 0.40.6, under
+  `~/.local/state/auditbench/trials/2026-10-17-ollama-0406-canonical/results/`.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -185,8 +186,8 @@ with at least 11 of 12 samples passed. Three groups differ:
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
 | vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
-| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
-| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | json_only | ignored | fail 7/12 (failed: missed_findings 2, missed_required 1, runaway 2) | fail |
+| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 1, missed_findings 2, missed_required 1) | fail |
 | Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 
 Every checked row's live identity matched the revision or digest pinned
@@ -194,11 +195,11 @@ in its model config.
 
 ### Findings
 
-- Eight profiles pass: Splash `qwen3.6-35b-a3b` (11 of 12) and
+- Nine profiles pass: Splash `qwen3.6-35b-a3b` (11 of 12) and
   `qwen3.8-27b` (12 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12),
   vLLM-Metal `gemma4-31b-4bit` (12 of 12), `granite4.2-30b-4bit` and
   `ornith1.5-35b-a3b-4bit` (11 of 12 each), and Ollama
-  `nemotron-3.5-super-mlx` (12 of 12).
+  `nemotron-3.5-super-mlx` and `muse-glimmer-30b-mlx` (12 of 12 each).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the
@@ -216,14 +217,12 @@ in its model config.
   right after `<function=lookup_issue>`, where 0.31.0 writes a JSON body
   that the `qwen3_xml` parser does not read instead of
   `<parameter=issue_number>`. Retest on the next plugin or mlx-lm bump.
-- Glimmer, Lightning and both LM Studio MLX rows ignore the schema. Their
-  audit fitness passes except Lightning (7 of 12).
-- Ollama `nemotron-3.5-super-mlx` passes with the schema enforced; an
-  earlier same-day run from an uncommitted tree failed only `json_schema`
-  in structural whitespace, the Ollama MLX engine's schema gap, so that
-  check is intermittent on this engine. It is the M5 route for Nemotron
-  3.5 Super VL (9.62 sessions/h at 524,288,
-  [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
+- Both LM Studio MLX rows ignore the schema. The Ollama MLX runner
+  enforces it on 0.40.6 for all three profiles; 0.32.14 ignored it, and an
+  exploratory 0.40.5 Super VL run from an uncommitted tree ran away in
+  structural whitespace. Lightning fails audit fitness (8 of 12).
+- Ollama `nemotron-3.5-super-mlx` is the M5 route for Nemotron 3.5 Super VL
+  (11.39 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
 - LM Studio `qwen3.6-35b-a3b-splash` sits at the fitness limit: two draws
   on 2026-10-12 passed 11 and 9 of 12, after 9 on 2026-09-28. The row is
   the later draw; two of the three draws fail. Splash 1.0's own server
@@ -295,26 +294,25 @@ Host: local laptop, RTX PRO 3000 Blackwell Generation
 Laptop GPU, sm_120, 12,227 MiB VRAM, Intel Core Ultra 9 285H, 62 GiB
 RAM.
 
-### Capability Check v2, Ollama 0.40.3
+### Capability Check v2, Ollama 0.40.6
 
-Run 2026-10-12 (`capability-v2`, SCHEMA_VERSION 5, llm-audit-bench 2.1.0)
-on Ollama 0.40.3, Saluki from fleet commit `1e7318d` and REAP-48 from
-`81c4c9b`, and 2026-10-14 for LFM2.5 from `e4869ea` (llm-audit-bench 2.1.0
-plus the passed-count report `c8622de`); the reports are retained with the
-trial evidence on the host.
+Run 2026-10-17 (`capability-v2`, llm-audit-bench 2.1.0 plus `c0dc34a`) on
+Ollama 0.40.6 from fleet commit `7fd982d`; the reports are retained with
+the trial evidence on the host and copied under the M5 trial's `rtx/`. The
+0.40.3 rows they replace (2026-10-12/14) are in git history.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Ollama | `lfm2.5-24b-a2b` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | fail 4/12 (failed: format 2, instruction 1, invented 1, missed_findings 1, missed_required 3) | fail |
+| Ollama | `lfm2.5-24b-a2b` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | fail 2/12 (failed: format 3, invented 4, wrong_verdicts 3) | fail |
 | Ollama | `qwen3.6-35b-a3b-reap48` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: instruction 1) | pass |
-| Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
+| Ollama | `saluki-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 
 Every live identity matched its pinned digest. `lfm2.5-24b-a2b` fails
-audit fitness (4 of 12; 3 of 12 in the trial run on the uncommitted conf)
-and has no thinking-off check, since its card documents no control; it is
-kept for interactive use, not for audit work. REAP-48's three runs
-passed 11, 12 and 11 of 12; the row is the last. Saluki's exploratory runs
-at 65,536 (q8_0 KV) and 131,072 (q4_0) passed 10, 11 and 11 of 12. Two
+audit fitness (2 of 12; 4 of 12 on 0.40.3) and has no thinking-off check,
+since its card documents no control; it is kept for interactive use, not
+for audit work. REAP-48 passed 11, 12 and 11 of 12 on 0.40.3 and 11 on
+0.40.6; Saluki 11 of 12 on both. Saluki's exploratory 0.40.3 runs at
+65,536 (q8_0 KV) and 131,072 (q4_0) passed 10, 11 and 11 of 12. Two
 other candidates fit the GPU and failed audit fitness and were not
 committed: the byteshape IQ2_S Qwen3.6 35B-A3B (10 of 12) and Ornith 1.5
 9B (9 of 12).
