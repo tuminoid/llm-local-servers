@@ -322,9 +322,20 @@ def stop(preserve_log=False):
     print(f"stopped: {owner['identifier']} unloaded, {released}")
 
 
+def app_running():
+    # The app (GUI or --run-as-service) or the headless llmster daemon.
+    return any(subprocess.run(["pgrep", "-qx", name]).returncode == 0
+               for name in ("LM Studio", "llmster"))
+
+
 def status():
     if not os.access(lms_exe(), os.X_OK):
         print("server:   not installed")
+        return
+    # Any lms command launches LM Studio when it is down, so status must not
+    # call lms then: checking would start what it checks.
+    if not app_running():
+        print("server:   not running")
         return
     owner = json.loads(RECORD.read_text()) if RECORD.exists() else None
     entries = [{key: item.get(key) for key in (
