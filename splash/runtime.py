@@ -28,7 +28,7 @@ DATA = Path(os.environ.get("SPLASH_DATA_DIR", Path(os.environ.get(
     "XDG_DATA_HOME", Path.home() / ".local/share")) / "splash"))
 STATE = Path(os.environ.get("SPLASH_STATE_DIR", Path(os.environ.get(
     "XDG_STATE_HOME", Path.home() / ".local/state")) / "splash"))
-VERSION = os.environ.get("SPLASH_VERSION", "1.3.1")
+VERSION = os.environ.get("SPLASH_VERSION", "1.3.2")
 RELEASE = DATA / "runtime" / VERSION
 PYTHON = RELEASE / "python/bin/python3"
 PIDFILE = STATE / "server.json"
