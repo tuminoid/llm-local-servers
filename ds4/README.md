@@ -10,13 +10,13 @@ audit-pipeline profile (see [AGENTS.md](AGENTS.md)).
 | `qwen3.8-flash-next-q4` | Qwen3.8 Flash Next, Q4_K + MXFP4 experts | 165.11 GiB | resident, 69.73 GiB; n-gram table read from the file |
 | `deepseek-v4-flash-q2` | DeepSeek V4 Flash 0731 (284B-A13B), imatrix Q2 | 80.76 GiB | resident |
 | `glm5.3-flash-q2` | GLM 5.3 Flash, imatrix Q2 | 89.88 GiB | resident, tight |
-| `deepseek-v4.1-flash-q2` | DeepSeek V4.1 Flash, calibrated Q2 | 340.60 GiB | SSD streaming; Engram tables read from the file |
+| `deepseek-v4.1-flash-q2` | DeepSeek V4.1 Flash 1017, imatrix Q2 | 340.60 GiB | SSD streaming; Engram tables read from the file |
 
 Measured capabilities, speeds and verdicts are in
 [BENCHMARKS.md](BENCHMARKS.md). In short: Qwen3.8 Flash Next is the pick,
 V4 Flash works at half its speed, GLM returns tool arguments as strings,
-and V4.1 is too slow from SSD. No model enforces a JSON schema: ds4 does
-not implement `response_format`.
+and V4.1 Flash 1017 is usable but slow from SSD. No model enforces a JSON
+schema: ds4 does not implement `response_format`.
 
 ## Use
 

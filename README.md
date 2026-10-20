@@ -268,4 +268,4 @@ Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 | `qwen3.8-flash-next-q4` | 524,288 (YaRN) | pass, 12/12 | pass | 69.3 | 60.9 | 1,277 | yes, the pick |
 | `deepseek-v4-flash-q2` | 524,288 | 11/12 at 262,144, 10/12 at 524,288 | pass | 33.4 | 27.2 | 420 | yes, slower |
 | `glm5.3-flash-q2` | 262,144 | pass, 11/12 | fail: string-typed arguments | 54.2 | 26.9 | 364 | no |
-| `deepseek-v4.1-flash-q2` | 262,144 | fail, 7/12 | pass | 21.8 | 13.4 | 544 | no: slow, SSD streaming |
+| `deepseek-v4.1-flash-q2` | 262,144 | pass, 11/12 | pass | 14.7 | 14.2 | 629 | yes, slow: SSD streaming |

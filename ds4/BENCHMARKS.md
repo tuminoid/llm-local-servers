@@ -9,7 +9,11 @@ GGUFs in `models/`, 262,144 configured context, one slot and one stream,
 each config's declared sampling. Measured 2026-09-30 to 2026-10-02 with the
 pre-commit form of this directory (dirty tree), so every JSON is
 `publishable: false`; most rows are one sample. Retained under
-`~/.local/state/auditbench/trials/2026-09-30-ds4/`.
+`~/.local/state/auditbench/trials/2026-09-30-ds4/`. The
+`deepseek-v4.1-flash-q2` column is the 1017 checkpoint, measured 2026-10-19
+(session) and 2026-10-20 (capability) at the 1017 card sampling, under
+`~/.local/state/auditbench/trials/2026-10-19-m5-night/ds4/` and
+`.../2026-10-20-m5-night/ds4/`.
 
 ## Capability Check v2
 
@@ -22,12 +26,13 @@ pre-commit form of this directory (dirty tree), so every JSON is
 | Structured JSON | pass | pass | pass | pass |
 | `json_schema` | fail (`ignored`) | fail (`ignored`) | fail (`ignored`) | fail (`ignored`) |
 | Unaided document | valid | valid | valid | valid |
-| Audit fitness (passed of 12) | pass, 12/12 | pass, 11/12 (failed: invented 1) | pass, 11/12 (failed: no reasoning 1) | fail, 7/12 (failed: runaway 4, no reasoning 1) |
+| Audit fitness (passed of 12) | pass, 12/12 | pass, 11/12 (failed: invented 1) | pass, 11/12 (failed: no reasoning 1) | pass, 11/12 (failed: no reasoning 1) |
 
 JSON in `results/`: `20260930T133325.585430+0000_ds4_qwen3-8-flash-next-q4.json`,
 `20260930T104359.910549+0000_ds4_deepseek-v4-flash-q2.json`,
-`20260930T120743.672386+0000_ds4_glm5-3-flash-q2.json`,
-`20260930T173650.093690+0000_ds4_deepseek-v4-1-flash-q2.json`.
+`20260930T120743.672386+0000_ds4_glm5-3-flash-q2.json`; V4.1 Flash 1017
+`20261020T164000.412430+0000_ds4_deepseek-v4-1-flash-q2.json` in its trial
+directory.
 
 - `json_schema` fails on every model because ds4 has no structured output:
   `ds4_server.c` never parses `response_format`. Each model writes a valid
@@ -48,20 +53,22 @@ Qwen only.
 | Residency | resident | resident | resident | SSD streaming |
 | Planned memory | 89.30 GiB | 85.13 GiB | 95.96 GiB | 9.37 GiB locked + 83.00 GiB expert cache |
 | KV at 262,144 | 8.33 GiB | 2.36 GiB | 2.92 GiB | in 10.4 GiB static buffers |
-| Turn decode, mid session | 69.3 tok/s | 33.4 tok/s | 54.2 tok/s | 21.8 tok/s |
-| Report decode, ~160k deep | 60.9 tok/s | 27.2 tok/s | 26.9 tok/s | 13.4 tok/s |
-| tg128 / pp512, depth ~0 | 54.4 / 848 (no MTP) | 45.6 / 481 | 35.1 / 362 | 15.6 / 30 |
-| Session prefill | 1,277 tok/s | 420 tok/s | 364 tok/s | 544 tok/s |
-| 245,760-token cold prompt | 200 s | 657 s | 717 s | 298 s |
-| AuditBench session, diagnostic | 10.83/h (7.99 canonical median without MTP) | 4.80/h | 4.56/h | 3.36/h |
-| Interactive agentic use | yes, the pick | yes, slower, larger model | no: string-typed tool arguments | no: slow, fails audit fitness |
+| Turn decode, mid session | 69.3 tok/s | 33.4 tok/s | 54.2 tok/s | 14.7 tok/s |
+| Report decode, ~160k deep | 60.9 tok/s | 27.2 tok/s | 26.9 tok/s | 14.2 tok/s |
+| tg128 / pp512, depth ~0 | 54.4 / 848 (no MTP) | 45.6 / 481 | 35.1 / 362 | 14.6 / 30 |
+| Session prefill | 1,277 tok/s | 420 tok/s | 364 tok/s | 629 tok/s |
+| 245,760-token cold prompt | 200 s | 657 s | 717 s | 296 s |
+| AuditBench session, diagnostic | 10.83/h (7.99 canonical median without MTP) | 4.80/h | 4.56/h | 2.68/h |
+| Interactive agentic use | yes, the pick | yes, slower, larger model | no: string-typed tool arguments | yes, slow (SSD streaming) |
 
 Qwen3.8 Flash Next and V4 Flash now serve 524,288; their deep-context
 runs are in [524,288 context](#524288-context).
 
 Speed JSON: Qwen `night/results/20261001T215057.822889+0000_ds4_qwen3-8-flash-next-q4_session.json`
 (MTP) and `night/results/20261001T200439.042603+0000_ds4_qwen3-8-flash-next-q4_session.json`
-(canonical, three samples); the others in `results-diskkv/`; cold-prompt
+(canonical, three samples); V4.1 Flash 1017
+`20261019T204308.331989+0000_ds4_deepseek-v4-1-flash-q2_session.json` (12 of
+17 calls streamed no reasoning); the others in `results-diskkv/`; cold-prompt
 times from the `results/` session runs, which ran before disk KV.
 
 ## What the measurements established
@@ -90,7 +97,7 @@ times from the `results/` session runs, which ran before disk KV.
   block; 0.31 sessions/h.
 - **Compressed attention keeps deep context cheap:** 2.4-8.3 GiB of KV at
   262,144 tokens beside 70-90 GiB of weights.
-- **SSD streaming runs V4.1 on 128 GB** at a third of V4 Flash's decode;
+- **SSD streaming runs V4.1 on 128 GB** at about half of V4 Flash's decode;
   its tables read from the GGUF on every token, so speed depends on the
   SSD.
 
