@@ -2,12 +2,13 @@
 # AuditBench sample gate for battery-limited Mac hosts: the 140 W MagSafe
 # ceiling under-supplies sustained benchmark load (measured ~23%/h net
 # drain on the M5 Max), so long campaigns pause between sample batches.
-# Defaults are floor 80 / resume 90. The gate never interrupts a sample,
-# so a long dense-model batch started just above a low floor can drain far
-# below it mid-batch (an audit_deep 4x batch runs an hour and costs ~25%);
-# the high default floor makes every batch start near a full charge.
-# macOS may hold the charge at a limit below the resume level (80% on
-# 2026-10-14 stalled a campaign for 7 h), so "AC attached; not charging"
+# Defaults are floor 80 / resume 80, the host's charge limit: a higher
+# resume level only waits for charge macOS will not add. The gate never
+# interrupts a sample, so a long dense-model batch started just above a low
+# floor can drain far below it mid-batch (an audit_deep 4x batch runs an
+# hour and costs ~25%); the high default floor makes every batch start near
+# a full charge. macOS may hold the charge at its limit (80% on 2026-10-14
+# stalled a campaign for 7 h at resume 90), so "AC attached; not charging"
 # also counts as full.
 # Arguments override per run for campaigns with shorter batches. Inserts
 # wait time only; never touches the benchmark. Use via:
@@ -24,7 +25,7 @@
 set -euo pipefail
 
 floor="${1:-80}"
-resume="${2:-90}"
+resume="${2:-80}"
 watt_min=140
 
 pct() { pmset -g batt | grep -Eo '[0-9]+%' | head -n1 | tr -d '%'; }
