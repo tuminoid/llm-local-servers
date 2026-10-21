@@ -200,11 +200,11 @@ pass Capability Check v2 and are publishable:
 | 1 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 18.31 | -- | 36.2 |
 | 2 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.39 | -- | 40.2 |
 | 3 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 53.5 |
-| 4 | Splash `qwen3.8-27b` | dense | 262,144 | 6.73 | 7.47 @4x | 50.5 |
+| 4 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 60.3 |
 | 5 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 10.5 |
 | 6 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2.8 |
 
-Unranked: Splash `qwen3.6-35b-a3b` (17.95/h) and vLLM-Metal
+Unranked: Splash `qwen3.6-35b-a3b` (20.29/h) and vLLM-Metal
 `ornith1.5-35b-a3b-4bit` (9.15 / 10.52 @4x) pass the gate but their runs
 are unpublishable (incomplete sessions). The vLLM-Metal MiMo profile, LM
 Studio `qwen3.6-35b-a3b-splash` and both MLX-engine profiles, and Ollama
@@ -239,7 +239,7 @@ overview above.
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
-0.31.0, Splash 1.3.1, LM Studio 0.4.25+1, Ollama 0.40.6. The
+0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.6. The
 AuditBench v2 tables with context, slots, KV pool,
 completion, the pp512/tg128 reference and the retained JSON names are in
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),

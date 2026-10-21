@@ -158,11 +158,13 @@ LM Studio 0.4.25+1 with its Splash engine 0.0.5. JSON files are retained under
 fitness ran 4 samples per task at each conf's declared sampling and passes
 with at least 11 of 12 samples passed. Four groups differ:
 
-- The Splash rows are the Splash 1.3.1 rerun on 2026-10-11 from fleet
-  commit `036bfd0`, on the same harness, serving the mlx-community targets
-  that replaced the packages. Splash 1.0 passed both on 2026-09-27, but
-  same-day 1.0 qwen3.6 reruns on 2026-10-12 passed only 9 and 10 of 12:
-  that profile sits at the fitness limit on either release.
+- The Splash rows are Splash 1.3.2 runs from clean trees of its pin
+  branch: `qwen3.8-27b` on 2026-10-19 (same harness), `qwen3.6-35b-a3b` on
+  2026-10-20 (llm-audit-bench v2.2.0), under
+  `~/.local/state/auditbench/trials/2026-10-19-m5-night/splash/` and
+  `.../2026-10-20-m5-night/splash/`. A 2026-10-19 qwen3.6 run passed only
+  10 of 12, as did a 1.3.1 trial run and same-day 1.0 reruns (9 and 10):
+  that profile sits at the fitness limit on every release.
 - The LM Studio MLX rows are the 2026-10-14 runs from fleet commit
   `eec6b44` on mlx-llm 1.13.1, which LM Studio installed itself on
   2026-10-12, under
@@ -176,8 +178,8 @@ with at least 11 of 12 samples passed. Four groups differ:
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
-| Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
 | LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: runaway 1) | fail |
 | LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: instruction 1, missed_findings 1, runaway 1) | fail |
 | LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
@@ -195,8 +197,8 @@ in its model config.
 
 ### Findings
 
-- Nine profiles pass: Splash `qwen3.6-35b-a3b` (11 of 12) and
-  `qwen3.8-27b` (12 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12),
+- Nine profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
+  `qwen3.8-27b` (11 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12),
   vLLM-Metal `gemma4-31b-4bit` (12 of 12), `granite4.2-30b-4bit` and
   `ornith1.5-35b-a3b-4bit` (11 of 12 each), and Ollama
   `nemotron-3.5-super-mlx` and `muse-glimmer-30b-mlx` (12 of 12 each).
