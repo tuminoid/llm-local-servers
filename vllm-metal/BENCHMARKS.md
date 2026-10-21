@@ -58,7 +58,8 @@ trial-directory copies remain, and the figures stay here and in git history.
   Capability Check v2 outright, 12 of 12 fitness samples, but is slow at
   depth: report decode 7.0 tok/s at one stream and 2.3 at four, and a
   245,772-token cold prompt prefills at 240 tok/s at one stream and 243 in
-  aggregate at four. Every session completed.
+  aggregate at four. Every session completed. At about 2.3 sessions/h it
+  is an interactive profile, not an audit one.
 
 ## Audit conversation profile
 

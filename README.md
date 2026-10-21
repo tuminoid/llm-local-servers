@@ -206,9 +206,9 @@ pass Capability Check v2 and are publishable:
 
 Unranked: Splash `qwen3.6-35b-a3b` (20.29/h) and vLLM-Metal
 `ornith1.5-35b-a3b-4bit` (9.15 / 10.52 @4x) pass the gate but their runs
-are unpublishable (incomplete sessions); vLLM-Metal
-`ornith1.5-122b-a10b-4bit` (2.31 / 2.77 @4x) passes too, measured before
-its config was committed. The vLLM-Metal MiMo profile, LM
+are unpublishable (incomplete sessions). vLLM-Metal
+`ornith1.5-122b-a10b-4bit` (2.31 / 2.77 @4x) passes too; it is the M5's
+interactive profile, too slow for audits. The vLLM-Metal MiMo profile, LM
 Studio `qwen3.6-35b-a3b-splash` and both MLX-engine profiles, and Ollama
 `nemotron-3.5-lightning-30b-mlx` (audit fitness) fail Capability Check v2;
 their rates (Lightning 27.97/h at 262k) cannot promote them. Details are in
