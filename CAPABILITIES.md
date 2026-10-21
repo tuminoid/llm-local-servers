@@ -171,7 +171,10 @@ with at least 11 of 12 samples passed. Four groups differ:
   `~/.local/state/auditbench/trials/2026-10-14-m5-day/results/`.
 - The vLLM-Metal rows are the canonical runs of 2026-10-16 and 2026-10-17
   from fleet commit `2e990d6` on vLLM-Metal 0.31.0, under
-  `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`.
+  `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`;
+  `ornith1.5-122b-a10b-4bit` ran 2026-10-20 on llm-audit-bench v2.2.0 from
+  its uncommitted conf, under
+  `~/.local/state/auditbench/trials/2026-10-20-m5-night/ornith/`.
 - The Ollama rows are the canonical runs of 2026-10-17 from fleet commit
   `7fd982d` on Ollama 0.40.6, under
   `~/.local/state/auditbench/trials/2026-10-17-ollama-0406-canonical/results/`.
@@ -187,6 +190,7 @@ with at least 11 of 12 samples passed. Four groups differ:
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
 | vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
+| vLLM-Metal | `ornith1.5-122b-a10b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 1, missed_findings 2, missed_required 1) | fail |
@@ -197,9 +201,10 @@ in its model config.
 
 ### Findings
 
-- Nine profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
+- Ten profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
   `qwen3.8-27b` (11 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12),
-  vLLM-Metal `gemma4-31b-4bit` (12 of 12), `granite4.2-30b-4bit` and
+  vLLM-Metal `gemma4-31b-4bit` and `ornith1.5-122b-a10b-4bit` (12 of 12
+  each), `granite4.2-30b-4bit` and
   `ornith1.5-35b-a3b-4bit` (11 of 12 each), and Ollama
   `nemotron-3.5-super-mlx` and `muse-glimmer-30b-mlx` (12 of 12 each).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
