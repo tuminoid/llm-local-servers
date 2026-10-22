@@ -323,9 +323,9 @@ after the identity guard refused it. No performance or DFlash speedup
 number transfers across either move, and the numbers below belong to the
 `ef32a55b4976` artifact. The current digest is ~3 GiB smaller and
 measured 17.72 GiB of GPU residency at the native 131,072 context during
-its capability check (an operating fact, not a benchmark); it passes
-every applicable capability check, failing only the MLX runner's
-schema-enforcement defect (see [CAPABILITIES.md](../CAPABILITIES.md)).
+its capability check (an operating fact, not a benchmark). That check
+failed only the MLX runner's schema enforcement, which 0.40.6 fixed (see
+[CAPABILITIES.md](../CAPABILITIES.md)).
 
 Operating facts from the smoke, not a benchmark: 19.83 GiB GPU allocation
 at the native 131,072 context, 100% GPU; a single short probe measured
