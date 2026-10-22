@@ -2,8 +2,8 @@
 
 [ds4](https://github.com/antirez/ds4) is a native C/Metal engine for a few
 large MoE models. It serves only the GGUFs its project produces. Here it
-runs four of them on Apple Silicon for interactive agentic use; none is an
-audit-pipeline profile (see [AGENTS.md](AGENTS.md)).
+runs four of them on Apple Silicon for interactive agentic use; Qwen3.8
+Flash Next is also audit-eligible (see [AGENTS.md](AGENTS.md)).
 
 | Config | Model | Disk | Fit on a 128 GB Mac |
 | -- | -- | --: | -- |

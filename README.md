@@ -227,7 +227,9 @@ These profiles serve interactive agentic sessions and are not ranked for
 audits. vLLM-Metal `ornith1.5-122b-a10b-4bit` passes Capability Check v2
 (12 of 12) at 2.31 / 2.77 @4x sessions/h, too slow for audit campaigns.
 
-ds4 serves large MoE models, one slot. Speed is from the 262,144 runs, one
+ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` is also
+audit-eligible; its canonical session run on the current launcher is owed.
+Speed is from the 262,144 runs, one
 stream, in tok/s. At 524,288 a 50-step session to about 445k tokens took
 Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its checkpoints
 evicted at depth. ds4 has no `response_format`, which fails only the
