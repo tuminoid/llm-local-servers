@@ -36,7 +36,9 @@ directory.
 
 - `json_schema` fails on every model because ds4 has no structured output:
   `ds4_server.c` never parses `response_format`. Each model writes a valid
-  document when the schema is stated in words. Retest when it does.
+  document when the schema is stated in words. The check is advisory since
+  llm-audit-bench 2.3.0, so Flash Next, V4 Flash and V4.1 Flash pass
+  Capability Check v2; GLM fails on its tool calls.
 - GLM's tool parser emits every argument as a JSON string
   (`tool_call_json_args_add(..., "true")` in its `<arg_value>` parser), so
   `{"issue_number": 42}` arrives as `"42"`. GLM's tool format carries no

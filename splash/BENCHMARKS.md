@@ -26,15 +26,18 @@ here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,341,760 | 1x 20.29 / 4x 19.78 | 3,805 | 1,857.4 | 185.5 | 13/15 | 5,329 / 430.6 | pass | no | `20261020T061602.634549+0000_splash_qwen3-6-35b-a3b_session.json` |
+| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,341,760 | 1x 20.29 / 4x 19.78 | 3,805 | 1,857.4 | 185.5 | 13/15 | 5,329 / 430.6 | pass | yes, 1x | `20261020T061602.634549+0000_splash_qwen3-6-35b-a3b_session.json` |
 | Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 8.01 / 4x 8.73 | 9,636 | 552.1 | 60.3 | 15/15 | 969 / 117.7 | pass | yes | `20261019T152302.398144+0000_splash_qwen3-8-27b_session.json` |
 
 - Both profiles pass Capability Check v2: `qwen3.6-35b-a3b` 12 of 12
   (2026-10-20; a 2026-10-19 run passed 10 of 12, invented 1 and runaway 1),
   `qwen3.8-27b` 11 of 12 (failed: runaway 1). `qwen3.8-27b` is publishable
-  at 8.01 sessions/h; `qwen3.6-35b-a3b` leads the host at 20.29 but two of
-  12 sessions at 4x were incomplete, and 207 of its 255 calls streamed no
-  reasoning.
+  at 8.01 sessions/h (8.73 at 4x, its optimal operating point);
+  `qwen3.6-35b-a3b` leads the host at 20.29 at one stream, its optimal
+  operating point: two of 12 sessions at 4x were incomplete, so the 19.78
+  there is not a serving rate. The JSON records `publishable: false` under
+  llm-audit-bench 2.2.0; under the 2.3.0 rule its complete 1x leg
+  publishes. 207 of its 255 calls streamed no reasoning.
 - Four streams beat one on `qwen3.8-27b` (1.09x) and stay just below one
   on `qwen3.6-35b-a3b` (0.98x).
 

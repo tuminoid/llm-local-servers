@@ -36,7 +36,7 @@ trial-directory copies remain, and the figures stay here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,398,101 | 1x 9.15 / 4x 10.52 | 7,042 | 883.0 | 33.9 | 11/15 | 2,966 / 98.3 | pass | no | `20261016T180845.140792+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
+| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,398,101 | 1x 9.15 / 4x 10.52 | 7,042 | 883.0 | 33.9 | 11/15 | 2,966 / 98.3 | pass | yes, 1x | `20261016T180845.140792+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
 | vLLM-Metal `ornith1.5-122b-a10b-4bit` | 262,144 | 5 | 1,108,154 | 1x 2.31 / 4x 2.77 | 8,154 | 321.3 | 7.0 | 10/10 | 1,037 / 53.1 | pass | no | `20261020T180509.984422+0000_vllm-metal_ornith1-5-122b-a10b-4bit_session.json` |
 | vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 2.14 / 2x 3.18 | 17,456 | 330.0 | 10.5 | 9/9 | 759 / 30.9 | pass | yes | `20261016T205227.908811+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
 | vLLM-Metal `gemma4-31b-4bit` | 262,144 | 5 | 585,801 | 1x 1.80 / 2x 1.89 | 1,557 | 110.3 | 2.8 | 9/9 | 661 / 27.8 | pass | yes | `20261017T004920.426416+0000_vllm-metal_gemma4-31b-4bit_session.json` |
@@ -47,9 +47,12 @@ trial-directory copies remain, and the figures stay here and in git history.
   streams) with 17,456 output tokens per session at 131k, gemma4 1.80
   with 2.8 tok/s report decode at depth.
 - `ornith1.5-35b-a3b-4bit` passes Capability Check v2 at this pin (11 of
-  12 fitness samples, one selection runaway) and is the fastest profile,
-  9.15 sessions/h and 10.52 at four streams, but its run is unpublishable:
-  4 of its 12 four-stream reports hit the output cap or missed findings.
+  12 fitness samples, one selection runaway) and is the fastest profile at
+  9.15 sessions/h at one stream, its optimal operating point: 4 of its 12
+  four-stream reports hit the output cap or missed findings, so the 10.52
+  at four streams is not a serving rate. The JSON records `publishable:
+  false` under llm-audit-bench 2.2.0; under the 2.3.0 rule its complete 1x
+  leg publishes.
 - MiMo fails Capability Check v2 (tool arguments `{}`, 0 of 12 fitness
   samples) and completes no session: its reports run to the output cap.
 - `ornith1.5-122b-a10b-4bit` ran 2026-10-20 on llm-audit-bench v2.2.0 from

@@ -28,9 +28,11 @@ metric.
 
 What this means in practice:
 
-- Sessions/hour on the AuditBench agent session, at one stream and at the
-  serving concurrency, is the primary metric. A model or setting that wins
-  a short-prompt decode sweep but loses sessions/hour loses, period.
+- Sessions/hour on the AuditBench agent session, at the optimal operating
+  point, is the primary metric: the fastest measured stream count whose
+  sessions all completed. One stream qualifies as much as N; on the M5
+  concurrency rarely beats one stream. A model or setting that wins a
+  short-prompt decode sweep but loses sessions/hour loses, period.
 - Deep context is the product, not an edge case. Survivable context
   depth is proven per model and per artifact digest; a config that
   parses 262k but cannot serve repeated deep prefills is broken, not
@@ -260,10 +262,13 @@ model loading, and residency checks, but prompt generation, target sizes,
 sample count, stream counts, validation, metrics, and JSON schema belong only
 in the shared harness.
 
-A publishable result has `canonical: true`. Exploratory overrides are for
-finding the memory and concurrency operating point; rerun the canonical
-protocol after freezing it. Never combine a retired-harness rate with an AuditBench
-result or derive a missing scalar from another workload.
+A publishable result has `canonical: true` and publishes its optimal
+operating point (`optimal_streams`); a stream count with an incomplete
+session is reported, never published as a serving rate. Exploratory
+overrides are for finding the memory and concurrency operating point; rerun
+the canonical protocol after freezing it. Never combine a retired-harness
+rate with an AuditBench result or derive a missing scalar from another
+workload.
 
 Canonicality describes the workload only. The JSON `publishable` field also
 requires a clean repository commit, hashes of the exact harness, adapter and
@@ -296,8 +301,10 @@ KV capacity of that workload.
 Run Capability Check v2 before promoting a model for agent workloads. It must
 prove the configured reasoning semantics, structured tool call, tool-result
 continuation, and direct JSON output, and pass audit fitness at the
-declared sampling. Keep these pass/fail fixtures out of AuditBench: serving speed
-cannot compensate for malformed agent responses or unfinished work.
+declared sampling. Schema enforcement (`json_schema`) is recorded but
+advisory: it never decides the verdict. Keep these pass/fail fixtures out of
+AuditBench: serving speed cannot compensate for malformed agent responses or
+unfinished work.
 
 Any run intended to update the serving inventory must follow
 [CAPABILITIES.md](CAPABILITIES.md) and update its host row in the same

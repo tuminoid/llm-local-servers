@@ -19,10 +19,10 @@ Capability results never rank model quality or serving performance.
 The ds4 runtime's interactive-only models are checked too but not
 inventoried here; their results are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
-Schema enforcement is gated because audit tooling consumes structured
-verdicts: an endpoint that accepts a JSON schema and returns prose
-corrupts them silently, with no error to catch, so the gate requires
-enforcement or an honest refusal of the parameter.
+Schema enforcement is recorded but advisory (llm-audit-bench 2.3.0): no
+audit client depends on constrained decoding yet, and its failures are
+engine gaps, so a failed `json_schema` check never fails a row. Rows
+recorded earlier that failed only on it are passes.
 
 ## Running a campaign
 
@@ -183,9 +183,9 @@ with at least 11 of 12 samples passed. Four groups differ:
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
-| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: runaway 1) | fail |
+| LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: runaway 1) | pass |
 | LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: instruction 1, missed_findings 1, runaway 1) | fail |
-| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 12/12 | fail |
+| LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
 | LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
@@ -201,8 +201,9 @@ in its model config.
 
 ### Findings
 
-- Ten profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
-  `qwen3.8-27b` (11 of 12), LM Studio `qwen3.8-27b-splash` (12 of 12),
+- Twelve profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
+  `qwen3.8-27b` (11 of 12), LM Studio `qwen3.8-27b-splash` and
+  `qwen3.8-27b-mlx` (12 of 12 each) and `qwen3.6-35b-a3b-mlx` (11 of 12),
   vLLM-Metal `gemma4-31b-4bit` and `ornith1.5-122b-a10b-4bit` (12 of 12
   each), `granite4.2-30b-4bit` and
   `ornith1.5-35b-a3b-4bit` (11 of 12 each), and Ollama
@@ -224,7 +225,8 @@ in its model config.
   right after `<function=lookup_issue>`, where 0.31.0 writes a JSON body
   that the `qwen3_xml` parser does not read instead of
   `<parameter=issue_number>`. Retest on the next plugin or mlx-lm bump.
-- Both LM Studio MLX rows ignore the schema. The Ollama MLX runner
+- Both LM Studio MLX rows ignore the schema, which no longer fails them
+  (advisory since llm-audit-bench 2.3.0). The Ollama MLX runner
   enforces it on 0.40.6 for all three profiles; 0.32.14 ignored it, and an
   exploratory 0.40.5 Super VL run from an uncommitted tree ran away in
   structural whitespace. Lightning fails audit fitness (8 of 12).

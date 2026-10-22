@@ -28,7 +28,7 @@ trial-directory copies remain, and the figures stay here and in git history.
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | LM Studio `qwen3.6-35b-a3b-splash` | 262,144 | 1 | 262,144 | 1x 18.70 | 6,648 | - | 177.0 | 2/2 | 3,778 / 333.7 | fail | yes | `20260929T150023.857701+0000_lmstudio_qwen3-6-35b-a3b-splash_session.json` |
-| LM Studio `qwen3.6-35b-a3b-mlx` | 262,144 | 4 | 1,048,576 | 1x 11.02 / 4x 9.15 | 5,622 | - | 64.1 | 9/10 | 1,868 / 141.3 | fail | no | `20260929T151009.883116+0000_lmstudio_qwen3-6-35b-a3b-mlx_session.json` |
+| LM Studio `qwen3.6-35b-a3b-mlx` | 262,144 | 4 | 1,048,576 | 1x 11.02 / 4x 9.15 | 5,622 | - | 64.1 | 9/10 | 1,868 / 141.3 | pass | no | `20260929T151009.883116+0000_lmstudio_qwen3-6-35b-a3b-mlx_session.json` |
 | LM Studio `qwen3.8-27b-splash` | 262,144 | 1 | 262,144 | 1x 8.12 | 6,547 | - | 53.5 | 3/3 | unavailable | pass | yes | `20260928T040933.905525+0000_lmstudio_qwen3-8-27b-splash_session.json` |
 
 - `qwen3.8-27b-splash` passes Capability Check v2 and is publishable at
@@ -36,8 +36,9 @@ trial-directory copies remain, and the figures stay here and in git history.
   package; native Splash now serves the mlx-community target, at 6.73
   ([../splash/BENCHMARKS.md](../splash/BENCHMARKS.md)).
 - The MLX-engine profiles declare the protocol's off-by-one token
-  allowance, so their runs are `canonical: false` by design; both fail
-  Capability Check v2 on schema enforcement. `qwen3.8-27b-mlx`'s bench was
+  allowance, so their runs are `canonical: false` by design. Both pass
+  Capability Check v2; they ignore the schema, which is advisory since
+  llm-audit-bench 2.3.0. `qwen3.8-27b-mlx`'s bench was
   stopped to give the campaign's time to canonical runs. These sessions ran
   on mlx-llm 1.11.0; the pin moved to 1.13.1 on its capability rerun
   (2026-10-14), without a session rerun.

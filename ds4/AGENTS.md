@@ -52,7 +52,8 @@ in [BENCHMARKS.md](BENCHMARKS.md).
   chunks with decode and lost on every measured model.
 - Metal kernels load relative to the build tree; `start.sh` changes into
   it before exec.
-- ds4 has no `response_format`, so `json_schema` fails on every model.
-  GLM tool arguments come back as strings. Retest both on a pin move.
+- ds4 has no `response_format`, so `json_schema` fails on every model; the
+  check is advisory and never fails a model. GLM tool arguments come back
+  as strings. Retest both on a pin move.
 - Validate with `make lint`, `make test` and the managed lifecycle for
   the changed config.

@@ -152,118 +152,86 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 Every host is measured with AuditBench v2. Canonical medians copied from
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
-[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md), and
-[splash/BENCHMARKS.md](splash/BENCHMARKS.md), which hold the
+[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
+[splash/BENCHMARKS.md](splash/BENCHMARKS.md) and
+[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md), which hold the
 evidence, ranges, caveats, replay results, and history; nothing here is
 derived. Capability pass/fail is in [CAPABILITIES.md](CAPABILITIES.md).
-Prefill and decode are aggregate tok/s, audit columns are calls/hour,
-`@Nx` names the measured concurrency, and `GPU KV / allocation` is the
-raw vLLM pool or Ollama's measured allocation.
 
-ds4 is not in these tables. Its models (Qwen3.8 Flash Next, DeepSeek V4
-and V4.1 Flash, GLM 5.3 Flash) are too large for any fleet host to run
-audit campaigns on, so it serves them for interactive use on the M5 Max;
-its capability and speed tables are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
-
-### Audit throughput per host
-
-The mission workload: a growing tool-loop conversation resent every
-turn, report or verdict at depth, with 262,144 configured context and 16
-tool steps. One row per runtime and model, ranked within a host only; a
-MoE or hybrid row and a dense row are not comparable.
-
-A100-SXM4-80GB, AuditBench v2 `session` profile (sessions per hour at
-the declared sampling; 16 tool steps from 32k evidence, report at about
-165k; 1 stream and the largest of 2/4/8 the pool admits). Ranked rows pass
-Capability Check v2 and are publishable:
-
-| Rank | Runtime and profile | Tier | Sessions/h 1x | Sessions/h @Nx | Report decode 1x |
-| --: | -- | -- | --: | --: | --: |
-| 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | 38.49 | 58.67 @8x | 111.4 |
-| 2 | vLLM `gemma4-26b-a4b-awq` | MoE | 37.20 | 45.99 @8x | 63.6 |
-| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 27.77 | -- | 58.3 |
-| 4 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 36.7 |
-| 5 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 49.8 |
-| 6 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 22.8 |
-| 7 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 7.98 | 8.68 @2x | 25.8 |
-
-Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) is unpublishable
-(incomplete sessions) and fails Capability Check v2. DFlash 2 loses to
-plain qwen3.8 at sampling; see [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
-
-Apple M5 Max, AuditBench v2 `session` profile (same method as the A100;
-16 tool steps at 262,144 configured context, 9 at 131,072). Ranked rows
-pass Capability Check v2 and are publishable:
-
-| Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Report decode 1x |
-| --: | -- | -- | --: | --: | --: | --: |
-| 1 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 18.31 | -- | 36.2 |
-| 2 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.39 | -- | 40.2 |
-| 3 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 53.5 |
-| 4 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 60.3 |
-| 5 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 10.5 |
-| 6 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2.8 |
-
-Unranked: Splash `qwen3.6-35b-a3b` (20.29/h) and vLLM-Metal
-`ornith1.5-35b-a3b-4bit` (9.15 / 10.52 @4x) pass the gate but their runs
-are unpublishable (incomplete sessions). vLLM-Metal
-`ornith1.5-122b-a10b-4bit` (2.31 / 2.77 @4x) passes too; it is the M5's
-interactive profile, too slow for audits. The vLLM-Metal MiMo profile, LM
-Studio `qwen3.6-35b-a3b-splash` and both MLX-engine profiles, and Ollama
-`nemotron-3.5-lightning-30b-mlx` (audit fitness) fail Capability Check v2;
-their rates (Lightning 27.97/h at 262k) cannot promote them. Details are in
-each runtime's BENCHMARKS.md.
-
-RTX PRO 3000, Ollama 0.40.6, AuditBench v2 `session` profile (16 tool
-steps at 262,144 configured context, 13 at 163,840):
-
-| Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Report decode 1x |
-| --: | -- | -- | --: | --: | --: | --: |
-| 1 | Ollama `qwen3.6-35b-a3b-reap48` (expert-pruned Qwen3.6-35B-A3B, all on GPU) | MoE | 262,144 | 6.74 | -- | 19.3 |
-| 2 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 4.56 | -- | 11.4 |
-
-Unranked: Ollama `lfm2.5-24b-a2b` (7.49/h at 131,072, all on GPU) fails
-Capability Check v2 audit fitness, its run is unpublishable (incomplete
-sessions), and it is the RTX's interactive profile. See
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+The mission workload: a growing tool-loop conversation resent every turn,
+report or verdict at depth, 16 tool steps at 262,144 configured context
+(fewer at shorter contexts), at the declared sampling. Ranked rows pass
+Capability Check v2 (schema enforcement is advisory) and publish their
+optimal operating point: the fastest measured stream count whose sessions
+all completed, where one stream qualifies as much as N. `@Nx` names the
+measured concurrency; an `@Nx` rate with an incomplete session is shown
+for reference only. Rows are ranked by the optimal rate within a host
+only, and a MoE or hybrid row and a dense row are not comparable.
 
 ### A100-SXM4-80GB
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.40.3 (its rows; the 0.40.6 default is not yet measured
-there, the host being down since 2026-10-16). The AuditBench v2 table with
-context, slots, KV pool, completion, the pp512/tg128 reference and the
-retained JSON names is in
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md); its sessions/hour are in the
-overview above.
+isolated Ollama 0.40.3 (its rows; the 0.40.6 default is not measured
+there). Sessions per hour, 1 stream and the largest of 2/4/8 the pool
+admits; context, slots, KV pool, completion, the pp512/tg128 reference and
+the retained JSON names are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+
+| Rank | Runtime and profile | Tier | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
+| --: | -- | -- | --: | --: | -- | --: |
+| 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | 38.49 | 58.67 @8x | 8x | 111.4 |
+| 2 | vLLM `gemma4-26b-a4b-awq` | MoE | 37.20 | 45.99 @8x | 8x | 63.6 |
+| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 27.77 | -- | 1x | 58.3 |
+| 4 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 4x | 49.8 |
+| 5 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 4x | 36.7 |
+| 6 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
+| 7 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 7.98 | 8.68 @2x | 2x | 25.8 |
+
+Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) fails Capability
+Check v2 audit fitness. DFlash 2 loses to plain qwen3.8 at sampling; see
+[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
-0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.6. The
-AuditBench v2 tables with context, slots, KV pool,
-completion, the pp512/tg128 reference and the retained JSON names are in
-[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
+0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.6, ds4. Context,
+slots, KV pool, completion, the pp512/tg128 reference and the retained
+JSON names are in [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 [splash/BENCHMARKS.md](splash/BENCHMARKS.md),
 [lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md) and
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md); sessions/hour are in the
-overview above.
-
-### RTX PRO 3000 Blackwell laptop GPU
-
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6. Its
-profiles, `qwen3.6-35b-a3b-reap48`, `saluki-27b` and the interactive
-`lfm2.5-24b-a2b`, are in the overview above and in
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
-### ds4 on the Apple M5 Max (interactive use)
+#### Audit throughput
 
-ds4 serves large MoE models for interactive agentic sessions, one slot,
-never ranked for audits. Speed is from the 262,144 runs, one stream, in
-tok/s. At 524,288 a 50-step session to about 445k tokens took Qwen 14 min
-(report 57.0 tok/s) and V4 Flash 2.2 h, its checkpoints evicted at depth.
-Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
+| Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
+| --: | -- | -- | --: | --: | --: | -- | --: |
+| 1 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.29 | 19.78 @4x, incomplete | 1x | 185.5 |
+| 2 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 18.31 | -- | 1x | 36.2 |
+| 3 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.39 | -- | 1x | 40.2 |
+| 4 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
+| 5 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 4x | 60.3 |
+| 6 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
+| 7 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 8 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
+
+Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
+and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
+fitness; their rates (Lightning 27.97/h at 262k) cannot promote them. The
+LM Studio MLX-engine profiles pass but their runs are noncanonical by
+design (off-by-one token allowance). Details are in each runtime's
+BENCHMARKS.md.
+
+#### Interactive use
+
+These profiles serve interactive agentic sessions and are not ranked for
+audits. vLLM-Metal `ornith1.5-122b-a10b-4bit` passes Capability Check v2
+(12 of 12) at 2.31 / 2.77 @4x sessions/h, too slow for audit campaigns.
+
+ds4 serves large MoE models, one slot. Speed is from the 262,144 runs, one
+stream, in tok/s. At 524,288 a 50-step session to about 445k tokens took
+Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its checkpoints
+evicted at depth. ds4 has no `response_format`, which fails only the
+advisory schema check. Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
 | Model | Context | Audit fitness | Tool calls | Turn decode, mid session | Report decode, ~160k deep | Session prefill | Interactive use |
 | -- | --: | -- | -- | --: | --: | --: | -- |
@@ -271,3 +239,17 @@ Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 | `deepseek-v4-flash-q2` | 524,288 | 11/12 at 262,144, 10/12 at 524,288 | pass | 33.4 | 27.2 | 420 | yes, slower |
 | `glm5.3-flash-q2` | 262,144 | pass, 11/12 | fail: string-typed arguments | 54.2 | 26.9 | 364 | no |
 | `deepseek-v4.1-flash-q2` | 262,144 | pass, 11/12 | pass | 14.7 | 14.2 | 629 | yes, slow: SSD streaming |
+
+### RTX PRO 3000 Blackwell laptop GPU
+
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6. Details are
+in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+
+| Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
+| --: | -- | -- | --: | --: | --: | -- | --: |
+| 1 | Ollama `qwen3.6-35b-a3b-reap48` (expert-pruned Qwen3.6-35B-A3B, all on GPU) | MoE | 262,144 | 6.74 | -- | 1x | 19.3 |
+| 2 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 4.56 | -- | 1x | 11.4 |
+
+Unranked: Ollama `lfm2.5-24b-a2b` (7.49/h at 131,072, all on GPU) fails
+Capability Check v2 audit fitness and its 1x run is incomplete; it is the
+RTX's interactive profile.
