@@ -8,6 +8,14 @@
         "baseURL": "http://127.0.0.1:11434/v1"
       },
       "models": {
+        "flint:40b-a2b-qat-int4": {
+          "name": "Flint 40B A2B Qat INT4 MLX",
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        },
         "muse-glimmer:30b-mlx": {
           "name": "Muse Glimmer 30B MLX",
           "tool_call": true,

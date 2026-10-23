@@ -36,12 +36,12 @@ OLLAMA_RUNTIME_VERSION="${OLLAMA_RUNTIME_VERSION:-}"
 # shellcheck source=models/saluki-27b.conf disable=SC1091
 source "${CONF_FILE}"
 
-# Per-profile managed runtime pin. lib.sh defaults OLLAMA_VERSION before the
-# conf is read, so a profile that needs a newer runtime than the fleet default
-# declares OLLAMA_RUNTIME_VERSION; an explicit OLLAMA_RUNTIME_VERSION in the
-# environment still wins over the conf through the usual ${VAR:-default}
-# pattern. The binary and min-version checks below then resolve against the
-# selected runtime.
+# Per-profile managed runtime pin. lib.sh takes OLLAMA_VERSION from the root
+# Makefile before the conf is read, so a profile that needs a newer runtime
+# than the fleet default declares OLLAMA_RUNTIME_VERSION; an explicit
+# OLLAMA_RUNTIME_VERSION in the environment still wins over the conf through
+# the usual ${VAR:-default} pattern. The binary and min-version checks below
+# then resolve against the selected runtime.
 if [[ -n "${OLLAMA_RUNTIME_VERSION}" ]]; then
     # shellcheck disable=SC2034  # read by ollama_bin() in the sourced lib.sh
     OLLAMA_VERSION="${OLLAMA_RUNTIME_VERSION}"

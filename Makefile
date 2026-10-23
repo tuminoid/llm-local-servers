@@ -129,16 +129,19 @@ OLLAMA_DIR := ollama
 # ollama-linux-amd64.tar.zst for the A100, _LINUX_ARM64 the arm64 build,
 # _DARWIN the universal ollama-darwin.tgz); ollama-install refuses an
 # unverified archive.
-# Default 0.40.6, for every profile. The M5's MLX profiles passed the
-# post-prefill commit memory runaway retest on it (2026-10-17: three
-# cache-busted deep prefills under a watchdog), which 0.33.2, 0.33.3 and
-# 0.34.2 failed. 0.40.x keeps a second model index, manifests-v2/; 0.40.1's
-# local compat migration rewrote older GGUF tags there, which 0.40.3 and
-# later no longer do on load (ollama/AGENTS.md).
-OLLAMA_VERSION ?= 0.40.6
-OLLAMA_ARCHIVE_SHA256 ?= c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0
-OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 0a279d9428ad17b06fdb7dddf3b059b2c148433585fa3b30676a102fc459bb9f
-OLLAMA_ARCHIVE_SHA256_DARWIN ?= b2b55434865a668decb494110d7fd970eed3ecc8837be2872f672ccbb95df974
+# Default 0.40.8, for every profile: the first release with Recursive Flint
+# (macOS only), with the same vendored llama.cpp as 0.40.7. The M5's MLX
+# profiles passed the post-prefill commit memory runaway retest on 0.40.6
+# (2026-10-17: three cache-busted deep prefills under a watchdog), which
+# 0.33.2, 0.33.3 and 0.34.2 failed; Glimmer's and Super VL's 0.40.8
+# sessions, deep prefills included, match 0.40.6, and the cache-busted retest
+# was not repeated (ollama/BENCHMARKS.md). 0.40.x keeps a second model index,
+# manifests-v2/; 0.40.1's local compat migration rewrote older GGUF tags
+# there, which 0.40.3 and later no longer do on load (ollama/AGENTS.md).
+OLLAMA_VERSION ?= 0.40.8
+OLLAMA_ARCHIVE_SHA256 ?= 0bb17cc19e9c1339ddbe0cba55148bf068f8f19dec8ec5fd531461aaa207282a
+OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= f2e512f67f86ac5c53847e4e586ca8a9d3f359faf7a71cd69e37f12dcc63ded0
+OLLAMA_ARCHIVE_SHA256_DARWIN ?= 29fce20c736f62aa8885b1e83552c5fd8dcc63edc5ffc1b47f2de591a06cde44
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0
