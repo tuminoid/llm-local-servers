@@ -58,7 +58,14 @@ in [README.md](README.md); shared server conventions live in
   benchmark's effective-runner check rejected requested 2x and 4x
   profiles; no later release has been tested for more. Do not claim
   multi-slot Qwen support without repeating full-context correctness tests.
+- Ollama 0.40.7 runs the `nemotron_h_moe` runner (Nemotron 3.5 Bolt) on
+  one slot: a start with `OLLAMA_NUM_PARALLEL=4` served one, and the
+  effective-runner check refused the 4x bench.
 - Keep the benchmark job count equal to `OLLAMA_NUM_PARALLEL`.
+- A model card that requires its returned reasoning in the history declares
+  `OLLAMA_PRESERVE_REASONING=1`. `bench.py` and `capability.py` both forward
+  it; the capability adapter builds its own `CapabilityConfig`, so the
+  harness's `CAPABILITY_PRESERVE_REASONING` alone never reaches it.
 - Keep Flash Attention enabled when using quantized KV. q8 is the quality-safe
   default; q4 is an explicit experiment.
 - Each conf declares its model's minimum Ollama release as
@@ -130,8 +137,8 @@ in [README.md](README.md); shared server conventions live in
   separate VRAM counter. status.sh reports `footprint` phys footprints per
   group member there. macOS has no `setsid`; run.sh falls back to bash job
   control for the detached process group.
-- The A100 serves only what vLLM cannot there: Ornith 1.5 35B-A3B and
-  Qwen3.8-Flash-Next IQ4_XS. The Ollama copies of Qwen3.6, Qwen3.8 27B and
+- The A100 serves on Ollama only what vLLM cannot there (the profiles are
+  in README.md). The Ollama copies of Qwen3.6, Qwen3.8 27B and
   Gemma 4 26B lost to their vLLM profiles, and Qwen3 Coder and GLM-4.7-Flash
   failed the gate on both runtimes; all five were dropped on 2026-10-12.
 - New and replacement measurements follow

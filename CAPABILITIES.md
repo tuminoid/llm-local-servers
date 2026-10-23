@@ -135,7 +135,8 @@ proves nothing about parser compatibility.
 - vLLM-Metal: `gemma4-31b-4bit`, `granite4.2-30b-4bit`,
   `ornith1.5-35b-a3b-4bit`, `mimo-v2.6-9b-4bit`
 - Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`,
-  `nemotron-3.5-super-mlx`
+  `nemotron-3.5-super-mlx`, `flint-40b-a2b-qat-int4-mlx`
+- ds4: `qwen3.8-flash-next-q4`
 
 ### RTX PRO 3000 Blackwell
 
@@ -145,7 +146,8 @@ proves nothing about parser compatibility.
 
 - vLLM: `qwen3.6-35b-a3b-awq`, `qwen3.8-27b`, `qwen3.8-27b-dflash2`,
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
-- Ollama: `qwen3.8-flash-next-gguf-iq4xs`, `ornith1.5-35b-a3b`
+- Ollama: `qwen3.8-flash-next-gguf-iq4xs`, `ornith1.5-35b-a3b`,
+  `nemotron-3.5-bolt-74b-a9b-iq2`
 
 ## Apple M5 Max campaign
 
@@ -156,7 +158,7 @@ plus the triage amendment `c0dc34a`), rerun 2026-10-12 from fleet commit
 LM Studio 0.4.25+1 with its Splash engine 0.0.5. JSON files are retained under
 `~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`. Audit
 fitness ran 4 samples per task at each conf's declared sampling and passes
-with at least 11 of 12 samples passed. Four groups differ:
+with at least 11 of 12 samples passed. Five groups differ:
 
 - The Splash rows are Splash 1.3.2 runs from clean trees of its pin
   branch: `qwen3.8-27b` on 2026-10-19 (same harness), `qwen3.6-35b-a3b` on
@@ -175,9 +177,14 @@ with at least 11 of 12 samples passed. Four groups differ:
   `ornith1.5-122b-a10b-4bit` ran 2026-10-20 on llm-audit-bench v2.2.0 from
   its uncommitted conf, under
   `~/.local/state/auditbench/trials/2026-10-20-m5-night/ornith/`.
-- The Ollama rows are the canonical runs of 2026-10-17 from fleet commit
+- The Ollama rows ran on Ollama 0.40.8 on 2026-10-22 (llm-audit-bench
+  2.3.0) from the pin's trial commit `d96a7f0`, whose runtime files match
+  main, under `~/.local/state/auditbench/trials/2026-10-22-night/ollama/`;
+  Lightning's row is the canonical run of 2026-10-17 from fleet commit
   `7fd982d` on Ollama 0.40.6, under
   `~/.local/state/auditbench/trials/2026-10-17-ollama-0406-canonical/results/`.
+- The ds4 row ran 2026-10-23 (llm-audit-bench 2.3.0) from fleet commit
+  `3c3a5ab`, under `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -192,22 +199,26 @@ with at least 11 of 12 samples passed. Four groups differ:
 | vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
 | vLLM-Metal | `ornith1.5-122b-a10b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
-| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `flint-40b-a2b-qat-int4-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: wrong_verdicts 1) | pass |
+| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 1, missed_findings 2, missed_required 1) | fail |
 | Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| ds4 | `qwen3.8-flash-next-q4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
 
 Every checked row's live identity matched the revision or digest pinned
 in its model config.
 
 ### Findings
 
-- Twelve profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
+- Thirteen profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
   `qwen3.8-27b` (11 of 12), LM Studio `qwen3.8-27b-splash` and
   `qwen3.8-27b-mlx` (12 of 12 each) and `qwen3.6-35b-a3b-mlx` (11 of 12),
   vLLM-Metal `gemma4-31b-4bit` and `ornith1.5-122b-a10b-4bit` (12 of 12
   each), `granite4.2-30b-4bit` and
-  `ornith1.5-35b-a3b-4bit` (11 of 12 each), and Ollama
-  `nemotron-3.5-super-mlx` and `muse-glimmer-30b-mlx` (12 of 12 each).
+  `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama
+  `nemotron-3.5-super-mlx` (12 of 12), `muse-glimmer-30b-mlx` and
+  `flint-40b-a2b-qat-int4-mlx` (11 of 12 each), and ds4
+  `qwen3.8-flash-next-q4` (12 of 12).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the
@@ -226,12 +237,16 @@ in its model config.
   that the `qwen3_xml` parser does not read instead of
   `<parameter=issue_number>`. Retest on the next plugin or mlx-lm bump.
 - Both LM Studio MLX rows ignore the schema, which no longer fails them
-  (advisory since llm-audit-bench 2.3.0). The Ollama MLX runner
-  enforces it on 0.40.6 for all three profiles; 0.32.14 ignored it, and an
+  (advisory since llm-audit-bench 2.3.0), and so does ds4, which has no
+  `response_format`. The Ollama MLX runner enforces it on 0.40.6 and
+  0.40.8 for every profile checked; 0.32.14 ignored it, and an
   exploratory 0.40.5 Super VL run from an uncommitted tree ran away in
   structural whitespace. Lightning fails audit fitness (8 of 12).
 - Ollama `nemotron-3.5-super-mlx` is the M5 route for Nemotron 3.5 Super VL
-  (11.39 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
+  (11.06 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
+- Ollama `flint-40b-a2b-qat-int4-mlx` declares `OLLAMA_PRESERVE_REASONING=1`, as
+  its model card requires: an exploratory run without it passed 9 of 12
+  (wrong triage verdicts and an unfinished workflow), the committed run 11.
 - LM Studio `qwen3.6-35b-a3b-splash` sits at the fitness limit: two draws
   on 2026-10-12 passed 11 and 9 of 12, after 9 on 2026-09-28. The row is
   the later draw; two of the three draws fail. Splash 1.0's own server
@@ -250,8 +265,11 @@ supplied by `.envrc`. Capability Check v2 (`capability-v2`,
 SCHEMA_VERSION 5), llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11
 from fleet commit `ad06c70` on vLLM 0.31.0 with Transformers 5.15.1;
 reports under `auditbench-trials/2026-10-10-v2-canonical/` on the host. The
-Ollama rows ran 2026-10-11 from `98e4052` on Ollama 0.40.3; reports under
-`auditbench-trials/2026-10-11-ollama-canonical/`. Audit fitness ran 4 samples
+Ollama rows ran on Ollama 0.40.7: Ornith and Flash-Next on 2026-10-21
+(llm-audit-bench 2.2.0) from the pin's trial commit `31fd6d5`, Bolt on
+2026-10-22 (2.3.0) from its trial commit `67fe0b6`, both matching the
+profile files on main; reports under `auditbench-trials/2026-10-21-releases/`
+and `auditbench-trials/2026-10-22-night/`. Audit fitness ran 4 samples
 per task at each conf's declared sampling and passes with at least 11 of
 12 samples passed.
 
@@ -263,18 +281,20 @@ per task at each conf's declared sampling and passes with at least 11 of
 | vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | error | enforced | pass 12/12 | pass |
+| Ollama | `nemotron-3.5-bolt-74b-a9b-iq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
+| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 
 Every row's live identity matched the revision or digest pinned in its
 model config.
 
 ### Findings
 
-- Seven profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the
+- Eight profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the
   W4A16 checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each)
-  and `gemma4-26b-a4b-awq` (11 of 12), and Ollama `ornith1.5-35b-a3b` and
-  `qwen3.8-flash-next-gguf-iq4xs` (12 of 12 each).
+  and `gemma4-26b-a4b-awq` (11 of 12), and Ollama
+  `nemotron-3.5-bolt-74b-a9b-iq2` (12 of 12), `ornith1.5-35b-a3b` and
+  `qwen3.8-flash-next-gguf-iq4xs` (11 of 12 each; 12 of 12 each on 0.40.3).
 - Audit fitness is what v1 could not see. MiMo (5 of 12 on 0.31.0: no
   reasoning, invented findings, wrong triage verdicts) passed every v1
   check and fails here. So did GLM 4.7 Flash (8 of 12 on vLLM, 7 on
@@ -288,10 +308,10 @@ model config.
   (`VLLM_STRUCTURED_OUTPUTS_CONFIG`, xgrammar), and both enforce the
   schema and pass. The 512k profile keeps the FP8 weights and differs from
   the former FP8 `qwen3.8-27b` only by static YaRN at factor 2.0.
-- `qwen3.8-flash-next-gguf-iq4xs`'s unaided document is `error`: that
-  request kills the CUDA llama.cpp path with an illegal memory access and
-  an HTTP 500 (reproducible since 0.33.3; diagnosis and retest condition
-  in its conf). `unaided` never gates.
+- `qwen3.8-flash-next-gguf-iq4xs`'s unaided document is `valid` on 0.40.7.
+  Through 0.40.3 that request killed the CUDA llama.cpp path with an
+  illegal memory access and an HTTP 500 (diagnosis in its conf). `unaided`
+  never gates.
 - `mimo-v2.6-9b-awq` runs on its fixed chat template
   (`VLLM_CHAT_TEMPLATE`); the API checks pass, audit fitness does not.
 - `qwen3.8-27b-dflash2` (FP8 target) passes check for check like the plain

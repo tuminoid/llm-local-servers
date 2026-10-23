@@ -153,8 +153,9 @@ Every host is measured with AuditBench v2. Canonical medians copied from
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
-[splash/BENCHMARKS.md](splash/BENCHMARKS.md) and
-[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md), which hold the
+[splash/BENCHMARKS.md](splash/BENCHMARKS.md),
+[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md) and
+[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md), which hold the
 evidence, ranges, caveats, replay results, and history; nothing here is
 derived. Capability pass/fail is in [CAPABILITIES.md](CAPABILITIES.md).
 
@@ -171,8 +172,8 @@ only, and a MoE or hybrid row and a dense row are not comparable.
 ### A100-SXM4-80GB
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.40.3 (its rows; the 0.40.6 default is not measured
-there). Sessions per hour, 1 stream and the largest of 2/4/8 the pool
+isolated Ollama 0.40.7 (its rows; the 0.40.8 default vendors the same
+llama.cpp). Sessions per hour, 1 stream and the largest of 2/4/8 the pool
 admits; context, slots, KV pool, completion, the pp512/tg128 reference and
 the retained JSON names are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
@@ -181,38 +182,42 @@ the retained JSON names are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
 | --: | -- | -- | --: | --: | -- | --: |
 | 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | 38.49 | 58.67 @8x | 8x | 111.4 |
 | 2 | vLLM `gemma4-26b-a4b-awq` | MoE | 37.20 | 45.99 @8x | 8x | 63.6 |
-| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 27.77 | -- | 1x | 58.3 |
+| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 32.48 | -- | 1x | 59.6 |
 | 4 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 4x | 49.8 |
 | 5 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 4x | 36.7 |
-| 6 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
-| 7 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 7.98 | 8.68 @2x | 2x | 25.8 |
+| 6 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 15.68 | -- | 1x | 107.7 |
+| 7 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
+| 8 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 8.79 | 9.49 @2x | 2x | 27.3 |
 
 Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) fails Capability
-Check v2 audit fitness. DFlash 2 loses to plain qwen3.8 at sampling; see
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
+Check v2 audit fitness. DFlash 2 loses to plain qwen3.8 at the declared
+sampling (8.40 / 13.04 @2x); see [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
-0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.6, ds4. Context,
+0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.8, ds4. Context,
 slots, KV pool, completion, the pp512/tg128 reference and the retained
 JSON names are in [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 [splash/BENCHMARKS.md](splash/BENCHMARKS.md),
-[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md) and
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md),
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md) and
+[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
 #### Audit throughput
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
 | 1 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.29 | 19.78 @4x, incomplete | 1x | 185.5 |
-| 2 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 18.31 | -- | 1x | 36.2 |
-| 3 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.39 | -- | 1x | 40.2 |
-| 4 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
-| 5 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 4x | 60.3 |
-| 6 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 7 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
-| 8 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
+| 2 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 17.72 | -- | 1x | 32.4 |
+| 3 | Ollama `flint-40b-a2b-qat-int4-mlx` (40B-A2.5B) | MoE | 262,144 | 14.42 | -- | 1x | 61.8 |
+| 4 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.06 | -- | 1x | 40.4 |
+| 5 | ds4 `qwen3.8-flash-next-q4` (125B-A6B) | MoE | 524,288 | 10.00 | -- | 1x | 60.8 |
+| 6 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
+| 7 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 4x | 60.3 |
+| 8 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
+| 9 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 10 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
 
 Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
 and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
@@ -228,8 +233,7 @@ audits. vLLM-Metal `ornith1.5-122b-a10b-4bit` passes Capability Check v2
 (12 of 12) at 2.31 / 2.77 @4x sessions/h, too slow for audit campaigns.
 
 ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` is also
-audit-eligible; its canonical session run on the current launcher is owed.
-Speed is from the 262,144 runs, one
+audit-eligible and ranked above. Speed is from the 262,144 runs, one
 stream, in tok/s. At 524,288 a 50-step session to about 445k tokens took
 Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its checkpoints
 evicted at depth. ds4 has no `response_format`, which fails only the
@@ -244,7 +248,8 @@ advisory schema check. Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6. Details are
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6 (the 0.40.8
+default is not measured there). Details are
 in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |

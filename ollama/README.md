@@ -27,12 +27,12 @@ GGUF tags keep using llama.cpp. The MLX profiles are named for the artifact
 with an `-mlx` suffix. On the M5, Qwen3.6 and Qwen3.8 are served by Splash,
 not Ollama.
 
-The fleet default runtime is the root Makefile's `OLLAMA_VERSION`. Profiles
-that need another release declare it per profile with
-`OLLAMA_RUNTIME_VERSION`: the M5's MLX profiles stay on the release their
-runner was validated on (the MLX memory runaway is unproven on 0.40.x);
-remote lifecycle calls for such a profile also pass its `OLLAMA_VERSION` at
-the make level.
+The fleet default runtime is the root Makefile's `OLLAMA_VERSION`, for
+every profile. A profile that needs another release declares it with
+`OLLAMA_RUNTIME_VERSION`, and remote lifecycle calls for it also pass its
+`OLLAMA_VERSION` at the make level. None does now: the M5's MLX profiles
+left their older release once the MLX memory runaway retest passed on
+0.40.6 ([BENCHMARKS.md](BENCHMARKS.md)).
 
 `qwen3.8-flash-next-gguf-iq4xs` (Qwen3.8-Flash-Next 125B-A6B, locally
 imported UD-IQ4_XS GGUF sized for the A100's 80 GB, locked to 2 x 262,144
@@ -127,13 +127,14 @@ instead of leaving a misleading SSH process.
 
 ### A100 profiles
 
-The A100 runs on Ollama only the two models no vLLM profile serves there;
+The A100 runs on Ollama only the models no vLLM profile serves there;
 throughput, residency and full-context proofs are in
 [BENCHMARKS.md](BENCHMARKS.md):
 
 | Ollama config | Ollama model | Context | Slots |
 | -- | -- | --: | --: |
 | `ornith1.5-35b-a3b` | `ornith-1.5:35b` | 262,144 | 1 |
+| `nemotron-3.5-bolt-74b-a9b-iq2` | `nemotron-3.5-bolt:74b-a9b-iq2` | 262,144 | 1 |
 | `qwen3.8-flash-next-gguf-iq4xs` | `qwen3.8-flash-next:ud-iq4xs` (local import) | 262,144 | 2 |
 
 ### Remote workflow

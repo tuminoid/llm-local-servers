@@ -21,83 +21,98 @@ git history.
 
 ## AuditBench v2: A100-SXM4-80GB
 
-Isolated remote Ollama 0.40.3 (the 0.40.6 default is not yet measured
-here: the host is down since 2026-10-16), Flash Attention, q8 KV.
-Canonical AuditBench v2 `session`
-profile (llm-audit-bench 2.1.0; each JSON records its harness hash), run
-2026-10-11 from fleet commit `98e4052` at each conf's declared sampling.
-The harness measured 1 stream and the largest of 2/4/8 that fits admission
-and the KV pool: 16 tool steps from 32k evidence, report at about 165k.
-Sessions/h is the median over 2-3 samples; complete counts sessions whose
-report ended on its own and named at least 7/8 of its findings. pp512/tg128
-is the llama-bench-method reference (one stream, greedy, depth ~0), not a
-serving result. JSON files are retained under
-`auditbench-trials/2026-10-11-ollama-canonical/` on the host. Slots are the
-conf's `OLLAMA_NUM_PARALLEL`: one for Ornith, two for flash-next. The KV
+Isolated remote Ollama 0.40.7 (the 0.40.8 default vendors the same llama.cpp
+build and adds only the macOS Flint support), Flash Attention, q8 KV.
+Canonical AuditBench v2 `session` profile at each conf's declared sampling:
+Ornith and Flash-Next ran 2026-10-21/22 on llm-audit-bench 2.2.0 from the
+0.40.7 pin's trial commit `31fd6d5`, Bolt ran 2026-10-22 on 2.3.0 from its
+trial commit `67fe0b6`; both trees match the profile files on main. Each
+JSON records its harness hash. The harness measured 1 stream and the largest
+of 2/4/8 that fits admission and the KV pool: 16 tool steps from 32k
+evidence, report at about 165k. Sessions/h is the median over 2-3 samples;
+complete counts sessions whose report ended on its own and named at least
+7/8 of its findings. pp512/tg128 is the llama-bench-method reference (one
+stream, greedy, depth ~0), not a serving result. JSON files are retained
+under `auditbench-trials/2026-10-21-releases/` and
+`auditbench-trials/2026-10-22-night/` on the host. Slots are the conf's
+`OLLAMA_NUM_PARALLEL`: one for Ornith and Bolt, two for flash-next. The KV
 column is configured context times slots, not a measured pool. Ollama has no
 `ignore_eos`, so the reference is unavailable where the model stopped before
-128 tokens, and prefill is absent where the server does not report cached
-tokens.
+128 tokens.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 27.77 | 4,357.5 | 2,711.6 | 58.3 | 2/2 | unavailable | pass | yes | `20261011T181437.335690+0000_ollama_ornith1-5-35b-a3b_session.json` |
-| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 7.98 / 2x 8.68 | 6,073.5 | 694.8 | 25.8 | 6/6 | unavailable | pass | yes | `20261011T195249.035872+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
+| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 32.48 | 3,685 | 2,865.2 | 59.6 | 2/2 | unavailable | pass | yes | `20261021T202437.074872+0000_ollama_ornith1-5-35b-a3b_session.json` |
+| Ollama `nemotron-3.5-bolt-74b-a9b-iq2` | 262,144 | 1 | 262,144 | 1x 15.68 | 10,364 | 1,202.1 | 107.7 | 2/2 | unavailable | pass | yes | `20261022T210656.512707+0000_ollama_nemotron-3-5-bolt-74b-a9b-iq2_session.json` |
+| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 8.79 / 2x 9.49 | 6,016 | 820.2 | 27.3 | 9/9 | unavailable | pass | yes | `20261022T025429.165613+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
 
-- Both profiles pass Capability Check v2. `ornith1.5-35b-a3b` runs 27.77
-  sessions/h; on 0.40.1 (2026-10-11, `ad06c70`) it measured 31.65 with
-  3,464 output tokens per session against 4,357.5 now.
-  `qwen3.8-flash-next-gguf-iq4xs` runs 7.98 at one stream and 8.68 at two
-  (6.36 / 6.43 and unpublishable on 0.34.2).
+- All three pass Capability Check v2. Against 0.40.3 (2026-10-11,
+  `98e4052`): Ornith 27.77 to 32.48 sessions/h, Flash-Next 7.98 / 8.68 to
+  8.79 / 9.49.
+- `nemotron-3.5-bolt-74b-a9b-iq2` (Nemotron 3.5 Bolt 74B-A9B, NVIDIA's
+  24 GB IQ2_XXS) passes 12 of 12. Ollama runs its `nemotron_h_moe` runner
+  on one slot: a 4-slot start served one (`runner uses 1 slot(s)`), so 1x
+  is its only operating point here. It is not on the M5: llama.cpp's Metal
+  `mul_mat_id` kernel crashes on it (see its conf).
 - The same campaign measured the A100's other Ollama profiles, dropped on
   2026-10-12 because vLLM serves those models faster here or they failed the
   gate on both runtimes: `qwen3.6-35b-a3b` 18.06, `qwen3-coder-30b` 18.51
   (fail), `gemma4-26b` 14.18 (unpublishable), `qwen3.8-27b-native` 11.24 and
-  `glm4.7-flash` 7.37 (fail). Their rows, and the A100 AuditBench v1,
-  conversation, replay and pre-v1 evidence for them, are in git history.
+  `glm4.7-flash` 7.37 (fail), all on 0.40.3. Their rows, and the A100
+  AuditBench v1, conversation, replay and pre-v1 evidence for them, are in
+  git history.
 
 ## AuditBench v2: Apple M5 Max
 
-Managed Ollama 0.40.6, the fleet default (the MLX runner serializes
-requests to one slot). Contexts are the confs': 131,072 for Glimmer, 262,144
-for Lightning and 524,288 for Super VL. Canonical AuditBench v2 `session`
-profile (llm-audit-bench v2.1.0 plus the triage amendment `c0dc34a`; each
-JSON records its harness hash), run 2026-10-17 on the M5 Max (128 GB, macOS
-27.0) from fleet commit `7fd982d` at each conf's declared sampling, one
-stream (one slot): tool steps from 32k evidence, 16 at 262,144 and above
-and 9 at 131,072, report at depth. Sessions/h is the median over 2-3
-samples; complete counts sessions whose report ended on its own and named
-at least 7/8 of its findings. pp512/tg128 is the llama-bench-method
-reference (one stream, greedy, depth ~0), not a serving result. JSON files
-are retained under
-`~/.local/state/auditbench/trials/2026-10-17-ollama-0406-canonical/results/`;
-the 0.32.14 and 0.40.5 rows they replace are in git history.
+Managed Ollama 0.40.8, the fleet default (the MLX runner serializes
+requests to one slot); the Lightning row is 0.40.6. Contexts are the
+confs': 131,072 for Glimmer, 262,144 for Flint and Lightning and 524,288 for
+Super VL. Canonical AuditBench v2 `session` profile at each conf's declared
+sampling on the M5 Max (128 GB, macOS 27.0), one stream (one slot): tool
+steps from 32k evidence, 16 at 262,144 and above and 9 at 131,072, report at
+depth. The 0.40.8 rows ran 2026-10-22/23 on llm-audit-bench 2.3.0 from the
+pin's trial commit `d96a7f0`, whose runtime files match main; Lightning ran
+2026-10-17 on v2.1.0 plus `c0dc34a` from fleet commit `7fd982d`. Each JSON
+records its harness hash. Sessions/h is the median over 2-3 samples;
+complete counts sessions whose report ended on its own and named at least
+7/8 of its findings. pp512/tg128 is the llama-bench-method reference (one
+stream, greedy, depth ~0), not a serving result. JSON files are retained
+under `~/.local/state/auditbench/trials/2026-10-22-night/ollama/` and
+`.../2026-10-17-ollama-0406-canonical/results/`; the 0.40.6 rows the 0.40.8
+ones replace are in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 27.97 | 6,010 | 2,347.0 | 88.1 | 2/2 | 3,337 / 159.1 | fail | yes | `20261017T184719.946774+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
-| Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 18.31 | 1,636 | 663.9 | 36.2 | 2/2 | unavailable | pass | yes | `20261017T185841.440535+0000_ollama_muse-glimmer-30b-mlx_session.json` |
-| Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 11.39 | 5,938 | 939.6 | 40.2 | 2/2 | unavailable | pass | yes | `20261017T205100.945630+0000_ollama_nemotron-3-5-super-mlx_session.json` |
+| Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 17.72 | 1,715 | 666.4 | 32.4 | 3/3 | unavailable | pass | yes | `20261022T170304.820009+0000_ollama_muse-glimmer-30b-mlx_session.json` |
+| Ollama `flint-40b-a2b-qat-int4-mlx` | 262,144 | 1 | 262,144 | 1x 14.42 | 10,134 | 1,612.2 | 61.8 | 2/2 | unavailable | pass | yes | `20261023T030840.299152+0000_ollama_flint-40b-a2b-qat-int4_session.json` |
+| Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 11.06 | 6,524 | 940.8 | 40.4 | 2/2 | unavailable | pass | yes | `20261023T034844.807746+0000_ollama_nemotron-3-5-super-mlx_session.json` |
 
-- All three enforce the JSON schema on 0.40.6 (0.32.14 ignored it).
-  Glimmer and Super VL pass Capability Check v2; Lightning fails audit
-  fitness (8 of 12), so its 27.97 sessions/h cannot promote it.
-- Against the replaced rows: Glimmer 18.45 to 18.31 (flat), Super VL 9.62
-  on 0.40.5 to 11.39. Lightning's 21.12 on 0.32.14 was an earlier digest:
-  the tag moved to `d1e17d7d` (see its conf). Glimmer's mid and last
-  decode columns read about 1.8M tok/s in the JSON: too few timed tokens
-  per window, not a rate.
+- All four enforce the JSON schema (0.32.14 ignored it). Glimmer, Flint and
+  Super VL pass Capability Check v2; Lightning fails audit fitness (8 of 12
+  on 0.40.6), so its 27.97 sessions/h cannot promote it.
+- Against 0.40.6: Glimmer 18.31 to 17.72 and Super VL 11.39 to 11.06, both
+  within sample spread. Lightning's 21.12 on 0.32.14 was an earlier digest:
+  the tag moved to `d1e17d7d` (see its conf).
+- `flint-40b-a2b-qat-int4-mlx` (Recursive Flint 40B-A2.5B, QAT INT4, MLX runner)
+  needs 0.40.8, the first release with Flint, and preserved reasoning
+  (`OLLAMA_PRESERVE_REASONING`): without it audit fitness passed 9 of 12,
+  with it 11 of 12. It holds 30.19 GiB on the GPU at 262,144 and prefills a
+  245,758-token cold prompt in 200 s (1,228 tok/s). The pp512/tg128
+  reference is unavailable (46 of 128 tokens). The run recorded the
+  profile's earlier name, `flint-40b-a2b-qat-int4`, in its JSON.
 - The MLX runner's post-prefill commit memory runaway, which kept these
   profiles on 0.32.14, did not recur on 0.40.6: three cache-busted deep
   prefills per profile passed under a watchdog on 2026-10-17. A one-poll
   step of about 13 GiB at a post-prefill commit recurs on Lightning and
-  Super VL and is released at once.
+  Super VL and is released at once; Flint shows a 15.6 GiB step at about
+  41 GiB available.
 - `nemotron-3.5-super-mlx` (Nemotron 3.5 Super VL 120B-A12B, NVFP4) holds
-  74.41 GiB on the GPU at 524,288 and prefills a 491,520-token cold prompt
-  in 797 s (617 tok/s); at that depth the runner peaks near 100 GiB, which
-  leaves about 10 GiB available on this host. The pp512/tg128 reference is
-  unavailable (75 of 128 tokens). Its tag's `model_info` has no
-  `context_length`, so the conf pins
+  74.41 GiB on the GPU at 524,288 and prefills a 491,526-token cold prompt
+  in 806 s (610 tok/s); at that depth available memory falls to about
+  14 GiB on 0.40.8 (about 10 GiB on 0.40.6), so a host watchdog needs a
+  floor below that. The pp512/tg128 reference is unavailable (75 of 128
+  tokens). Its tag's `model_info` has no `context_length`, so the conf pins
   `OLLAMA_EXPECTED_NATIVE_CONTEXT=unspecified`. This is the M5 route for
   Super VL: it beats the llama.cpp Q4_0 GGUF tried on 2026-10-16 (5.83
   sessions/h), which is not a fleet runtime.
@@ -105,7 +120,8 @@ the 0.32.14 and 0.40.5 rows they replace are in git history.
 ## AuditBench v2: RTX PRO 3000 Blackwell
 
 Local host, RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, 62 GiB
-RAM. Ollama 0.40.6, Flash Attention, one slot. Canonical AuditBench v2
+RAM. Ollama 0.40.6 (the 0.40.8 default is not measured here), Flash
+Attention, one slot. Canonical AuditBench v2
 `session` profile (llm-audit-bench v2.1.0 plus `c0dc34a`), run 2026-10-17
 from fleet commit `7fd982d` at each conf's declared sampling: 16 tool steps
 at 262,144 configured context, 13 at 163,840 and 9 at 131,072. Columns as

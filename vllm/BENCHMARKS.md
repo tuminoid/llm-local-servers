@@ -58,7 +58,18 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
   `qwen3.8-27b-512k` keeps FP8; its one-stream 14.49 is a single run
   (10.62 to 11.92 in the same week's trials).
 - DFlash 2 still loses at the declared sampling: 8.40 / 13.04 sessions/h,
-  report decode 22.8 tok/s.
+  report decode 22.8 tok/s. A fixed-depth decode probe of the two profiles
+  as configured (2026-10-22, the vLLM 0.32.0 trial tree, not the pin; 2,048
+  generated tokens per stream, no shared prefix) puts the DFlash 2 profile
+  level with plain at 8k and below it from 32k at the declared sampling:
+  per-stream decode x0.93 / x1.02 / x1.00 at 8k and one, two and four
+  streams, then x0.70, x0.53 and x0.35 at one stream at 32k, 64k and 128k.
+  Its target is still FP8, plain's is now W4A16 and decodes faster (71.0
+  tok/s at 8k against 47.5 for FP8 on 0.31.0), and the drafter's sampled
+  acceptance of about 2.3 tokens does not make up the difference. Greedy,
+  it leads at 8k (x1.28 to x1.31) and ties at 32k with four streams
+  (x1.01). The profile stays for greedy short-context use; serve plain for
+  audits.
 - MiMo is the fastest profile (58.97 / 93.99) but 11 of 27 sessions did
   not finish their report's findings and it fails audit fitness, so
   neither its rate nor the model is usable.

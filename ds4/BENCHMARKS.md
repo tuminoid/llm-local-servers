@@ -1,10 +1,37 @@
 # ds4 measurements
 
 ds4 serves models too large for any fleet host to run audit campaigns on,
-so these are interactive-use measurements, not audit-throughput rankings.
-They never enter the root README's ranked tables.
+so most of these are interactive-use measurements, not audit-throughput
+rankings. The exception is `qwen3.8-flash-next-q4`, which is audit-eligible:
+its canonical row below enters the root README's M5 ranking.
 
-All rows: Apple M5 Max (128 GB, macOS 27.0), ds4 `0aaea5a`, the pinned
+## AuditBench v2: Apple M5 Max
+
+ds4 `0aaea5a`, `qwen3.8-flash-next-q4` at its conf's 524,288 context (YaRN),
+one slot, MTP at exact sampling, disk KV checkpoints on. Canonical
+AuditBench v2 `session` profile (llm-audit-bench 2.3.0) at the declared
+sampling, run 2026-10-23 from fleet commit `3c3a5ab`; 16 tool steps from
+32k evidence, report at depth. Sessions/h is the median over the samples;
+complete counts sessions whose report ended on its own and named at least
+7/8 of its findings. Retained under
+`~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
+
+| Profile | Context | Slots | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| `qwen3.8-flash-next-q4` | 524,288 | 1 | 1x 10.00 | 4,499 | 1,306.2 | 60.8 | 2/2 | unavailable | pass | yes | `20261023T024918.235133+0000_ds4_qwen3-8-flash-next-q4_session.json` |
+
+- The two samples are 8.78 and 11.22 sessions/h; 74-81% of each session's
+  prompt tokens came from cache, against about 90% on Splash, because ds4
+  cannot rewind its live state to a shared prefix (see below).
+- The near-context phase prefilled a 491,538-token cold prompt in 416 s
+  (1,182 tok/s). The pp512/tg128 reference is unavailable (64 of 128
+  tokens).
+- One slot is the only operating point: see "One slot" below.
+
+## Interactive measurements
+
+The rows below, except the Qwen capability column: Apple M5 Max (128 GB,
+macOS 27.0), ds4 `0aaea5a`, the pinned
 GGUFs in `models/`, 262,144 configured context, one slot and one stream,
 each config's declared sampling. Measured 2026-09-30 to 2026-10-02 with the
 pre-commit form of this directory (dirty tree), so every JSON is
@@ -13,7 +40,9 @@ pre-commit form of this directory (dirty tree), so every JSON is
 `deepseek-v4.1-flash-q2` column is the 1017 checkpoint, measured 2026-10-19
 (session) and 2026-10-20 (capability) at the 1017 card sampling, under
 `~/.local/state/auditbench/trials/2026-10-19-m5-night/ds4/` and
-`.../2026-10-20-m5-night/ds4/`.
+`.../2026-10-20-m5-night/ds4/`. The Qwen capability column is the
+2026-10-23 run at 524,288 from fleet commit `3c3a5ab`, beside its canonical
+session row.
 
 ## Capability Check v2
 
@@ -28,7 +57,9 @@ pre-commit form of this directory (dirty tree), so every JSON is
 | Unaided document | valid | valid | valid | valid |
 | Audit fitness (passed of 12) | pass, 12/12 | pass, 11/12 (failed: invented 1) | pass, 11/12 (failed: no reasoning 1) | pass, 11/12 (failed: no reasoning 1) |
 
-JSON in `results/`: `20260930T133325.585430+0000_ds4_qwen3-8-flash-next-q4.json`,
+Qwen JSON `20261023T022404.573283+0000_ds4_qwen3-8-flash-next-q4.json`
+(under `.../2026-10-22-night/ds4/`; it passed 12 of 12 on 2026-09-30 too);
+the others in `results/`:
 `20260930T104359.910549+0000_ds4_deepseek-v4-flash-q2.json`,
 `20260930T120743.672386+0000_ds4_glm5-3-flash-q2.json`; V4.1 Flash 1017
 `20261020T164000.412430+0000_ds4_deepseek-v4-1-flash-q2.json` in its trial
