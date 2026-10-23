@@ -221,7 +221,7 @@ JSON names are in [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 
 Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
 and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
-fitness; their rates (Lightning 27.97/h at 262k) cannot promote them. The
+fitness; their rates (Lightning 29.41/h at 262k) cannot promote them. The
 LM Studio MLX-engine profiles pass but their runs are noncanonical by
 design (off-by-one token allowance). Details are in each runtime's
 BENCHMARKS.md.

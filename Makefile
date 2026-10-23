@@ -133,9 +133,8 @@ OLLAMA_DIR := ollama
 # (macOS only), with the same vendored llama.cpp as 0.40.7. The M5's MLX
 # profiles passed the post-prefill commit memory runaway retest on 0.40.6
 # (2026-10-17: three cache-busted deep prefills under a watchdog), which
-# 0.33.2, 0.33.3 and 0.34.2 failed; Glimmer's and Super VL's 0.40.8
-# sessions, deep prefills included, match 0.40.6, and the cache-busted retest
-# was not repeated (ollama/BENCHMARKS.md). 0.40.x keeps a second model index,
+# 0.33.2, 0.33.3 and 0.34.2 failed; all four passed it again on 0.40.8
+# (2026-10-23, ollama/BENCHMARKS.md). 0.40.x keeps a second model index,
 # manifests-v2/; 0.40.1's local compat migration rewrote older GGUF tags
 # there, which 0.40.3 and later no longer do on load (ollama/AGENTS.md).
 OLLAMA_VERSION ?= 0.40.8

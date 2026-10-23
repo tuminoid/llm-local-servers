@@ -180,9 +180,8 @@ with at least 11 of 12 samples passed. Five groups differ:
 - The Ollama rows ran on Ollama 0.40.8 on 2026-10-22 (llm-audit-bench
   2.3.0) from the pin's trial commit `d96a7f0`, whose runtime files match
   main, under `~/.local/state/auditbench/trials/2026-10-22-night/ollama/`;
-  Lightning's row is the canonical run of 2026-10-17 from fleet commit
-  `7fd982d` on Ollama 0.40.6, under
-  `~/.local/state/auditbench/trials/2026-10-17-ollama-0406-canonical/results/`.
+  Lightning's row ran 2026-10-23 from main `8cea7ce`, under
+  `~/.local/state/auditbench/trials/2026-10-23-ollama-0408-retest/results/`.
 - The ds4 row ran 2026-10-23 (llm-audit-bench 2.3.0) from fleet commit
   `3c3a5ab`, under `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
 
@@ -201,7 +200,7 @@ with at least 11 of 12 samples passed. Five groups differ:
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
 | Ollama | `flint-40b-a2b-qat-int4-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: wrong_verdicts 1) | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
-| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 1, missed_findings 2, missed_required 1) | fail |
+| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 2, leak 1, missed_findings 1) | fail |
 | Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | ds4 | `qwen3.8-flash-next-q4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
 

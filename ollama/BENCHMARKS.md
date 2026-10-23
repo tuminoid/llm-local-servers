@@ -64,36 +64,35 @@ column is configured context times slots, not a measured pool. Ollama has no
 
 ## AuditBench v2: Apple M5 Max
 
-Managed Ollama 0.40.8, the fleet default (the MLX runner serializes
-requests to one slot); the Lightning row is 0.40.6. Contexts are the
-confs': 131,072 for Glimmer, 262,144 for Flint and Lightning and 524,288 for
-Super VL. Canonical AuditBench v2 `session` profile at each conf's declared
-sampling on the M5 Max (128 GB, macOS 27.0), one stream (one slot): tool
-steps from 32k evidence, 16 at 262,144 and above and 9 at 131,072, report at
-depth. The 0.40.8 rows ran 2026-10-22/23 on llm-audit-bench 2.3.0 from the
-pin's trial commit `d96a7f0`, whose runtime files match main; Lightning ran
-2026-10-17 on v2.1.0 plus `c0dc34a` from fleet commit `7fd982d`. Each JSON
-records its harness hash. Sessions/h is the median over 2-3 samples;
-complete counts sessions whose report ended on its own and named at least
-7/8 of its findings. pp512/tg128 is the llama-bench-method reference (one
-stream, greedy, depth ~0), not a serving result. JSON files are retained
-under `~/.local/state/auditbench/trials/2026-10-22-night/ollama/` and
-`.../2026-10-17-ollama-0406-canonical/results/`; the 0.40.6 rows the 0.40.8
-ones replace are in git history.
+Managed Ollama 0.40.8, the fleet default (the MLX runner serializes requests
+to one slot). Contexts are the confs': 131,072 for Glimmer, 262,144 for Flint
+and Lightning and 524,288 for Super VL. Canonical AuditBench v2 `session`
+profile at each conf's declared sampling on the M5 Max (128 GB, macOS 27.0),
+one stream (one slot): tool steps from 32k evidence, 16 at 262,144 and above
+and 9 at 131,072, report at depth. All rows ran 2026-10-22/23 on
+llm-audit-bench 2.3.0: Glimmer, Flint and Super VL from the pin's trial commit
+`d96a7f0`, Lightning from main `8cea7ce`, both with the runtime files of main.
+Each JSON records its harness hash. Sessions/h is the median over 2-3 samples;
+complete counts sessions whose report ended on its own and named at least 7/8
+of its findings. pp512/tg128 is the llama-bench-method reference (one stream,
+greedy, depth ~0), not a serving result. JSON files are retained under
+`~/.local/state/auditbench/trials/2026-10-22-night/ollama/` and
+`.../2026-10-23-ollama-0408-retest/results/`; the 0.40.6 rows they replace are
+in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 27.97 | 6,010 | 2,347.0 | 88.1 | 2/2 | 3,337 / 159.1 | fail | yes | `20261017T184719.946774+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
+| Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 29.41 | 5,400 | 2,349.6 | 90.3 | 3/3 | 3,186 / 144.3 | fail | yes | `20261023T065131.329883+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
 | Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 17.72 | 1,715 | 666.4 | 32.4 | 3/3 | unavailable | pass | yes | `20261022T170304.820009+0000_ollama_muse-glimmer-30b-mlx_session.json` |
 | Ollama `flint-40b-a2b-qat-int4-mlx` | 262,144 | 1 | 262,144 | 1x 14.42 | 10,134 | 1,612.2 | 61.8 | 2/2 | unavailable | pass | yes | `20261023T030840.299152+0000_ollama_flint-40b-a2b-qat-int4_session.json` |
 | Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 11.06 | 6,524 | 940.8 | 40.4 | 2/2 | unavailable | pass | yes | `20261023T034844.807746+0000_ollama_nemotron-3-5-super-mlx_session.json` |
 
 - All four enforce the JSON schema (0.32.14 ignored it). Glimmer, Flint and
   Super VL pass Capability Check v2; Lightning fails audit fitness (8 of 12
-  on 0.40.6), so its 27.97 sessions/h cannot promote it.
-- Against 0.40.6: Glimmer 18.31 to 17.72 and Super VL 11.39 to 11.06, both
-  within sample spread. Lightning's 21.12 on 0.32.14 was an earlier digest:
-  the tag moved to `d1e17d7d` (see its conf).
+  on 0.40.6 and 0.40.8), so its 29.41 sessions/h cannot promote it.
+- Against 0.40.6: Lightning 27.97 to 29.41, Glimmer 18.31 to 17.72 and
+  Super VL 11.39 to 11.06, all within sample spread. Lightning's 21.12 on
+  0.32.14 was an earlier digest: the tag moved to `d1e17d7d` (see its conf).
 - `flint-40b-a2b-qat-int4-mlx` (Recursive Flint 40B-A2.5B, QAT INT4, MLX runner)
   needs 0.40.8, the first release with Flint, and preserved reasoning
   (`OLLAMA_PRESERVE_REASONING`): without it audit fitness passed 9 of 12,
@@ -102,8 +101,11 @@ ones replace are in git history.
   reference is unavailable (46 of 128 tokens). The run recorded the
   profile's earlier name, `flint-40b-a2b-qat-int4`, in its JSON.
 - The MLX runner's post-prefill commit memory runaway, which kept these
-  profiles on 0.32.14, did not recur on 0.40.6: three cache-busted deep
-  prefills per profile passed under a watchdog on 2026-10-17. A one-poll
+  profiles on 0.32.14, did not recur on 0.40.6 or 0.40.8: three
+  cache-busted deep prefills per profile passed under a watchdog on
+  2026-10-17 and again on 2026-10-23 for all four (lowest available memory:
+  Lightning 83.9 GiB at 245,760 tokens, Glimmer 83.6 at 122,880, Flint 12.0
+  at 245,760, Super VL 10.0 at 491,520). A one-poll
   step of about 13 GiB at a post-prefill commit recurs on Lightning and
   Super VL and is released at once; Flint shows a 15.6 GiB step at about
   41 GiB available.
