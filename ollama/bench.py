@@ -493,6 +493,9 @@ def main() -> int:
     effort = _config_setting(conf, "OLLAMA_BENCH_REASONING_EFFORT")
     if effort:
         os.environ["AUDIT_BENCH_REASONING_EFFORT"] = effort
+    # A model whose card requires its prior reasoning back in the history.
+    if _config_setting(conf, "OLLAMA_PRESERVE_REASONING") == "1":
+        os.environ["AUDIT_BENCH_PRESERVE_REASONING"] = "1"
     # The checkpoint's sampling, a model fact; the harness decodes at it.
     os.environ["AUDIT_BENCH_SAMPLING"] = os.environ.get(
         "OLLAMA_SAMPLING"
