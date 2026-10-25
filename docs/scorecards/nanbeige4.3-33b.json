@@ -1,0 +1,91 @@
+{
+  "model": "Nanbeige/Nanbeige4.3-33B",
+  "name": "Nanbeige4.3-33B",
+  "aliases": [
+    "Nanbeige4.3-33B"
+  ],
+  "own_aliases": [],
+  "revision": "c1093c501cc6460427c0ac634db7223d0450c0ee",
+  "created": "2026-10-24",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "80.9",
+      "source": "own card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal-Bench 4.0",
+      "score": "23.8",
+      "source": "own card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE",
+      "score": "65.5",
+      "source": "own card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-Bench Pro",
+      "score": "60.3",
+      "source": "own card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-Atlas-QnA",
+      "label": "SWE-Atlas-QnA",
+      "score": "50.8",
+      "source": "own card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo",
+      "score": "53.0",
+      "source": "own card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Toolathlon-Verified",
+      "label": "Toolathlon-Verified",
+      "score": "70.4",
+      "source": "own card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

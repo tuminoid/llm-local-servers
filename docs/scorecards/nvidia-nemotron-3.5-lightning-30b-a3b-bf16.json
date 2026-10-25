@@ -1,0 +1,106 @@
+{
+  "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+  "name": "NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+  "aliases": [
+    "NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+    "Nemotron-3.5-Lightning-30B-A3B-BF16",
+    "Nemotron-3.5-Lightning (30B-A3B)",
+    "Nemotron 3.5 Lightning 30B-A3B-BF16",
+    "Nemotron 3.5 Lightning"
+  ],
+  "own_aliases": [],
+  "revision": "a9904d24bcc1d289a1950fa9d2b978c47cf903b9",
+  "created": "2026-08-01",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "51.56",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "39.33",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "24.58",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "BFCL v4",
+      "label": "BFCLv4",
+      "score": "53.78",
+      "source": "competitor card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-Bench Verified (OpenCode)",
+      "score": "53.40",
+      "source": "competitor card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "23.46",
+      "source": "vendor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16/blob/e09a4cedb1787db1760375ee5539f222cae0c672/README.md",
+      "settings": "",
+      "published": "2026-10-09",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ProgramBench",
+      "label": "Vals AI",
+      "score": "0.00%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/programbench",
+      "settings": "",
+      "published": "",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Vals CyberBench",
+      "label": "Vals AI",
+      "score": "29.46%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/cyber",
+      "settings": "",
+      "published": "",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

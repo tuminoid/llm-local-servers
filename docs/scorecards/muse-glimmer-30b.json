@@ -1,0 +1,146 @@
+{
+  "model": "meta-models/Muse-Glimmer-30B",
+  "name": "Muse-Glimmer-30B",
+  "aliases": [
+    "Muse-Glimmer-30B"
+  ],
+  "own_aliases": [],
+  "revision": "cec94fcfd6512f2cfe708138c32533b346ea4f69",
+  "created": "2026-08-09",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "61.8",
+      "source": "competitor card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal-Bench 4.0",
+      "score": "1.6",
+      "source": "competitor card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE",
+      "score": "4.4",
+      "source": "competitor card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-Bench Pro",
+      "score": "36.9",
+      "source": "competitor card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-Atlas-QnA",
+      "label": "SWE-Atlas-QnA",
+      "score": "17.7",
+      "source": "competitor card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo",
+      "score": "27.4",
+      "source": "competitor card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Toolathlon-Verified",
+      "label": "Toolathlon-Verified",
+      "score": "47.2",
+      "source": "competitor card",
+      "reporter": "Nanbeige",
+      "url": "https://huggingface.co/Nanbeige/Nanbeige4.3-33B/blob/c1093c501cc6460427c0ac634db7223d0450c0ee/README.md",
+      "settings": "",
+      "published": "2026-10-24",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Agentic terminal coding Terminal Bench 2.1 (Terminus)",
+      "score": "51.7",
+      "source": "competitor card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/README.md",
+      "settings": "",
+      "published": "2026-08-05",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "Agentic coding SWE-bench Pro",
+      "score": "51.2",
+      "source": "competitor card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/README.md",
+      "settings": "",
+      "published": "2026-08-05",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1 (Terminus-2)",
+      "score": "51.7",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "76",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro",
+      "score": "51.2",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

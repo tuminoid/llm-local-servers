@@ -1,0 +1,82 @@
+{
+  "model": "ibm-granite/granite-4.2-30b",
+  "name": "granite-4.2-30b",
+  "aliases": [
+    "granite-4.2-30b"
+  ],
+  "own_aliases": [
+    "30B Dense"
+  ],
+  "revision": "9e668ce1c538387ef24d3644e9b0606647762636",
+  "created": "2026-08-07",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE Bench Multilingual",
+      "score": "41.89",
+      "source": "own card",
+      "reporter": "ibm-granite",
+      "url": "https://huggingface.co/ibm-granite/granite-4.2-30b/blob/9e668ce1c538387ef24d3644e9b0606647762636/README.md",
+      "settings": "",
+      "published": "2026-08-07",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE Bench Pro",
+      "score": "33.29",
+      "source": "own card",
+      "reporter": "ibm-granite",
+      "url": "https://huggingface.co/ibm-granite/granite-4.2-30b/blob/9e668ce1c538387ef24d3644e9b0606647762636/README.md",
+      "settings": "",
+      "published": "2026-08-07",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE Bench Verified",
+      "score": "57",
+      "source": "own card",
+      "reporter": "ibm-granite",
+      "url": "https://huggingface.co/ibm-granite/granite-4.2-30b/blob/9e668ce1c538387ef24d3644e9b0606647762636/README.md",
+      "settings": "",
+      "published": "2026-08-07",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "29.24",
+      "source": "own card",
+      "reporter": "ibm-granite",
+      "url": "https://huggingface.co/ibm-granite/granite-4.2-30b/blob/9e668ce1c538387ef24d3644e9b0606647762636/README.md",
+      "settings": "",
+      "published": "2026-08-07",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "BFCL v4",
+      "label": "BFCL (v4)",
+      "score": "61.39",
+      "source": "own card",
+      "reporter": "ibm-granite",
+      "url": "https://huggingface.co/ibm-granite/granite-4.2-30b/blob/9e668ce1c538387ef24d3644e9b0606647762636/README.md",
+      "settings": "",
+      "published": "2026-08-07",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "LiveCodeBench v6",
+      "label": "LiveCodeBench v6",
+      "score": "75.77",
+      "source": "own card",
+      "reporter": "ibm-granite",
+      "url": "https://huggingface.co/ibm-granite/granite-4.2-30b/blob/9e668ce1c538387ef24d3644e9b0606647762636/README.md",
+      "settings": "",
+      "published": "2026-08-07",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

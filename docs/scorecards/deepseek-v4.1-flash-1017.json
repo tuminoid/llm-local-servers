@@ -1,0 +1,114 @@
+{
+  "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+  "name": "DeepSeek-V4.1-Flash-1017",
+  "aliases": [
+    "DeepSeek-V4.1-Flash-1017",
+    "DS-V4.1-Flash-1017"
+  ],
+  "own_aliases": [],
+  "revision": "1bae0e1088993b9b82de08f59de5be5a34e42170",
+  "created": "2026-10-17",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal-Bench 4.0",
+      "score": "42.3",
+      "source": "own card",
+      "reporter": "deepseek-ai",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017/blob/1bae0e1088993b9b82de08f59de5be5a34e42170/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE v1.1",
+      "score": "77.0",
+      "source": "own card",
+      "reporter": "deepseek-ai",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017/blob/1bae0e1088993b9b82de08f59de5be5a34e42170/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ProgramBench",
+      "label": "ProgramBench",
+      "score": "29.1",
+      "source": "own card",
+      "reporter": "deepseek-ai",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017/blob/1bae0e1088993b9b82de08f59de5be5a34e42170/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo-Bench",
+      "score": "68.2",
+      "source": "own card",
+      "reporter": "deepseek-ai",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017/blob/1bae0e1088993b9b82de08f59de5be5a34e42170/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Agents' Last Exam",
+      "label": "Agents’ Last Exam",
+      "score": "35.4",
+      "source": "own card",
+      "reporter": "deepseek-ai",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017/blob/1bae0e1088993b9b82de08f59de5be5a34e42170/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal Bench 4.0",
+      "score": "42.3",
+      "source": "competitor card",
+      "reporter": "MiniMaxAI",
+      "url": "https://huggingface.co/MiniMaxAI/MiniMax-M3.1-Flash/blob/54e4e69dfc452b1e94a426c24a4fdeeaa8e3ad5e/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE v1.1",
+      "score": "77.0",
+      "source": "competitor card",
+      "reporter": "MiniMaxAI",
+      "url": "https://huggingface.co/MiniMaxAI/MiniMax-M3.1-Flash/blob/54e4e69dfc452b1e94a426c24a4fdeeaa8e3ad5e/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo-Bench",
+      "score": "68.2",
+      "source": "competitor card",
+      "reporter": "MiniMaxAI",
+      "url": "https://huggingface.co/MiniMaxAI/MiniMax-M3.1-Flash/blob/54e4e69dfc452b1e94a426c24a4fdeeaa8e3ad5e/README.md",
+      "settings": "",
+      "published": "2026-10-17",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Vals AI",
+      "score": "31.82%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/terminal-bench-4",
+      "settings": "Mini-SWE-agent",
+      "published": "",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

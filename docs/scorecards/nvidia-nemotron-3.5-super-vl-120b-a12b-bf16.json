@@ -1,0 +1,171 @@
+{
+  "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+  "name": "NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+  "aliases": [
+    "NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+    "Nemotron 3.5 Super VL (120B)"
+  ],
+  "own_aliases": [
+    "Nemotron 3.5 SuperGA BF16"
+  ],
+  "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+  "created": "2026-10-12",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "LiveCodeBench v6",
+      "label": "LiveCodeBench v6",
+      "score": "88.22",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "71.10",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "67.72",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro",
+      "score": "51.78",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "60.67",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal Bench 4 [offline]",
+      "score": "1",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE [offline]",
+      "score": "24.65",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "TerminalBench 2.1",
+      "score": "66.700",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-122B/blob/7681ef608624e7532d8164128bcffdbdbaf1b1af/README.md",
+      "settings": "",
+      "published": "2026-10-16",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "CyberGym",
+      "label": "CyberGym",
+      "score": "34.000",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-122B/blob/7681ef608624e7532d8164128bcffdbdbaf1b1af/README.md",
+      "settings": "",
+      "published": "2026-10-16",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo",
+      "score": "21.000",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-122B/blob/7681ef608624e7532d8164128bcffdbdbaf1b1af/README.md",
+      "settings": "",
+      "published": "2026-10-16",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro (no-hack)",
+      "score": "42.500",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-122B/blob/7681ef608624e7532d8164128bcffdbdbaf1b1af/README.md",
+      "settings": "",
+      "published": "2026-10-16",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified (non-hack)",
+      "score": "61.200",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-122B/blob/7681ef608624e7532d8164128bcffdbdbaf1b1af/README.md",
+      "settings": "",
+      "published": "2026-10-16",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual (non-hack)",
+      "score": "48.000",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-122B/blob/7681ef608624e7532d8164128bcffdbdbaf1b1af/README.md",
+      "settings": "",
+      "published": "2026-10-16",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Toolathlon-Verified",
+      "label": "Toolathlon-Verified",
+      "score": "60.100",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-122B/blob/7681ef608624e7532d8164128bcffdbdbaf1b1af/README.md",
+      "settings": "",
+      "published": "2026-10-16",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

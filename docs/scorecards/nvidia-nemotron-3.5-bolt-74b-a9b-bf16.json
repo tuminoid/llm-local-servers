@@ -1,0 +1,26 @@
+{
+  "model": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16",
+  "name": "NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16",
+  "aliases": [
+    "NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16",
+    "Nemotron 3.5 Bolt 74B-A9B (BF16)"
+  ],
+  "own_aliases": [],
+  "revision": "e09a4cedb1787db1760375ee5539f222cae0c672",
+  "created": "2026-10-09",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "53.93",
+      "source": "own card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16/blob/e09a4cedb1787db1760375ee5539f222cae0c672/README.md",
+      "settings": "",
+      "published": "2026-10-09",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

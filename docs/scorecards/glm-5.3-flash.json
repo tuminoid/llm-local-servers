@@ -1,0 +1,146 @@
+{
+  "model": "zai-org/GLM-5.3-Flash",
+  "name": "GLM-5.3-Flash",
+  "aliases": [
+    "GLM-5.3-Flash"
+  ],
+  "own_aliases": [],
+  "revision": "46a050bec13002ad29ee795c16e61cf4fa3c4a9c",
+  "created": "2026-08-25",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "LiveCodeBench v6",
+      "label": "LiveCodeBench v6",
+      "score": "80.6",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "79.10",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "78.30",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro",
+      "score": "59.70",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "82.70",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal Bench 4 [offline]",
+      "score": "15.15",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE [offline]",
+      "score": "57.77 / 63.4 (reported)",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16/blob/fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Claude Code; effort none",
+      "score": "35.76",
+      "source": "leaderboard",
+      "reporter": "Terminal-Bench",
+      "url": "https://www.tbench.ai/",
+      "settings": "330 trials",
+      "published": "2026-08-26",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "effort max",
+      "score": "63%",
+      "source": "leaderboard",
+      "reporter": "Datacurve",
+      "url": "https://deepswe.datacurve.ai/",
+      "settings": "± 4%",
+      "published": "",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Vals AI",
+      "score": "37.37%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/terminal-bench-4",
+      "settings": "Mini-SWE-agent",
+      "published": "",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ProgramBench",
+      "label": "Vals AI",
+      "score": "0.00%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/programbench",
+      "settings": "",
+      "published": "",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Vals CyberBench",
+      "label": "Vals AI",
+      "score": "67.86%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/cyber",
+      "settings": "",
+      "published": "",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

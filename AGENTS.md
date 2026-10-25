@@ -68,7 +68,12 @@ remain the sources of measurement detail.
 [CAPABILITIES.md](CAPABILITIES.md) holds the capability campaign runbook,
 host inventory, and the retained cross-host result matrix.
 [docs/INTRODUCTION.md](docs/INTRODUCTION.md) is the newcomer-facing primer on
-local serving concepts.
+local serving concepts. `docs/scorecards/` holds each served model's
+published benchmark claims (model cards, leaderboards) as `<model>.json`
+with its rendered `<model>.md`, and [SCORECARDS.md](SCORECARDS.md) ranks
+every model per tier. The model-benchmarks skill generates all of them;
+regenerate through it, never edit the rendered files by hand. They are
+claims, never measurements, and never feed a `BENCHMARKS.md` or README row.
 
 ## The shared harness
 

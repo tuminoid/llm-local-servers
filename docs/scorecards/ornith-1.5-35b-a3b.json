@@ -1,0 +1,113 @@
+{
+  "model": "ornith-ai/Ornith-1.5-35B-A3B",
+  "name": "Ornith-1.5-35B-A3B",
+  "aliases": [
+    "Ornith-1.5-35B-A3B"
+  ],
+  "own_aliases": [],
+  "revision": "10fbf86fed7ecee4a061f8b499a618f46001cac1",
+  "created": "2026-08-18",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1 (Terminus-2)",
+      "score": "67.8",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1 (Claude Code)",
+      "score": "68.5",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "79",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro",
+      "score": "59.6",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "71.4",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE",
+      "score": "22",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo",
+      "score": "46.2",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-Atlas-QnA",
+      "label": "SWE Atlas - QnA",
+      "score": "39.8",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Toolathlon-Verified",
+      "label": "Toolathlon-Verified",
+      "score": "48.7",
+      "source": "own card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,13 @@
+{
+  "model": "inclusionAI/Ling-3.0-flash",
+  "name": "Ling-3.0-flash",
+  "aliases": [
+    "Ling-3.0-flash"
+  ],
+  "own_aliases": [],
+  "revision": "fcc60a52b34c69c6271d0ac8a8cb0815020b6a43",
+  "created": "2026-08-02",
+  "fetched": "2026-10-25",
+  "claims": [],
+  "errors": []
+}

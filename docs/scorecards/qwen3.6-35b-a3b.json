@@ -1,0 +1,235 @@
+{
+  "model": "Qwen/Qwen3.6-35B-A3B",
+  "name": "Qwen3.6-35B-A3B",
+  "aliases": [
+    "Qwen3.6-35B-A3B",
+    "Qwen3.6-35B-A3B-BF16"
+  ],
+  "own_aliases": [],
+  "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "created": "2026-04-15",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "73.4",
+      "source": "own card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "67.2",
+      "source": "own card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro",
+      "score": "49.5",
+      "source": "own card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo",
+      "score": "29.4",
+      "source": "own card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "LiveCodeBench v6",
+      "label": "LiveCodeBench v6",
+      "score": "80.4",
+      "source": "own card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "BFCL v4",
+      "label": "BFCLv4",
+      "score": "65.00",
+      "source": "competitor card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-Bench Verified (OpenCode)",
+      "score": "66.20",
+      "source": "competitor card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "44.38",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16/blob/e09a4cedb1787db1760375ee5539f222cae0c672/README.md",
+      "settings": "",
+      "published": "2026-10-09",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "70.12",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "63.40",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "44.38",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1 (Terminus-2)",
+      "score": "52.5",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1 (Claude Code)",
+      "score": "49.2",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "73.4",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro",
+      "score": "49.5",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "67.2",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE",
+      "score": "0",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo",
+      "score": "29.4",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-Atlas-QnA",
+      "label": "SWE Atlas - QnA",
+      "score": "15.5",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Toolathlon-Verified",
+      "label": "Toolathlon-Verified",
+      "score": "41.7",
+      "source": "competitor card",
+      "reporter": "ornith-ai",
+      "url": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B/blob/10fbf86fed7ecee4a061f8b499a618f46001cac1/README.md",
+      "settings": "",
+      "published": "2026-08-18",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

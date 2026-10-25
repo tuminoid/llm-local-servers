@@ -1,0 +1,290 @@
+{
+  "model": "XiaomiMiMo/MiMo-V2.6-Flash-RL",
+  "name": "MiMo-V2.6-Flash-RL",
+  "aliases": [
+    "MiMo-V2.6-Flash-RL",
+    "MiMo-V2.6 Flash"
+  ],
+  "own_aliases": [],
+  "revision": "dcd3fd83fb181622fbc606fbb1709901982a62c2",
+  "created": "2026-09-21",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE v1.1",
+      "score": "67.9",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ProgramBench",
+      "label": "ProgramBench",
+      "score": "26.0",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Toolathlon-Verified",
+      "label": "Toolathlon-Verified",
+      "score": "73.6",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Agents' Last Exam",
+      "label": "Agents’ Last Exam",
+      "score": "27.6",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal Bench 4.0",
+      "score": "28.8",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal Bench 2.1",
+      "score": "87.6",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "CyberGym",
+      "label": "CyberGym",
+      "score": "95.1",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Vals CyberBench",
+      "label": "MiMo Cyber Bench",
+      "score": "77.2",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ExploitGym",
+      "label": "ExploitGym",
+      "score": "6.0",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ExploitBench",
+      "label": "ExploitBench",
+      "score": "25.3",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SEC-bench Pro",
+      "label": "SEC Bench Pro",
+      "score": "47.5",
+      "source": "own card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/dcd3fd83fb181622fbc606fbb1709901982a62c2/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "DeepSWE",
+      "label": "DeepSWE v1.1",
+      "score": "67.9",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ProgramBench",
+      "label": "ProgramBench",
+      "score": "26.0",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Toolathlon-Verified",
+      "label": "Toolathlon-Verified",
+      "score": "73.6",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Agents' Last Exam",
+      "label": "Agents’ Last Exam",
+      "score": "27.6",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Terminal Bench 4.0",
+      "score": "28.8",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal Bench 2.1",
+      "score": "87.6",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "CyberGym",
+      "label": "CyberGym",
+      "score": "95.1",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Vals CyberBench",
+      "label": "MiMo Cyber Bench",
+      "score": "77.2",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ExploitGym",
+      "label": "ExploitGym",
+      "score": "6.0",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ExploitBench",
+      "label": "ExploitBench",
+      "score": "25.3",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SEC-bench Pro",
+      "label": "SEC Bench Pro",
+      "score": "47.5",
+      "source": "vendor card",
+      "reporter": "XiaomiMiMo",
+      "url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/blob/b61f21852680ee02a29e946e18cf8697f4844061/README.md",
+      "settings": "",
+      "published": "2026-09-21",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 4.0",
+      "label": "Vals AI",
+      "score": "24.24%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/terminal-bench-4",
+      "settings": "Mini-SWE-agent",
+      "published": "",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "ProgramBench",
+      "label": "Vals AI",
+      "score": "0.50%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/programbench",
+      "settings": "",
+      "published": "",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Vals CyberBench",
+      "label": "Vals AI",
+      "score": "75.36%",
+      "source": "leaderboard",
+      "reporter": "Vals AI",
+      "url": "https://www.vals.ai/benchmarks/cyber",
+      "settings": "",
+      "published": "",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

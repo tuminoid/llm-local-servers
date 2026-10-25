@@ -1,0 +1,36 @@
+{
+  "model": "LiquidAI/LFM2.5-24B-A2B",
+  "name": "LFM2.5-24B-A2B",
+  "aliases": [
+    "LFM2.5-24B-A2B"
+  ],
+  "own_aliases": [],
+  "revision": "3fcfdbfa1a1b6d8166846a6323e69f1e1254440d",
+  "created": "2026-10-12",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "BFCL v4",
+      "label": "BFCLv4",
+      "score": "65.01",
+      "source": "own card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-Bench Verified (OpenCode)",
+      "score": "51.00",
+      "source": "own card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}

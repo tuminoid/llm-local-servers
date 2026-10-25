@@ -1,0 +1,160 @@
+{
+  "model": "google/gemma-4-26B-A4B-it",
+  "name": "gemma-4-26B-A4B-it",
+  "aliases": [
+    "gemma-4-26B-A4B-it",
+    "Gemma 4 26B A4B",
+    "Gemma4-26BA4B",
+    "Gemma4 26B-A4B-BF16"
+  ],
+  "own_aliases": [],
+  "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+  "created": "2026-03-11",
+  "fetched": "2026-10-25",
+  "claims": [
+    {
+      "benchmark": "LiveCodeBench v6",
+      "label": "LiveCodeBench v6",
+      "score": "77.1%",
+      "source": "own card",
+      "reporter": "google",
+      "url": "https://huggingface.co/google/gemma-4-26B-A4B-it/blob/4d7ae4984b7db7de8f8457170b3f1a419ee76d52/README.md",
+      "settings": "",
+      "published": "2026-03-11",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "BFCL v4",
+      "label": "BFCLv4",
+      "score": "57.09",
+      "source": "competitor card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-Bench Verified (OpenCode)",
+      "score": "25.80",
+      "source": "competitor card",
+      "reporter": "LiquidAI",
+      "url": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B/blob/3fcfdbfa1a1b6d8166846a6323e69f1e1254440d/README.md",
+      "settings": "",
+      "published": "2026-10-12",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "17.4",
+      "source": "competitor card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "17.3",
+      "source": "competitor card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Pro",
+      "label": "SWE-bench Pro",
+      "score": "13.8",
+      "source": "competitor card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "NL2Repo",
+      "label": "NL2Repo",
+      "score": "11.6",
+      "source": "competitor card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "LiveCodeBench v6",
+      "label": "LiveCodeBench v6",
+      "score": "77.1",
+      "source": "competitor card",
+      "reporter": "Qwen",
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md",
+      "settings": "",
+      "published": "2026-04-15",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "LiveCodeBench v6",
+      "label": "LiveCodeBench v6",
+      "score": "77.1%",
+      "source": "vendor card",
+      "reporter": "google",
+      "url": "https://huggingface.co/google/gemma-4-31B-it/blob/842da3794eaa0b77d5f08bae87a17459d91ff475/README.md",
+      "settings": "",
+      "published": "2026-03-11",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "37.22",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16/blob/e09a4cedb1787db1760375ee5539f222cae0c672/README.md",
+      "settings": "",
+      "published": "2026-10-09",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Verified",
+      "label": "SWE-bench Verified",
+      "score": "57.40",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "SWE-bench Multilingual",
+      "label": "SWE-bench Multilingual",
+      "score": "43.40",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    },
+    {
+      "benchmark": "Terminal-Bench 2.1",
+      "label": "Terminal-Bench 2.1",
+      "score": "37.22",
+      "source": "competitor card",
+      "reporter": "nvidia",
+      "url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/blob/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/README.md",
+      "settings": "",
+      "published": "2026-08-01",
+      "collected": "2026-10-25"
+    }
+  ],
+  "errors": []
+}
