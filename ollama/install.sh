@@ -63,6 +63,10 @@ archive_sha256() {
         shasum -a 256 "$1" | awk '{print $1}'
     fi
 }
+if ! command -v sha256sum > /dev/null 2>&1 && ! command -v shasum > /dev/null 2>&1; then
+    printf 'error: sha256sum or shasum is required to verify the Ollama release\n' >&2
+    exit 1
+fi
 
 destination="${OLLAMA_RUNTIME_ROOT}/v${version}"
 executable="${destination}/bin/ollama"

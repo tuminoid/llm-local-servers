@@ -13,6 +13,8 @@ mandatory -- there is no default, so `MODEL` must name a config in
 `models/`:
 
 ```bash
+make vllm-install                          # managed venv at the pins
+make vllm-pull MODEL=qwen3.6-35b-a3b-awq   # pinned weights into the HF cache
 make vllm-start MODEL=qwen3.6-35b-a3b-awq  # start detached, wait until serving
 make vllm-status                           # process, GPU use, KV cache sizing
 make vllm-logs                             # follow the server log
@@ -54,17 +56,18 @@ platform-specific CUDA wheels.
 
 ```bash
 make vllm-remote-bootstrap HOST=gpu-box   # create venv, install pinned vllm
+make vllm-remote-pull      HOST=gpu-box MODEL=qwen3.6-35b-a3b-awq  # pinned weights
 make vllm-remote-start     HOST=gpu-box MODEL=qwen3.6-35b-a3b-awq  # syncs, then starts
 make vllm-remote-status    HOST=gpu-box
 make vllm-remote-bench     HOST=gpu-box MODEL=qwen3.6-35b-a3b-awq
 make vllm-remote-stop      HOST=gpu-box
 ```
 
-`vllm-remote-start`, `vllm-remote-bench`, and `vllm-remote-capability` sync
-the scripts to the host before executing, so the remote copy is always
-current; the read-only and teardown verbs (`status`, `stop`, `logs`,
-`tunnel`) do not deploy, so they never mutate the remote tree as a side
-effect.
+`vllm-remote-bootstrap`, `vllm-remote-pull`, `vllm-remote-start`,
+`vllm-remote-bench`, and `vllm-remote-capability` sync the scripts to the
+host before executing, so the remote copy is always current; the read-only
+and teardown verbs (`status`, `stop`, `logs`, `tunnel`) do not deploy, so
+they never mutate the remote tree as a side effect.
 
 `VLLM_REMOTE_DIR` (default `tmp/vllm`, relative to the remote home) sets where
 the scripts land. `VLLM_VERSION` and `VLLM_TRANSFORMERS_VERSION` pin what
@@ -161,16 +164,22 @@ generations are in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Prerequisites
 
-- `vllm`, found in this order: the `VLLM_BIN` override, a `venv/` beside these
-  scripts, then PATH. PATH is whatever the host provides, typically a uv tool
-  wrapper; the venv is the portable route for
-  hosts without it, created by `make vllm-remote-bootstrap`. First install pulls
-  roughly 10 GB of torch and CUDA wheels either way.
-- A CUDA toolkit only for the FlashInfer backend, which the launcher selects
-  solely when fp8 KV is in play. `CUDA_HOME` comes from the host environment;
-  without it the launcher falls back to Triton. Host provisioning (toolkit
-  install, driver notes) is documented in [AGENTS.md](AGENTS.md).
-- For gated models, `hf auth login` plus accepting the model's terms.
+- `uv`, which `make vllm-install` (remotely `vllm-remote-bootstrap`) uses to
+  build the managed venv at the Makefile pins, under
+  `${XDG_DATA_HOME:-~/.local/share}/vllm/venv` (remotely inside the deployed
+  tree). The launcher serves only that venv, or an explicit `VLLM_BIN`, never
+  a vllm on PATH. First install pulls roughly 10 GB of torch and CUDA wheels.
+- An NVIDIA driver with `nvidia-smi`, which start requires.
+- A CUDA toolkit only for the FlashInfer backend and sampler, which the
+  launcher uses solely when it finds `nvcc` (`CUDA_HOME`, else PATH); without
+  it the launcher falls back to Triton and the default sampler, and an
+  explicit `VLLM_ATTN_BACKEND=FLASHINFER` fails at start. Host provisioning
+  (toolkit install, driver notes) is documented in [AGENTS.md](AGENTS.md).
+- `make vllm-pull` downloads the model, and the speculative drafter where the
+  config names one, at their pinned revisions into the Hugging Face cache,
+  with the host's `hf` or else the venv's. Start serves from that cache with
+  `HF_HUB_OFFLINE=1` and refuses an unpulled model, so it never downloads.
+  Gated models need `hf auth login` plus accepting the model's terms.
 
 ## Host tuning notes
 

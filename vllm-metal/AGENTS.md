@@ -12,7 +12,7 @@ Serving measurements follow
 | -- | -- |
 | `lib.sh` | Paths, venv-only binary resolution, pid, memory helpers |
 | `install.sh` | Pinned venv from checksum-verified release wheels |
-| `pull.sh` | Pinned-revision model download via the authenticated hf CLI |
+| `pull.sh` | Pinned-revision model download via the host's hf CLI, else the venv's |
 | `start.sh` | Foreground launcher and host memory policy |
 | `run.sh` | Detached launcher and readiness wait |
 | `status.sh` | Process, KV sizing, NAX evidence, footprint, live API probe |

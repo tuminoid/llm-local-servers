@@ -137,10 +137,16 @@ if [[ -n "${VLLM_MLA}" ]]; then
     VLLM_ATTN_AUTO=1
 fi
 
+# The CUDA toolkit is the host's to provide and only FlashInfer's JIT needs
+# it, so probe for nvcc rather than assume it.
+VLLM_NVCC=""
+if [[ -x "${CUDA_HOME:-/usr/local/cuda}/bin/nvcc" ]] || command -v nvcc > /dev/null 2>&1; then
+    VLLM_NVCC=1
+fi
+
 if [[ -z "${VLLM_ATTN_BACKEND:-}" && -z "${VLLM_ATTN_AUTO}" ]]; then
     if [[ "${VLLM_KV_DTYPE}" == fp8* ]]; then
-        if ((VLLM_CAP >= 89)) \
-            && { [[ -x "${CUDA_HOME:-/usr/local/cuda}/bin/nvcc" ]] || command -v nvcc > /dev/null 2>&1; }; then
+        if ((VLLM_CAP >= 89)) && [[ -n "${VLLM_NVCC}" ]]; then
             VLLM_ATTN_BACKEND="FLASHINFER"
         else
             VLLM_ATTN_BACKEND="TRITON_ATTN"
@@ -149,11 +155,15 @@ if [[ -z "${VLLM_ATTN_BACKEND:-}" && -z "${VLLM_ATTN_AUTO}" ]]; then
         VLLM_ATTN_BACKEND="FLASH_ATTN"
     fi
 fi
+if [[ "${VLLM_ATTN_BACKEND:-}" == FLASHINFER && -z "${VLLM_NVCC}" ]]; then
+    printf 'error: FLASHINFER needs the CUDA toolkit (nvcc); set CUDA_HOME or pick another backend\n' >&2
+    exit 1
+fi
 
 # The sampler is a separate FlashInfer entry point from the attention backend
 # and is JIT-only, so it fails on hosts where FlashInfer cannot build even when
 # attention uses another backend. That aborts engine init for no benefit.
-if ((VLLM_CAP > 0 && VLLM_CAP < 89)); then
+if ((VLLM_CAP > 0 && VLLM_CAP < 89)) || [[ -z "${VLLM_NVCC}" ]]; then
     export VLLM_USE_FLASHINFER_SAMPLER="${VLLM_USE_FLASHINFER_SAMPLER:-0}"
 fi
 
@@ -259,17 +269,16 @@ fi
 
 VLLM_EXE="$(vllm_bin)"
 if [[ -z "${VLLM_EXE}" ]]; then
-    printf 'error: vllm not found. Expected one of:\n' >&2
-    printf '  the VLLM_BIN override, %s/venv/bin/vllm, or vllm on PATH\n' "${SCRIPT_DIR}" >&2
+    printf 'error: vllm not found at %s; install first\n' "${VLLM_BIN:-${VLLM_VENV}/bin/vllm}" >&2
     exit 1
 fi
 
-# Pin guard. Start never installs: the venv moves only through the bootstrap
-# target, so a venv that drifted from the Makefile pin would otherwise serve a
+# Pin guard. Start never installs: the venv moves only through the install
+# targets, so a venv that drifted from the Makefile pin would otherwise serve a
 # retired release and every documented rate for the profile would be off.
 # VLLM_VERSION is the pin make passes; a manual start without it skips the
 # check. The interpreter beside the entry point answers without importing
-# torch; `vllm --version` is the slow fallback for a PATH install.
+# torch; `vllm --version` is the slow fallback for a VLLM_BIN override.
 if [[ -n "${VLLM_VERSION:-}" ]]; then
     VLLM_PY="$(dirname "${VLLM_EXE}")/python"
     if [[ -x "${VLLM_PY}" ]]; then
@@ -279,9 +288,8 @@ if [[ -n "${VLLM_VERSION:-}" ]]; then
         VLLM_INSTALLED="$("${VLLM_EXE}" --version | tail -1)"
     fi
     if [[ "${VLLM_INSTALLED}" != "${VLLM_VERSION}" ]]; then
-        printf 'error: %s is vllm %s, the pin is %s; run the bootstrap (remote) or\n' \
+        printf 'error: %s is vllm %s, the pin is %s; install the pin before starting\n' \
             "${VLLM_EXE}" "${VLLM_INSTALLED}" "${VLLM_VERSION}" >&2
-        printf '  reinstall the venv to the pin before starting\n' >&2
         exit 1
     fi
 fi
@@ -290,13 +298,20 @@ fi
 # locate the entry point: vLLM JIT-compiles kernels in a subprocess and shells
 # out to `ninja`, which pip installs into the venv's bin. Without this the
 # engine dies with "FileNotFoundError: 'ninja'".
-case "${VLLM_EXE}" in
-    */venv/bin/vllm)
-        VLLM_EXE_DIR="$(dirname "${VLLM_EXE}")"
-        export PATH="${VLLM_EXE_DIR}:${PATH}"
-        ;;
-    *) : ;;
-esac
+VLLM_EXE_DIR="$(dirname "${VLLM_EXE}")"
+export PATH="${VLLM_EXE_DIR}:${PATH}"
+
+# Serve only what pull.sh fetched. Offline, vLLM cannot download a missing
+# or different revision behind the operator's back at startup.
+artifacts="$(vllm_artifacts "${VLLM_MODEL}" "${VLLM_MODEL_REVISION}" "${VLLM_SPECULATIVE_CONFIG}")"
+while read -r repo revision; do
+    if [[ ! -d "$(vllm_snapshot "${repo}" "${revision}")" ]]; then
+        printf 'error: %s@%s is not in the Hugging Face cache; pull the model first\n' \
+            "${repo}" "${revision}" >&2
+        exit 1
+    fi
+done <<< "${artifacts}"
+export HF_HUB_OFFLINE=1
 
 args=(
     serve "${VLLM_MODEL}"

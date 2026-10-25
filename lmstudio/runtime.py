@@ -111,9 +111,16 @@ def engine(fmt):
 
 def verify_install():
     engines = {fmt: engine(fmt) for fmt in FORMATS if host_supports(fmt)}
-    if not shutil.which("hf"):
-        raise RuntimeError("the hf CLI is required for pinned pulls")
     return engines
+
+
+def hf():
+    """The host's hf CLI when it has one, else the pinned one through uv."""
+    if shutil.which("hf"):
+        return ["hf"]
+    if not shutil.which("uv"):
+        raise RuntimeError("neither hf nor uv is on PATH")
+    return ["uv", "tool", "run", "--from", f"huggingface_hub=={pin('HF_HUB_VERSION')}", "hf"]
 
 
 def pin_drift(app, engines):
@@ -171,7 +178,7 @@ def pull(tag, values):
         # against the pinned revision before recording it.
         path.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run(["cp", "-cRL", str(snapshot), str(path)], check=True)
-    subprocess.run(["hf", "download", repo, "--revision", revision, "--local-dir", str(path)],
+    subprocess.run([*hf(), "download", repo, "--revision", revision, "--local-dir", str(path)],
                    check=True)
     print(json.dumps(verify_model(tag, values), indent=2))
 

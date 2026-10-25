@@ -68,8 +68,9 @@ earlier pins were exact `v0.3.0.dev*` builds). The venv lives at
 `~/.local/share/vllm-metal/venv` and is recreated from scratch on any pin
 change; upstream's `curl | bash` installer is deliberately not used.
 
-Model weights are downloaded with the authenticated `hf` CLI into
-`~/.local/share/vllm-metal/models/<config-name>/` at the pinned revision.
+Model weights are downloaded with the host's `hf` CLI, else the managed
+venv's, into `~/.local/share/vllm-metal/models/<config-name>/` at the
+pinned revision.
 The HF cache is treated as read-only and never served from.
 
 ## Memory policy

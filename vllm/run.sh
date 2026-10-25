@@ -24,6 +24,14 @@ if [[ "$(uname -s)" != "Linux" ]]; then
     printf 'use make vllm-remote-start for the GPU host, or make vllm-metal-start on Apple Silicon\n' >&2
     exit 1
 fi
+# The launcher derives its whole host profile from nvidia-smi; without it the
+# profile would silently be that of an unknown, unsupported GPU.
+for tool in nvidia-smi setsid; do
+    if ! command -v "${tool}" > /dev/null 2>&1; then
+        printf 'error: %s is required to serve CUDA vLLM\n' "${tool}" >&2
+        exit 1
+    fi
+done
 
 if [[ -z "${1:-}" ]]; then
     printf 'usage: %s <model-config-name>\n' "$(basename "$0")" >&2

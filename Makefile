@@ -2,12 +2,14 @@
 .PHONY: audit-bench-check
 .PHONY: ollama-model-check ollama-install ollama-start ollama-pull
 .PHONY: ollama-stop ollama-status ollama-logs ollama-bench ollama-capability
-.PHONY: ollama-remote-deploy ollama-remote-check ollama-remote-stopped-check
+.PHONY: ollama-remote-deploy ollama-remote-harness ollama-remote-check ollama-remote-stopped-check
 .PHONY: ollama-remote-bootstrap ollama-remote-start ollama-remote-pull
 .PHONY: ollama-remote-stop ollama-remote-status ollama-remote-logs
 .PHONY: ollama-remote-bench ollama-remote-capability ollama-remote-tunnel
-.PHONY: vllm-model-check vllm-start vllm-stop vllm-status vllm-logs vllm-bench vllm-capability
-.PHONY: vllm-remote-deploy vllm-remote-check vllm-remote-bootstrap vllm-remote-start
+.PHONY: vllm-model-check vllm-install vllm-pull vllm-start vllm-stop vllm-status vllm-logs
+.PHONY: vllm-bench vllm-capability
+.PHONY: vllm-remote-deploy vllm-remote-harness vllm-remote-check vllm-remote-bootstrap
+.PHONY: vllm-remote-pull vllm-remote-start
 .PHONY: vllm-remote-stop vllm-remote-status vllm-remote-logs vllm-remote-bench vllm-remote-capability
 .PHONY: vllm-remote-tunnel
 .PHONY: vllm-metal-model-check vllm-metal-install vllm-metal-pull
@@ -54,6 +56,7 @@ MODEL           ?=
 # vllm/BENCHMARKS.md names the pin of each row.
 VLLM_VERSION    ?= 0.31.0
 VLLM_TRANSFORMERS_VERSION ?= 5.15.1
+VLLM_NINJA_VERSION ?= 1.13.2
 VLLM_REMOTE_DIR ?= tmp/vllm
 VLLM_REMOTE_PORT ?= 8000
 VLLM_TUNNEL_PORT ?= 8001
@@ -95,6 +98,17 @@ CAPABILITY_ENV = CAPABILITY_TIMEOUT=$(CAPABILITY_TIMEOUT) \
 	CAPABILITY_REASONING_TOKENS=$(CAPABILITY_REASONING_TOKENS) \
 	CAPABILITY_OUTPUT_DIR=$(CAPABILITY_OUTPUT_DIR) \
 	CAPABILITY_FITNESS_SAMPLES=$(CAPABILITY_FITNESS_SAMPLES)
+
+# The hf CLI that pulls run through uv when the host has no hf of its own and
+# the runtime has no venv to take one from (ds4, LM Studio).
+HF_HUB_VERSION ?= 1.33.0
+export HF_HUB_VERSION
+
+# Host tools are the user's to provide. A recipe line $(call require,TOOLS)
+# fails naming every one missing from PATH. It expands to plain shell, so a
+# remote recipe embeds it in the ssh command to check the remote host.
+require = missing=; for t in $(1); do command -v $$t >/dev/null 2>&1 || missing="$$missing $$t"; done; \
+	test -z "$$missing" || { echo "error: missing required tool(s):$$missing" >&2; exit 1; };
 
 VLLM_METAL_DIR := vllm-metal
 # vLLM-Metal runs on Apple Silicon only. The plugin paired with the prebuilt
@@ -199,7 +213,7 @@ help:
 	@echo "        MLX:"
 	@$(call print_names,$(ollama_mlx),1)
 	@echo ""
-	@echo "    vllm        vLLM on CUDA, port 8000; no install or pull"
+	@echo "    vllm        vLLM on CUDA, port 8000"
 	@$(call print_models,$(VLLM_DIR))
 	@echo ""
 	@echo "    vllm-metal  vLLM-Metal on Apple Silicon, port 8021"
@@ -211,11 +225,11 @@ help:
 	@echo "    ds4         ds4 (DwarfStar) on Apple Silicon, port 8023; interactive use only"
 	@$(call print_models,$(DS4_DIR))
 	@echo ""
-	@echo "    lmstudio    LM Studio, port 1234; install checks the app, engines and hf CLI"
+	@echo "    lmstudio    LM Studio, port 1234; install checks the user-installed app and engines"
 	@$(call print_models,$(LMSTUDIO_DIR))
 	@echo ""
 	@echo "  Remote runtimes (HOST=<ssh-host>; models as above; start syncs scripts to the host first):"
-	@echo "    vllm-remote    vllm verbs, plus bootstrap and tunnel (localhost:$(VLLM_TUNNEL_PORT))"
+	@echo "    vllm-remote    vllm verbs, bootstrap for install, plus tunnel (localhost:$(VLLM_TUNNEL_PORT))"
 	@echo "    ollama-remote  ollama verbs, bootstrap for install, plus tunnel (localhost:$(OLLAMA_TUNNEL_PORT) to $(OLLAMA_REMOTE_PORT)); start needs an idle GPU"
 	@echo ""
 
@@ -245,24 +259,29 @@ SHELL_SOURCES = $(shell find . -name '*.sh' -type f -not -path './.git/*' | sort
 lint: shellcheck markdownlint pycompile
 
 shellcheck:
+	@$(call require,shellcheck)
 	shellcheck $(SHELLCHECK_STRICT) $(SHELL_SOURCES)
 
 markdownlint:
+	@$(call require,markdownlint-cli2)
 	markdownlint-cli2
 
 pycompile:
+	@$(call require,python3)
 	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) \
 		$(LMSTUDIO_DIR) opencode tests
 
 # --- Test ---
 
 test: audit-bench-check
+	@$(call require,python3)
 	@PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 -m unittest discover -s tests -p 'test_*.py'
 
 # --- opencode ---
 
 # opencode/*/opencode.json are committed and generated; make test fails when stale.
 opencode-config: audit-bench-check
+	@$(call require,python3)
 	@PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./opencode/generate.py
 
 # --- Clean ---
@@ -290,6 +309,7 @@ ollama-model-check:
 		exit 1; }
 
 ollama-install:
+	@$(call require,curl tar)
 	@OLLAMA_VERSION=$(OLLAMA_VERSION) \
 		OLLAMA_ARCHIVE_SHA256=$(OLLAMA_ARCHIVE_SHA256) \
 		OLLAMA_ARCHIVE_SHA256_LINUX_ARM64=$(OLLAMA_ARCHIVE_SHA256_LINUX_ARM64) \
@@ -297,21 +317,25 @@ ollama-install:
 		./$(OLLAMA_DIR)/install.sh
 
 ollama-start: ollama-model-check
+	@$(call require,curl)
 	@OLLAMA_VERSION=$(OLLAMA_VERSION) ./$(OLLAMA_DIR)/run.sh $(MODEL)
 
 ollama-pull: ollama-model-check
+	@$(call require,curl)
 	@OLLAMA_VERSION=$(OLLAMA_VERSION) ./$(OLLAMA_DIR)/pull.sh $(MODEL)
 
 ollama-stop:
 	@OLLAMA_VERSION=$(OLLAMA_VERSION) ./$(OLLAMA_DIR)/stop.sh
 
 ollama-status:
+	@$(call require,curl python3)
 	@OLLAMA_VERSION=$(OLLAMA_VERSION) ./$(OLLAMA_DIR)/status.sh
 
 ollama-logs:
 	@tail -f "$${XDG_STATE_HOME:-$${HOME}/.local/state}/ollama/server.log"
 
 ollama-bench: ollama-model-check audit-bench-check
+	@$(call require,python3)
 	@OLLAMA_VERSION=$(OLLAMA_VERSION) \
 		OLLAMA_BENCH_JOBS=$(OLLAMA_BENCH_JOBS) \
 		OLLAMA_BENCH_LOAD_ONLY=$(OLLAMA_BENCH_LOAD_ONLY) \
@@ -320,6 +344,7 @@ ollama-bench: ollama-model-check audit-bench-check
 		./$(OLLAMA_DIR)/bench.py $(MODEL)
 
 ollama-capability: ollama-model-check audit-bench-check
+	@$(call require,python3)
 	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		python3 ./$(OLLAMA_DIR)/capability.py $(MODEL)
 
@@ -361,6 +386,7 @@ ollama-remote-check:
 	@test -n "$(HOST)" || { \
 		echo "error: set HOST=<ssh-host> (see .envrc.example)" >&2; \
 		exit 1; }
+	@$(call require,ssh)
 	@test "$(OLLAMA_REMOTE_DIR)" = "tmp/ollama" || { \
 		echo "error: OLLAMA_REMOTE_DIR is fixed at tmp/ollama" >&2; \
 		exit 1; }
@@ -417,28 +443,29 @@ ollama-remote-stopped-check: ollama-remote-check
 		fi'
 
 # runtime/, model-cache/, and state/ are remote-owned. rsync excludes preserve
-# them while --delete removes stale deployed scripts and model profiles. The
-# harness modules are synced from the llm-audit-bench checkout so the deployed
-# tree is self-contained: bench.py and capability.py import them as adjacent
-# files, no PYTHONPATH on the remote host.
+# them while --delete removes stale deployed scripts and model profiles.
 #
 # Deploying is legal while the server runs: the excludes keep it away from
 # everything the live process owns, scripts are read per invocation, and
 # pull/bench/capability need current scripts against the running server.
-ollama-remote-deploy: ollama-remote-check audit-bench-check
+ollama-remote-deploy: ollama-remote-check
+	@$(call require,rsync)
 	@rsync -a --delete \
 		--exclude runtime --exclude model-cache --exclude state \
 		--exclude __pycache__ \
 		./$(OLLAMA_DIR)/ $(HOST):$(OLLAMA_REMOTE_DIR)/
-	@rsync -a "$(AUDIT_BENCH_SRC)/audit_bench.py" \
-		$(HOST):$(OLLAMA_REMOTE_DIR)/audit_bench.py
-	@rsync -a "$(AUDIT_BENCH_SRC)/capability_check.py" \
-		$(HOST):$(OLLAMA_REMOTE_DIR)/capability_check.py
 	@ssh $(HOST) 'chmod +x $(OLLAMA_REMOTE_DIR)/*.sh $(OLLAMA_REMOTE_DIR)/*.py'
 	@echo "deployed scripts to $(HOST):$(OLLAMA_REMOTE_DIR)"
 
+# bench and capability only: the harness modules from the llm-audit-bench
+# checkout, beside the adapters that import them as adjacent files with no
+# PYTHONPATH on the remote host. Serving never needs the checkout.
+ollama-remote-harness: ollama-remote-check audit-bench-check
+	@rsync -a "$(AUDIT_BENCH_SRC)/audit_bench.py" "$(AUDIT_BENCH_SRC)/capability_check.py" \
+		$(HOST):$(OLLAMA_REMOTE_DIR)/
+
 ollama-remote-bootstrap: ollama-remote-stopped-check ollama-remote-deploy
-	@ssh $(HOST) '$(OLLAMA_REMOTE_FIXED_ENV) \
+	@ssh $(HOST) '$(call require,curl tar) $(OLLAMA_REMOTE_FIXED_ENV) \
 		OLLAMA_ARCHIVE_SHA256=$(OLLAMA_ARCHIVE_SHA256) \
 		$(OLLAMA_REMOTE_DIR)/install.sh'
 
@@ -446,13 +473,13 @@ ollama-remote-bootstrap: ollama-remote-stopped-check ollama-remote-deploy
 # stop/status/logs/tunnel never deploy: inspection and teardown must not mutate
 # the remote tree as a side effect.
 ollama-remote-start: ollama-remote-check ollama-model-check ollama-remote-deploy
-	@ssh $(HOST) '$(OLLAMA_REMOTE_FIXED_ENV) \
+	@ssh $(HOST) '$(call require,curl) $(OLLAMA_REMOTE_FIXED_ENV) \
 		$(OLLAMA_REMOTE_DIR)/preflight.sh idle && \
 		$(OLLAMA_ENV) $(OLLAMA_REMOTE_FIXED_ENV) \
 		$(OLLAMA_REMOTE_DIR)/run.sh $(MODEL)'
 
 ollama-remote-pull: ollama-remote-check ollama-model-check ollama-remote-deploy
-	@ssh $(HOST) '$(OLLAMA_REMOTE_FIXED_ENV) \
+	@ssh $(HOST) '$(call require,curl) $(OLLAMA_REMOTE_FIXED_ENV) \
 		$(OLLAMA_REMOTE_DIR)/preflight.sh managed && \
 		$(OLLAMA_ENV) $(OLLAMA_REMOTE_FIXED_ENV) \
 		$(OLLAMA_REMOTE_DIR)/pull.sh $(MODEL)'
@@ -461,19 +488,21 @@ ollama-remote-stop: ollama-remote-check
 	@ssh $(HOST) '$(OLLAMA_REMOTE_FIXED_ENV) $(OLLAMA_REMOTE_DIR)/stop.sh'
 
 ollama-remote-status: ollama-remote-check
-	@ssh $(HOST) '$(OLLAMA_REMOTE_FIXED_ENV) $(OLLAMA_REMOTE_DIR)/status.sh'
+	@ssh $(HOST) '$(call require,curl python3) $(OLLAMA_REMOTE_FIXED_ENV) $(OLLAMA_REMOTE_DIR)/status.sh'
 
 ollama-remote-logs: ollama-remote-check
 	@ssh $(HOST) 'tail -f $(OLLAMA_REMOTE_STATE_DIR)/server.log'
 
-ollama-remote-bench: ollama-remote-check ollama-model-check ollama-remote-deploy
-	@ssh $(HOST) '$(OLLAMA_REMOTE_FIXED_ENV) \
+ollama-remote-bench: ollama-remote-check ollama-model-check ollama-remote-deploy \
+	ollama-remote-harness
+	@ssh $(HOST) '$(call require,curl python3) $(OLLAMA_REMOTE_FIXED_ENV) \
 		$(OLLAMA_REMOTE_DIR)/preflight.sh managed && \
 		$(OLLAMA_ENV) $(AUDIT_BENCH_ENV) $(OLLAMA_REMOTE_FIXED_ENV) \
 		python3 $(OLLAMA_REMOTE_DIR)/bench.py $(MODEL)'
 
-ollama-remote-capability: ollama-remote-check ollama-model-check ollama-remote-deploy
-	@ssh $(HOST) '$(OLLAMA_ENV) $(CAPABILITY_ENV) $(OLLAMA_REMOTE_FIXED_ENV) \
+ollama-remote-capability: ollama-remote-check ollama-model-check ollama-remote-deploy \
+	ollama-remote-harness
+	@ssh $(HOST) '$(call require,python3) $(OLLAMA_ENV) $(CAPABILITY_ENV) $(OLLAMA_REMOTE_FIXED_ENV) \
 		python3 $(OLLAMA_REMOTE_DIR)/capability.py $(MODEL)'
 
 # The ports cannot collide with local Ollama (11434) or the vLLM tunnel (8001).
@@ -501,25 +530,41 @@ vllm-model-check:
 		echo "  $(patsubst $(VLLM_DIR)/models/%.conf,%,$(wildcard $(VLLM_DIR)/models/*.conf))" >&2; \
 		exit 1; }
 
+# The managed venv at the pins below. Start never installs and never downloads:
+# install and pull are the only steps that fetch anything.
+vllm-install:
+	@VLLM_VERSION=$(VLLM_VERSION) \
+		VLLM_TRANSFORMERS_VERSION=$(VLLM_TRANSFORMERS_VERSION) \
+		VLLM_NINJA_VERSION=$(VLLM_NINJA_VERSION) \
+		./$(VLLM_DIR)/install.sh
+
+vllm-pull: vllm-model-check
+	@$(call require,python3)
+	@./$(VLLM_DIR)/pull.sh $(MODEL)
+
 vllm-start: vllm-model-check
+	@$(call require,python3)
 	@VLLM_VERSION=$(VLLM_VERSION) ./$(VLLM_DIR)/run.sh $(MODEL)
 
 vllm-stop:
 	@./$(VLLM_DIR)/stop.sh
 
 vllm-status:
+	@$(call require,curl python3)
 	@./$(VLLM_DIR)/status.sh
 
 vllm-logs:
 	@tail -f "$${XDG_STATE_HOME:-$${HOME}/.local/state}/vllm/server.log"
 
 vllm-bench: vllm-model-check audit-bench-check
+	@$(call require,python3)
 	@VLLM_VERSION=$(VLLM_VERSION) \
 		VLLM_TRANSFORMERS_VERSION=$(VLLM_TRANSFORMERS_VERSION) \
 		$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		./$(VLLM_DIR)/bench.py $(MODEL)
 
 vllm-capability: vllm-model-check audit-bench-check
+	@$(call require,python3)
 	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		python3 ./$(VLLM_DIR)/capability.py $(MODEL)
 
@@ -541,6 +586,7 @@ vllm-metal-model-check:
 		exit 1; }
 
 vllm-metal-install:
+	@$(call require,curl)
 	@VLLM_METAL_VERSION=$(VLLM_METAL_VERSION) \
 		VLLM_METAL_WHEEL_SHA256=$(VLLM_METAL_WHEEL_SHA256) \
 		VLLM_METAL_VLLM_VERSION=$(VLLM_METAL_VLLM_VERSION) \
@@ -559,18 +605,21 @@ vllm-metal-stop:
 	@./$(VLLM_METAL_DIR)/stop.sh
 
 vllm-metal-status:
+	@$(call require,curl python3)
 	@./$(VLLM_METAL_DIR)/status.sh
 
 vllm-metal-logs:
 	@tail -f "$${XDG_STATE_HOME:-$${HOME}/.local/state}/vllm-metal/server.log"
 
 vllm-metal-bench: vllm-metal-model-check audit-bench-check
+	@$(call require,python3)
 	@VLLM_METAL_VERSION=$(VLLM_METAL_VERSION) \
 		VLLM_METAL_VLLM_VERSION=$(VLLM_METAL_VLLM_VERSION) \
 		$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		./$(VLLM_METAL_DIR)/bench.py $(MODEL)
 
 vllm-metal-capability: vllm-metal-model-check audit-bench-check
+	@$(call require,python3)
 	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		python3 ./$(VLLM_METAL_DIR)/capability.py $(MODEL)
 
@@ -583,28 +632,35 @@ splash-model-check:
 		exit 1; }
 
 splash-install:
+	@$(call require,uv tar)
 	@./$(SPLASH_DIR)/install.sh
 
 splash-pull: splash-model-check
+	@$(call require,uv)
 	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" ./$(SPLASH_DIR)/pull.sh $(MODEL)
 
 splash-start: splash-model-check
+	@$(call require,uv)
 	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" ./$(SPLASH_DIR)/run.sh $(MODEL)
 
 splash-stop:
+	@$(call require,uv)
 	@./$(SPLASH_DIR)/stop.sh
 
 splash-status:
+	@$(call require,uv)
 	@./$(SPLASH_DIR)/status.sh
 
 splash-logs:
 	@tail -f "$${SPLASH_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/splash}/server.log"
 
 splash-bench: splash-model-check audit-bench-check
+	@$(call require,uv)
 	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" $(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		bash -c 'source splash/lib.sh; exec uv run --no-project --python "$${SPLASH_RUNTIME}/python/bin/python3" splash/bench.py "$$1"' bash $(MODEL)
 
 splash-capability: splash-model-check audit-bench-check
+	@$(call require,uv)
 	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		bash -c 'source splash/lib.sh; exec uv run --no-project --python "$${SPLASH_RUNTIME}/python/bin/python3" splash/capability.py "$$1"' bash $(MODEL)
 
@@ -617,27 +673,32 @@ ds4-model-check:
 		exit 1; }
 
 ds4-install:
+	@$(call require,git cc)
 	@./$(DS4_DIR)/install.sh
 
 ds4-pull: ds4-model-check
 	@./$(DS4_DIR)/pull.sh $(MODEL)
 
 ds4-start: ds4-model-check
+	@$(call require,git lsof curl)
 	@./$(DS4_DIR)/run.sh $(MODEL)
 
 ds4-stop:
 	@./$(DS4_DIR)/stop.sh
 
 ds4-status:
+	@$(call require,curl python3)
 	@./$(DS4_DIR)/status.sh
 
 ds4-logs:
 	@tail -f "$${DS4_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/ds4}/server.log"
 
 ds4-bench: ds4-model-check audit-bench-check
+	@$(call require,python3)
 	@$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(DS4_DIR)/bench.py $(MODEL)
 
 ds4-capability: ds4-model-check audit-bench-check
+	@$(call require,python3)
 	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(DS4_DIR)/capability.py $(MODEL)
 
 # --- LM Studio ---
@@ -649,27 +710,34 @@ lmstudio-model-check:
 		exit 1; }
 
 lmstudio-install:
+	@$(call require,python3)
 	@python3 ./$(LMSTUDIO_DIR)/runtime.py install
 
 lmstudio-pull: lmstudio-model-check
+	@$(call require,python3)
 	@python3 ./$(LMSTUDIO_DIR)/runtime.py pull $(MODEL)
 
 lmstudio-start: lmstudio-model-check
+	@$(call require,python3)
 	@python3 ./$(LMSTUDIO_DIR)/runtime.py start $(MODEL)
 
 lmstudio-stop:
+	@$(call require,python3)
 	@python3 ./$(LMSTUDIO_DIR)/runtime.py stop
 
 lmstudio-status:
+	@$(call require,python3)
 	@python3 ./$(LMSTUDIO_DIR)/runtime.py status
 
 lmstudio-logs:
 	@tail -f "$${LMSTUDIO_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/lmstudio}/server.log"
 
 lmstudio-bench: lmstudio-model-check audit-bench-check
+	@$(call require,python3)
 	@$(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(LMSTUDIO_DIR)/bench.py $(MODEL)
 
 lmstudio-capability: lmstudio-model-check audit-bench-check
+	@$(call require,python3)
 	@$(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./$(LMSTUDIO_DIR)/capability.py $(MODEL)
 
 # --- Remote vLLM host ---
@@ -698,8 +766,8 @@ lmstudio-capability: lmstudio-model-check audit-bench-check
 # as '\''value'\'' so the remote shell receives it quoted: VLLM_SAMPLING
 # carries spaces. A value containing a single quote is not supported.
 VLLM_MAKE_VARS := VLLM_DIR VLLM_VERSION \
-	VLLM_TRANSFORMERS_VERSION VLLM_REMOTE_DIR VLLM_REMOTE_PORT \
-	VLLM_TUNNEL_PORT VLLM_ENV VLLM_MAKE_VARS
+	VLLM_TRANSFORMERS_VERSION VLLM_NINJA_VERSION VLLM_REMOTE_DIR VLLM_REMOTE_PORT \
+	VLLM_TUNNEL_PORT VLLM_ENV VLLM_MAKE_VARS VLLM_VENV
 VLLM_ENV = $(strip $(foreach v, \
 	$(filter-out $(VLLM_MAKE_VARS),$(filter VLLM_%,$(.VARIABLES))), \
 	$(if $(filter environment% command line,$(origin $(v))),$(v)='\''$($(v))'\'')))
@@ -708,59 +776,66 @@ vllm-remote-check:
 	@test -n "$(HOST)" || { \
 		echo "error: set HOST=<ssh-host> (see .envrc.example)" >&2; \
 		exit 1; }
+	@$(call require,ssh)
 
-# The venv is created and populated with uv (falling back to the user
-# install location when it is not on the non-interactive PATH). An existing
-# venv is upgraded in place; recreate by removing it on the host first.
-vllm-remote-bootstrap: vllm-remote-check
-	@ssh $(HOST) 'set -e; mkdir -p $(VLLM_REMOTE_DIR); cd $(VLLM_REMOTE_DIR); \
-		UV="$$(command -v uv || echo "$$HOME/.local/bin/uv")"; \
-		test -x venv/bin/python || "$$UV" venv venv; \
-		"$$UV" pip install --python venv/bin/python --quiet \
-			vllm==$(VLLM_VERSION) \
-			transformers==$(VLLM_TRANSFORMERS_VERSION) ninja; \
-		./venv/bin/python -c "import transformers, vllm; \
-			print(\"vllm\", vllm.__version__, \"transformers\", transformers.__version__)"'
+# The remote venv lives inside the deployed tree, which owns everything the
+# remote server runs; the host's own vllm is never used.
+override VLLM_REMOTE_VENV = VLLM_VENV="$$HOME/$(VLLM_REMOTE_DIR)/venv"
 
-vllm-remote-deploy: vllm-remote-check audit-bench-check
+# The deployed install.sh, the same one vllm-install runs locally.
+vllm-remote-bootstrap: vllm-remote-check vllm-remote-deploy
+	@ssh $(HOST) '$(VLLM_REMOTE_VENV) VLLM_VERSION=$(VLLM_VERSION) \
+		VLLM_TRANSFORMERS_VERSION=$(VLLM_TRANSFORMERS_VERSION) \
+		VLLM_NINJA_VERSION=$(VLLM_NINJA_VERSION) \
+		$(VLLM_REMOTE_DIR)/install.sh'
+
+vllm-remote-deploy: vllm-remote-check
+	@$(call require,rsync)
 	@rsync -a --delete --exclude venv --exclude __pycache__ \
 		./$(VLLM_DIR)/ $(HOST):$(VLLM_REMOTE_DIR)/
-	@rsync -a "$(AUDIT_BENCH_SRC)/audit_bench.py" \
-		$(HOST):$(VLLM_REMOTE_DIR)/audit_bench.py
-	@rsync -a "$(AUDIT_BENCH_SRC)/capability_check.py" \
-		$(HOST):$(VLLM_REMOTE_DIR)/capability_check.py
 	@ssh $(HOST) 'chmod +x $(VLLM_REMOTE_DIR)/*.sh $(VLLM_REMOTE_DIR)/*.py'
 	@echo "deployed to $(HOST):$(VLLM_REMOTE_DIR)"
 
+# bench and capability only, as ollama-remote-harness.
+vllm-remote-harness: vllm-remote-check audit-bench-check
+	@rsync -a "$(AUDIT_BENCH_SRC)/audit_bench.py" "$(AUDIT_BENCH_SRC)/capability_check.py" \
+		$(HOST):$(VLLM_REMOTE_DIR)/
+
 # The internal vllm-remote-deploy step precedes targets that execute repo
-# scripts the caller may have edited: start, bench, and capability. A stale
+# scripts the caller may have edited: bootstrap, pull, start, bench, and
+# capability. A stale
 # remote copy is indistinguishable from a broken change, and the idempotent
 # rsync is cheap insurance.
 #
 # The other remote verbs deliberately do NOT deploy. stop and status run against
 # a server that on a shared host may not be the caller's, and deploy is
 # rsync --delete: a teardown or a read-only status must not mutate the remote
-# tree as a side effect. logs and tunnel run no repo script (tail, ssh -L), and
-# bootstrap only builds the venv.
+# tree as a side effect. logs and tunnel run no repo script (tail, ssh -L).
+vllm-remote-pull: vllm-remote-check vllm-model-check vllm-remote-deploy
+	@ssh $(HOST) '$(call require,python3) $(VLLM_ENV) $(VLLM_REMOTE_VENV) \
+		$(VLLM_REMOTE_DIR)/pull.sh $(MODEL)'
+
 vllm-remote-start: vllm-remote-check vllm-model-check vllm-remote-deploy
-	@ssh $(HOST) 'VLLM_VERSION=$(VLLM_VERSION) $(VLLM_ENV) $(VLLM_REMOTE_DIR)/run.sh $(MODEL)'
+	@ssh $(HOST) '$(call require,python3) VLLM_VERSION=$(VLLM_VERSION) $(VLLM_ENV) $(VLLM_REMOTE_VENV) \
+		$(VLLM_REMOTE_DIR)/run.sh $(MODEL)'
 
 vllm-remote-stop: vllm-remote-check
 	@ssh $(HOST) '$(VLLM_REMOTE_DIR)/stop.sh'
 
 vllm-remote-status: vllm-remote-check
-	@ssh $(HOST) '$(VLLM_REMOTE_DIR)/status.sh'
+	@ssh $(HOST) '$(call require,curl python3) $(VLLM_REMOTE_DIR)/status.sh'
 
 vllm-remote-logs: vllm-remote-check
 	@ssh $(HOST) 'tail -f "$${XDG_STATE_HOME:-$$HOME/.local/state}/vllm/server.log"'
 
-vllm-remote-bench: vllm-remote-check vllm-model-check vllm-remote-deploy
+vllm-remote-bench: vllm-remote-check vllm-model-check vllm-remote-deploy vllm-remote-harness
 	@ssh $(HOST) 'VLLM_VERSION=$(VLLM_VERSION) \
 		VLLM_TRANSFORMERS_VERSION=$(VLLM_TRANSFORMERS_VERSION) \
 		$(VLLM_ENV) $(AUDIT_BENCH_ENV) \
 		$(VLLM_REMOTE_DIR)/venv/bin/python $(VLLM_REMOTE_DIR)/bench.py $(MODEL)'
 
-vllm-remote-capability: vllm-remote-check vllm-model-check vllm-remote-deploy
+vllm-remote-capability: vllm-remote-check vllm-model-check vllm-remote-deploy \
+	vllm-remote-harness
 	@ssh $(HOST) '$(VLLM_ENV) $(CAPABILITY_ENV) \
 		$(VLLM_REMOTE_DIR)/venv/bin/python \
 		$(VLLM_REMOTE_DIR)/capability.py $(MODEL)'

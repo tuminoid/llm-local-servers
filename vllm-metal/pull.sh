@@ -4,7 +4,7 @@
 #
 # Usage: pull.sh <model-config-name>
 #
-# Uses the authenticated hf CLI with an explicit local directory. The HF
+# Uses the hf CLI with an explicit local directory. The HF
 # cache is treated as read-only and never served from: an explicit directory
 # makes the served bytes inspectable and survives cache eviction.
 #
@@ -41,10 +41,16 @@ for var in VLLM_MODEL_REPO VLLM_MODEL_REVISION; do
     fi
 done
 
-command -v hf > /dev/null 2>&1 || {
-    printf 'error: the hf CLI is required (and must be logged in)\n' >&2
+# The host's hf CLI when it has one, else the managed venv's, which vllm's
+# huggingface_hub dependency installs.
+HF="$(command -v hf 2> /dev/null || true)"
+if [[ -z "${HF}" && -x "${VLLM_METAL_VENV}/bin/hf" ]]; then
+    HF="${VLLM_METAL_VENV}/bin/hf"
+fi
+if [[ -z "${HF}" ]]; then
+    printf 'error: no hf CLI on PATH and no managed venv; run make vllm-metal-install\n' >&2
     exit 1
-}
+fi
 
 MODEL_DIR="${VLLM_METAL_MODELS_DIR}/${MODEL_CONF}"
 mkdir -p "${MODEL_DIR}"
@@ -68,7 +74,7 @@ if [[ -n "${VLLM_MODEL_INCLUDE}" ]]; then
         download_args+=(--include "${pattern}")
     done
 fi
-hf download "${download_args[@]}"
+"${HF}" download "${download_args[@]}"
 
 if [[ ! -f "${MODEL_DIR}/config.json" ]]; then
     printf 'error: download completed but %s/config.json is missing\n' \

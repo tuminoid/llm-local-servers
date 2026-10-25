@@ -78,14 +78,15 @@ are defined and implemented in the sibling
 `docs/PROTOCOL.md`, `docs/CAPABILITY.md`, and the two stdlib-only modules
 under `src/`. This repository consumes them and never carries copies:
 
-- The Makefile resolves the checkout via `AUDIT_BENCH_DIR` (default
-  `../llm-audit-bench`) and fails fast when it is missing. Local bench,
-  capability, and test targets import the modules with
+- The checkout is a development dependency: bench, capability, test and
+  opencode-config need it, serving never does. The Makefile resolves it via
+  `AUDIT_BENCH_DIR` (default `../llm-audit-bench`) and those targets fail
+  fast when it is missing. Local ones import the modules with
   `PYTHONPATH=$(AUDIT_BENCH_DIR)/src`.
-- The internal remote-deploy step (a prerequisite of every remote verb that
-  executes repo scripts) rsyncs `audit_bench.py` and `capability_check.py`
-  from that checkout next to the adapters on remote hosts, where they import
-  as adjacent files with no PYTHONPATH.
+- The internal remote-harness step of the remote bench and capability verbs
+  rsyncs `audit_bench.py` and `capability_check.py` from that checkout next
+  to the adapters on remote hosts, where they import as adjacent files with
+  no PYTHONPATH.
 - Workload logic -- prompt generation, target sizes, sample counts, stream
   counts, validation, metrics, and the JSON schema -- lives only in the
   harness. Runtime adapters here own transport, model loading, capacity
@@ -177,11 +178,11 @@ about the current pin, which would go stale at the next bump.
 A launcher must degrade rather than fail when an optional host capability
 is missing. Probe for the capability and pick a working fallback.
 
-Concretely: the vLLM launcher derives its attention backend, KV cache dtype,
-memory policy and even the location of its own executable from the GPU's
-compute capability and VRAM, so one copy of the scripts serves a 12 GB laptop
-card and an 80 GB A100 with no per-host branch. Hardcoding the fast path makes
-the scripts fail at engine init on any machine that cannot take it.
+Concretely: the vLLM launcher derives its attention backend, KV cache dtype
+and memory policy from the GPU's compute capability and VRAM, so one copy of
+the scripts serves a 12 GB laptop card and an 80 GB A100 with no per-host
+branch. Hardcoding the fast path makes the scripts fail at engine init on any
+machine that cannot take it.
 
 The corollary is that a model config must stay portable -- model facts only,
 no utilization or backend values. A host setting in a model config is a bug,
@@ -192,6 +193,16 @@ cannot be validated on one machine, since a single host only exercises one
 branch of the derivation. Run the lifecycle on a second GPU generation, and
 check the resolved profile the launcher logs rather than just that the server
 started.
+
+### Install what is pinned, check what is not
+
+A runtime, its Python packages and its model artifacts arrive only through
+the repository's install and pull verbs, at the pins; start never
+downloads. Everything else is the user's to provide -- uv and the other host
+tools, a CUDA driver and toolkit, LM Studio -- and every verb checks the
+tools it uses, in its recipe with `$(call require,...)` or in the script
+where the need is conditional, naming what is missing. Never assume a host
+tool, and never fall back to a host copy of a pinned runtime.
 
 ### Runtime state outside the repo
 

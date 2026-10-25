@@ -23,15 +23,18 @@ adapters, model configs, and results.
 
 ## Setup
 
-1. Clone [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
-   beside this repository, or point `AUDIT_BENCH_DIR` at an existing
-   checkout. The harness is standard-library Python; there is nothing to
-   install.
+1. For bench, capability and development targets, clone
+   [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench) beside
+   this repository, or point `AUDIT_BENCH_DIR` at an existing checkout.
+   The harness is standard-library Python; there is nothing to install.
+   Serving does not need it.
 2. Copy `.envrc.example` to `.envrc`, fill in the personal values (the
    remote GPU host alias), and `direnv allow` -- or export the same
    variables from your shell. Committed files carry no personal values.
-3. Install the runtime you intend to serve with; prerequisites and
-   host-tuning rationale are per runtime in
+3. Install the runtime you intend to serve with. Host tools are yours
+   to provide: `uv`, `python3`, `curl` and `tar` everywhere, plus what a
+   runtime names; every target checks the tools it uses and names any
+   missing. Prerequisites and host-tuning rationale are per runtime in
    [vllm/README.md](vllm/README.md),
    [ollama/README.md](ollama/README.md),
    [vllm-metal/README.md](vllm-metal/README.md),

@@ -8,6 +8,9 @@
 VLLM_STATE_DIR="${VLLM_STATE_DIR:-${XDG_STATE_HOME:-${HOME}/.local/state}/vllm}"
 VLLM_PIDFILE="${VLLM_PIDFILE:-${VLLM_STATE_DIR}/server.pid}"
 VLLM_LOG="${VLLM_LOG:-${VLLM_STATE_DIR}/server.log}"
+# The managed venv install.sh creates at the Makefile pins. Remote targets
+# place it inside the deployed tree, which owns everything it runs.
+VLLM_VENV="${VLLM_VENV:-${XDG_DATA_HOME:-${HOME}/.local/share}/vllm/venv}"
 
 # GPU memory currently in use, in MiB. Prints 0 when nvidia-smi is unavailable
 # so callers can compare numerically without guarding.
@@ -38,22 +41,53 @@ vllm_compute_cap() {
     printf '%s\n' "${cap/./}"
 }
 
-# Path to the vllm executable, or empty. Three sources in order: an explicit
-# override, a venv beside these scripts, then PATH. The venv case exists because
-# not every host has the uv tool wrapper -- a plain `python3 -m venv` install is
-# the portable fallback, and it must be found without being activated.
+# Path to the vllm executable, or empty: the VLLM_BIN override, else the
+# managed venv. Never PATH, so a missing install fails rather than serving
+# whatever release the host happens to carry.
 vllm_bin() {
-    if [[ -n "${VLLM_BIN:-}" ]]; then
-        [[ -x "${VLLM_BIN}" ]] && printf '%s\n' "${VLLM_BIN}"
-        return 0
-    fi
-    local here
-    here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    if [[ -x "${here}/venv/bin/vllm" ]]; then
-        printf '%s\n' "${here}/venv/bin/vllm"
-        return 0
-    fi
-    command -v vllm 2> /dev/null || true
+    local exe="${VLLM_BIN:-${VLLM_VENV}/bin/vllm}"
+    [[ -x "${exe}" ]] && printf '%s\n' "${exe}"
+    return 0
+}
+
+# uv, which the host must provide, or empty. A non-interactive ssh PATH often
+# lacks the user install location, so that is tried as well.
+vllm_uv() {
+    command -v uv 2> /dev/null && return 0
+    [[ -x "${HOME}/.local/bin/uv" ]] && printf '%s\n' "${HOME}/.local/bin/uv"
+    return 0
+}
+
+# The hf CLI, or empty: the host's when it has one, else the managed venv's,
+# which vllm's huggingface_hub dependency installs.
+vllm_hf() {
+    command -v hf 2> /dev/null && return 0
+    [[ -x "${VLLM_VENV}/bin/hf" ]] && printf '%s\n' "${VLLM_VENV}/bin/hf"
+    return 0
+}
+
+# The pinned Hub artifacts of a model conf, one "repo revision" line each:
+# the model, then the speculative drafter when the conf names one. Arguments
+# are the conf's VLLM_MODEL, VLLM_MODEL_REVISION and VLLM_SPECULATIVE_CONFIG.
+# A drafter without a commit SHA revision is an error, not a floating download.
+vllm_artifacts() {
+    printf '%s %s\n' "$1" "$2"
+    [[ -n "${3:-}" ]] || return 0
+    python3 -c '
+import json, re, sys
+config = json.loads(sys.argv[1])
+if "model" in config:
+    if not re.fullmatch(r"[0-9a-f]{40}", str(config.get("revision", ""))):
+        sys.exit("error: the speculative drafter needs a 40-character commit SHA revision")
+    print(config["model"], config["revision"])
+' "$3"
+}
+
+# Hugging Face cache directory of one artifact's pinned snapshot, resolved
+# the way huggingface_hub resolves its cache.
+vllm_snapshot() {
+    local hub="${HF_HUB_CACHE:-${HUGGINGFACE_HUB_CACHE:-${HF_HOME:-${XDG_CACHE_HOME:-${HOME}/.cache}/huggingface}/hub}}"
+    printf '%s\n' "${hub}/models--${1//\//--}/snapshots/$2"
 }
 
 # Model config names available under models/.

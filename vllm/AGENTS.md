@@ -37,7 +37,7 @@ What is derived, and from what:
 | FlashInfer sampler | compute capability |
 | Utilization, max-num-seqs, max-num-batched-tokens | total VRAM (24 GiB split) |
 | Allocator config | host profile |
-| vllm executable | `VLLM_BIN`, then `venv/bin/vllm`, then PATH |
+| vllm executable | `VLLM_BIN`, else the managed `VLLM_VENV`; never PATH |
 
 The one model fact that reaches into that derivation is `VLLM_ATTN_AUTO`.
 Some models accept only backends the launcher would not guess, so their config
@@ -134,8 +134,8 @@ the flag.
 `start.sh` refuses to launch when the resolved vllm's installed version
 differs from `VLLM_VERSION`, which the `vllm-start` and `vllm-remote-start`
 recipes pass from the Makefile pin. Start never installs: a venv moves only
-through `vllm-remote-bootstrap` (or a local reinstall), so a pin bump is
-incomplete until every host's venv has been re-bootstrapped, and the guard
+through `vllm-install` or `vllm-remote-bootstrap`, so a pin bump is
+incomplete until every host's venv has been reinstalled, and the guard
 is what makes a forgotten host fail loudly instead of serving a retired
 release under the documented rates. `bench.py` applies the same check to
 the live engine.
@@ -191,6 +191,9 @@ Use a scratch handle for that kind of probing rather than defeating the guard:
 ```bash
 VLLM_PIDFILE=$(mktemp -d)/pid VLLM_BIN=/path/to/stub ./start.sh <conf>
 ```
+
+The conf's artifacts must be in the Hugging Face cache (`HF_HUB_CACHE`) even
+then: start refuses an unpulled model before it prints the resolved profile.
 
 If it does happen, recover by writing the real pid back into the pidfile and
 running `stop.sh`. Do not reach for `pkill -f`.
@@ -349,15 +352,15 @@ Rules for working on it, all of them learned the hard way:
   target run without thinking targets it -- check `make vllm-remote-status`
   first and stop what is running before starting your own.
 - **Deploy is internal plumbing, not a verb.** The targets that execute a
-  repo script -- `vllm-remote-start`, `vllm-remote-bench`, and
-  `vllm-remote-capability` -- run the internal `vllm-remote-deploy` step as a
-  prerequisite, an `rsync --delete` that excludes `venv/` (host-owned,
-  gigabytes of CUDA wheels), so they always carry the current scripts; a
-  stale remote copy is indistinguishable from a broken change. The read-only,
-  teardown and plumbing verbs (`status`, `stop`, `logs`, `tunnel`,
-  `bootstrap`) deliberately do not deploy, since a `--delete` sync must not
-  be a side effect of inspecting or stopping a server that on a shared host
-  may not be yours.
+  repo script -- `vllm-remote-bootstrap`, `vllm-remote-pull`,
+  `vllm-remote-start`, `vllm-remote-bench`, and `vllm-remote-capability` --
+  run the internal `vllm-remote-deploy` step as a prerequisite, an
+  `rsync --delete` that excludes `venv/` (host-owned, gigabytes of CUDA
+  wheels), so they always carry the current scripts; a stale remote copy is
+  indistinguishable from a broken change. The read-only and teardown verbs
+  (`status`, `stop`, `logs`, `tunnel`) deliberately do not deploy, since a
+  `--delete` sync must not be a side effect of inspecting or stopping a
+  server that on a shared host may not be yours.
 - **Stop by the make target and confirm the GPU reached 0 MiB.** `stop.sh`
   verifies this and exits non-zero if not.
 
@@ -464,14 +467,16 @@ never derive a missing metric from a retired-harness rate.
 
 ## Prerequisites
 
-- `vllm`, resolved by `vllm_bin` in this order: the `VLLM_BIN` override, a
-  `venv/` beside the scripts, then PATH. PATH is whatever the host provides,
-  typically a uv tool wrapper; the venv is the portable route and is what
-  `make vllm-remote-bootstrap` creates. First install pulls
-  roughly 10 GB of torch and CUDA wheels.
-- `CUDA_HOME` only matters for FlashInfer, which is only selected for fp8 KV on
-  sm_89+. It comes from the host environment.
-- Gated models need `hf auth login` and acceptance of the model's terms.
+- `uv` and `nvidia-smi` on the host; `install.sh` and `run.sh` check them.
+  `vllm_bin` resolves the `VLLM_BIN` override, else the managed venv that
+  `install.sh` builds, and never PATH: a host vllm would serve an unpinned
+  release. First install pulls roughly 10 GB of torch and CUDA wheels.
+- The CUDA toolkit is probed, never assumed: without `nvcc` (`CUDA_HOME`,
+  else PATH) the launcher takes Triton and disables the FlashInfer sampler,
+  and an explicit `VLLM_ATTN_BACKEND=FLASHINFER` is refused.
+- Start serves with `HF_HUB_OFFLINE=1` and refuses an artifact `pull.sh` has
+  not fetched, so a missing or changed revision fails instead of downloading.
+  Gated models need `hf auth login` and acceptance of the model's terms.
 
 ### Host provisioning
 
