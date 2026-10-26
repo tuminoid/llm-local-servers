@@ -28,6 +28,18 @@
             "output": 65536
           }
         },
+        "nanbeige4.3-33b": {
+          "name": "Nanbeige4.3 33B W4A16",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        },
         "qwen3.6-35b-a3b-awq": {
           "name": "Qwen3.6 35B A3B AWQ",
           "reasoning": true,
