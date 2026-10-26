@@ -235,6 +235,10 @@ in its model config.
   right after `<function=lookup_issue>`, where 0.31.0 writes a JSON body
   that the `qwen3_xml` parser does not read instead of
   `<parameter=issue_number>`. Retest on the next plugin or mlx-lm bump.
+  Its conf now declares the fixed chat template and preserved reasoning;
+  exploratory runs on that configuration (2026-10-26) passed 3 and 4 of
+  12 with no sample lacking reasoning, and both tool calls still got `{}`.
+  The row stays the stock-template campaign result until a campaign rerun.
 - Both LM Studio MLX rows ignore the schema, which no longer fails them
   (advisory since llm-audit-bench 2.3.0), and so does ds4, which has no
   `response_format`. The Ollama MLX runner enforces it on 0.40.6 and

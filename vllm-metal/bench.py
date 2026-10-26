@@ -279,6 +279,8 @@ def main() -> int:
         or _config_optional(conf, "VLLM_REASONING_PARSER"),
         "tool_parser": os.environ.get("VLLM_TOOL_PARSER")
         or _config_optional(conf, "VLLM_TOOL_PARSER"),
+        "chat_template": os.environ.get("VLLM_CHAT_TEMPLATE")
+        or _config_optional(conf, "VLLM_CHAT_TEMPLATE"),
         "kv_bytes_per_token": int(
             os.environ.get("VLLM_KV_BYTES_PER_TOKEN")
             or _config_optional(conf, "VLLM_KV_BYTES_PER_TOKEN")

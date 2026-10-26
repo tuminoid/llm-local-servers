@@ -21,6 +21,7 @@ Serving measurements follow
 | `battery-gate.sh` | AuditBench sample gate: charge floor plus 140 W adapter contract |
 | `stop.sh` | Process-group teardown and release verification |
 | `models/*.conf` | Portable model facts: repo, revision, context, parsers, KV cost |
+| `mimo-v2.6-chat-template.jinja` | MiMo-V2.6-Distill-Qwen-9B chat template, fixed to open the thinking block (a copy of `vllm/`'s) |
 | `Makefile` | Guard with no runnable targets |
 
 ## Invariants

@@ -46,6 +46,7 @@ VLLM_KV_BYTES_PER_TOKEN="${VLLM_KV_BYTES_PER_TOKEN:-}"
 VLLM_KV_BYTES_PER_TOKEN_APC="${VLLM_KV_BYTES_PER_TOKEN_APC:-}"
 VLLM_HF_OVERRIDES="${VLLM_HF_OVERRIDES:-}"
 VLLM_STRUCTURED_OUTPUTS_CONFIG="${VLLM_STRUCTURED_OUTPUTS_CONFIG:-}"
+VLLM_CHAT_TEMPLATE="${VLLM_CHAT_TEMPLATE:-}"
 
 # shellcheck source=models/ornith1.5-35b-a3b-4bit.conf disable=SC1091
 source "${CONF_FILE}"
@@ -232,6 +233,16 @@ fi
 # argv element; vLLM validates the shape.
 if [[ -n "${VLLM_STRUCTURED_OUTPUTS_CONFIG}" ]]; then
     args+=(--structured-outputs-config "${VLLM_STRUCTURED_OUTPUTS_CONFIG}")
+fi
+
+# A chat template override, resolved beside these scripts. A model fact: the
+# file is the checkpoint's template with the defect fixed.
+if [[ -n "${VLLM_CHAT_TEMPLATE}" ]]; then
+    if [[ ! -f "${SCRIPT_DIR}/${VLLM_CHAT_TEMPLATE}" ]]; then
+        printf 'error: no such chat template: %s\n' "${SCRIPT_DIR}/${VLLM_CHAT_TEMPLATE}" >&2
+        exit 1
+    fi
+    args+=(--chat-template "${SCRIPT_DIR}/${VLLM_CHAT_TEMPLATE}")
 fi
 
 mkdir -p "$(dirname "${VLLM_METAL_PIDFILE}")"
