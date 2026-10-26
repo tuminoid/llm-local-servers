@@ -276,6 +276,39 @@ class OllamaIdentityTest(unittest.TestCase):
         self.assertEqual(profile["prompt_cache_ram_mib"], 0)
         self.assertEqual(profile["model_digest"], "a" * 64)
 
+    def test_runtime_profile_reads_the_default_prompt_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = pathlib.Path(directory) / "server.log"
+            log.write_bytes(
+                b"starting llama-server --model demo -np 2\n"
+                b"config: model=demo:latest context=131072 parallel=2 "
+                b"aggregate=262144 kv=q8_0\n"
+                b"config: host=127.0.0.1:11434 flash_attention=1 "
+                b"fit_target=1024MiB cache_ram=default version=0.32.14\n"
+                b"config: binary=/runtime/ollama models=default state=/state\n"
+                b"tokenizer metadata: \xc4\n"
+            )
+            identity = {
+                "digest": "a" * 64,
+                "format": "gguf",
+                "quantization": "Q4_K_M",
+            }
+            residency = {"allocated_context": 131072}
+            with mock.patch.object(OLLAMA_BENCH, "SERVER_LOG", log):
+                runner, slots = OLLAMA_BENCH._effective_runner()
+                profile = OLLAMA_BENCH._runtime_profile(
+                    model="demo:latest",
+                    context=131072,
+                    identity=identity,
+                    residency=residency,
+                    runner="llama.cpp",
+                    effective_slots=2,
+                )
+        self.assertEqual((runner, slots), ("llama.cpp", 2))
+        self.assertTrue(profile["checked"])
+        self.assertEqual(profile["requested_slots"], 2)
+        self.assertIsNone(profile["prompt_cache_ram_mib"])
+        self.assertEqual(profile["model_digest"], "a" * 64)
 
 if __name__ == "__main__":
     unittest.main()

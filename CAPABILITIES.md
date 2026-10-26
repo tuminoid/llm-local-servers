@@ -181,7 +181,10 @@ with at least 11 of 12 samples passed. Five groups differ:
   2.3.0) from the pin's trial commit `d96a7f0`, whose runtime files match
   main, under `~/.local/state/auditbench/trials/2026-10-22-night/ollama/`;
   Lightning's row ran 2026-10-23 from main `8cea7ce`, under
-  `~/.local/state/auditbench/trials/2026-10-23-ollama-0408-retest/results/`.
+  `~/.local/state/auditbench/trials/2026-10-23-ollama-0408-retest/results/`;
+  MiMo-V2.6-Flash's ran 2026-10-26 (llm-audit-bench 2.4.0) from its profile
+  commit `a414742`, under
+  `~/.local/state/auditbench/trials/2026-10-26-mimo-hunt/ollama/`.
 - The ds4 row ran 2026-10-23 (llm-audit-bench 2.3.0) from fleet commit
   `3c3a5ab`, under `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
 
@@ -199,6 +202,7 @@ with at least 11 of 12 samples passed. Five groups differ:
 | vLLM-Metal | `ornith1.5-122b-a10b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
 | Ollama | `flint-40b-a2b-qat-int4-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: wrong_verdicts 1) | pass |
+| Ollama | `mimo-v2.6-flash-q2ks` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 2, leak 1, missed_findings 1) | fail |
 | Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
@@ -209,14 +213,15 @@ in its model config.
 
 ### Findings
 
-- Thirteen profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
+- Fourteen profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and
   `qwen3.8-27b` (11 of 12), LM Studio `qwen3.8-27b-splash` and
   `qwen3.8-27b-mlx` (12 of 12 each) and `qwen3.6-35b-a3b-mlx` (11 of 12),
   vLLM-Metal `gemma4-31b-4bit` and `ornith1.5-122b-a10b-4bit` (12 of 12
   each), `granite4.2-30b-4bit` and
   `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama
-  `nemotron-3.5-super-mlx` (12 of 12), `muse-glimmer-30b-mlx` and
-  `flint-40b-a2b-qat-int4-mlx` (11 of 12 each), and ds4
+  `nemotron-3.5-super-mlx` (12 of 12), `muse-glimmer-30b-mlx`,
+  `flint-40b-a2b-qat-int4-mlx` and `mimo-v2.6-flash-q2ks` (11 of 12 each),
+  and ds4
   `qwen3.8-flash-next-q4` (12 of 12).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf

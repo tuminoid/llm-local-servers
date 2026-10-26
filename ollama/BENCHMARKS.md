@@ -65,20 +65,23 @@ column is configured context times slots, not a measured pool. Ollama has no
 ## AuditBench v2: Apple M5 Max
 
 Managed Ollama 0.40.8, the fleet default (the MLX runner serializes requests
-to one slot). Contexts are the confs': 131,072 for Glimmer, 262,144 for Flint
-and Lightning and 524,288 for Super VL. Canonical AuditBench v2 `session`
-profile at each conf's declared sampling on the M5 Max (128 GB, macOS 27.0),
-one stream (one slot): tool steps from 32k evidence, 16 at 262,144 and above
-and 9 at 131,072, report at depth. All rows ran 2026-10-22/23 on
-llm-audit-bench 2.3.0: Glimmer, Flint and Super VL from the pin's trial commit
-`d96a7f0`, Lightning from main `8cea7ce`, both with the runtime files of main.
-Each JSON records its harness hash. Sessions/h is the median over 2-3 samples;
-complete counts sessions whose report ended on its own and named at least 7/8
-of its findings. pp512/tg128 is the llama-bench-method reference (one stream,
-greedy, depth ~0), not a serving result. JSON files are retained under
+to one slot). Contexts are the confs': 131,072 for Glimmer, 262,144 for Flint,
+Lightning and MiMo-V2.6-Flash and 524,288 for Super VL. Canonical AuditBench
+v2 `session` profile at each conf's declared sampling on the M5 Max (128 GB,
+macOS 27.0), one stream (one slot): tool steps from 32k evidence, 16 at
+262,144 and above and 9 at 131,072, report at depth. The first four rows ran
+2026-10-22/23 on llm-audit-bench 2.3.0: Glimmer, Flint and Super VL from the
+pin's trial commit `d96a7f0`, Lightning from main `8cea7ce`, both with the
+runtime files of main. Each JSON records its harness hash. Sessions/h is the
+median over 2-3 samples; complete counts sessions whose report ended on its
+own and named at least 7/8 of its findings. pp512/tg128 is the
+llama-bench-method reference (one stream, greedy, depth ~0), not a serving
+result. JSON files are retained under
 `~/.local/state/auditbench/trials/2026-10-22-night/ollama/` and
 `.../2026-10-23-ollama-0408-retest/results/`; the 0.40.6 rows they replace are
-in git history.
+in git history. MiMo-V2.6-Flash ran 2026-10-26 on llm-audit-bench 2.4.0 from
+its profile commit `a414742`, under
+`~/.local/state/auditbench/trials/2026-10-26-mimo-hunt/ollama/`.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
@@ -86,10 +89,12 @@ in git history.
 | Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 17.72 | 1,715 | 666.4 | 32.4 | 3/3 | unavailable | pass | yes | `20261022T170304.820009+0000_ollama_muse-glimmer-30b-mlx_session.json` |
 | Ollama `flint-40b-a2b-qat-int4-mlx` | 262,144 | 1 | 262,144 | 1x 14.42 | 10,134 | 1,612.2 | 61.8 | 2/2 | unavailable | pass | yes | `20261023T030840.299152+0000_ollama_flint-40b-a2b-qat-int4_session.json` |
 | Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 11.06 | 6,524 | 940.8 | 40.4 | 2/2 | unavailable | pass | yes | `20261023T034844.807746+0000_ollama_nemotron-3-5-super-mlx_session.json` |
+| Ollama `mimo-v2.6-flash-q2ks` | 262,144 | 1 | 262,144 | 1x 5.34 | 3,519 | 313.4 | 22.2 | 3/3 | unavailable | pass | yes | `20261026T154250.548452+0000_ollama_mimo-v2-6-flash-q2ks_session.json` |
 
-- All four enforce the JSON schema (0.32.14 ignored it). Glimmer, Flint and
-  Super VL pass Capability Check v2; Lightning fails audit fitness (8 of 12
-  on 0.40.6 and 0.40.8), so its 29.41 sessions/h cannot promote it.
+- All five enforce the JSON schema (0.32.14 ignored it). Glimmer, Flint, Super
+  VL and MiMo-V2.6-Flash pass Capability Check v2; Lightning fails audit
+  fitness (8 of 12 on 0.40.6 and 0.40.8), so its 29.41 sessions/h cannot
+  promote it.
 - Against 0.40.6: Lightning 27.97 to 29.41, Glimmer 18.31 to 17.72 and
   Super VL 11.39 to 11.06, all within sample spread. Lightning's 21.12 on
   0.32.14 was an earlier digest: the tag moved to `d1e17d7d` (see its conf).
@@ -109,6 +114,18 @@ in git history.
   step of about 13 GiB at a post-prefill commit recurs on Lightning and
   Super VL and is released at once; Flint shows a 15.6 GiB step at about
   41 GiB available.
+- `mimo-v2.6-flash-q2ks` (Xiaomi MiMo-V2.6-Flash-MOPD, 309B-A15B, the
+  ggml-org Q2_K_S GGUF on llama.cpp) holds 99.07 GiB on the GPU at 262,144
+  with q8_0 KV and llama-server's host prompt cache off
+  (`OLLAMA_CACHE_RAM=0`). Each prompt-cache save at its 8 GiB default
+  (5.3 GiB at 246k, 1.9 GiB at 167k) and, with the cache off, f16 KV past
+  148k took available memory under 4 GiB. It prefills a 245,747-token cold
+  prompt in 963 s (255 tok/s). Audit fitness passed 71 of 72 over six
+  runs on 0.40.8 and 0.40.11 (11 of 12 here, one selection format miss);
+  0.40.11 ran 5.25 sessions/h, so the newer runner changes nothing. The
+  pp512/tg128 reference is unavailable (17 of 128 tokens). The AesSedai
+  BPW2.5 conversion (90 GiB) failed audit fitness 9 of 12 on format at 4.75
+  sessions/h.
 - `nemotron-3.5-super-mlx` (Nemotron 3.5 Super VL 120B-A12B, NVFP4) holds
   74.41 GiB on the GPU at 524,288 and prefills a 491,526-token cold prompt
   in 806 s (610 tok/s); at that depth available memory falls to about
