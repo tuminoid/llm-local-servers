@@ -224,6 +224,7 @@ def main() -> int:
             "VLLM_TOOL_PLUGIN",
             "VLLM_CHAT_TEMPLATE",
             "VLLM_SAMPLING",
+            "VLLM_PRESERVE_REASONING",
         ),
     )
     model_source = config["VLLM_MODEL"]
@@ -247,6 +248,9 @@ def main() -> int:
     }
     # The checkpoint's sampling, a model fact; the harness decodes at it.
     os.environ["AUDIT_BENCH_SAMPLING"] = config["VLLM_SAMPLING"]
+    # A model whose template requires its prior reasoning back in the history.
+    if config["VLLM_PRESERVE_REASONING"] == "1":
+        os.environ["AUDIT_BENCH_PRESERVE_REASONING"] = "1"
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     base = os.environ.get("VLLM_BENCH_BASE", "http://127.0.0.1:8000")
     dry_run = os.environ.get("AUDIT_BENCH_DRY_RUN", "0") == "1"

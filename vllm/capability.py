@@ -62,6 +62,7 @@ def main() -> int:
                 "VLLM_CAP_DISABLE_MODE",
                 "VLLM_CAP_SYSTEM_PROMPT",
                 "VLLM_SAMPLING",
+                "VLLM_PRESERVE_REASONING",
             ),
         )
         model = values["VLLM_SERVED_NAME"]
@@ -81,6 +82,7 @@ def main() -> int:
             disable_prefix=disable_prefix,
             system_prompt=values["VLLM_CAP_SYSTEM_PROMPT"] or None,
             sampling=parse_sampling(values["VLLM_SAMPLING"]),
+            preserve_reasoning=values["VLLM_PRESERVE_REASONING"] == "1",
             context=context,
         )
         timeout = int(os.environ.get("CAPABILITY_TIMEOUT", "600"))

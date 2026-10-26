@@ -98,6 +98,10 @@ Serving measurements follow
 - Parsers are explicit per model, as on the CUDA side: vLLM auto-detects
   neither. Qwen3.5-family checkpoints use `qwen3` reasoning and
   `qwen3_xml` tool parsers; the response field is `message.reasoning`.
+- A model whose template re-renders past reasoning declares
+  `VLLM_PRESERVE_REASONING=1`. `bench.py` and `capability.py` both forward
+  it; the capability adapter builds its own `CapabilityConfig`, so the
+  harness's `CAPABILITY_PRESERVE_REASONING` alone never reaches it.
 - Stop by the recorded process group, never a command-line pattern. macOS
   has no `setsid`; `run.sh` falls back to bash job control for the
   detached process group, and the emptied group is the unified-memory

@@ -214,6 +214,13 @@ The response field is `message.reasoning`, renamed from
 `reasoning_content` in vLLM 0.26. Code reading the old name gets `None`
 silently rather than an error.
 
+A request may send prior reasoning back the same way: vLLM hands a history
+message's `reasoning` to the chat template as both `reasoning` and
+`reasoning_content`. A model whose template re-renders past reasoning
+declares `VLLM_PRESERVE_REASONING=1`; `bench.py` and `capability.py` both
+forward it, since the capability adapter builds its own `CapabilityConfig`
+and the harness's `CAPABILITY_PRESERVE_REASONING` alone never reaches it.
+
 That rename reaches clients. An opencode provider entry for this server must
 use `interleaved.field: reasoning`; the older `reasoning_content` spelling
 silently yields no reasoning against vLLM 0.26. Confirm with a streaming

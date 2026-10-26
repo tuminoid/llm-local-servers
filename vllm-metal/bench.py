@@ -294,6 +294,10 @@ def main() -> int:
     os.environ["AUDIT_BENCH_SAMPLING"] = os.environ.get(
         "VLLM_SAMPLING"
     ) or _config_value(conf, "VLLM_SAMPLING")
+    # A model whose template requires its prior reasoning back in the history.
+    if (os.environ.get("VLLM_PRESERVE_REASONING")
+            or _config_optional(conf, "VLLM_PRESERVE_REASONING")) == "1":
+        os.environ["AUDIT_BENCH_PRESERVE_REASONING"] = "1"
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     base = os.environ.get("VLLM_METAL_BENCH_BASE", "http://127.0.0.1:8021")
     dry_run = os.environ.get("AUDIT_BENCH_DRY_RUN", "0") == "1"
