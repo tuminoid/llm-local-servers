@@ -85,6 +85,7 @@ def main() -> int:
             disable_prefix=disable_prefix,
             system_prompt=values["VLLM_CAP_SYSTEM_PROMPT"] or None,
             sampling=parse_sampling(values["VLLM_SAMPLING"]),
+            context=context,
         )
         timeout = int(os.environ.get("CAPABILITY_TIMEOUT", "600"))
         tokens = int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048"))

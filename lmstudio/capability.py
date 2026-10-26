@@ -38,6 +38,7 @@ def main():
                 system_prompt=values["LMSTUDIO_CAP_SYSTEM_PROMPT"] or None,
                 sampling=parse_sampling(values["LMSTUDIO_SAMPLING"]),
                 concurrency=owner["parallel"],
+                context=owner["context"],
             ),
             identity=identity,
             timeout_tokens=int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048")),

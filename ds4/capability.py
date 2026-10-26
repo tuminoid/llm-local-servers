@@ -37,6 +37,7 @@ def main():
                 system_prompt=values["DS4_CAP_SYSTEM_PROMPT"] or None,
                 sampling=parse_sampling(values["DS4_SAMPLING"]),
                 concurrency=slots,
+                context=int(values["DS4_CTX"]),
             ),
             identity=identity,
             timeout_tokens=int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048")),

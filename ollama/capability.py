@@ -62,6 +62,7 @@ def main() -> int:
                 "OLLAMA_CAP_SYSTEM_PROMPT",
                 "OLLAMA_SAMPLING",
                 "OLLAMA_PRESERVE_REASONING",
+                "OLLAMA_CONTEXT_LENGTH",
             ),
         )
         model = values["OLLAMA_MODEL"]
@@ -81,6 +82,7 @@ def main() -> int:
             system_prompt=values["OLLAMA_CAP_SYSTEM_PROMPT"] or None,
             sampling=parse_sampling(values["OLLAMA_SAMPLING"]),
             preserve_reasoning=values["OLLAMA_PRESERVE_REASONING"] == "1",
+            context=int(values["OLLAMA_CONTEXT_LENGTH"]),
         )
         timeout = int(os.environ.get("CAPABILITY_TIMEOUT", "600"))
         tokens = int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048"))

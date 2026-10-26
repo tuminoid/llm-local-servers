@@ -37,6 +37,7 @@ def main():
                 system_prompt=values["SPLASH_CAP_SYSTEM_PROMPT"] or None,
                 sampling=parse_sampling(values["SPLASH_SAMPLING"]),
                 concurrency=bench.capacity(status)[0],
+                context=int(status["maximum_context_tokens"]),
             ),
             identity=identity,
             timeout_tokens=int(os.environ.get("CAPABILITY_REASONING_TOKENS", "2048")),
