@@ -269,21 +269,25 @@ in its model config.
 ## A100-SXM4-80GB campaign
 
 Host: shared A100 test host, reached over ssh through the `HOST` alias
-supplied by `.envrc`. Capability Check v2 (`capability-v2`,
-SCHEMA_VERSION 5), llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11
-from fleet commit `ad06c70` on vLLM 0.31.0 with Transformers 5.15.1;
-reports under `auditbench-trials/2026-10-10-v2-canonical/` on the host. The
-Ollama rows ran on Ollama 0.40.7: Ornith and Flash-Next on 2026-10-21
-(llm-audit-bench 2.2.0) from the pin's trial commit `31fd6d5`, Bolt on
-2026-10-22 (2.3.0) from its trial commit `67fe0b6`, both matching the
-profile files on main; reports under `auditbench-trials/2026-10-21-releases/`
-and `auditbench-trials/2026-10-22-night/`. Audit fitness ran 4 samples
-per task at each conf's declared sampling and passes with at least 11 of
-12 samples passed.
+supplied by `.envrc`. Capability Check v2 (`capability-v2`, SCHEMA_VERSION
+5), llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11 from fleet commit
+`ad06c70` on vLLM 0.31.0 with Transformers 5.15.1; reports under
+`auditbench-trials/2026-10-10-v2-canonical/` on the host. The Ollama rows
+ran on Ollama 0.40.7: Ornith and Flash-Next on 2026-10-21 (llm-audit-bench
+2.2.0) from the pin's trial commit `31fd6d5`, Bolt on 2026-10-22 (2.3.0)
+from its trial commit `67fe0b6`, both matching the profile files on main;
+reports under `auditbench-trials/2026-10-21-releases/` and
+`auditbench-trials/2026-10-22-night/`. vLLM `nanbeige4.3-33b-w4a16` ran
+2026-10-26 on llm-audit-bench 2.4.0 (SCHEMA_VERSION 7) from `852441d`, its
+profile before a rebase, under
+`auditbench-trials/2026-10-26-nanbeige-hunt/`. Audit fitness ran 4 samples
+per task at each conf's declared sampling and passes with at least 11 of 12
+samples passed.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | vLLM | `gemma4-26b-a4b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: missed_findings 1) | pass |
+| vLLM | `nanbeige4.3-33b-w4a16` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace runaway | pass 11/12 (failed: runaway 1) | pass |
 | vLLM | `mimo-v2.6-9b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 5/12 (failed: invented 2, no_reasoning 3, wrong_verdicts 2) | fail |
 | vLLM | `qwen3.6-35b-a3b-awq` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
@@ -298,9 +302,9 @@ model config.
 
 ### Findings
 
-- Eight profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the
-  W4A16 checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each)
-  and `gemma4-26b-a4b-awq` (11 of 12), and Ollama
+- Nine profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
+  checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each),
+  `gemma4-26b-a4b-awq` and `nanbeige4.3-33b-w4a16` (11 of 12 each), and Ollama
   `nemotron-3.5-bolt-74b-a9b-iq2` (12 of 12), `ornith1.5-35b-a3b` and
   `qwen3.8-flash-next-gguf-iq4xs` (11 of 12 each; 12 of 12 each on 0.40.3).
 - Audit fitness is what v1 could not see. MiMo (5 of 12 on 0.31.0: no

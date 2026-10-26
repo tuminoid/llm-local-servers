@@ -32,6 +32,9 @@ named at least 7/8 of its findings. pp512/tg128 is the llama-bench-method
 reference (one stream, greedy, depth ~0), not a serving result. JSON files
 are retained under `auditbench-trials/2026-10-10-v2-canonical/` on the host.
 The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
+`nanbeige4.3-33b-w4a16` ran 2026-10-26 on llm-audit-bench 2.4.0 from
+`852441d`, its profile before a rebase onto main, under
+`auditbench-trials/2026-10-26-nanbeige-hunt/` on the host.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
@@ -41,6 +44,7 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
 | vLLM `qwen3.8-27b-512k` | 524,288 | 8 | 779,829 | 1x 14.49 / 4x 19.55 | 5,654 | 1,718.9 | 36.7 | 15/15 | 2,519 / 49.3 | pass | yes | `20261011T014610.294573+0000_vllm-cuda_qwen3-8-27b-512k_session.json` |
 | vLLM `qwen3.8-27b` | 262,144 | 8 | 954,019 | 1x 11.83 / 4x 21.48 | 10,860 | 1,827.6 | 49.8 | 15/15 | 2,870 / 75.4 | pass | yes | `20261010T220419.237789+0000_vllm-cuda_qwen3-8-27b_session.json` |
 | vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 522,956 | 1x 8.40 / 2x 13.04 | 7,744 | 1,736.4 | 22.8 | 9/9 | 2,561 / 110.0 | pass | yes | `20261010T231305.575650+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json` |
+| vLLM `nanbeige4.3-33b-w4a16` | 262,144 | 8 | 284,704 | 1x 7.19 | 10,566 | 918.2 | 27.7 | 2/2 | 2,836 / 71.4 | pass | yes | `20261026T160414.161697+0000_vllm-cuda_nanbeige4-3-33b-w4a16_session.json` |
 
 - Five of eight profiles pass Capability Check v2, against three on
   0.30.0: `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` failed only on
@@ -57,6 +61,15 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
   tok/s and the KV pool from 774,131 to 954,019 tokens.
   `qwen3.8-27b-512k` keeps FP8; its one-stream 14.49 is a single run
   (10.62 to 11.92 in the same week's trials).
+- `nanbeige4.3-33b-w4a16` (Nanbeige4.3-33B, dense, AutoRound INT4) passes
+  Capability Check v2 11 of 12 (one workflow runaway) only under 2.4.0's
+  context-scaled answer cap: at the old 32,768 it deliberates selection past
+  the cap on topic, failing 8 of 12 on this build and 9 of 12 on the FP8 one,
+  and passes 12 of 12 twice at 65,536. One session fits the 284,704-token
+  pool, so it measures one stream: 7.19 sessions/h, about 10.6k output tokens
+  per session with preserved reasoning. The schema check, advisory, ran into a
+  whitespace runaway. On Ollama the Q4_K_M GGUF needs its reasoning resent
+  inline (`OLLAMA_REASONING_INLINE`) and ran 4.38 sessions/h.
 - DFlash 2 still loses at the declared sampling: 8.40 / 13.04 sessions/h,
   report decode 22.8 tok/s. A fixed-depth decode probe of the two profiles
   as configured (2026-10-22, the vLLM 0.32.0 trial tree, not the pin; 2,048

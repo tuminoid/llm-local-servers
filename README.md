@@ -191,6 +191,7 @@ the retained JSON names are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
 | 6 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 15.68 | -- | 1x | 107.7 |
 | 7 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
 | 8 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 8.79 | 9.49 @2x | 2x | 27.3 |
+| 9 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
 
 Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) fails Capability
 Check v2 audit fitness. DFlash 2 loses to plain qwen3.8 at the declared
