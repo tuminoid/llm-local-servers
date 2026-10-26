@@ -74,6 +74,32 @@ def _config_setting(conf: pathlib.Path, name: str) -> str | None:
     return os.environ.get(name) or _config_optional(conf, name)
 
 
+def inline_reasoning(messages: list[dict], field: str) -> list[dict]:
+    """Move each assistant turn's reasoning into its content as <think>.
+
+    Ollama's llama-server path drops a history message's reasoning
+    (`llamaServerChatMessage` copies role, content, tool calls and tool ids
+    only), so a template that recovers past reasoning from <think> in the
+    content is handed it there instead.
+    """
+    out = []
+    for message in messages:
+        reasoning = message.get(field)
+        if message.get("role") == "assistant" and reasoning:
+            message = {key: value for key, value in message.items() if key != field}
+            message["content"] = (
+                f"<think>\n{reasoning}\n</think>\n\n{message.get('content') or ''}"
+            )
+        out.append(message)
+    return out
+
+
+def _inline_chat(chat):
+    def inlined(messages, *args, **kwargs):
+        return chat(inline_reasoning(messages, "reasoning"), *args, **kwargs)
+    return inlined
+
+
 def _identity_expectations(conf: pathlib.Path) -> dict:
     fields = {
         "digest": "OLLAMA_EXPECTED_DIGEST",
@@ -498,6 +524,7 @@ def main() -> int:
     # A model whose card requires its prior reasoning back in the history.
     if _config_setting(conf, "OLLAMA_PRESERVE_REASONING") == "1":
         os.environ["AUDIT_BENCH_PRESERVE_REASONING"] = "1"
+    inline = _config_setting(conf, "OLLAMA_REASONING_INLINE") == "1"
     # The checkpoint's sampling, a model fact; the harness decodes at it.
     os.environ["AUDIT_BENCH_SAMPLING"] = os.environ.get(
         "OLLAMA_SAMPLING"
@@ -592,17 +619,18 @@ def main() -> int:
         )
         return 0
 
+    chat = openai_chat_fn(
+        f"{BASE}/v1", model,
+        int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200")),
+        reasoning_effort=effort or None,
+    )
     return run_benchmark(
         runtime="ollama",
         tag=tag,
         model=model,
         context=context,
         request=adapter,
-        openai_chat=openai_chat_fn(
-            f"{BASE}/v1", model,
-            int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200")),
-            reasoning_effort=effort or None,
-        ),
+        openai_chat=_inline_chat(chat) if inline else chat,
         active_slots=effective_slots,
         kv_pool_tokens=context * effective_slots,
         runtime_metadata={
@@ -612,6 +640,7 @@ def main() -> int:
             "residency": residency,
             "ollama_version": os.environ.get("OLLAMA_VERSION"),
             "capacity_source": "allocated context x effective slots",
+            "reasoning_inline": inline,
         },
         provenance_files={
             "adapter": pathlib.Path(__file__).resolve(),

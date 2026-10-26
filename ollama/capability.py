@@ -24,6 +24,15 @@ from capability_check import (
 )
 
 
+class InlineReasoningAdapter(OllamaChatAdapter):
+    """Resends prior reasoning inside content; see bench.inline_reasoning."""
+
+    def chat(self, messages: list[dict], **kwargs):
+        return super().chat(
+            benchmark_adapter.inline_reasoning(messages, self.reasoning_field), **kwargs
+        )
+
+
 def _managed_pid() -> int:
     state_root = pathlib.Path(
         os.environ.get("XDG_STATE_HOME", pathlib.Path.home() / ".local" / "state")
@@ -91,7 +100,10 @@ def main() -> int:
         identity = benchmark_adapter.verified_identity(
             model, benchmark_adapter._identity_expectations(conf)
         )
-        adapter = OllamaChatAdapter(base, model, timeout)
+        inline = benchmark_adapter._config_setting(conf, "OLLAMA_REASONING_INLINE") == "1"
+        adapter = (InlineReasoningAdapter if inline else OllamaChatAdapter)(
+            base, model, timeout
+        )
         preload_messages = []
         if config.system_prompt:
             preload_messages.append(
@@ -117,6 +129,7 @@ def main() -> int:
             "effective_slots": effective_slots,
             "loaded_digest": residency["digest"],
             "managed_pid": managed_pid,
+            "reasoning_inline": inline,
         }
         return run_capability_check(
             runtime="ollama",
