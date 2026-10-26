@@ -125,6 +125,12 @@ in [README.md](README.md); shared server conventions live in
   `OLLAMA_KV_CACHE_TYPE=mlx-native`, which start.sh accepts as documentation
   and does not export. Do not report queued MLX requests as concurrency; the
   benchmark's effective-runner check treats MLX as one slot.
+- Ollama starts llama-server with its host-RAM prompt cache at the
+  llama.cpp default (8 GiB) and no flag to change it. On unified memory a
+  saved prompt's state comes out of the model's own headroom, so a conf
+  whose weights leave no room for it sets `OLLAMA_CACHE_RAM` (MiB, exported
+  as `LLAMA_ARG_CACHE_RAM`); every other profile keeps the default, which
+  spares a full prefill when conversations take turns on one slot.
 - MLX context maxima are measured per model and digest and never copied
   between models. A Qwen3.8 NVFP4 profile (since dropped) at native 262,144
   exhausted the M5 Max's 128 GB unified memory ~192k tokens into a 246k

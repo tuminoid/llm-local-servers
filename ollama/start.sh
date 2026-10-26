@@ -32,6 +32,7 @@ OLLAMA_MIN_VERSION="${OLLAMA_MIN_VERSION:-}"
 OLLAMA_CONTEXT_LENGTH="${OLLAMA_CONTEXT_LENGTH:-}"
 OLLAMA_KV_CACHE_TYPE="${OLLAMA_KV_CACHE_TYPE:-}"
 OLLAMA_RUNTIME_VERSION="${OLLAMA_RUNTIME_VERSION:-}"
+OLLAMA_CACHE_RAM="${OLLAMA_CACHE_RAM:-}"
 
 # shellcheck source=models/saluki-27b.conf disable=SC1091
 source "${CONF_FILE}"
@@ -148,13 +149,18 @@ export LLAMA_ARG_FIT LLAMA_ARG_FIT_TARGET
 if [[ "${OLLAMA_KV_CACHE_TYPE}" != "mlx-native" ]]; then
     export OLLAMA_KV_CACHE_TYPE
 fi
+# llama-server's host-RAM prompt cache (MiB), which Ollama never sets; its
+# default is 8192. A conf sets it only where the saved state would not fit.
+if [[ -n "${OLLAMA_CACHE_RAM}" ]]; then
+    export LLAMA_ARG_CACHE_RAM="${OLLAMA_CACHE_RAM}"
+fi
 
 printf 'config: model=%s context=%s parallel=%s aggregate=%s kv=%s\n' \
     "${OLLAMA_MODEL}" "${OLLAMA_CONTEXT_LENGTH}" "${OLLAMA_NUM_PARALLEL}" \
     "$((OLLAMA_CONTEXT_LENGTH * OLLAMA_NUM_PARALLEL))" "${OLLAMA_KV_CACHE_TYPE}"
-printf 'config: host=%s flash_attention=%s fit_target=%sMiB version=%s\n' \
+printf 'config: host=%s flash_attention=%s fit_target=%sMiB cache_ram=%s version=%s\n' \
     "${OLLAMA_HOST}" "${OLLAMA_FLASH_ATTENTION}" "${LLAMA_ARG_FIT_TARGET}" \
-    "${actual_version}"
+    "${LLAMA_ARG_CACHE_RAM:-default}" "${actual_version}"
 # Ollama 0.40 refuses a relative model directory ("manifest path ... resolves
 # outside manifest directory"), and the remote tree passes one relative to
 # the remote home.

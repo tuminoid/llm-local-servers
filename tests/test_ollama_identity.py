@@ -250,7 +250,7 @@ class OllamaIdentityTest(unittest.TestCase):
                 b"config: model=demo:latest context=131072 parallel=2 "
                 b"aggregate=262144 kv=q8_0\n"
                 b"config: host=127.0.0.1:11434 flash_attention=1 "
-                b"fit_target=1024MiB version=0.32.14\n"
+                b"fit_target=1024MiB cache_ram=0 version=0.32.14\n"
                 b"config: binary=/runtime/ollama models=default state=/state\n"
                 b"tokenizer metadata: \xc4\n"
             )
@@ -273,6 +273,7 @@ class OllamaIdentityTest(unittest.TestCase):
         self.assertEqual((runner, slots), ("llama.cpp", 2))
         self.assertTrue(profile["checked"])
         self.assertEqual(profile["requested_slots"], 2)
+        self.assertEqual(profile["prompt_cache_ram_mib"], 0)
         self.assertEqual(profile["model_digest"], "a" * 64)
 
 

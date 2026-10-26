@@ -423,7 +423,7 @@ def _runtime_profile(
     )
     host_match = re.fullmatch(
         r"config: host=(\S+) flash_attention=(\S+) "
-        r"fit_target=([0-9]+)MiB version=(\S+)",
+        r"fit_target=([0-9]+)MiB cache_ram=(\S+) version=(\S+)",
         host_line,
     )
     if not model_match or not host_match:
@@ -433,7 +433,7 @@ def _runtime_profile(
     logged_model, logged_context, requested_slots, aggregate, kv_type = (
         model_match.groups()
     )
-    host, flash_attention, fit_target, version = host_match.groups()
+    host, flash_attention, fit_target, cache_ram, version = host_match.groups()
     if logged_model != model or int(logged_context) != context:
         raise RuntimeError(
             f"managed profile is {logged_model} at {logged_context}, "
@@ -452,6 +452,8 @@ def _runtime_profile(
         "kv_cache_type": kv_type,
         "flash_attention": flash_attention == "1",
         "fit_target_mib": int(fit_target),
+        # llama-server's host prompt cache, MiB; None is its 8 GiB default.
+        "prompt_cache_ram_mib": None if cache_ram == "default" else int(cache_ram),
         "model_digest": identity["digest"],
         "artifact_format": identity["format"],
         "quantization": identity["quantization"],
