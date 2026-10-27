@@ -65,7 +65,11 @@ in [README.md](README.md); shared server conventions live in
 - A model card that requires its returned reasoning in the history declares
   `OLLAMA_PRESERVE_REASONING=1`. `bench.py` and `capability.py` both forward
   it; the capability adapter builds its own `CapabilityConfig`, so the
-  harness's `CAPABILITY_PRESERVE_REASONING` alone never reaches it.
+  harness's `CAPABILITY_PRESERVE_REASONING` alone never reaches it. On the
+  llama-server (GGUF) path Ollama drops that field before the template sees
+  it; a conf whose template splits `</think>` out of content also declares
+  `OLLAMA_REASONING_INLINE=1`, and both adapters then resend the reasoning
+  inside content. Inline does nothing without preserve.
 - Keep Flash Attention enabled when using quantized KV. q8 is the quality-safe
   default; q4 is an explicit experiment.
 - Each conf declares its model's minimum Ollama release as

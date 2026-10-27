@@ -66,7 +66,7 @@ column is configured context times slots, not a measured pool. Ollama has no
 
 Managed Ollama 0.40.8, the fleet default (the MLX runner serializes requests
 to one slot). Contexts are the confs': 131,072 for Glimmer, 262,144 for Flint,
-Lightning and MiMo-V2.6-Flash and 524,288 for Super VL. Canonical AuditBench
+Lightning, MiMo-V2.6-Flash and Nanbeige and 524,288 for Super VL. Canonical AuditBench
 v2 `session` profile at each conf's declared sampling on the M5 Max (128 GB,
 macOS 27.0), one stream (one slot): tool steps from 32k evidence, 16 at
 262,144 and above and 9 at 131,072, report at depth. The first four rows ran
@@ -80,7 +80,8 @@ result. JSON files are retained under
 `~/.local/state/auditbench/trials/2026-10-22-night/ollama/` and
 `.../2026-10-23-ollama-0408-retest/results/`; the 0.40.6 rows they replace are
 in git history. MiMo-V2.6-Flash ran 2026-10-26 on llm-audit-bench 2.4.0 from
-its profile commit `a414742`, under
+its profile commit `a414742` and Nanbeige 2026-10-26/27 from `dc32a4a`
+(capability from `c57c223`, the same profile files), both under
 `~/.local/state/auditbench/trials/2026-10-26-mimo-hunt/ollama/`.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
@@ -90,10 +91,12 @@ its profile commit `a414742`, under
 | Ollama `flint-40b-a2b-qat-int4-mlx` | 262,144 | 1 | 262,144 | 1x 14.42 | 10,134 | 1,612.2 | 61.8 | 2/2 | unavailable | pass | yes | `20261023T030840.299152+0000_ollama_flint-40b-a2b-qat-int4_session.json` |
 | Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 11.06 | 6,524 | 940.8 | 40.4 | 2/2 | unavailable | pass | yes | `20261023T034844.807746+0000_ollama_nemotron-3-5-super-mlx_session.json` |
 | Ollama `mimo-v2.6-flash-q2ks` | 262,144 | 1 | 262,144 | 1x 5.34 | 3,519 | 313.4 | 22.2 | 3/3 | unavailable | pass | yes | `20261026T154250.548452+0000_ollama_mimo-v2-6-flash-q2ks_session.json` |
+| Ollama `nanbeige4.3-33b-q4km` | 262,144 | 1 | 262,144 | 1x 1.44 | 7,889 | 128.5 | 6.0 | 3/3 | unavailable | pass | yes | `20261026T235314.776962+0000_ollama_nanbeige4-3-33b-q4km_session.json` |
 
-- All five enforce the JSON schema (0.32.14 ignored it). Glimmer, Flint, Super
-  VL and MiMo-V2.6-Flash pass Capability Check v2; Lightning fails audit
-  fitness (8 of 12 on 0.40.6 and 0.40.8), so its 29.41 sessions/h cannot
+- All rows but Nanbeige enforce the JSON schema (0.32.14 ignored it); for
+  Nanbeige the check reports enforcement unsupported. Glimmer, Flint, Super
+  VL, MiMo-V2.6-Flash and Nanbeige pass Capability Check v2; Lightning fails
+  audit fitness (8 of 12 on 0.40.6 and 0.40.8), so its 29.41 sessions/h cannot
   promote it.
 - Against 0.40.6: Lightning 27.97 to 29.41, Glimmer 18.31 to 17.72 and
   Super VL 11.39 to 11.06, all within sample spread. Lightning's 21.12 on
@@ -126,6 +129,16 @@ its profile commit `a414742`, under
   pp512/tg128 reference is unavailable (17 of 128 tokens). The AesSedai
   BPW2.5 conversion (90 GiB) failed audit fitness 9 of 12 on format at 4.75
   sessions/h.
+- `nanbeige4.3-33b-q4km` (Nanbeige4.3-33B, dense, bartowski Q4_K_M) holds
+  71.48 GiB on the GPU at 262,144 with f16 KV. It passes audit fitness 12 of
+  12 with its reasoning resent inline (`OLLAMA_REASONING_INLINE`: this
+  llama-server path drops a history message's reasoning, and a probe with an
+  empty think block in its history got an empty answer) and under
+  llm-audit-bench 2.4.0's 65,536 answer cap, where its selection answers ran
+  25-56k tokens; with neither it passed 9 of 12, and no run separates the two.
+  Dense 33B decode on the M5 is slow: 16.9 falling to 6.3 tok/s through a
+  session, and the 245,755-token cold prefill takes 2,750 s (89 tok/s). The
+  A100 serves it on vLLM at 7.19 sessions/h.
 - `nemotron-3.5-super-mlx` (Nemotron 3.5 Super VL 120B-A12B, NVFP4) holds
   74.41 GiB on the GPU at 524,288 and prefills a 491,526-token cold prompt
   in 806 s (610 tok/s); at that depth available memory falls to about

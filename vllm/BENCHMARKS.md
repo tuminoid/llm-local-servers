@@ -68,8 +68,7 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
   and passes 12 of 12 twice at 65,536. One session fits the 284,704-token
   pool, so it measures one stream: 7.19 sessions/h, about 10.6k output tokens
   per session with preserved reasoning. The schema check, advisory, ran into a
-  whitespace runaway. On Ollama the Q4_K_M GGUF needs its reasoning resent
-  inline (`OLLAMA_REASONING_INLINE`) and ran 4.38 sessions/h.
+  whitespace runaway.
 - DFlash 2 still loses at the declared sampling: 8.40 / 13.04 sessions/h,
   report decode 22.8 tok/s. A fixed-depth decode probe of the two profiles
   as configured (2026-10-22, the vLLM 0.32.0 trial tree, not the pin; 2,048

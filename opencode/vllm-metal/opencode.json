@@ -45,18 +45,6 @@
             "output": 65536
           }
         },
-        "nanbeige4.3-33b-mlx": {
-          "name": "Nanbeige4.3 33B 4bit",
-          "reasoning": true,
-          "interleaved": {
-            "field": "reasoning"
-          },
-          "tool_call": true,
-          "limit": {
-            "context": 262144,
-            "output": 65536
-          }
-        },
         "ornith-1.5-122b-mlx": {
           "name": "Ornith1.5 122B A10B 4bit",
           "reasoning": true,

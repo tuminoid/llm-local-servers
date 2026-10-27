@@ -310,5 +310,22 @@ class OllamaIdentityTest(unittest.TestCase):
         self.assertIsNone(profile["prompt_cache_ram_mib"])
         self.assertEqual(profile["model_digest"], "a" * 64)
 
+    def test_inline_reasoning_moves_the_field_into_content(self):
+        messages = [
+            {"role": "user", "content": "q"},
+            {"role": "assistant", "content": "a", "reasoning": "r",
+             "tool_calls": [{"id": "c"}]},
+            {"role": "assistant", "content": "b"},
+        ]
+        before = [dict(message) for message in messages]
+        out = OLLAMA_BENCH.inline_reasoning(messages, "reasoning")
+        self.assertEqual(messages, before)
+        self.assertEqual(out[0], messages[0])
+        self.assertEqual(out[1], {"role": "assistant",
+                                  "content": "<think>\nr\n</think>\n\na",
+                                  "tool_calls": [{"id": "c"}]})
+        self.assertEqual(out[2], messages[2])
+
+
 if __name__ == "__main__":
     unittest.main()

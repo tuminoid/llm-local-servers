@@ -223,6 +223,7 @@ JSON names are in [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 | 9 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
 | 10 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
 | 11 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
+| 12 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
 
 Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
 and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
