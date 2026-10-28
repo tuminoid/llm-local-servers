@@ -24,6 +24,7 @@ PORTS = {
     "ollama-mlx": ("ollama/start.sh", 'OLLAMA_HOST="${OLLAMA_HOST:-127.0.0.1:11434}"'),
     "ollama-remote": ("Makefile", "OLLAMA_TUNNEL_PORT ?= 11436"),
     "ds4": ("ds4/lib.sh", 'DS4_PORT="${DS4_PORT:-8023}"'),
+    "kapitsa": ("kapitsa/runtime.py", 'os.environ.get("KAPITSA_PORT", "8024")'),
 }
 
 ENTRY = {"name": "Qwen3.8 27B", "tool_call": True,

@@ -21,6 +21,8 @@
 .PHONY: lmstudio-stop lmstudio-status lmstudio-logs lmstudio-bench lmstudio-capability
 .PHONY: ds4-model-check ds4-install ds4-pull ds4-start ds4-stop ds4-status ds4-logs
 .PHONY: ds4-bench ds4-capability
+.PHONY: kapitsa-model-check kapitsa-install kapitsa-pull kapitsa-start kapitsa-stop
+.PHONY: kapitsa-status kapitsa-logs kapitsa-bench kapitsa-capability
 
 # Every target here is phony, so GNU Make's built-in rules can only do harm.
 # Left on, a mistyped target matches the built-in `%: %.sh` rule and silently
@@ -128,6 +130,15 @@ SPLASH_ARCHIVE_SHA256 ?= c3deb1dd971461ffafcf6b82c318789d6698b22aa865e490a11a0ed
 export SPLASH_VERSION SPLASH_ARCHIVE_SHA256
 SPLASH_MODEL_CONF ?= $(SPLASH_DIR)/models/$(MODEL).conf
 
+KAPITSA_DIR := kapitsa
+# The release's darwin-arm64 archive, and its source commit (the tag's merge
+# commit), which carries the model converters the archive leaves out.
+KAPITSA_VERSION ?= 0.2.24
+KAPITSA_ARCHIVE_SHA256 ?= 09f7b424a712afea0534661c4475fef01bbc6cf322d5e6c529d83260cd559917
+KAPITSA_SOURCE_COMMIT ?= b46d9e56b68675226bfb4e685c31fc1bf1e496bc
+export KAPITSA_VERSION KAPITSA_ARCHIVE_SHA256 KAPITSA_SOURCE_COMMIT
+KAPITSA_MODEL_CONF ?= $(KAPITSA_DIR)/models/$(MODEL).conf
+
 LMSTUDIO_DIR := lmstudio
 # The operator installs and updates the desktop app and its engines, so the pins
 # name the release measured here: bench and capability refuse any other, while
@@ -225,6 +236,9 @@ help:
 	@echo "    ds4         ds4 (DwarfStar) on Apple Silicon, port 8023; interactive use only"
 	@$(call print_models,$(DS4_DIR))
 	@echo ""
+	@echo "    kapitsa     Kapitsa on Apple Silicon, port 8024; pull converts what needs it"
+	@$(call print_models,$(KAPITSA_DIR))
+	@echo ""
 	@echo "    lmstudio    LM Studio, port 1234; install checks the user-installed app and engines"
 	@$(call print_models,$(LMSTUDIO_DIR))
 	@echo ""
@@ -236,7 +250,7 @@ help:
 # Every local runtime's server and model lines, one after another; a failing
 # one does not hide the rest, but fails the target.
 status:
-	@rc=0; for r in vllm vllm-metal splash lmstudio ollama ds4; do \
+	@rc=0; for r in vllm vllm-metal splash lmstudio ollama ds4 kapitsa; do \
 		echo "== $$r"; out="$$($(MAKE) --no-print-directory $$r-status)" || rc=1; \
 		printf '%s\n' "$$out" | grep -E '^(server|model): '; \
 	done; exit $$rc
@@ -269,7 +283,7 @@ markdownlint:
 pycompile:
 	@$(call require,python3)
 	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) \
-		$(LMSTUDIO_DIR) opencode tests
+		$(LMSTUDIO_DIR) $(KAPITSA_DIR) opencode tests
 
 # --- Test ---
 
@@ -663,6 +677,47 @@ splash-capability: splash-model-check audit-bench-check
 	@$(call require,uv)
 	@SPLASH_MODEL_CONF="$(SPLASH_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		bash -c 'source splash/lib.sh; exec uv run --no-project --python "$${SPLASH_RUNTIME}/python/bin/python3" splash/capability.py "$$1"' bash $(MODEL)
+
+# --- Kapitsa (Apple Silicon) ---
+
+kapitsa-model-check:
+	@test -n "$(MODEL)" -a -f "$(KAPITSA_MODEL_CONF)" || { \
+		echo "error: set MODEL to a Kapitsa config name:" >&2; \
+		echo "  $(patsubst $(KAPITSA_DIR)/models/%.conf,%,$(wildcard $(KAPITSA_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+
+kapitsa-install:
+	@$(call require,uv tar git)
+	@./$(KAPITSA_DIR)/install.sh
+
+kapitsa-pull: kapitsa-model-check
+	@$(call require,uv)
+	@KAPITSA_MODEL_CONF="$(KAPITSA_MODEL_CONF)" ./$(KAPITSA_DIR)/pull.sh $(MODEL)
+
+kapitsa-start: kapitsa-model-check
+	@$(call require,uv)
+	@KAPITSA_MODEL_CONF="$(KAPITSA_MODEL_CONF)" ./$(KAPITSA_DIR)/run.sh $(MODEL)
+
+kapitsa-stop:
+	@$(call require,uv)
+	@./$(KAPITSA_DIR)/stop.sh
+
+kapitsa-status:
+	@$(call require,uv)
+	@./$(KAPITSA_DIR)/status.sh
+
+kapitsa-logs:
+	@tail -f "$${KAPITSA_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/kapitsa}/server.log"
+
+kapitsa-bench: kapitsa-model-check audit-bench-check
+	@$(call require,uv)
+	@KAPITSA_MODEL_CONF="$(KAPITSA_MODEL_CONF)" $(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source kapitsa/lib.sh; exec uv run --no-project --python 3.12 kapitsa/bench.py "$$1"' bash $(MODEL)
+
+kapitsa-capability: kapitsa-model-check audit-bench-check
+	@$(call require,uv)
+	@KAPITSA_MODEL_CONF="$(KAPITSA_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source kapitsa/lib.sh; exec uv run --no-project --python 3.12 kapitsa/capability.py "$$1"' bash $(MODEL)
 
 # --- ds4 (DwarfStar, Apple Silicon) ---
 
