@@ -33,12 +33,13 @@ release's source commit (`KAPITSA_SOURCE_COMMIT`) into
 `~/.local/share/kapitsa/source/` for its model converters.
 
 Pull downloads the pinned Hugging Face revision (a host `hf`, else a
-pinned `huggingface_hub` through uv) and runs the release's converter
-(`KAPITSA_CONVERTER`) on it into the engine's own store,
-`~/.local/share/kapitsa/home/models/`; Clover's BF16 checkpoint is 69 GB,
-its pack 19.5 GB. Startup never downloads: before launch and measurement
-every file is checked against the conversion record with full content
-hashes.
+pinned `huggingface_hub` through uv) into `~/.local/share/kapitsa/work/`,
+runs the release's converter (`KAPITSA_CONVERTER`) on it into the engine's
+own store, `~/.local/share/kapitsa/home/models/`, and deletes the download
+once the pack verifies; a failed pull keeps it to resume. Clover's BF16
+checkpoint is 69 GB, its pack 19.5 GB. Startup never downloads: before
+launch and measurement every file is checked against the conversion record
+with full content hashes.
 
 ## Serving settings
 

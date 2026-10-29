@@ -245,20 +245,25 @@ def pull(tag, values):
     verify_source()
     require_tool("c++")
     MODELS.mkdir(parents=True, exist_ok=True)
-    snapshot = subprocess.check_output(
-        [*hf_command(), "download", values["KAPITSA_MODEL_REPO"],
-         "--revision", values["KAPITSA_MODEL_REVISION"], "--quiet"], text=True).strip().splitlines()[-1]
+    # The source checkpoint is only the converter's input: download it into
+    # the managed tree, not the Hugging Face cache, and drop it once the pack
+    # verifies. A failed pull keeps it, so a rerun resumes the download.
+    source = DATA / "work" / f"{tag}-{values['KAPITSA_MODEL_REVISION']}"
+    subprocess.run([*hf_command(), "download", values["KAPITSA_MODEL_REPO"],
+                    "--revision", values["KAPITSA_MODEL_REVISION"], "--local-dir", str(source),
+                    "--quiet"], check=True, stdout=subprocess.DEVNULL)
     pack = pack_dir(tag)
     if pack.exists():
         shutil.rmtree(pack)
     subprocess.run([sys.executable, "-I", str(SOURCE / "tools" / values["KAPITSA_CONVERTER"]),
-                    snapshot, str(pack)], check=True, env=engine_environment({}))
+                    str(source), str(pack)], check=True, env=engine_environment({}))
     save(pack / "llm-local-servers.json", {
         "source": values["KAPITSA_MODEL_REPO"], "revision": values["KAPITSA_MODEL_REVISION"],
         "converter": values["KAPITSA_CONVERTER"], "converter_commit": COMMIT})
     if values["KAPITSA_MAX_POSITIONS"]:
         write_view(tag, values)
     identity = verify_model(tag, values)
+    shutil.rmtree(source)
     print(f"Verified {identity['source']} at {identity['revision']} in {serve_dir(tag, values)}")
 
 
