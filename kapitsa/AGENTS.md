@@ -49,8 +49,10 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
   view is derived, so start rewrites it. Never edit the pack.
 - Clover's end-of-reply ramp counts reasoning tokens and, at the
   checkpoint's strength, ends deep audit replies at about 16K with their
-  thinking open, so the conf turns it off and keeps the `</think>` ramp.
-  Retest with a checkpoint revision that changes either ramp.
+  thinking open, so the conf turns it off. Without it, the `</think>` ramp
+  at the checkpoint's strength lets thinking loop to the client's output
+  limit, so the conf doubles it. Retest with a checkpoint revision that
+  changes either ramp.
 - Ambient `NI_*` variables are dropped; a model's decode switches come only
   from `KAPITSA_ENGINE_ENV`. Clover decodes self-speculatively
   (`NI_CLOVER_DECODE=spec`) with threshold acceptance: exact acceptance

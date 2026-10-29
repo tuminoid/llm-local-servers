@@ -86,10 +86,10 @@ class KapitsaTest(unittest.TestCase):
                 runtime.write_view("clover-35b-a3b", values)
                 identity = runtime.verify_model("clover-35b-a3b", values)
                 self.assertEqual(identity["max_position_embeddings"], 262144)
-                self.assertEqual(identity["generation_overrides"], {"dllm_length_penalty": 0})
+                self.assertEqual(identity["generation_overrides"], {"dllm_length_penalty": 0, "dllm_think_end_bias": 20})
                 view = runtime.serve_dir("clover-35b-a3b", values)
                 self.assertEqual(json.loads((view / "generation_config.json").read_text()),
-                                 {"dllm_length_penalty": 0, "dllm_think_end_bias": 10.0})
+                                 {"dllm_length_penalty": 0, "dllm_think_end_bias": 20})
                 self.assertEqual(json.loads((pack / "config.json").read_text())["max_position_embeddings"], 131072)
                 self.assertEqual(json.loads((pack / "generation_config.json").read_text()), controls)
                 with self.assertRaisesRegex(RuntimeError, "serving view differs"):
