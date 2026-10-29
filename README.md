@@ -218,7 +218,7 @@ the retained JSON names are in
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
-| 1 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.44 | 25.04 @4x | 1x | 86.7 |
+| 1 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.36 | 25.01 @4x | 1x | 86.9 |
 | 2 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.29 | 19.78 @4x, incomplete | 1x | 185.5 |
 | 3 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 17.72 | -- | 1x | 32.4 |
 | 4 | Ollama `flint-40b-a2b-qat-int4-mlx` (40B-A2.5B) | MoE | 262,144 | 14.42 | -- | 1x | 61.8 |

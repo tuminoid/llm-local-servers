@@ -192,8 +192,8 @@ with at least 11 of 12 samples passed. Six groups differ:
   `~/.local/state/auditbench/trials/2026-10-26-mimo-hunt/ollama/`.
 - The ds4 row ran 2026-10-23 (llm-audit-bench 2.3.0) from fleet commit
   `3c3a5ab`, under `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
-- The Kapitsa row ran 2026-10-28 on Kapitsa 0.2.24 (llm-audit-bench 2.4.0)
-  from fleet commit `2457685`, under `~/.local/state/capability-check/`.
+- The Kapitsa row ran 2026-10-29 on Kapitsa 0.2.24 (llm-audit-bench 2.4.0)
+  from fleet commit `3526eac`, under `~/.local/state/capability-check/`.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
