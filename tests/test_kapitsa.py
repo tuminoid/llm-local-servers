@@ -70,7 +70,8 @@ class KapitsaTest(unittest.TestCase):
             pack.mkdir()
             (pack / "model.safetensors").write_bytes(b"weights")
             (pack / "config.json").write_text(json.dumps({"max_position_embeddings": 131072}))
-            controls = {"dllm_length_penalty": 10.0, "dllm_think_end_bias": 10.0}
+            controls = {"dllm_length_penalty": 10.0, "dllm_think_end_bias": 10.0, "dllm_think_end_start": 4096,
+                        "dllm_think_end_window": 4096}
             (pack / "generation_config.json").write_text(json.dumps(controls))
             files = {name: {"sha256": runtime.digest(pack / name)}
                      for name in ("model.safetensors", "config.json", "generation_config.json")}
@@ -86,10 +87,12 @@ class KapitsaTest(unittest.TestCase):
                 runtime.write_view("clover-35b-a3b", values)
                 identity = runtime.verify_model("clover-35b-a3b", values)
                 self.assertEqual(identity["max_position_embeddings"], 262144)
-                self.assertEqual(identity["generation_overrides"], {"dllm_length_penalty": 0, "dllm_think_end_bias": 20})
+                self.assertEqual(identity["generation_overrides"], {"dllm_length_penalty": 0, "dllm_think_end_start": 16384,
+                                                                   "dllm_think_end_window": 16384, "dllm_think_end_bias": 20})
                 view = runtime.serve_dir("clover-35b-a3b", values)
                 self.assertEqual(json.loads((view / "generation_config.json").read_text()),
-                                 {"dllm_length_penalty": 0, "dllm_think_end_bias": 20})
+                                 {"dllm_length_penalty": 0, "dllm_think_end_bias": 20, "dllm_think_end_start": 16384,
+                                  "dllm_think_end_window": 16384})
                 self.assertEqual(json.loads((pack / "config.json").read_text())["max_position_embeddings"], 131072)
                 self.assertEqual(json.loads((pack / "generation_config.json").read_text()), controls)
                 with self.assertRaisesRegex(RuntimeError, "serving view differs"):

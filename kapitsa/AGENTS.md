@@ -51,8 +51,9 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
   checkpoint's strength, ends deep audit replies at about 16K with their
   thinking open, so the conf turns it off. Without it, the `</think>` ramp
   at the checkpoint's strength lets thinking loop to the client's output
-  limit, so the conf doubles it. Retest with a checkpoint revision that
-  changes either ramp.
+  limit; doubled at the checkpoint's 4,096 start it cuts thinking to 8K and
+  the model loops on tool calls instead. The conf doubles it and starts it
+  at 16,384. Retest with a checkpoint revision that changes either ramp.
 - Ambient `NI_*` variables are dropped; a model's decode switches come only
   from `KAPITSA_ENGINE_ENV`. Clover decodes self-speculatively
   (`NI_CLOVER_DECODE=spec`) with threshold acceptance: exact acceptance
