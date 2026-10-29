@@ -40,7 +40,7 @@ LOG = STATE / "server.log"
 REPOSITORY = "https://github.com/nace-ai/kapitsa"
 HF_HUB = "huggingface_hub[hf_xet]==1.25.1"
 CONFIG_KEYS = tuple("KAPITSA_" + name for name in (
-    "SERVED_NAME", "MODEL_REPO", "MODEL_REVISION", "CONVERTER", "MAX_POSITIONS", "CTX", "ENGINE_ENV", "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE",
+    "SERVED_NAME", "MODEL_REPO", "MODEL_REVISION", "CONVERTER", "MAX_POSITIONS", "CTX", "ENGINE_ENV", "GENERATION", "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE",
     "CAP_DISABLE_MODE", "CAP_SYSTEM_PROMPT", "SAMPLING",
 ))
 CONVERTERS = {"convert_clover.py"}
@@ -78,6 +78,7 @@ def config(tag):
     if values["KAPITSA_CONVERTER"] not in CONVERTERS:
         raise ValueError(f"KAPITSA_CONVERTER must be one of {sorted(CONVERTERS)}")
     engine_env(values)
+    generation(values)
     if int(values["KAPITSA_CTX"]) <= 0:
         raise ValueError("KAPITSA_CTX must be positive")
     if values["KAPITSA_MAX_POSITIONS"] and int(values["KAPITSA_MAX_POSITIONS"]) < int(values["KAPITSA_CTX"]):
@@ -93,6 +94,17 @@ def engine_env(values):
         if not match:
             raise ValueError(f"KAPITSA_ENGINE_ENV entry {word!r} is not NI_<NAME>=<value>")
         result[match.group(1)] = match.group(2)
+    return result
+
+
+def generation(values):
+    """KAPITSA_GENERATION: overrides of the pack's generation_config.json."""
+    result = {}
+    for word in values["KAPITSA_GENERATION"].split():
+        match = re.fullmatch(r"([a-z][a-z0-9_]*)=(-?[0-9]+(?:\.[0-9]+)?)", word)
+        if not match:
+            raise ValueError(f"KAPITSA_GENERATION entry {word!r} is not <key>=<number>")
+        result[match.group(1)] = json.loads(match.group(2))
     return result
 
 
@@ -193,23 +205,37 @@ def pack_dir(tag):
 
 
 def serve_dir(tag, values):
-    """The folder the server reads: the pack, or for a positions override a
-    view of it whose config.json states the override (Kapitsa clamps the
-    context to max_position_embeddings)."""
-    if values["KAPITSA_MAX_POSITIONS"]:
-        return MODELS / f"{tag}-{values['KAPITSA_MAX_POSITIONS']}"
+    """The folder the server reads: the pack, or for a positions or generation
+    override a view of it whose config.json or generation_config.json states
+    the override (Kapitsa clamps the context to max_position_embeddings)."""
+    if values["KAPITSA_MAX_POSITIONS"] or values["KAPITSA_GENERATION"]:
+        return MODELS / f"{tag}-view"
     return pack_dir(tag)
+
+
+def view_files(tag, values):
+    """The view's own files: the pack's, with the config's overrides."""
+    pack = pack_dir(tag)
+    model_config = json.loads((pack / "config.json").read_text())
+    if values["KAPITSA_MAX_POSITIONS"]:
+        model_config["max_position_embeddings"] = int(values["KAPITSA_MAX_POSITIONS"])
+    controls = json.loads((pack / "generation_config.json").read_text())
+    for key, value in generation(values).items():
+        if key not in controls:
+            raise ValueError(f"KAPITSA_GENERATION key {key} is not in the pack's generation_config.json")
+        controls[key] = value
+    return {"config.json": model_config, "generation_config.json": controls}
 
 
 def write_view(tag, values):
     pack, view = pack_dir(tag), serve_dir(tag, values)
+    files = view_files(tag, values)
     stage = Path(tempfile.mkdtemp(prefix=".view-", dir=MODELS))
     for entry in sorted(pack.iterdir()):
-        if entry.name != "config.json":
+        if entry.name not in files:
             (stage / entry.name).symlink_to(entry)
-    model_config = json.loads((pack / "config.json").read_text())
-    model_config["max_position_embeddings"] = int(values["KAPITSA_MAX_POSITIONS"])
-    (stage / "config.json").write_text(json.dumps(model_config, indent=2) + "\n")
+    for name, value in files.items():
+        (stage / name).write_text(json.dumps(value, indent=2) + "\n")
     if view.exists():
         shutil.rmtree(view)
     stage.rename(view)
@@ -230,12 +256,13 @@ def verify_model(tag, values):
                 "conversion_sha256": digest(pack / "conversion.json")}
     view = serve_dir(tag, values)
     if view != pack:
-        positions = json.loads((view / "config.json").read_text())["max_position_embeddings"]
-        if positions != int(values["KAPITSA_MAX_POSITIONS"]) or any(
+        files = view_files(tag, values)
+        if any(json.loads((view / name).read_text()) != value for name, value in files.items()) or any(
                 (view / entry.name).resolve() != entry.resolve()
-                for entry in pack.iterdir() if entry.name != "config.json"):
-            raise RuntimeError("the serving view differs from the pack; run make kapitsa-pull")
-        identity["max_position_embeddings"] = positions
+                for entry in pack.iterdir() if entry.name not in files):
+            raise RuntimeError("the serving view differs from the pack and config")
+        identity["max_position_embeddings"] = files["config.json"]["max_position_embeddings"]
+        identity["generation_overrides"] = generation(values)
     return {**identity, "full_artifact_hash_verification": True}
 
 
@@ -260,7 +287,7 @@ def pull(tag, values):
     save(pack / "llm-local-servers.json", {
         "source": values["KAPITSA_MODEL_REPO"], "revision": values["KAPITSA_MODEL_REVISION"],
         "converter": values["KAPITSA_CONVERTER"], "converter_commit": COMMIT})
-    if values["KAPITSA_MAX_POSITIONS"]:
+    if serve_dir(tag, values) != pack:
         write_view(tag, values)
     identity = verify_model(tag, values)
     shutil.rmtree(source)
@@ -372,6 +399,10 @@ def start(tag, values):
     port = int(argv[argv.index("--port") + 1])
     port_free(port)
     release = verify_release()
+    # The view is derived from the pack and the config, so a changed
+    # override takes effect at the next start without a pull.
+    if serve_dir(tag, values) != pack_dir(tag):
+        write_view(tag, values)
     print("Verifying all model artifacts before launch...", flush=True)
     identity = verify_model(tag, values)
     STATE.mkdir(parents=True, exist_ok=True)

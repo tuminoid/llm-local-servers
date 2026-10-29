@@ -55,4 +55,6 @@ The server listens on loopback only and stays out of Bonjour (`--private`);
 reach it from another machine through an ssh tunnel. Slots and the
 memory plan are Kapitsa's own for the host. Model facts live in
 `models/<name>.conf`: the immutable source revision, converter, context,
-decode switches, capability expectations and the checkpoint's sampling.
+decode switches, generation-config overrides, capability expectations and
+the checkpoint's sampling. Start serves the pack through a view that
+carries the overrides, rewritten at every start.

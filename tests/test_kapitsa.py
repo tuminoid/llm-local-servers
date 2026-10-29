@@ -40,6 +40,9 @@ class KapitsaTest(unittest.TestCase):
         with mock.patch.dict(os.environ, {"KAPITSA_ENGINE_ENV": "HOME=/tmp"}):
             with self.assertRaisesRegex(ValueError, "NI_"):
                 runtime.config("clover-35b-a3b")
+        with mock.patch.dict(os.environ, {"KAPITSA_GENERATION": "dllm_length_penalty=off"}):
+            with self.assertRaisesRegex(ValueError, "KAPITSA_GENERATION"):
+                runtime.config("clover-35b-a3b")
         with self.assertRaises(ValueError):
             runtime.config("../splash/models/qwen3.8-27b")
 
@@ -57,7 +60,7 @@ class KapitsaTest(unittest.TestCase):
         argv = runtime.command("clover-35b-a3b", values)
         self.assertIn("--private", argv)
         self.assertNotIn("--host", argv)
-        self.assertEqual(argv[argv.index("--model") + 1], str(runtime.MODELS / "clover-35b-a3b-262144"))
+        self.assertEqual(argv[argv.index("--model") + 1], str(runtime.MODELS / "clover-35b-a3b-view"))
 
     def test_converted_pack_and_view_must_match_the_config(self):
         values = runtime.config("clover-35b-a3b")
@@ -67,7 +70,10 @@ class KapitsaTest(unittest.TestCase):
             pack.mkdir()
             (pack / "model.safetensors").write_bytes(b"weights")
             (pack / "config.json").write_text(json.dumps({"max_position_embeddings": 131072}))
-            files = {name: {"sha256": runtime.digest(pack / name)} for name in ("model.safetensors", "config.json")}
+            controls = {"dllm_length_penalty": 10.0, "dllm_think_end_bias": 10.0}
+            (pack / "generation_config.json").write_text(json.dumps(controls))
+            files = {name: {"sha256": runtime.digest(pack / name)}
+                     for name in ("model.safetensors", "config.json", "generation_config.json")}
             (pack / "conversion.json").write_text(json.dumps({"recipe": {"bits": 4}, "files": files}))
             record = {"source": values["KAPITSA_MODEL_REPO"], "revision": "0" * 40,
                       "converter": "convert_clover.py", "converter_commit": runtime.COMMIT}
@@ -80,7 +86,16 @@ class KapitsaTest(unittest.TestCase):
                 runtime.write_view("clover-35b-a3b", values)
                 identity = runtime.verify_model("clover-35b-a3b", values)
                 self.assertEqual(identity["max_position_embeddings"], 262144)
+                self.assertEqual(identity["generation_overrides"], {"dllm_length_penalty": 0})
+                view = runtime.serve_dir("clover-35b-a3b", values)
+                self.assertEqual(json.loads((view / "generation_config.json").read_text()),
+                                 {"dllm_length_penalty": 0, "dllm_think_end_bias": 10.0})
                 self.assertEqual(json.loads((pack / "config.json").read_text())["max_position_embeddings"], 131072)
+                self.assertEqual(json.loads((pack / "generation_config.json").read_text()), controls)
+                with self.assertRaisesRegex(RuntimeError, "serving view differs"):
+                    runtime.verify_model("clover-35b-a3b", {**values, "KAPITSA_GENERATION": ""})
+                with self.assertRaisesRegex(ValueError, "not in the pack"):
+                    runtime.write_view("clover-35b-a3b", {**values, "KAPITSA_GENERATION": "top_k=20"})
                 (pack / "model.safetensors").write_bytes(b"changed")
                 with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
                     runtime.verify_model("clover-35b-a3b", values)

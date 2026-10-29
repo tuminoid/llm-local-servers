@@ -43,8 +43,14 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
   on 2026-10-29; reconsider with a release that moves those numbers.
 - Kapitsa clamps `--context` to `max_position_embeddings`. A positions
   override is a model fact (the base's native RoPE window) and is served
-  through a view: symlinks to the pack and its own `config.json`. Never
-  edit the pack.
+  through a view: symlinks to the pack and its own `config.json`. A
+  generation-config override (`KAPITSA_GENERATION`) goes the same way into
+  the view's `generation_config.json`, and only for keys the pack has. The
+  view is derived, so start rewrites it. Never edit the pack.
+- Clover's end-of-reply ramp counts reasoning tokens and, at the
+  checkpoint's strength, ends deep audit replies at about 16K with their
+  thinking open, so the conf turns it off and keeps the `</think>` ramp.
+  Retest with a checkpoint revision that changes either ramp.
 - Ambient `NI_*` variables are dropped; a model's decode switches come only
   from `KAPITSA_ENGINE_ENV`. Clover decodes self-speculatively
   (`NI_CLOVER_DECODE=spec`) with threshold acceptance: exact acceptance
