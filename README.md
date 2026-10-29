@@ -1,12 +1,12 @@
 # llm-local-servers
 
-Measured, Makefile-driven local LLM serving. Six managed runtimes --
-vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio and
-ds4 -- with one portable config per model, host-adaptive launchers, isolated remote-host
-operation, and the retained benchmark and capability results for every
-host in the fleet. The workload everything is tuned for is deep-context
-security-audit calls; [AGENTS.md](AGENTS.md) states the mission and the
-invariants.
+Measured, Makefile-driven local LLM serving. Seven managed runtimes --
+vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio, ds4
+and Kapitsa -- with one portable config per model, host-adaptive
+launchers, isolated remote-host operation, and the retained benchmark and
+capability results for every host in the fleet. The workload everything
+is tuned for is deep-context security-audit calls; [AGENTS.md](AGENTS.md)
+states the mission and the invariants.
 
 Each host keeps the best provider per model: one runtime, chosen by
 Capability Check v2 and then the AuditBench session rate. LM Studio is kept
@@ -39,8 +39,9 @@ adapters, model configs, and results.
    [ollama/README.md](ollama/README.md),
    [vllm-metal/README.md](vllm-metal/README.md),
    [splash/README.md](splash/README.md),
-   [lmstudio/README.md](lmstudio/README.md), and
-   [ds4/README.md](ds4/README.md).
+   [lmstudio/README.md](lmstudio/README.md),
+   [ds4/README.md](ds4/README.md), and
+   [kapitsa/README.md](kapitsa/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
 newer for `make lint` and `make test`.
@@ -60,9 +61,10 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v2 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, `lmstudio`,
-or `ds4` (plus `ollama-install`, `vllm-metal-install`, `vllm-metal-pull`,
-`splash-install`, `splash-pull`, `lmstudio-install`, `lmstudio-pull`,
-`ds4-install`, and `ds4-pull` for runtime and model installation).
+`ds4` or `kapitsa` (plus `ollama-install`, `vllm-metal-install`,
+`vllm-metal-pull`, `splash-install`, `splash-pull`, `lmstudio-install`,
+`lmstudio-pull`, `ds4-install`, `ds4-pull`, `kapitsa-install`, and
+`kapitsa-pull` for runtime and model installation).
 `MODEL` names a config file in that runtime's `models/` directory, never a
 served model ID or registry tag; there is deliberately no default model.
 `make status` shows whether each local runtime is running, and with which model.
@@ -122,6 +124,7 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 | `ollama-mlx` | `http://127.0.0.1:11434/v1` | [ollama-mlx/opencode.json](opencode/ollama-mlx/opencode.json) | not declared |
 | `ollama-remote` | `http://127.0.0.1:11436/v1`, `make ollama-remote-tunnel` | [ollama-remote/opencode.json](opencode/ollama-remote/opencode.json) | not declared |
 | `ds4` | `http://127.0.0.1:8023/v1` | [ds4/opencode.json](opencode/ds4/opencode.json) | `reasoning_content` |
+| `kapitsa` | `http://127.0.0.1:8024/v1` | [kapitsa/opencode.json](opencode/kapitsa/opencode.json) | `reasoning_content` |
 
 ### How the files are generated
 
@@ -135,8 +138,8 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
   the GGUF configs. [CAPABILITIES.md](CAPABILITIES.md) lists which configs
   run on which host.
 - The id is `VLLM_SERVED_NAME`, the `OLLAMA_MODEL` tag, the
-  `SPLASH_MODEL_REPO` repository, `DS4_SERVED_NAME`, or for LM Studio the
-  config name.
+  `SPLASH_MODEL_REPO` repository, `DS4_SERVED_NAME`,
+  `KAPITSA_SERVED_NAME`, or for LM Studio the config name.
   Configs that share a served id become one model, with the smaller
   context.
 - The display name is derived from the config name.
@@ -157,8 +160,9 @@ Every host is measured with AuditBench v2. Canonical medians copied from
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 [splash/BENCHMARKS.md](splash/BENCHMARKS.md),
-[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md) and
-[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md), which hold the
+[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md),
+[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md) and
+[kapitsa/BENCHMARKS.md](kapitsa/BENCHMARKS.md), which hold the
 evidence, ranges, caveats, replay results, and history; nothing here is
 derived. Capability pass/fail is in [CAPABILITIES.md](CAPABILITIES.md).
 
@@ -200,30 +204,33 @@ sampling (8.40 / 13.04 @2x); see [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
-0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.8, ds4. Context,
-slots, KV pool, completion, the pp512/tg128 reference and the retained
-JSON names are in [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
+0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.8, ds4, Kapitsa
+0.2.24. Context, slots, KV pool, completion, the pp512/tg128 reference and
+the retained JSON names are in
+[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 [splash/BENCHMARKS.md](splash/BENCHMARKS.md),
 [lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md),
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md) and
-[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
+[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md) and
+[kapitsa/BENCHMARKS.md](kapitsa/BENCHMARKS.md).
 
 #### Audit throughput
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
-| 1 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.29 | 19.78 @4x, incomplete | 1x | 185.5 |
-| 2 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 17.72 | -- | 1x | 32.4 |
-| 3 | Ollama `flint-40b-a2b-qat-int4-mlx` (40B-A2.5B) | MoE | 262,144 | 14.42 | -- | 1x | 61.8 |
-| 4 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.06 | -- | 1x | 40.4 |
-| 5 | ds4 `qwen3.8-flash-next-q4` (125B-A6B) | MoE | 524,288 | 10.00 | -- | 1x | 60.8 |
-| 6 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
-| 7 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 4x | 60.3 |
-| 8 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 9 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
-| 10 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
-| 11 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
-| 12 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
+| 1 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.44 | 25.04 @4x | 1x | 86.7 |
+| 2 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.29 | 19.78 @4x, incomplete | 1x | 185.5 |
+| 3 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 17.72 | -- | 1x | 32.4 |
+| 4 | Ollama `flint-40b-a2b-qat-int4-mlx` (40B-A2.5B) | MoE | 262,144 | 14.42 | -- | 1x | 61.8 |
+| 5 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.06 | -- | 1x | 40.4 |
+| 6 | ds4 `qwen3.8-flash-next-q4` (125B-A6B) | MoE | 524,288 | 10.00 | -- | 1x | 60.8 |
+| 7 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
+| 8 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 4x | 60.3 |
+| 9 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
+| 10 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
+| 11 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 12 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
+| 13 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
 
 Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
 and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit

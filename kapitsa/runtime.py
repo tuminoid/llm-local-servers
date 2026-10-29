@@ -1,7 +1,7 @@
 """Managed Kapitsa lifecycle, model identity and live capacity evidence.
 
 No workload logic lives here. Stdlib only: the release is one native binary,
-and the converter it needs for some models runs from the pinned source tree.
+and the model converters run from the pinned source tree.
 """
 
 import fcntl
@@ -32,7 +32,7 @@ RELEASE = DATA / "runtime" / VERSION
 BINARY = RELEASE / "kapitsa"
 SOURCE = DATA / "source" / COMMIT
 # The engine's own home (KAPITSA_HOME): its model store, converter work
-# folder and saved KFlash state stay inside the managed tree.
+# folder and saved state stay inside the managed tree.
 ENGINE_HOME = DATA / "home"
 MODELS = ENGINE_HOME / "models"
 PIDFILE = STATE / "server.json"
@@ -40,8 +40,7 @@ LOG = STATE / "server.log"
 REPOSITORY = "https://github.com/nace-ai/kapitsa"
 HF_HUB = "huggingface_hub[hf_xet]==1.25.1"
 CONFIG_KEYS = tuple("KAPITSA_" + name for name in (
-    "SERVED_NAME", "MODEL_REPO", "MODEL_REVISION", "CATALOG", "COMPANIONS", "CONVERTER",
-    "MAX_POSITIONS", "CTX", "ENGINE_ENV", "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE",
+    "SERVED_NAME", "MODEL_REPO", "MODEL_REVISION", "CONVERTER", "MAX_POSITIONS", "CTX", "ENGINE_ENV", "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE",
     "CAP_DISABLE_MODE", "CAP_SYSTEM_PROMPT", "SAMPLING",
 ))
 CONVERTERS = {"convert_clover.py"}
@@ -76,33 +75,14 @@ def config(tag):
         raise ValueError("KAPITSA_MODEL_REPO must be a full Hugging Face repository ID")
     if not re.fullmatch(r"[0-9a-f]{40}", values["KAPITSA_MODEL_REVISION"]):
         raise ValueError("KAPITSA_MODEL_REVISION must be an immutable commit")
-    if bool(values["KAPITSA_CATALOG"]) == bool(values["KAPITSA_CONVERTER"]):
-        raise ValueError("set exactly one of KAPITSA_CATALOG and KAPITSA_CONVERTER")
-    if values["KAPITSA_CONVERTER"] and values["KAPITSA_CONVERTER"] not in CONVERTERS:
+    if values["KAPITSA_CONVERTER"] not in CONVERTERS:
         raise ValueError(f"KAPITSA_CONVERTER must be one of {sorted(CONVERTERS)}")
-    if values["KAPITSA_CONVERTER"] and values["KAPITSA_COMPANIONS"]:
-        raise ValueError("a converted model has no catalog companions")
-    if values["KAPITSA_CATALOG"] and values["KAPITSA_MAX_POSITIONS"]:
-        raise ValueError("KAPITSA_MAX_POSITIONS applies to converted models only")
-    companions(values)
     engine_env(values)
     if int(values["KAPITSA_CTX"]) <= 0:
         raise ValueError("KAPITSA_CTX must be positive")
     if values["KAPITSA_MAX_POSITIONS"] and int(values["KAPITSA_MAX_POSITIONS"]) < int(values["KAPITSA_CTX"]):
         raise ValueError("KAPITSA_MAX_POSITIONS must cover KAPITSA_CTX")
     return values
-
-
-def companions(values):
-    """KAPITSA_COMPANIONS: "<kind>=<repo>@<commit>" words, as the catalog of the
-    pinned release lists the variant's companions."""
-    result = []
-    for word in values["KAPITSA_COMPANIONS"].split():
-        match = re.fullmatch(r"([a-z0-9-]+)=([a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+)@([0-9a-f]{40})", word)
-        if not match:
-            raise ValueError(f"KAPITSA_COMPANIONS entry {word!r} is not <kind>=<repo>@<commit>")
-        result.append(match.groups())
-    return sorted(result)
 
 
 def engine_env(values):
@@ -208,10 +188,7 @@ def hf_command():
     return ["uv", "tool", "run", "--from", HF_HUB, "hf"]
 
 
-def pack_dir(tag, values):
-    if values["KAPITSA_CATALOG"]:
-        # The catalog store's folder: <model>-<variant> (src/hub/resolve.cpp).
-        return MODELS / values["KAPITSA_CATALOG"].replace(":", "-")
+def pack_dir(tag):
     return MODELS / tag
 
 
@@ -221,11 +198,11 @@ def serve_dir(tag, values):
     context to max_position_embeddings)."""
     if values["KAPITSA_MAX_POSITIONS"]:
         return MODELS / f"{tag}-{values['KAPITSA_MAX_POSITIONS']}"
-    return pack_dir(tag, values)
+    return pack_dir(tag)
 
 
 def write_view(tag, values):
-    pack, view = pack_dir(tag, values), serve_dir(tag, values)
+    pack, view = pack_dir(tag), serve_dir(tag, values)
     stage = Path(tempfile.mkdtemp(prefix=".view-", dir=MODELS))
     for entry in sorted(pack.iterdir()):
         if entry.name != "config.json":
@@ -239,38 +216,18 @@ def write_view(tag, values):
 
 
 def verify_model(tag, values):
-    pack = pack_dir(tag, values)
-    if values["KAPITSA_CONVERTER"]:
-        record = json.loads((pack / "llm-local-servers.json").read_text())
-        expected = {"source": values["KAPITSA_MODEL_REPO"], "revision": values["KAPITSA_MODEL_REVISION"],
-                    "converter": values["KAPITSA_CONVERTER"], "converter_commit": COMMIT}
-        if {key: record.get(key) for key in expected} != expected:
-            raise RuntimeError("the converted pack differs from the config; run make kapitsa-pull")
-        conversion = json.loads((pack / "conversion.json").read_text())
-        files = conversion["files"]
-        for name, entry in files.items():
-            if digest(pack / name) != entry["sha256"]:
-                raise RuntimeError(f"converted pack checksum mismatch: {name}; run make kapitsa-pull")
-        identity = {**expected, "recipe": conversion["recipe"],
-                    "conversion_sha256": digest(pack / "conversion.json")}
-    else:
-        manifest = json.loads((pack / ".kapitsa/manifest.json").read_text())
-        have = sorted((item["kind"], item["repo"], item["revision"]) for item in manifest["companions"])
-        if (manifest["repo"], manifest["revision"]) != (
-                values["KAPITSA_MODEL_REPO"], values["KAPITSA_MODEL_REVISION"]) or have != companions(values):
-            raise RuntimeError("the pulled model differs from the config; run make kapitsa-pull")
-        entries = list(manifest["files"]) + [
-            item for companion in manifest["companions"] for item in companion["files"]
-            if isinstance(item, dict)]
-        for entry in entries:
-            path = pack / entry["path"]
-            if path.stat().st_size != entry["size"] or (
-                    entry.get("sha256") and digest(path) != entry["sha256"]):
-                raise RuntimeError(f"pulled model checksum mismatch: {entry['path']}; run make kapitsa-pull")
-        identity = {"source": manifest["repo"], "revision": manifest["revision"],
-                    "catalog": values["KAPITSA_CATALOG"],
-                    "companions": [f"{kind}={repo}@{revision}" for kind, repo, revision in have],
-                    "manifest_sha256": digest(pack / ".kapitsa/manifest.json")}
+    pack = pack_dir(tag)
+    record = json.loads((pack / "llm-local-servers.json").read_text())
+    expected = {"source": values["KAPITSA_MODEL_REPO"], "revision": values["KAPITSA_MODEL_REVISION"],
+                "converter": values["KAPITSA_CONVERTER"], "converter_commit": COMMIT}
+    if {key: record.get(key) for key in expected} != expected:
+        raise RuntimeError("the converted pack differs from the config; run make kapitsa-pull")
+    conversion = json.loads((pack / "conversion.json").read_text())
+    for name, entry in conversion["files"].items():
+        if digest(pack / name) != entry["sha256"]:
+            raise RuntimeError(f"converted pack checksum mismatch: {name}; run make kapitsa-pull")
+    identity = {**expected, "recipe": conversion["recipe"],
+                "conversion_sha256": digest(pack / "conversion.json")}
     view = serve_dir(tag, values)
     if view != pack:
         positions = json.loads((view / "config.json").read_text())["max_position_embeddings"]
@@ -285,24 +242,20 @@ def verify_model(tag, values):
 def pull(tag, values):
     require_stopped()
     verify_release()
+    verify_source()
+    require_tool("c++")
     MODELS.mkdir(parents=True, exist_ok=True)
-    if values["KAPITSA_CATALOG"]:
-        subprocess.run([str(BINARY), "pull", values["KAPITSA_CATALOG"]], check=True,
-                       env=engine_environment({}))
-    else:
-        verify_source()
-        require_tool("c++")
-        snapshot = subprocess.check_output(
-            [*hf_command(), "download", values["KAPITSA_MODEL_REPO"],
-             "--revision", values["KAPITSA_MODEL_REVISION"], "--quiet"], text=True).strip().splitlines()[-1]
-        pack = pack_dir(tag, values)
-        if pack.exists():
-            shutil.rmtree(pack)
-        subprocess.run([sys.executable, "-I", str(SOURCE / "tools" / values["KAPITSA_CONVERTER"]),
-                        snapshot, str(pack)], check=True, env=engine_environment({}))
-        save(pack / "llm-local-servers.json", {
-            "source": values["KAPITSA_MODEL_REPO"], "revision": values["KAPITSA_MODEL_REVISION"],
-            "converter": values["KAPITSA_CONVERTER"], "converter_commit": COMMIT})
+    snapshot = subprocess.check_output(
+        [*hf_command(), "download", values["KAPITSA_MODEL_REPO"],
+         "--revision", values["KAPITSA_MODEL_REVISION"], "--quiet"], text=True).strip().splitlines()[-1]
+    pack = pack_dir(tag)
+    if pack.exists():
+        shutil.rmtree(pack)
+    subprocess.run([sys.executable, "-I", str(SOURCE / "tools" / values["KAPITSA_CONVERTER"]),
+                    snapshot, str(pack)], check=True, env=engine_environment({}))
+    save(pack / "llm-local-servers.json", {
+        "source": values["KAPITSA_MODEL_REPO"], "revision": values["KAPITSA_MODEL_REVISION"],
+        "converter": values["KAPITSA_CONVERTER"], "converter_commit": COMMIT})
     if values["KAPITSA_MAX_POSITIONS"]:
         write_view(tag, values)
     identity = verify_model(tag, values)
@@ -321,10 +274,9 @@ def command(tag, values):
     port = int(os.environ.get("KAPITSA_PORT", "8024"))
     if not 1 <= port <= 65535:
         raise ValueError("KAPITSA_PORT must be 1..65535")
-    model = values["KAPITSA_CATALOG"] or str(serve_dir(tag, values))
     # --private: loopback only and out of Bonjour; Kapitsa's own default is
     # 0.0.0.0 with no authentication. Remote use goes through an ssh tunnel.
-    return [str(BINARY), "serve", "--model", model, "--model-id", values["KAPITSA_SERVED_NAME"],
+    return [str(BINARY), "serve", "--model", str(serve_dir(tag, values)), "--model-id", values["KAPITSA_SERVED_NAME"],
             "--private", "--port", str(port), "--context", values["KAPITSA_CTX"],
             "--disk-cache", os.environ.get("KAPITSA_DISK_CACHE", "0")]
 

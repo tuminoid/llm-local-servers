@@ -27,16 +27,16 @@ with mock.patch.dict(sys.modules, {"runtime": runtime}):
 
 
 class KapitsaTest(unittest.TestCase):
-    def test_model_config_rejects_mutable_revision_and_ambiguous_source(self):
+    def test_model_config_rejects_mutable_revision_and_unknown_converter(self):
         with mock.patch.dict(os.environ, {"KAPITSA_MODEL_REVISION": "main"}):
             with self.assertRaisesRegex(ValueError, "immutable"):
-                runtime.config("qwen3.8-27b")
-        with mock.patch.dict(os.environ, {"KAPITSA_CONVERTER": "convert_clover.py"}):
-            with self.assertRaisesRegex(ValueError, "exactly one"):
-                runtime.config("qwen3.8-27b")
-        with mock.patch.dict(os.environ, {"KAPITSA_COMPANIONS": "dflash2=incoai/x@main"}):
-            with self.assertRaisesRegex(ValueError, "kind"):
-                runtime.config("qwen3.6-35b-a3b")
+                runtime.config("clover-35b-a3b")
+        with mock.patch.dict(os.environ, {"KAPITSA_CONVERTER": "../../evil.py"}):
+            with self.assertRaisesRegex(ValueError, "KAPITSA_CONVERTER"):
+                runtime.config("clover-35b-a3b")
+        with mock.patch.dict(os.environ, {"KAPITSA_MAX_POSITIONS": "131072"}):
+            with self.assertRaisesRegex(ValueError, "cover KAPITSA_CTX"):
+                runtime.config("clover-35b-a3b")
         with mock.patch.dict(os.environ, {"KAPITSA_ENGINE_ENV": "HOME=/tmp"}):
             with self.assertRaisesRegex(ValueError, "NI_"):
                 runtime.config("clover-35b-a3b")
@@ -58,47 +58,45 @@ class KapitsaTest(unittest.TestCase):
         self.assertIn("--private", argv)
         self.assertNotIn("--host", argv)
         self.assertEqual(argv[argv.index("--model") + 1], str(runtime.MODELS / "clover-35b-a3b-262144"))
-        qwen = runtime.config("qwen3.6-35b-a3b")
-        self.assertEqual(runtime.command("qwen3.6-35b-a3b", qwen)[3], "qwen3.6-35b-a3b:4bit")
 
-    def test_pulled_catalog_model_must_match_configured_revisions(self):
-        values = runtime.config("qwen3.6-35b-a3b")
+    def test_converted_pack_and_view_must_match_the_config(self):
+        values = runtime.config("clover-35b-a3b")
         with tempfile.TemporaryDirectory() as directory:
             models = Path(directory)
-            pack = models / "qwen3.6-35b-a3b-4bit"
-            (pack / ".kapitsa").mkdir(parents=True)
+            pack = models / "clover-35b-a3b"
+            pack.mkdir()
             (pack / "model.safetensors").write_bytes(b"weights")
-            manifest = {"repo": values["KAPITSA_MODEL_REPO"], "revision": "0" * 40,
-                        "files": [{"path": "model.safetensors", "size": 7}],
-                        "companions": [{"kind": "dflash2", "repo": "incoai/Qwen3.6-35B-A3B-DFlash2",
-                                        "revision": "51ef7b6923ad6c14cb1bb41c37a9041446496ab6",
-                                        "files": []}]}
-            (pack / ".kapitsa/manifest.json").write_text(json.dumps(manifest))
+            (pack / "config.json").write_text(json.dumps({"max_position_embeddings": 131072}))
+            files = {name: {"sha256": runtime.digest(pack / name)} for name in ("model.safetensors", "config.json")}
+            (pack / "conversion.json").write_text(json.dumps({"recipe": {"bits": 4}, "files": files}))
+            record = {"source": values["KAPITSA_MODEL_REPO"], "revision": "0" * 40,
+                      "converter": "convert_clover.py", "converter_commit": runtime.COMMIT}
+            (pack / "llm-local-servers.json").write_text(json.dumps(record))
             with mock.patch.object(runtime, "MODELS", models):
                 with self.assertRaisesRegex(RuntimeError, "differs from the config"):
-                    runtime.verify_model("qwen3.6-35b-a3b", values)
-                manifest["revision"] = values["KAPITSA_MODEL_REVISION"]
-                manifest["files"][0]["sha256"] = "0" * 64
-                (pack / ".kapitsa/manifest.json").write_text(json.dumps(manifest))
+                    runtime.verify_model("clover-35b-a3b", values)
+                record["revision"] = values["KAPITSA_MODEL_REVISION"]
+                (pack / "llm-local-servers.json").write_text(json.dumps(record))
+                runtime.write_view("clover-35b-a3b", values)
+                identity = runtime.verify_model("clover-35b-a3b", values)
+                self.assertEqual(identity["max_position_embeddings"], 262144)
+                self.assertEqual(json.loads((pack / "config.json").read_text())["max_position_embeddings"], 131072)
+                (pack / "model.safetensors").write_bytes(b"changed")
                 with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
-                    runtime.verify_model("qwen3.6-35b-a3b", values)
-                del manifest["files"][0]["sha256"]
-                (pack / ".kapitsa/manifest.json").write_text(json.dumps(manifest))
-                identity = runtime.verify_model("qwen3.6-35b-a3b", values)
-        self.assertEqual(identity["revision"], values["KAPITSA_MODEL_REVISION"])
+                    runtime.verify_model("clover-35b-a3b", values)
 
     def test_live_server_must_serve_the_configured_model_and_context(self):
-        values = runtime.config("qwen3.8-27b")
+        values = runtime.config("clover-35b-a3b")
         identity = {"source": values["KAPITSA_MODEL_REPO"]}
         owner = {"pid": 123, "port": 8024, "model_identity": identity,
-                 "command": runtime.command("qwen3.8-27b", values)}
-        entry = {"id": "qwen3.8-27b", "context_length": 131072, "slots": 2, "active": True}
+                 "command": runtime.command("clover-35b-a3b", values)}
+        entry = {"id": "clover-35b-a3b", "context_length": 131072, "slots": 2, "active": True}
         with mock.patch.object(runtime, "owned_group", return_value={123: {}}), \
                 mock.patch.object(runtime, "live_model", return_value=entry):
             with self.assertRaisesRegex(RuntimeError, "context differs"):
-                runtime.check_live("qwen3.8-27b", values, owner, identity)
+                runtime.check_live("clover-35b-a3b", values, owner, identity)
             with self.assertRaisesRegex(RuntimeError, "differs from the managed launch"):
-                runtime.check_live("qwen3.8-27b", values, owner, {"source": "other"})
+                runtime.check_live("clover-35b-a3b", values, owner, {"source": "other"})
 
     def test_capacity_needs_one_full_context_and_caps_overrides(self):
         entry = {"slots": 2, "context_length": 262144}

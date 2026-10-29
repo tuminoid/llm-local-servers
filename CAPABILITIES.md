@@ -65,6 +65,10 @@ make splash-stop
 make lmstudio-start MODEL=<profile>
 make lmstudio-capability MODEL=<profile>
 make lmstudio-stop
+
+make kapitsa-start MODEL=<profile>
+make kapitsa-capability MODEL=<profile>
+make kapitsa-stop
 ```
 
 Remote lifecycle:
@@ -137,6 +141,7 @@ proves nothing about parser compatibility.
 - Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`,
   `nemotron-3.5-super-mlx`, `flint-40b-a2b-qat-int4-mlx`
 - ds4: `qwen3.8-flash-next-q4`
+- Kapitsa: `clover-35b-a3b`
 
 ### RTX PRO 3000 Blackwell
 
@@ -158,7 +163,7 @@ plus the triage amendment `c0dc34a`), rerun 2026-10-12 from fleet commit
 LM Studio 0.4.25+1 with its Splash engine 0.0.5. JSON files are retained under
 `~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`. Audit
 fitness ran 4 samples per task at each conf's declared sampling and passes
-with at least 11 of 12 samples passed. Five groups differ:
+with at least 11 of 12 samples passed. Six groups differ:
 
 - The Splash rows are Splash 1.3.2 runs from clean trees of its pin
   branch: `qwen3.8-27b` on 2026-10-19 (same harness), `qwen3.6-35b-a3b` on
@@ -187,6 +192,8 @@ with at least 11 of 12 samples passed. Five groups differ:
   `~/.local/state/auditbench/trials/2026-10-26-mimo-hunt/ollama/`.
 - The ds4 row ran 2026-10-23 (llm-audit-bench 2.3.0) from fleet commit
   `3c3a5ab`, under `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
+- The Kapitsa row ran 2026-10-28 on Kapitsa 0.2.24 (llm-audit-bench 2.4.0)
+  from fleet commit `2457685`, under `~/.local/state/capability-check/`.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -208,20 +215,22 @@ with at least 11 of 12 samples passed. Five groups differ:
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 2, leak 1, missed_findings 1) | fail |
 | Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | ds4 | `qwen3.8-flash-next-q4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
+| Kapitsa | `clover-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | ignored | unsupported | pass 12/12 | pass |
 
 Every checked row's live identity matched the revision or digest pinned
 in its model config.
 
 ### Findings
 
-- Fifteen profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and `qwen3.8-27b`
+- Sixteen profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and `qwen3.8-27b`
   (11 of 12), LM Studio `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12
   each) and `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` and
   `ornith1.5-122b-a10b-4bit` (12 of 12 each), `granite4.2-30b-4bit` and
   `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama `nemotron-3.5-super-mlx`
   and `nanbeige4.3-33b-q4km` (12 of 12 each), `muse-glimmer-30b-mlx`,
   `flint-40b-a2b-qat-int4-mlx` and `mimo-v2.6-flash-q2ks` (11 of 12 each), and
-  ds4 `qwen3.8-flash-next-q4` (12 of 12).
+  ds4 `qwen3.8-flash-next-q4` and Kapitsa `clover-35b-a3b` (12 of 12
+  each).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the

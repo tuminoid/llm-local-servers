@@ -61,7 +61,7 @@ What this means in practice:
 | `splash/` | Splash native Metal server on Apple Silicon M3+ | `splash-{install,pull,start,stop,status,logs,bench,capability}` |
 | `lmstudio/` | LM Studio service with its Splash and MLX engines | `lmstudio-{install,pull,start,stop,status,logs,bench,capability}` |
 | `ds4/` | ds4 (DwarfStar) native Metal server for large MoE models; interactive use, Qwen3.8 Flash Next also audit, see its AGENTS.md | `ds4-{install,pull,start,stop,status,logs,bench,capability}` |
-| `kapitsa/` | Kapitsa native Metal server for Qwen3.5-family models and Clover | `kapitsa-{install,pull,start,stop,status,logs,bench,capability}` |
+| `kapitsa/` | Kapitsa native Metal server for DiffuSpace's Clover block-diffusion MoE | `kapitsa-{install,pull,start,stop,status,logs,bench,capability}` |
 
 [README.md](README.md) is the front page and the cross-runtime, host-oriented
 executive summary of measured results. The per-runtime `BENCHMARKS.md` files

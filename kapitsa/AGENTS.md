@@ -12,7 +12,7 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
 | `install.sh`, `pull.sh` | Root Make entry points for pinned installation |
 | `run.sh`, `start.sh` | Detached launcher and foreground exec |
 | `stop.sh`, `status.sh` | Inspection and verified teardown |
-| `runtime.py` | Lifecycle, model pull, conversion and verification, identity |
+| `runtime.py` | Lifecycle, model conversion and verification, identity |
 | `bench.py` | AuditBench transport, live capacity and provenance |
 | `capability.py` | Shared API gate with the template's thinking switch |
 | `models/*.conf` | Immutable model facts and capability expectations |
@@ -32,16 +32,15 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
 - `serve` defaults to `0.0.0.0` with no authentication and advertises
   itself over Bonjour. The launcher always passes `--private` (loopback,
   no Bonjour) and has no host knob: remote use is an ssh tunnel.
-- Catalog models are pulled by the pinned binary, which fixes their
-  revisions; the config restates the repository, revision and companions,
-  and verification compares them with the store's manifest, then hashes
-  every file the manifest gives a sha256. A config change without a
-  release bump that moves the catalog is a mismatch, not an update.
-- Converted models (Clover) are converted by the source tree's converter
-  from the pinned Hugging Face revision. `llm-local-servers.json` records
+- Models are converted by the source tree's converter from the pinned
+  Hugging Face revision. `llm-local-servers.json` records
   the source, revision, converter and commit; `conversion.json` hashes
   every file. The conversion is deterministic: two separate conversions
   of the pinned revision produced identical files.
+- Kapitsa serves only Clover. Its Qwen3.6-35B-A3B and Qwen3.8-27B catalog
+  profiles (DFlash2 drafters) passed Capability Check v2 but lost to Splash
+  on sessions/h (16.28 against 20.29, 6.65 against 8.01) and were dropped
+  on 2026-10-29; reconsider with a release that moves those numbers.
 - Kapitsa clamps `--context` to `max_position_embeddings`. A positions
   override is a model fact (the base's native RoPE window) and is served
   through a view: symlinks to the pack and its own `config.json`. Never

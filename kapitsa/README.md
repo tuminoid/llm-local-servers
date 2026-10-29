@@ -1,16 +1,16 @@
 # Kapitsa on Apple Silicon
 
 Managed [Kapitsa](https://github.com/nace-ai/kapitsa), a native Metal engine
-for Qwen3.5-family hybrid models with prefix reuse and speculative decoding:
-its DFlash2 drafters for the Qwen catalog packs, Clover's own
-self-speculative mode for Clover. Measured operating points are in
-[BENCHMARKS.md](BENCHMARKS.md).
+for Qwen3.5-family hybrid models with prefix reuse and speculative decoding.
+It serves DiffuSpace's Clover-35B-A3B block-diffusion MoE in Clover's own
+self-speculative mode; Splash serves the plain Qwen models faster.
+Measured operating points are in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Install and run
 
-Requires `uv`, `git`, Apple Silicon and macOS 14 or newer; converting a
-model (Clover) also needs the Xcode Command Line Tools' `c++`. Run every
-command from the repository root:
+Requires `uv`, `git`, Apple Silicon, macOS 14 or newer, and the Xcode
+Command Line Tools' `c++` for the model converter. Run every command from
+the repository root:
 
 ```bash
 make kapitsa-install
@@ -22,8 +22,7 @@ make kapitsa-bench MODEL=clover-35b-a3b
 make kapitsa-stop
 ```
 
-The other profiles are `qwen3.6-35b-a3b` and `qwen3.8-27b`. There is no
-default model. Stop before pulling another model or installing a runtime.
+There is no default model. Stop before pulling or installing a runtime.
 `make kapitsa-logs` follows the current log. A guard Makefile rejects
 commands from this directory.
 
@@ -33,15 +32,13 @@ Install verifies the release archive pinned in the root Makefile
 release's source commit (`KAPITSA_SOURCE_COMMIT`) into
 `~/.local/share/kapitsa/source/` for its model converters.
 
-Pull places models in the engine's own store,
-`~/.local/share/kapitsa/home/models/`. Catalog models (`KAPITSA_CATALOG`)
-come through `kapitsa pull` at the revisions the pinned release names.
-Converted models (`KAPITSA_CONVERTER`) download the pinned Hugging Face
-revision (a host `hf`, else a pinned `huggingface_hub` through uv) and run
-the release's converter on it; Clover's BF16 checkpoint is 69 GB, its pack
-19.5 GB. Startup never downloads: before launch and measurement every file
-is checked against the store's manifest or the conversion record, with
-full content hashes.
+Pull downloads the pinned Hugging Face revision (a host `hf`, else a
+pinned `huggingface_hub` through uv) and runs the release's converter
+(`KAPITSA_CONVERTER`) on it into the engine's own store,
+`~/.local/share/kapitsa/home/models/`; Clover's BF16 checkpoint is 69 GB,
+its pack 19.5 GB. Startup never downloads: before launch and measurement
+every file is checked against the conversion record with full content
+hashes.
 
 ## Serving settings
 
@@ -56,6 +53,5 @@ full content hashes.
 The server listens on loopback only and stays out of Bonjour (`--private`);
 reach it from another machine through an ssh tunnel. Slots and the
 memory plan are Kapitsa's own for the host. Model facts live in
-`models/<name>.conf`: the immutable source revision, catalog name and
-companions or converter, context, decode switches, capability
-expectations and the checkpoint's sampling.
+`models/<name>.conf`: the immutable source revision, converter, context,
+decode switches, capability expectations and the checkpoint's sampling.
