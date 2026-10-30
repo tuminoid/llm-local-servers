@@ -22,5 +22,9 @@ config:
 globs:
 - "**/*.md"
 
+ignores:
+- ".venv/**"
+- "node_modules/**"
+
 # Don't autofix anything, we're linting here
 fix: false

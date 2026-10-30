@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    types: [ opened, edited, reopened, synchronize, ready_for_review ]
+
+permissions: {}
+
+jobs:
+  lint-test:
+    name: make lint test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: llm-local-servers
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        path: llm-local-servers
+        persist-credentials: false
+    # make test imports the harness from the sibling ../llm-audit-bench
+    - name: Checkout llm-audit-bench
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        repository: tuminoid/llm-audit-bench
+        path: llm-audit-bench
+        persist-credentials: false
+    - name: Set up uv
+      uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      with:
+        enable-cache: false
+    - name: Install pinned linters
+      run: |
+        uv sync --locked
+        npm ci --ignore-scripts
+    - name: Lint and test
+      run: PATH="$PWD/.venv/bin:$PWD/node_modules/.bin:$PATH" make lint test

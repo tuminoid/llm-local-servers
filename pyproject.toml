@@ -1,0 +1,14 @@
+# Development tooling only: uv.lock pins the shellcheck that CI lints with.
+# No server imports from this project; every uv run in the tree passes
+# --no-project.
+[project]
+name = "llm-local-servers"
+version = "0"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = ["shellcheck-py==0.11.0.1"]
+
+[tool.uv]
+package = false

@@ -4,6 +4,10 @@
 # Python bytecode
 __pycache__/
 
+# Pinned lint tooling (pyproject.toml, package.json)
+.venv/
+node_modules/
+
 # Editor and OS droppings
 *~
 *.tmp

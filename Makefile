@@ -268,7 +268,7 @@ audit-bench-check:
 # --- Linting ---
 
 SHELLCHECK_STRICT := -s bash -S style -o all -e SC2310,SC2311,SC2312
-SHELL_SOURCES = $(shell find . -name '*.sh' -type f -not -path './.git/*' | sort)
+SHELL_SOURCES = $(shell find . -name '*.sh' -type f -not -path './.git/*' -not -path './.venv/*' -not -path './node_modules/*' | sort)
 
 lint: shellcheck markdownlint pycompile
 

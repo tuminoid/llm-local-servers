@@ -136,6 +136,7 @@ class SplashTest(unittest.TestCase):
             with mock.patch.object(runtime, "STATE", state), \
                     mock.patch.object(runtime, "PIDFILE", state / "server.json"), \
                     mock.patch.object(runtime, "LOG", state / "server.log"), \
+                    mock.patch.object(runtime, "require_host"), \
                     mock.patch.object(runtime, "port_free"), \
                     mock.patch.object(runtime, "model_path", return_value=state), \
                     mock.patch.object(runtime, "verify_release"), \

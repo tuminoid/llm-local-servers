@@ -13,13 +13,15 @@ Capability Check v2 and then the AuditBench session rate. LM Studio is kept
 beside it as the entry-level option, since it installs cleanly on every
 platform.
 
-Serving performance is measured with AuditBench (v1 rows until each host
-is re-measured at v2), and API compatibility and audit fitness are gated
-with Capability Check v2 (v1 rows until each model is re-checked). Both
+Serving performance is measured with AuditBench v2, and API compatibility
+and audit fitness are gated with Capability Check v2. Both
 live in the sibling [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 repository (`docs/PROTOCOL.md` and `docs/CAPABILITY.md` are the
 canonical protocol documents); this repository holds the runtime
 adapters, model configs, and results.
+
+New to local serving? [docs/INTRODUCTION.md](docs/INTRODUCTION.md) explains
+the concepts these documents assume.
 
 ## Setup
 
@@ -28,9 +30,9 @@ adapters, model configs, and results.
    this repository, or point `AUDIT_BENCH_DIR` at an existing checkout.
    The harness is standard-library Python; there is nothing to install.
    Serving does not need it.
-2. Copy `.envrc.example` to `.envrc`, fill in the personal values (the
-   remote GPU host alias), and `direnv allow` -- or export the same
-   variables from your shell. Committed files carry no personal values.
+2. Copy `.envrc.example` to `.envrc`, fill in your own values (the ssh
+   alias of your remote GPU host), and `direnv allow` -- or export the same
+   variables from your shell. Committed files carry no host-specific values.
 3. Install the runtime you intend to serve with. Host tools are yours
    to provide: `uv`, `python3`, `curl` and `tar` everywhere, plus what a
    runtime names; every target checks the tools it uses and names any
@@ -44,7 +46,8 @@ adapters, model configs, and results.
    [kapitsa/README.md](kapitsa/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
-newer for `make lint` and `make test`.
+newer for `make lint` and `make test`. CI installs the linters at the
+versions pinned in `uv.lock` and `package-lock.json`.
 
 ## Running
 
