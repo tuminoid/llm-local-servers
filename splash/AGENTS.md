@@ -23,6 +23,10 @@ or reimplement benchmark workloads.
 
 - Use the standalone archive and checksum pinned in the root Makefile.
   Installation never replaces an existing version tree or global runtime.
+  Install records the engine binary and metallib digests from the
+  checksum-verified archive (1.5.0's `release.json` no longer states them),
+  and every verification checks them. The server loads the model
+  directory's own tokenizer (1.4.0 dropped `--tokenizer`).
   Model pulls select immutable HF revisions for the target and its
   DFlash2 draft. Upstream `prepare` has no draft revision option and
   installs a draft repository's default branch, so the draft is passed as

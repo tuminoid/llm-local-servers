@@ -28,7 +28,7 @@ DATA = Path(os.environ.get("SPLASH_DATA_DIR", Path(os.environ.get(
     "XDG_DATA_HOME", Path.home() / ".local/share")) / "splash"))
 STATE = Path(os.environ.get("SPLASH_STATE_DIR", Path(os.environ.get(
     "XDG_STATE_HOME", Path.home() / ".local/state")) / "splash"))
-VERSION = os.environ.get("SPLASH_VERSION", "1.3.2")
+VERSION = os.environ.get("SPLASH_VERSION", "1.5.0")
 RELEASE = DATA / "runtime" / VERSION
 PYTHON = RELEASE / "python/bin/python3"
 PIDFILE = STATE / "server.json"
@@ -122,13 +122,19 @@ def verify_model(values):
     }
 
 
+ENGINE_FILES = (("splash", "binary_sha256"), ("splash.metallib", "metallib_sha256"))
+
+
 def verify_release():
     release = json.loads((RELEASE / "release.json").read_text())
     receipt = json.loads((RELEASE / "installation.json").read_text())
     if release["version"] != VERSION or receipt["archive_sha256"] != os.environ["SPLASH_ARCHIVE_SHA256"]:
         raise RuntimeError("installed runtime does not match the release pin")
-    for name, key in (("splash", "binary_sha256"), ("splash.metallib", "metallib_sha256")):
-        if digest(RELEASE / "engine" / name) != release[key]:
+    for name, key in ENGINE_FILES:
+        # 1.5.0's release.json no longer states them; install records them
+        # from the checksum-verified archive.
+        expected = release.get(key) or receipt.get(key)
+        if digest(RELEASE / "engine" / name) != expected:
             raise RuntimeError(f"runtime checksum mismatch: {name}")
     return {**release, **receipt}
 
@@ -172,7 +178,9 @@ def install():
     stage = Path(tempfile.mkdtemp(prefix=".install-", dir=RELEASE.parent))
     subprocess.run(["tar", "-xzf", str(archive), "-C", str(stage)], check=True)
     extracted = stage / f"splash-{VERSION}-arm64-macos26"
-    save(extracted / "installation.json", {"archive_sha256": checksum, "archive_url": url})
+    save(extracted / "installation.json", {
+        "archive_sha256": checksum, "archive_url": url,
+        **{key: digest(extracted / "engine" / name) for name, key in ENGINE_FILES}})
     extracted.rename(RELEASE)
     stage.rmdir()
     verify_release()
@@ -207,8 +215,7 @@ def command(values):
     # advance on a later install, the assembly it names does not.
     path = model_path(values).resolve(strict=True)
     return [str(PYTHON), "-u", "-P", "-m", "server.server",
-            str(path), "--tokenizer", str(path / "tokenizer"),
-            "--model", values["SPLASH_MODEL_REPO"], "--binary", str(RELEASE / "engine/splash"),
+            str(path), "--model", values["SPLASH_MODEL_REPO"], "--binary", str(RELEASE / "engine/splash"),
             "--host", host, "--port", str(port), "--no-webui",
             "--max-context", values["SPLASH_MAX_LEN"],
             "--max-memory", os.environ.get("SPLASH_MAX_MEMORY", "64G"),
