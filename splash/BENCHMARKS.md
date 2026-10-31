@@ -2,23 +2,23 @@
 
 ## AuditBench v2: Apple M5 Max
 
-Splash 1.3.2, 64 GiB native memory cap, four active slots, DFlash 2, Q8 KV,
+Splash 1.5.0, 64 GiB native memory cap, four active slots, DFlash 2, Q8 KV,
 state/prefix caching with the SSD prefix tier at its `auto` default, the
 dense target's Neural Engine FFN split and idle weight release at release
 defaults; mlx-community 4-bit targets with their DFlash2 drafts pinned in
 the model configs. Canonical AuditBench v2 `session` profile at each conf's
-declared sampling on the M5 Max (128 GB, macOS 27.0.1), from clean trees of
-the 1.3.2 pin branch: `qwen3.8-27b` on 2026-10-19 (llm-audit-bench v2.1.0
-plus the triage amendment `c0dc34a`), `qwen3.6-35b-a3b` on 2026-10-20
-(v2.2.0); each JSON records its commit and harness hash. The harness
-measured 1 stream and the largest of 2/4/8 that fits admission and the KV
-pool: tool steps from 32k evidence, 16 at 262,144 configured context,
-report at depth. Sessions/h is the median over 3 samples; complete counts
-sessions whose report ended on its own and named at least 7/8 of its
-findings. pp512/tg128 is the llama-bench-method reference (one stream,
-greedy, depth ~0), not a serving result. JSON files are retained under
-`~/.local/state/auditbench/trials/2026-10-19-m5-night/splash/` and
-`.../2026-10-20-m5-night/splash/`.
+declared sampling on the M5 Max (128 GB, macOS 27.0.1), run 2026-10-31 on
+llm-audit-bench 2.4.0 from a clean trial tree of the 1.5.0 pin (`18bf1a9`).
+That tree also carries the next change's GGUF-variant and preserved-reasoning
+support, which these two profiles do not use, so its adapter and lifecycle
+hashes differ from this pin's files. Each JSON records its commit and
+harness hash. The harness measured 1 stream and the largest of 2/4/8 that
+fits admission and the KV pool: tool steps from 32k evidence, 16 at 262,144
+configured context, report at depth. Sessions/h is the median over 3
+samples; complete counts sessions whose report ended on its own and named at
+least 7/8 of its findings. pp512/tg128 is the llama-bench-method reference
+(one stream, greedy, depth ~0), not a serving result. JSON files are
+retained under `~/.local/state/auditbench/trials/2026-10-30-m5-night/splash/`.
 Every later top-level section of this file is AuditBench v1 or older,
 never comparable with v2. Their top-level retained JSON on the M5 and A100 was
 removed on 2026-09-30; trial-directory copies remain, and the figures stay
@@ -26,20 +26,24 @@ here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,341,760 | 1x 20.29 / 4x 19.78 | 3,805 | 1,857.4 | 185.5 | 13/15 | 5,329 / 430.6 | pass | yes, 1x | `20261020T061602.634549+0000_splash_qwen3-6-35b-a3b_session.json` |
-| Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 8.01 / 4x 8.73 | 9,636 | 552.1 | 60.3 | 15/15 | 969 / 117.7 | pass | yes | `20261019T152302.398144+0000_splash_qwen3-8-27b_session.json` |
+| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 20.90 / 4x 20.18 | 4,320 | 1,906.2 | 211.5 | 14/15 | 5,507 / 421.6 | pass | yes, 1x | `20261031T011046.486492+0000_splash_qwen3-6-35b-a3b_session.json` |
+| Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 8.57 / 4x 8.49 | 7,164 | 557.4 | 63.0 | 15/15 | 1,010 / 116.6 | pass | yes | `20261031T022632.490447+0000_splash_qwen3-8-27b_session.json` |
 
-- Both profiles pass Capability Check v2: `qwen3.6-35b-a3b` 12 of 12
-  (2026-10-20; a 2026-10-19 run passed 10 of 12, invented 1 and runaway 1),
-  `qwen3.8-27b` 11 of 12 (failed: runaway 1). `qwen3.8-27b` is publishable
-  at 8.01 sessions/h (8.73 at 4x, its optimal operating point);
-  `qwen3.6-35b-a3b` leads the host at 20.29 at one stream, its optimal
-  operating point: two of 12 sessions at 4x were incomplete, so the 19.78
-  there is not a serving rate. The JSON records `publishable: false` under
-  llm-audit-bench 2.2.0; under the 2.3.0 rule its complete 1x leg
-  publishes. 207 of its 255 calls streamed no reasoning.
-- Four streams beat one on `qwen3.8-27b` (1.09x) and stay just below one
-  on `qwen3.6-35b-a3b` (0.98x).
+- Both profiles pass Capability Check v2: `qwen3.6-35b-a3b` 12 of 12,
+  `qwen3.8-27b` 11 of 12 (failed: format 1). `qwen3.6-35b-a3b` leads the
+  host's Splash rows at 20.90 at one stream, its optimal operating point:
+  one of 12 sessions at 4x was incomplete, so the 20.18 there is not a
+  serving rate. 212 of its 255 calls streamed no reasoning.
+- `qwen3.8-27b` now peaks at one stream (8.57; four streams 0.99x), where
+  1.3.2 gained 1.09x from four.
+
+### Against Splash 1.3.2
+
+The 1.3.2 rows (2026-10-19/20, same host and macOS, under
+`~/.local/state/auditbench/trials/2026-10-19-m5-night/splash/` and
+`.../2026-10-20-m5-night/splash/`): `qwen3.6-35b-a3b` 1x 20.29 / 4x 19.78
+(13/15 complete), `qwen3.8-27b` 8.01 / 8.73 (15/15). 1.5.0 is faster at one
+stream on both, by 3% and 7%; `qwen3.8-27b` at four streams falls 3%.
 
 ### Against Splash 1.3.1
 
