@@ -80,6 +80,18 @@ class SplashTest(unittest.TestCase):
                 runtime.check_live(values, owner, identity)
             connect.assert_not_called()
 
+    def test_memory_limit_is_the_conf_need_clamped_to_the_host(self):
+        values = {"SPLASH_MEMORY_GIB": "98"}
+        gib = 2**30 // 16384
+        with mock.patch.dict(os.environ, {"SPLASH_MAX_MEMORY": ""}), \
+                mock.patch.object(runtime.os, "sysconf", side_effect=lambda name: (
+                    16384 if name == "SC_PAGE_SIZE" else 128 * gib)):
+            self.assertEqual(runtime.memory_limit(values), "98G")
+            self.assertEqual(runtime.memory_limit({"SPLASH_MEMORY_GIB": "120"}), "104G")
+        with mock.patch.dict(os.environ, {"SPLASH_MAX_MEMORY": "80G"}):
+            self.assertEqual(runtime.memory_limit(values), "80G")
+        self.assertEqual(runtime.config("qwen3.6-35b-a3b")["SPLASH_MEMORY_GIB"], "64")
+
     def test_bind_requires_auth_and_does_not_put_key_in_arguments(self):
         values = runtime.config("qwen3.6-35b-a3b")
         with mock.patch.dict(os.environ, {"SPLASH_HOST": "0.0.0.0", "SPLASH_API_KEY": ""}), \
