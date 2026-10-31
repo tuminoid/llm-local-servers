@@ -48,6 +48,11 @@ in [README.md](README.md); shared server conventions live in
   status, logs, and tunnel must never deploy as a side effect.
 - `pull.sh` must require the pidfile-owned server before contacting the API;
   an unmanaged process must never receive a model pull.
+- On Apple Silicon a GGUF profile carries only tensor types the vendored
+  llama.cpp's Metal backend computes: one it refuses (NVFP4 matmul, as in
+  NVIDIA's Bolt GGUF) stays on the CPU and the GPU waits on it every layer.
+  Check the header's tensor types before adding a profile, and the load
+  log's weight buffers (only the token embeddings CPU-mapped) on first start.
 - Do not force `num_gpu`. llama.cpp automatic fit decides which layers and
   caches reside on the 12 GiB GPU after accounting for the full context slot.
 - An RTX profile runs entirely on the GPU, ahead of context length: a

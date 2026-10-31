@@ -141,6 +141,8 @@ proves nothing about parser compatibility.
   `ornith1.5-35b-a3b-4bit`, `mimo-v2.6-9b-4bit`
 - Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`,
   `nemotron-3.5-super-mlx`
+- Ollama GGUF: `nemotron-3.5-bolt-74b-a9b-q3kxl`, `mimo-v2.6-flash-q2ks`,
+  `nanbeige4.3-33b-q4km`
 - ds4: `qwen3.8-flash-next-q4`
 - Kapitsa: `clover-35b-a3b`
 
@@ -183,9 +185,10 @@ with at least 11 of 12 samples passed. Six groups differ:
 - The vLLM-Metal rows are the canonical runs of 2026-10-16 and 2026-10-17
   from fleet commit `2e990d6` on vLLM-Metal 0.31.0, under
   `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`.
-- The Glimmer and Super VL rows ran on Ollama 0.40.13 on
+- The Glimmer, Super VL and Bolt rows ran on Ollama 0.40.13 on
   2026-10-30/31 (llm-audit-bench 2.4.0) from a clean trial tree of its pin
-  (`18bf1a9`), under
+  (`18bf1a9`) and Bolt's on 2026-10-31 from its profile's trial commit
+  `14d6a7f`, under
   `~/.local/state/auditbench/trials/2026-10-30-m5-night/ollama/`;
   Lightning's row ran on 0.40.8 on 2026-10-23 from main `8cea7ce`, under
   `~/.local/state/auditbench/trials/2026-10-23-ollama-0408-retest/results/`;
@@ -218,6 +221,7 @@ with at least 11 of 12 samples passed. Six groups differ:
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | Ollama | `nanbeige4.3-33b-q4km` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | pass 12/12 | pass |
 | Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 2, leak 1, missed_findings 1) | fail |
+| Ollama | `nemotron-3.5-bolt-74b-a9b-q3kxl` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | ds4 | `qwen3.8-flash-next-q4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
 | Kapitsa | `clover-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | ignored | unsupported | pass 12/12 | pass |
@@ -227,15 +231,16 @@ in its model config.
 
 ### Findings
 
-- Nineteen profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
+- Twenty profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
   `qwen3.8-flash-next-iq3s`, `ornith1.5-122b` and `bonsai2-27b-pq2` (12 of 12
   each), `qwen3.8-27b` and `flint-gguf` (11 of 12 each), LM Studio
   `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12 each) and
   `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` (12 of 12),
   `granite4.2-30b-4bit` and `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama
-  `nemotron-3.5-super-mlx` and `nanbeige4.3-33b-q4km` (12 of 12 each),
-  `muse-glimmer-30b-mlx` and `mimo-v2.6-flash-q2ks` (11 of 12 each), and ds4
-  `qwen3.8-flash-next-q4` and Kapitsa `clover-35b-a3b` (12 of 12 each).
+  `nemotron-3.5-super-mlx`, `nemotron-3.5-bolt-74b-a9b-q3kxl` and
+  `nanbeige4.3-33b-q4km` (12 of 12 each), `muse-glimmer-30b-mlx` and
+  `mimo-v2.6-flash-q2ks` (11 of 12 each), and ds4 `qwen3.8-flash-next-q4` and
+  Kapitsa `clover-35b-a3b` (12 of 12 each).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the

@@ -49,11 +49,12 @@ column is configured context times slots, not a measured pool. Ollama has no
 - All three pass Capability Check v2. Against 0.40.3 (2026-10-11,
   `98e4052`): Ornith 27.77 to 32.48 sessions/h, Flash-Next 7.98 / 8.68 to
   8.79 / 9.49.
-- `nemotron-3.5-bolt-74b-a9b-iq2` (Nemotron 3.5 Bolt 74B-A9B, NVIDIA's
-  24 GB IQ2_XXS) passes 12 of 12. Ollama runs its `nemotron_h_moe` runner
-  on one slot: a 4-slot start served one (`runner uses 1 slot(s)`), so 1x
-  is its only operating point here. It is not on the M5: llama.cpp's Metal
-  `mul_mat_id` kernel crashes on it (see its conf).
+- `nemotron-3.5-bolt-74b-a9b-iq2` (Nemotron 3.5 Bolt 74B-A9B, NVIDIA's 24 GB
+  IQ2_XXS) passes 12 of 12. Ollama runs its `nemotron_h_moe` runner on one
+  slot: a 4-slot start served one (`runner uses 1 slot(s)`), so 1x is its only
+  operating point here. On the M5 its NVFP4 tensors run on the CPU under
+  llama.cpp's Metal backend (see its conf); the M5 serves Bolt from Unsloth's
+  UD-Q3_K_XL instead.
 - The same campaign measured the A100's other Ollama profiles, dropped on
   2026-10-12 because vLLM serves those models faster here or they failed the
   gate on both runtimes: `qwen3.6-35b-a3b` 18.06, `qwen3-coder-30b` 18.51
@@ -91,6 +92,7 @@ measured on 0.40.13.
 | Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 29.41 | 5,400 | 2,349.6 | 90.3 | 3/3 | 3,186 / 144.3 | fail | yes | `20261023T065131.329883+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
 | Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 20.79 | 1,363 | 693.3 | 65.3 | 3/3 | unavailable | pass | yes | `20261030T134241.263144+0000_ollama_muse-glimmer-30b-mlx_session.json` |
 | Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 11.88 | 7,836 | 935.4 | 59.8 | 3/3 | unavailable | pass | yes | `20261031T053754.735178+0000_ollama_nemotron-3-5-super-mlx_session.json` |
+| Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` | 262,144 | 1 | 262,144 | 1x 7.73 | 8,428 | 741.2 | 31.7 | 2/2 | unavailable | pass | yes | `20261031T001520.647185+0000_ollama_nemotron-3-5-bolt-74b-a9b-q3kxl_session.json` |
 | Ollama `mimo-v2.6-flash-q2ks` | 262,144 | 1 | 262,144 | 1x 5.34 | 3,519 | 313.4 | 22.2 | 3/3 | unavailable | pass | yes | `20261026T154250.548452+0000_ollama_mimo-v2-6-flash-q2ks_session.json` |
 | Ollama `nanbeige4.3-33b-q4km` | 262,144 | 1 | 262,144 | 1x 1.44 | 7,889 | 128.5 | 6.0 | 3/3 | unavailable | pass | yes | `20261026T235314.776962+0000_ollama_nanbeige4-3-33b-q4km_session.json` |
 
@@ -116,6 +118,13 @@ measured on 0.40.13.
   245,760, Super VL 10.0 at 491,520). A one-poll step of about 13 GiB at a
   post-prefill commit recurs on Lightning and Super VL and is released at
   once; Flint shows a 15.6 GiB step at about 41 GiB available.
+- `nemotron-3.5-bolt-74b-a9b-q3kxl` (Nemotron 3.5 Bolt 74B-A9B, Unsloth
+  UD-Q3_K_XL, 39 GB, a local import without a draft: Unsloth's DFlash draft
+  is NVFP4 too) passes 12 of 12. All 89 layers run on the GPU, 36.7 GiB of
+  weights with only the token embeddings CPU-mapped, and it prefills a
+  245,760-token cold prompt in 395 s (622 tok/s). It ran 2026-10-31 on
+  0.40.13 and llm-audit-bench 2.4.0 from its profile's trial commit
+  `14d6a7f`, the same profile files.
 - `mimo-v2.6-flash-q2ks` (Xiaomi MiMo-V2.6-Flash-MOPD, 309B-A15B, the
   ggml-org Q2_K_S GGUF on llama.cpp) holds 99.07 GiB on the GPU at 262,144
   with q8_0 KV and llama-server's host prompt cache off
