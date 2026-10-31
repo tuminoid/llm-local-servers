@@ -65,8 +65,9 @@ def config(tag):
     script = 'set -eu; source "$1"; shift; for name; do printf "%s\\0" "${!name}"; done'
     output = subprocess.check_output(["bash", "-c", script, "bash", str(path), *CONFIG_KEYS])
     values = dict(zip(CONFIG_KEYS, output.decode().split("\0")[:-1]))
-    for key in ("SPLASH_MODEL_REPO", "SPLASH_DRAFT_REPO"):
-        if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+", values[key]):
+    # A GGUF target names its quantization variant as owner/repo:variant.
+    for key, variant in (("SPLASH_MODEL_REPO", r"(:[a-zA-Z0-9_.-]+)?"), ("SPLASH_DRAFT_REPO", "")):
+        if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+" + variant, values[key]):
             raise ValueError(f"{key} must be a full Hugging Face repository ID")
     for key in ("SPLASH_MODEL_REVISION", "SPLASH_DRAFT_REVISION"):
         if not re.fullmatch(r"[0-9a-f]{40}", values[key]):
@@ -106,7 +107,9 @@ def verify_model(values):
     path = model_path(values)
     record = assembly.verify(path, full=True)
     target = record["sources"]["target"]
-    if target != {"repo": values["SPLASH_MODEL_REPO"], "revision": values["SPLASH_MODEL_REVISION"]}:
+    # The record names a GGUF target's repository without its variant.
+    repo = values["SPLASH_MODEL_REPO"].split(":")[0]
+    if target != {"repo": repo, "revision": values["SPLASH_MODEL_REVISION"]}:
         raise RuntimeError("installed target differs from the config; run make splash-pull")
     draft = draft_snapshot(values).resolve()
     linked = [entry["path"] for name, entry in record["files"].items() if name.startswith("draft/")]
