@@ -15,6 +15,9 @@ def control(mode):
     # control maps it to chat_template_kwargs for vLLM, which Splash ignores.
     if mode == "default":
         return {}
+    # No documented control: the check records it as unsupported.
+    if mode == "none":
+        return None
     if mode == "reasoning-effort-none":
         return {"reasoning_effort": "none"}
     raise ValueError(f"unsupported Splash thinking control: {mode}")
@@ -36,6 +39,7 @@ def main():
                 disable_options=control(values["SPLASH_CAP_DISABLE_MODE"]),
                 system_prompt=values["SPLASH_CAP_SYSTEM_PROMPT"] or None,
                 sampling=parse_sampling(values["SPLASH_SAMPLING"]),
+                preserve_reasoning=values["SPLASH_PRESERVE_REASONING"] == "1",
                 concurrency=bench.capacity(status)[0],
                 context=int(status["maximum_context_tokens"]),
             ),

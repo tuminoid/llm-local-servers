@@ -221,23 +221,26 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
-| 1 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.36 | 25.01 @4x | 1x | 86.9 |
-| 2 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
-| 3 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 20.79 | -- | 1x | 65.3 |
-| 4 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.88 | -- | 1x | 59.8 |
-| 5 | ds4 `qwen3.8-flash-next-q4` (125B-A6B) | MoE | 524,288 | 10.00 | -- | 1x | 60.8 |
-| 6 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
-| 7 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
-| 8 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 9 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
-| 10 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
-| 11 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
-| 12 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
+| 1 | Splash `qwen3.8-flash-next-q2` (125B-A6B, GSQ-RCO Q2_0) | MoE | 262,144 | 31.60 | 35.76 @4x | 4x | 136.4 |
+| 2 | Splash `qwen3.8-flash-next-iq3s` (125B-A6B, GSQ-RCO IQ3_S) | MoE | 262,144 | 27.05 | 28.84 @4x | 4x | 105.9 |
+| 3 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.36 | 25.01 @4x | 1x | 86.9 |
+| 4 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
+| 5 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 20.79 | -- | 1x | 65.3 |
+| 6 | Splash `flint-gguf` (40B-A2.5B) | MoE | 262,144 | 17.19 | 19.49 @2x | 2x | 152.9 |
+| 7 | Splash `ornith1.5-122b` (122B-A10B) | MoE | 262,144 | 11.00 | 12.21 @4x | 4x | 65.2 |
+| 8 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.88 | -- | 1x | 59.8 |
+| 9 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
+| 10 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
+| 11 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
+| 12 | Splash `bonsai2-27b-pq2` (ternary) | dense | 262,144 | 7.32 | 7.99 @4x | 4x | 56.4 |
+| 13 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
+| 14 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 15 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
+| 16 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
 
-Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`,
-Ollama `nemotron-3.5-lightning-30b-mlx` and, on 0.40.13, Ollama
-`flint-40b-a2b-qat-int4-mlx` fail Capability Check v2 audit fitness; their
-rates (Lightning 29.41/h at 262k, Flint 11.35/h) cannot promote them. The
+Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
+and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
+fitness; their rates (Lightning 29.41/h at 262k) cannot promote them. The
 LM Studio MLX-engine profiles pass but their runs are noncanonical by
 design (off-by-one token allowance). Details are in each runtime's
 BENCHMARKS.md.
@@ -245,15 +248,16 @@ BENCHMARKS.md.
 #### Interactive use
 
 These profiles serve interactive agentic sessions and are not ranked for
-audits. vLLM-Metal `ornith1.5-122b-a10b-4bit` passes Capability Check v2
-(12 of 12) at 2.31 / 2.77 @4x sessions/h, too slow for audit campaigns.
+audits.
 
-ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` is also
-audit-eligible and ranked above. Speed is from the 262,144 runs, one
-stream, in tok/s. At 524,288 a 50-step session to about 445k tokens took
-Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its checkpoints
-evicted at depth. ds4 has no `response_format`, which fails only the
-advisory schema check. Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
+ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
+Capability Check v2 and runs 10.00 sessions/h; Splash serves the same model for
+audits 3.6x faster, so ds4 keeps it for interactive use. Speed is from the
+262,144 runs, one stream, in tok/s. At 524,288 a 50-step session to about 445k
+tokens took Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its
+checkpoints evicted at depth. ds4 has no `response_format`, which fails only
+the advisory schema check. Details are in
+[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
 | Model | Context | Audit fitness | Tool calls | Turn decode, mid session | Report decode, ~160k deep | Session prefill | Interactive use |
 | -- | --: | -- | -- | --: | --: | --: | -- |

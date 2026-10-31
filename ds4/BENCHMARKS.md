@@ -2,8 +2,9 @@
 
 ds4 serves models too large for any fleet host to run audit campaigns on,
 so most of these are interactive-use measurements, not audit-throughput
-rankings. The exception is `qwen3.8-flash-next-q4`, which is audit-eligible:
-its canonical row below enters the root README's M5 ranking.
+rankings. `qwen3.8-flash-next-q4` has a canonical row too, but Splash serves
+the same model for audits faster, so it stays out of the root README's M5
+ranking.
 
 ## AuditBench v2: Apple M5 Max
 

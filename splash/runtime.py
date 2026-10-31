@@ -38,6 +38,13 @@ CONFIG_KEYS = tuple("SPLASH_" + name for name in (
     "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE", "CAP_DISABLE_MODE",
     "CAP_SYSTEM_PROMPT", "SAMPLING",
 ))
+# Keys a conf may omit, with their defaults. SPLASH_MEMORY_GIB is the model's
+# memory need: weights, draft and four full-context KV streams.
+OPTIONAL_KEYS = {"SPLASH_PRESERVE_REASONING": "0", "SPLASH_MEMORY_GIB": "64"}
+# Unified memory left to the host when a need above 64 GiB is granted: at
+# 98 GiB of 128 an 84 GB model left 14 GiB available at four streams, at
+# 105 GiB only 12.
+HOST_RESERVE_GIB = 30
 
 
 def digest(path):
@@ -65,12 +72,19 @@ def config(tag):
     script = 'set -eu; source "$1"; shift; for name; do printf "%s\\0" "${!name}"; done'
     output = subprocess.check_output(["bash", "-c", script, "bash", str(path), *CONFIG_KEYS])
     values = dict(zip(CONFIG_KEYS, output.decode().split("\0")[:-1]))
-    for key in ("SPLASH_MODEL_REPO", "SPLASH_DRAFT_REPO"):
-        if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+", values[key]):
+    optional = script.replace("${!name}", "${!name-}")
+    output = subprocess.check_output(["bash", "-c", optional, "bash", str(path), *OPTIONAL_KEYS])
+    for (key, default), value in zip(OPTIONAL_KEYS.items(), output.decode().split("\0")[:-1]):
+        values[key] = value or default
+    # A GGUF target names its quantization variant as owner/repo:variant.
+    for key, variant in (("SPLASH_MODEL_REPO", r"(:[a-zA-Z0-9_.-]+)?"), ("SPLASH_DRAFT_REPO", "")):
+        if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+" + variant, values[key]):
             raise ValueError(f"{key} must be a full Hugging Face repository ID")
     for key in ("SPLASH_MODEL_REVISION", "SPLASH_DRAFT_REVISION"):
         if not re.fullmatch(r"[0-9a-f]{40}", values[key]):
             raise ValueError(f"{key} must be an immutable commit")
+    if not values["SPLASH_MEMORY_GIB"].isdigit() or int(values["SPLASH_MEMORY_GIB"]) <= 0:
+        raise ValueError("SPLASH_MEMORY_GIB must be a positive whole number of GiB")
     if int(values["SPLASH_MAX_LEN"]) <= 0:
         raise ValueError("SPLASH_MAX_LEN must be positive")
     return values
@@ -106,7 +120,9 @@ def verify_model(values):
     path = model_path(values)
     record = assembly.verify(path, full=True)
     target = record["sources"]["target"]
-    if target != {"repo": values["SPLASH_MODEL_REPO"], "revision": values["SPLASH_MODEL_REVISION"]}:
+    # The record names a GGUF target's repository without its variant.
+    repo = values["SPLASH_MODEL_REPO"].split(":")[0]
+    if target != {"repo": repo, "revision": values["SPLASH_MODEL_REVISION"]}:
         raise RuntimeError("installed target differs from the config; run make splash-pull")
     draft = draft_snapshot(values).resolve()
     linked = [entry["path"] for name, entry in record["files"].items() if name.startswith("draft/")]
@@ -203,6 +219,19 @@ def pull(values):
           f"{identity['draft_source']} at {identity['draft_revision']}")
 
 
+def memory_limit(values):
+    """The engine's memory ceiling: the conf's need, clamped to the host.
+
+    A need up to 64 GiB is granted as is, and upstream clamps it to the
+    device's working-set limit; a larger need is cut to host RAM minus
+    HOST_RESERVE_GIB, never below 64.
+    """
+    if os.environ.get("SPLASH_MAX_MEMORY"):
+        return os.environ["SPLASH_MAX_MEMORY"]
+    host = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") // 2**30
+    return f"{min(int(values['SPLASH_MEMORY_GIB']), max(64, host - HOST_RESERVE_GIB))}G"
+
+
 def command(values):
     host = os.environ.get("SPLASH_HOST", "127.0.0.1")
     if host != "localhost" and not ipaddress.ip_address(host).is_loopback:
@@ -218,7 +247,7 @@ def command(values):
             str(path), "--model", values["SPLASH_MODEL_REPO"], "--binary", str(RELEASE / "engine/splash"),
             "--host", host, "--port", str(port), "--no-webui",
             "--max-context", values["SPLASH_MAX_LEN"],
-            "--max-memory", os.environ.get("SPLASH_MAX_MEMORY", "64G"),
+            "--max-memory", memory_limit(values),
             "--request-timeout", os.environ.get("SPLASH_REQUEST_TIMEOUT", "7200")]
 
 

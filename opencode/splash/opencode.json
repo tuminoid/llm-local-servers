@@ -8,6 +8,52 @@
         "baseURL": "http://127.0.0.1:8022/v1"
       },
       "models": {
+        "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF:IQ3_S": {
+          "name": "Qwen3.8 Flash Next IQ3S",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "medium": {
+              "reasoningEffort": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh"
+            }
+          }
+        },
+        "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF:Q2_0": {
+          "name": "Qwen3.8 Flash Next Q2",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "medium": {
+              "reasoningEffort": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh"
+            }
+          }
+        },
         "mlx-community/Qwen3.6-35B-A3B-4bit": {
           "name": "Qwen3.6 35B A3B",
           "reasoning": true,
@@ -41,6 +87,50 @@
             "xhigh": {
               "reasoningEffort": "xhigh"
             }
+          }
+        },
+        "ornith-ai/Ornith-1.5-122B-MLX-4bit": {
+          "name": "Ornith1.5 122B",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        },
+        "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0": {
+          "name": "Bonsai2 27B Pq2",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          },
+          "variants": {
+            "medium": {
+              "reasoningEffort": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh"
+            }
+          }
+        },
+        "unsloth/flint-GGUF:UD-Q4_K_XL": {
+          "name": "Flint GGUF",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
           }
         }
       }

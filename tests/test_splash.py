@@ -67,6 +67,26 @@ class SplashTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "installed draft differs"):
                 runtime.verify_model(values)
 
+    def test_gguf_target_names_its_variant_and_the_record_its_repository(self):
+        values = runtime.config("qwen3.8-flash-next-q2")
+        repo, variant = values["SPLASH_MODEL_REPO"].split(":")
+        self.assertEqual(variant, "Q2_0")
+        with mock.patch.dict(os.environ, {"SPLASH_DRAFT_REPO": "incoai/draft:Q2_0"}):
+            with self.assertRaisesRegex(ValueError, "SPLASH_DRAFT_REPO"):
+                runtime.config("qwen3.8-flash-next-q2")
+        draft = Path("/hub/draft/snapshots") / values["SPLASH_DRAFT_REVISION"]
+        assembly, hub = mock.Mock(), mock.Mock()
+        assembly.verify.return_value = {
+            "sources": {"target": {"repo": repo, "revision": values["SPLASH_MODEL_REVISION"]}},
+            "files": {"draft/model.safetensors": {"path": str(draft / "model.safetensors")}},
+            "family": "qwen3.8-flash-next", "target_format": "gguf", "vision_format": None}
+        hub.snapshot.return_value = draft
+        hub.snapshot_of.return_value = draft
+        with mock.patch.object(runtime, "upstream", return_value=(assembly, hub)), \
+                mock.patch.object(runtime, "model_path", return_value=Path("/models/assembly")), \
+                mock.patch.object(runtime, "digest", return_value="0" * 64):
+            self.assertEqual(runtime.verify_model(values)["source"], values["SPLASH_MODEL_REPO"])
+
     def test_live_server_must_serve_the_configured_assembly(self):
         values = runtime.config("qwen3.8-27b")
         identity = {"source": values["SPLASH_MODEL_REPO"]}
@@ -79,6 +99,24 @@ class SplashTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "does not serve the configured assembly"):
                 runtime.check_live(values, owner, identity)
             connect.assert_not_called()
+
+    def test_memory_limit_is_the_conf_need_clamped_to_the_host(self):
+        values = {"SPLASH_MEMORY_GIB": "98"}
+
+        def host(gib):
+            pages = gib * 2**30 // 16384
+            return mock.patch.object(runtime.os, "sysconf", side_effect=lambda name: (
+                16384 if name == "SC_PAGE_SIZE" else pages))
+        with mock.patch.dict(os.environ, {"SPLASH_MAX_MEMORY": ""}):
+            with host(128):
+                self.assertEqual(runtime.memory_limit(values), "98G")
+                self.assertEqual(runtime.memory_limit({"SPLASH_MEMORY_GIB": "120"}), "98G")
+            with host(48):
+                self.assertEqual(runtime.memory_limit({"SPLASH_MEMORY_GIB": "64"}), "64G")
+                self.assertEqual(runtime.memory_limit(values), "64G")
+        with mock.patch.dict(os.environ, {"SPLASH_MAX_MEMORY": "80G"}):
+            self.assertEqual(runtime.memory_limit(values), "80G")
+        self.assertEqual(runtime.config("qwen3.6-35b-a3b")["SPLASH_MEMORY_GIB"], "64")
 
     def test_bind_requires_auth_and_does_not_put_key_in_arguments(self):
         values = runtime.config("qwen3.6-35b-a3b")
@@ -228,6 +266,7 @@ class SplashTest(unittest.TestCase):
 
     def test_thinking_control_uses_splash_wire_contract(self):
         self.assertEqual(capability.control("reasoning-effort-none"), {"reasoning_effort": "none"})
+        self.assertIsNone(capability.control("none"))
         with self.assertRaises(ValueError):
             capability.control("enable-thinking-false")
 

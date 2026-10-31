@@ -60,7 +60,7 @@ What this means in practice:
 | `vllm-metal/` | vLLM-Metal plugin server on Apple Silicon | `vllm-metal-{install,pull,start,stop,status,logs,bench,capability}` |
 | `splash/` | Splash native Metal server on Apple Silicon M3+ | `splash-{install,pull,start,stop,status,logs,bench,capability}` |
 | `lmstudio/` | LM Studio service with its Splash and MLX engines | `lmstudio-{install,pull,start,stop,status,logs,bench,capability}` |
-| `ds4/` | ds4 (DwarfStar) native Metal server for large MoE models; interactive use, Qwen3.8 Flash Next also audit, see its AGENTS.md | `ds4-{install,pull,start,stop,status,logs,bench,capability}` |
+| `ds4/` | ds4 (DwarfStar) native Metal server for large MoE models; interactive use | `ds4-{install,pull,start,stop,status,logs,bench,capability}` |
 | `kapitsa/` | Kapitsa native Metal server for DiffuSpace's Clover block-diffusion MoE | `kapitsa-{install,pull,start,stop,status,logs,bench,capability}` |
 
 [README.md](README.md) is the front page and the cross-runtime, host-oriented
@@ -340,7 +340,9 @@ profile with its benchmark rows, capability rows and generated provider
 entries; launcher rationale that rests on its measurements stays, marked as
 from a dropped profile. LM Studio is the exception: its profiles stay beside
 the best provider as the entry-level option, because it installs cleanly on
-every platform.
+every platform. ds4 is the other: its profiles are interactive-only
+(see its AGENTS.md) and stay when another runtime serves the same model for
+audits.
 
 ### Client configs are generated
 

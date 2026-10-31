@@ -1,7 +1,7 @@
 # Splash on Apple Silicon
 
-Managed [Splash](https://github.com/incoai/splash), serving MLX
-4-bit targets with pinned DFlash 2 drafts, Q8 KV and prefix/state
+Managed [Splash](https://github.com/incoai/splash), serving MLX and
+GGUF targets with pinned DFlash 2 drafts, Q8 KV and prefix/state
 caching. These defaults serve repeated deep agent requests; the measured
 262K operating points are in [BENCHMARKS.md](BENCHMARKS.md).
 
@@ -25,7 +25,7 @@ make splash-stop
 make splash-status
 ```
 
-The other profile is `qwen3.8-27b`. There is no default model. Stop before
+The other profiles are in `models/`. There is no default model. Stop before
 pulling another model or installing a runtime. `make splash-logs` follows
 the current log. A guard Makefile rejects commands from this directory.
 
@@ -50,7 +50,7 @@ sources are checked against the config.
 | -- | -- | -- |
 | `SPLASH_HOST` | `127.0.0.1` | Bind address; a non-loopback address requires `SPLASH_API_KEY` |
 | `SPLASH_PORT` | `8022` | Separate from Ollama and vLLM-Metal |
-| `SPLASH_MAX_MEMORY` | `64G` | Native engine memory ceiling, including weights, KV and cached states |
+| `SPLASH_MAX_MEMORY` | the conf's `SPLASH_MEMORY_GIB`; a need above 64 is cut to host RAM minus 30 GiB, never below 64 | Native engine memory ceiling, including weights, KV and cached states |
 | `SPLASH_REQUEST_TIMEOUT` | `7200` | Allows the dense model's four-way deep prefills to complete |
 | `SPLASH_START_TIMEOUT` | `600` | Readiness deadline in seconds |
 | `SPLASH_DATA_DIR` | XDG data root + `/splash` | Versioned runtime and model links |
@@ -58,7 +58,7 @@ sources are checked against the config.
 
 Host settings can be exported or prefixed to `make`. Model facts live in
 `models/<name>.conf`: immutable target and draft revisions,
-262,144-token context, and capability expectations. `SPLASH_MODEL_CONF`
+262,144-token context, memory need, and capability expectations. `SPLASH_MODEL_CONF`
 can select an alternate config file. Environment values override config
 defaults. Carry `SPLASH_API_KEY` into status, benchmark and capability
 commands when authentication is enabled; the key is never put in argv
@@ -85,7 +85,7 @@ vLLM's nested `chat_template_kwargs` option. See the measured reasoning,
 tool-call, streaming, JSON and schema results in
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-The generated provider `splash` lists both configs, keyed by
+The generated provider `splash` lists every config, keyed by
 `SPLASH_MODEL_REPO`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
 
 ```bash

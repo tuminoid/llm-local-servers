@@ -51,10 +51,15 @@ or reimplement benchmark workloads.
 - Bind loopback by default. Non-loopback requires an API key; pass it
   through the environment, never argv or measurement metadata. Adapter
   authorization headers apply only to the owned HTTP origin.
-- The 64 GiB cap is launcher policy. Upstream clamps it to the device's
-  working-set limit; do not duplicate that host adaptation in model
-  configs. Keep raw KV capacity, conservative benchmark capacity,
-  four native active slots and measured streams distinct.
+- A conf declares its memory need, `SPLASH_MEMORY_GIB` (weights, draft and
+  four full-context KV streams; 64 when omitted), as a model fact. The
+  launcher grants a need up to 64 as is and cuts a larger one to host RAM
+  minus `HOST_RESERVE_GIB`, never below 64; upstream further clamps to the
+  device's working-set limit; never put a
+  host value in a conf. A model larger than its grant streams experts from
+  the SSD, which costs throughput, so size the need from a measured run.
+  Keep raw KV capacity, conservative benchmark capacity, four native active
+  slots and measured streams distinct.
 - DFlash 2, Q8 KV, state/prefix caching, the dense target's Neural Engine
   FFN split and idle weight release use release defaults. Their memory
   competes inside one dynamic budget; KV capacity is not committed GPU
@@ -69,7 +74,7 @@ or reimplement benchmark workloads.
   history, replaced only by canonical v2 session runs. Update the root
   README and CAPABILITIES alongside changes to retained serving results.
 - Validate with `make lint`, `make test`, and the full managed lifecycle
-  for both configured models. Stop and verify release even on failure.
+  for every configured model. Stop and verify release even on failure.
 - `start.sh` refuses a runtime directory whose `release.json` version differs
   from `SPLASH_VERSION`. The directory is named by the pin; the guard covers a
   mis-populated one.
