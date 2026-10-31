@@ -59,6 +59,9 @@ def main():
     slots, pool = capacity(status)
     # The checkpoint's sampling, a model fact; the harness decodes at it.
     os.environ["AUDIT_BENCH_SAMPLING"] = values["SPLASH_SAMPLING"]
+    # A model whose card requires its prior reasoning back in the history.
+    if values["SPLASH_PRESERVE_REASONING"] == "1":
+        os.environ["AUDIT_BENCH_PRESERVE_REASONING"] = "1"
     settings = Settings.from_env()
     timeout = int(os.environ.get("AUDIT_BENCH_TIMEOUT", "7200"))
     return run_benchmark(

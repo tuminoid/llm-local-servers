@@ -38,6 +38,8 @@ CONFIG_KEYS = tuple("SPLASH_" + name for name in (
     "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE", "CAP_DISABLE_MODE",
     "CAP_SYSTEM_PROMPT", "SAMPLING",
 ))
+# Unset in a conf means "0".
+OPTIONAL_KEYS = ("SPLASH_PRESERVE_REASONING",)
 
 
 def digest(path):
@@ -65,6 +67,9 @@ def config(tag):
     script = 'set -eu; source "$1"; shift; for name; do printf "%s\\0" "${!name}"; done'
     output = subprocess.check_output(["bash", "-c", script, "bash", str(path), *CONFIG_KEYS])
     values = dict(zip(CONFIG_KEYS, output.decode().split("\0")[:-1]))
+    optional = script.replace("${!name}", "${!name:-0}")
+    output = subprocess.check_output(["bash", "-c", optional, "bash", str(path), *OPTIONAL_KEYS])
+    values.update(zip(OPTIONAL_KEYS, output.decode().split("\0")[:-1]))
     # A GGUF target names its quantization variant as owner/repo:variant.
     for key, variant in (("SPLASH_MODEL_REPO", r"(:[a-zA-Z0-9_.-]+)?"), ("SPLASH_DRAFT_REPO", "")):
         if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+" + variant, values[key]):
