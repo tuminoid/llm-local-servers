@@ -238,10 +238,9 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 | 15 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
 | 16 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
 
-Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`,
-Ollama `nemotron-3.5-lightning-30b-mlx` and, on 0.40.13, Ollama
-`flint-40b-a2b-qat-int4-mlx` fail Capability Check v2 audit fitness; their
-rates (Lightning 29.41/h at 262k, Flint 11.35/h) cannot promote them. The
+Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
+and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
+fitness; their rates (Lightning 29.41/h at 262k) cannot promote them. The
 LM Studio MLX-engine profiles pass but their runs are noncanonical by
 design (off-by-one token allowance). Details are in each runtime's
 BENCHMARKS.md.
@@ -249,8 +248,7 @@ BENCHMARKS.md.
 #### Interactive use
 
 These profiles serve interactive agentic sessions and are not ranked for
-audits. vLLM-Metal `ornith1.5-122b-a10b-4bit` passes Capability Check v2
-(12 of 12) at 2.31 / 2.77 @4x sessions/h, too slow for audit campaigns.
+audits.
 
 ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
 Capability Check v2 and runs 10.00 sessions/h; Splash serves the same model for

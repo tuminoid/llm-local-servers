@@ -140,7 +140,7 @@ proves nothing about parser compatibility.
 - vLLM-Metal: `gemma4-31b-4bit`, `granite4.2-30b-4bit`,
   `ornith1.5-35b-a3b-4bit`, `mimo-v2.6-9b-4bit`
 - Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`,
-  `nemotron-3.5-super-mlx`, `flint-40b-a2b-qat-int4-mlx`
+  `nemotron-3.5-super-mlx`
 - ds4: `qwen3.8-flash-next-q4`
 - Kapitsa: `clover-35b-a3b`
 
@@ -182,11 +182,8 @@ with at least 11 of 12 samples passed. Six groups differ:
   `~/.local/state/auditbench/trials/2026-10-14-m5-day/results/`.
 - The vLLM-Metal rows are the canonical runs of 2026-10-16 and 2026-10-17
   from fleet commit `2e990d6` on vLLM-Metal 0.31.0, under
-  `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`;
-  `ornith1.5-122b-a10b-4bit` ran 2026-10-20 on llm-audit-bench v2.2.0 from
-  its uncommitted conf, under
-  `~/.local/state/auditbench/trials/2026-10-20-m5-night/ornith/`.
-- The Glimmer, Flint and Super VL rows ran on Ollama 0.40.13 on
+  `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`.
+- The Glimmer and Super VL rows ran on Ollama 0.40.13 on
   2026-10-30/31 (llm-audit-bench 2.4.0) from a clean trial tree of its pin
   (`18bf1a9`), under
   `~/.local/state/auditbench/trials/2026-10-30-m5-night/ollama/`;
@@ -216,9 +213,7 @@ with at least 11 of 12 samples passed. Six groups differ:
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
 | vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
-| vLLM-Metal | `ornith1.5-122b-a10b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
-| Ollama | `flint-40b-a2b-qat-int4-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 10/12 (failed: wrong_verdicts 2) | fail |
 | Ollama | `mimo-v2.6-flash-q2ks` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | Ollama | `nanbeige4.3-33b-q4km` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | pass 12/12 | pass |
@@ -232,16 +227,15 @@ in its model config.
 
 ### Findings
 
-- Twenty profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
+- Nineteen profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
   `qwen3.8-flash-next-iq3s`, `ornith1.5-122b` and `bonsai2-27b-pq2` (12 of 12
   each), `qwen3.8-27b` and `flint-gguf` (11 of 12 each), LM Studio
   `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12 each) and
-  `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` and
-  `ornith1.5-122b-a10b-4bit` (12 of 12 each), `granite4.2-30b-4bit` and
-  `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama `nemotron-3.5-super-mlx`
-  and `nanbeige4.3-33b-q4km` (12 of 12 each), `muse-glimmer-30b-mlx` and
-  `mimo-v2.6-flash-q2ks` (11 of 12 each), and ds4 `qwen3.8-flash-next-q4` and
-  Kapitsa `clover-35b-a3b` (12 of 12 each).
+  `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` (12 of 12),
+  `granite4.2-30b-4bit` and `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama
+  `nemotron-3.5-super-mlx` and `nanbeige4.3-33b-q4km` (12 of 12 each),
+  `muse-glimmer-30b-mlx` and `mimo-v2.6-flash-q2ks` (11 of 12 each), and ds4
+  `qwen3.8-flash-next-q4` and Kapitsa `clover-35b-a3b` (12 of 12 each).
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the
@@ -271,10 +265,10 @@ in its model config.
   structural whitespace. Lightning fails audit fitness (8 of 12).
 - Ollama `nemotron-3.5-super-mlx` is the M5 route for Nemotron 3.5 Super VL
   (11.88 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
-- Ollama `flint-40b-a2b-qat-int4-mlx` declares `OLLAMA_PRESERVE_REASONING=1`, as
-  its model card requires: an exploratory 0.40.8 run without it passed 9 of
-  12 (wrong triage verdicts and an unfinished workflow), the 0.40.8 run 11,
-  and the 0.40.13 run 10 (two wrong triage verdicts), which fails it.
+- Two profiles were dropped for faster Splash ones: Ollama
+  `flint-40b-a2b-qat-int4-mlx`, which also fails audit fitness on 0.40.13 (10
+  of 12, two wrong triage verdicts), and vLLM-Metal
+  `ornith1.5-122b-a10b-4bit` (12 of 12). Their rows are in git history.
 - LM Studio `qwen3.6-35b-a3b-splash` sits at the fitness limit: two draws
   on 2026-10-12 passed 11 and 9 of 12, after 9 on 2026-09-28. The row is
   the later draw; two of the three draws fail. Splash 1.0's own server
