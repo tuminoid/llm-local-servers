@@ -82,12 +82,18 @@ class SplashTest(unittest.TestCase):
 
     def test_memory_limit_is_the_conf_need_clamped_to_the_host(self):
         values = {"SPLASH_MEMORY_GIB": "98"}
-        gib = 2**30 // 16384
-        with mock.patch.dict(os.environ, {"SPLASH_MAX_MEMORY": ""}), \
-                mock.patch.object(runtime.os, "sysconf", side_effect=lambda name: (
-                    16384 if name == "SC_PAGE_SIZE" else 128 * gib)):
-            self.assertEqual(runtime.memory_limit(values), "98G")
-            self.assertEqual(runtime.memory_limit({"SPLASH_MEMORY_GIB": "120"}), "104G")
+
+        def host(gib):
+            pages = gib * 2**30 // 16384
+            return mock.patch.object(runtime.os, "sysconf", side_effect=lambda name: (
+                16384 if name == "SC_PAGE_SIZE" else pages))
+        with mock.patch.dict(os.environ, {"SPLASH_MAX_MEMORY": ""}):
+            with host(128):
+                self.assertEqual(runtime.memory_limit(values), "98G")
+                self.assertEqual(runtime.memory_limit({"SPLASH_MEMORY_GIB": "120"}), "98G")
+            with host(48):
+                self.assertEqual(runtime.memory_limit({"SPLASH_MEMORY_GIB": "64"}), "64G")
+                self.assertEqual(runtime.memory_limit(values), "64G")
         with mock.patch.dict(os.environ, {"SPLASH_MAX_MEMORY": "80G"}):
             self.assertEqual(runtime.memory_limit(values), "80G")
         self.assertEqual(runtime.config("qwen3.6-35b-a3b")["SPLASH_MEMORY_GIB"], "64")

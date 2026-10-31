@@ -41,9 +41,10 @@ CONFIG_KEYS = tuple("SPLASH_" + name for name in (
 # Keys a conf may omit, with their defaults. SPLASH_MEMORY_GIB is the model's
 # memory need: weights, draft and four full-context KV streams.
 OPTIONAL_KEYS = {"SPLASH_PRESERVE_REASONING": "0", "SPLASH_MEMORY_GIB": "64"}
-# Unified memory the launcher leaves the host: at 105 GiB of 128 an 84 GB
-# model left 12 GiB available at four streams, at 98 GiB it left 14.
-HOST_RESERVE_GIB = 24
+# Unified memory left to the host when a need above 64 GiB is granted: at
+# 98 GiB of 128 an 84 GB model left 14 GiB available at four streams, at
+# 105 GiB only 12.
+HOST_RESERVE_GIB = 30
 
 
 def digest(path):
@@ -219,11 +220,16 @@ def pull(values):
 
 
 def memory_limit(values):
-    """The engine's memory ceiling: the conf's need, clamped to the host."""
+    """The engine's memory ceiling: the conf's need, clamped to the host.
+
+    A need up to 64 GiB is granted as is, and upstream clamps it to the
+    device's working-set limit; a larger need is cut to host RAM minus
+    HOST_RESERVE_GIB, never below 64.
+    """
     if os.environ.get("SPLASH_MAX_MEMORY"):
         return os.environ["SPLASH_MAX_MEMORY"]
     host = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") // 2**30
-    return f"{max(min(int(values['SPLASH_MEMORY_GIB']), host - HOST_RESERVE_GIB), 1)}G"
+    return f"{min(int(values['SPLASH_MEMORY_GIB']), max(64, host - HOST_RESERVE_GIB))}G"
 
 
 def command(values):

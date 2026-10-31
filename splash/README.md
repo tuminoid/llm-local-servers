@@ -50,7 +50,7 @@ sources are checked against the config.
 | -- | -- | -- |
 | `SPLASH_HOST` | `127.0.0.1` | Bind address; a non-loopback address requires `SPLASH_API_KEY` |
 | `SPLASH_PORT` | `8022` | Separate from Ollama and vLLM-Metal |
-| `SPLASH_MAX_MEMORY` | the conf's `SPLASH_MEMORY_GIB`, clamped to host RAM minus 24 GiB | Native engine memory ceiling, including weights, KV and cached states |
+| `SPLASH_MAX_MEMORY` | the conf's `SPLASH_MEMORY_GIB`; a need above 64 is cut to host RAM minus 30 GiB, never below 64 | Native engine memory ceiling, including weights, KV and cached states |
 | `SPLASH_REQUEST_TIMEOUT` | `7200` | Allows the dense model's four-way deep prefills to complete |
 | `SPLASH_START_TIMEOUT` | `600` | Readiness deadline in seconds |
 | `SPLASH_DATA_DIR` | XDG data root + `/splash` | Versioned runtime and model links |
