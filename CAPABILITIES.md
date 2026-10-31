@@ -133,7 +133,8 @@ proves nothing about parser compatibility.
 
 ### Apple M5 Max
 
-- Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`
+- Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`, `qwen3.8-flash-next-q2`,
+  `qwen3.8-flash-next-iq3s`, `flint-gguf`, `ornith1.5-122b`, `bonsai2-27b-pq2`
 - LM Studio: `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash`,
   `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx`
 - vLLM-Metal: `gemma4-31b-4bit`, `granite4.2-30b-4bit`,
@@ -165,9 +166,13 @@ LM Studio 0.4.25+1 with its Splash engine 0.0.5. JSON files are retained under
 fitness ran 4 samples per task at each conf's declared sampling and passes
 with at least 11 of 12 samples passed. Six groups differ:
 
-- The Splash rows are Splash 1.5.0 runs of 2026-10-31 (llm-audit-bench
-  2.4.0) from a clean trial tree of its pin (`18bf1a9`), under
-  `~/.local/state/auditbench/trials/2026-10-30-m5-night/splash/`. On 1.3.2
+- The Splash rows are Splash 1.5.0 runs (llm-audit-bench 2.4.0) from clean
+  trees: `qwen3.6-35b-a3b` and `qwen3.8-27b` of 2026-10-31 and Bonsai 2,
+  Flint and Ornith of 2026-10-30 from the trial tree `18bf1a9`, Flash-Next
+  IQ3_S of 2026-10-30 from `d5c9a46`, under
+  `~/.local/state/auditbench/trials/2026-10-30-m5-night/splash/`, and
+  Flash-Next Q2_0 of 2026-10-31 from `a815828`, under
+  `.../2026-10-31-flash-next-q2-confirm/splash/`. On 1.3.2
   a 2026-10-19 qwen3.6 run passed only 10 of 12, as did a 1.3.1 trial run
   and same-day 1.0 reruns (9 and 10): that profile sits at the fitness
   limit on every release.
@@ -197,6 +202,11 @@ with at least 11 of 12 samples passed. Six groups differ:
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Splash | `bonsai2-27b-pq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Splash | `flint-gguf` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: wrong_verdicts 1) | pass |
+| Splash | `ornith1.5-122b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Splash | `qwen3.8-flash-next-iq3s` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Splash | `qwen3.8-flash-next-q2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Splash | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
 | LM Studio | `qwen3.6-35b-a3b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 11/12 (failed: runaway 1) | pass |
@@ -222,9 +232,11 @@ in its model config.
 
 ### Findings
 
-- Fifteen profiles pass: Splash `qwen3.6-35b-a3b` (12 of 12) and `qwen3.8-27b`
-  (11 of 12), LM Studio `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12
-  each) and `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` and
+- Twenty profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
+  `qwen3.8-flash-next-iq3s`, `ornith1.5-122b` and `bonsai2-27b-pq2` (12 of 12
+  each), `qwen3.8-27b` and `flint-gguf` (11 of 12 each), LM Studio
+  `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12 each) and
+  `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` and
   `ornith1.5-122b-a10b-4bit` (12 of 12 each), `granite4.2-30b-4bit` and
   `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama `nemotron-3.5-super-mlx`
   and `nanbeige4.3-33b-q4km` (12 of 12 each), `muse-glimmer-30b-mlx` and

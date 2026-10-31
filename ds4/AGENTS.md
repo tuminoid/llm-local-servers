@@ -5,9 +5,10 @@ runtime is for interactive, large-model ("big brain") agentic use. The
 fleet has no hardware large enough to run audit campaigns on DeepSeek and
 GLM, so they are never tuned for, ranked by, or promoted on audit
 throughput, and their AuditBench results are diagnostics.
-`qwen3.8-flash-next-q4` fits the M5 Max resident and is audit-eligible:
-it is measured canonically and ranked like any profile. Capability Check
-v2 runs on every model and its failures are recorded.
+`qwen3.8-flash-next-q4` fits the M5 Max resident and is measured
+canonically, but Splash serves the same model for audits several times
+faster, so it is not ranked either. Capability Check v2 runs on every model
+and its failures are recorded.
 
 Usage and knobs are in [README.md](README.md), measurements and verdicts
 in [BENCHMARKS.md](BENCHMARKS.md).
