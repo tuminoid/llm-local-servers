@@ -154,18 +154,18 @@ OLLAMA_DIR := ollama
 # ollama-linux-amd64.tar.zst for the A100, _LINUX_ARM64 the arm64 build,
 # _DARWIN the universal ollama-darwin.tgz); ollama-install refuses an
 # unverified archive.
-# Default 0.40.8, for every profile: the first release with Recursive Flint
-# (macOS only), with the same vendored llama.cpp as 0.40.7. The M5's MLX
+# Default 0.40.13, for every profile: Flint off macOS, and llama.cpp b11963,
+# past the Metal mul_mat_id fix for nine-expert MoE layers. The M5's MLX
 # profiles passed the post-prefill commit memory runaway retest on 0.40.6
 # (2026-10-17: three cache-busted deep prefills under a watchdog), which
 # 0.33.2, 0.33.3 and 0.34.2 failed; all four passed it again on 0.40.8
 # (2026-10-23, ollama/BENCHMARKS.md). 0.40.x keeps a second model index,
 # manifests-v2/; 0.40.1's local compat migration rewrote older GGUF tags
 # there, which 0.40.3 and later no longer do on load (ollama/AGENTS.md).
-OLLAMA_VERSION ?= 0.40.8
-OLLAMA_ARCHIVE_SHA256 ?= 0bb17cc19e9c1339ddbe0cba55148bf068f8f19dec8ec5fd531461aaa207282a
-OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= f2e512f67f86ac5c53847e4e586ca8a9d3f359faf7a71cd69e37f12dcc63ded0
-OLLAMA_ARCHIVE_SHA256_DARWIN ?= 29fce20c736f62aa8885b1e83552c5fd8dcc63edc5ffc1b47f2de591a06cde44
+OLLAMA_VERSION ?= 0.40.13
+OLLAMA_ARCHIVE_SHA256 ?= c9490e0f520be21271d969e6703f012268b1d39f8b70dd58854e5bfef7a75bb6
+OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 913d9a28da6da86d551ce4ca531457767bb14d511cbc1d5ca93e9b3b8b9a8666
+OLLAMA_ARCHIVE_SHA256_DARWIN ?= bae29252232b9e1358cf5801a7d65a07442af18fb5467cb68c7fc3711f59c511
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0
