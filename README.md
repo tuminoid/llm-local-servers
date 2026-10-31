@@ -182,8 +182,8 @@ only, and a MoE or hybrid row and a dense row are not comparable.
 ### A100-SXM4-80GB
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.40.7 (its rows; the 0.40.8 default vendors the same
-llama.cpp). Sessions per hour, 1 stream and the largest of 2/4/8 the pool
+isolated Ollama 0.40.7 (its rows; the 0.40.13 default is not measured
+there). Sessions per hour, 1 stream and the largest of 2/4/8 the pool
 admits; context, slots, KV pool, completion, the pp512/tg128 reference and
 the retained JSON names are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
@@ -207,9 +207,9 @@ sampling (8.40 / 13.04 @2x); see [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
-0.31.0, Splash 1.3.2, LM Studio 0.4.25+1, Ollama 0.40.8, ds4, Kapitsa
-0.2.24. Context, slots, KV pool, completion, the pp512/tg128 reference and
-the retained JSON names are in
+0.31.0, Splash 1.5.0, LM Studio 0.4.25+1, Ollama 0.40.13 (MiMo, Nanbeige and
+Lightning rows on 0.40.8), ds4, Kapitsa 0.2.24. Context, slots, KV pool,
+completion, the pp512/tg128 reference and the retained JSON names are in
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 [splash/BENCHMARKS.md](splash/BENCHMARKS.md),
 [lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md),
@@ -222,22 +222,22 @@ the retained JSON names are in
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
 | 1 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.36 | 25.01 @4x | 1x | 86.9 |
-| 2 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.29 | 19.78 @4x, incomplete | 1x | 185.5 |
-| 3 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 17.72 | -- | 1x | 32.4 |
-| 4 | Ollama `flint-40b-a2b-qat-int4-mlx` (40B-A2.5B) | MoE | 262,144 | 14.42 | -- | 1x | 61.8 |
-| 5 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.06 | -- | 1x | 40.4 |
-| 6 | ds4 `qwen3.8-flash-next-q4` (125B-A6B) | MoE | 524,288 | 10.00 | -- | 1x | 60.8 |
-| 7 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
-| 8 | Splash `qwen3.8-27b` | dense | 262,144 | 8.01 | 8.73 @4x | 4x | 60.3 |
-| 9 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 10 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
-| 11 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
-| 12 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
-| 13 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
+| 2 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
+| 3 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 20.79 | -- | 1x | 65.3 |
+| 4 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.88 | -- | 1x | 59.8 |
+| 5 | ds4 `qwen3.8-flash-next-q4` (125B-A6B) | MoE | 524,288 | 10.00 | -- | 1x | 60.8 |
+| 6 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
+| 7 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
+| 8 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
+| 9 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
+| 10 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 11 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
+| 12 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
 
-Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
-and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
-fitness; their rates (Lightning 29.41/h at 262k) cannot promote them. The
+Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`,
+Ollama `nemotron-3.5-lightning-30b-mlx` and, on 0.40.13, Ollama
+`flint-40b-a2b-qat-int4-mlx` fail Capability Check v2 audit fitness; their
+rates (Lightning 29.41/h at 262k, Flint 11.35/h) cannot promote them. The
 LM Studio MLX-engine profiles pass but their runs are noncanonical by
 design (off-by-one token allowance). Details are in each runtime's
 BENCHMARKS.md.
@@ -264,7 +264,7 @@ advisory schema check. Details are in [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6 (the 0.40.8
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6 (the 0.40.13
 default is not measured there). Details are
 in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
