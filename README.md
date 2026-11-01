@@ -221,18 +221,18 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
-| 1 | Splash `qwen3.8-flash-next-q2` (125B-A6B, GSQ-RCO Q2_0) | MoE | 262,144 | 31.60 | 35.76 @4x | 4x | 136.4 |
-| 2 | Splash `qwen3.8-flash-next-iq3s` (125B-A6B, GSQ-RCO IQ3_S) | MoE | 262,144 | 27.05 | 28.84 @4x | 4x | 105.9 |
+| 1 | Splash `qwen3.8-flash-next-q2` (125B-A6B, GSQ-RCO Q2_0) | MoE | 262,144 | 31.65 | 32.27 @2x | 2x | 128.7 |
+| 2 | Splash `qwen3.8-flash-next-iq3s` (125B-A6B, GSQ-RCO IQ3_S) | MoE | 262,144 | 27.17 | 28.73 @2x | 2x | 118.3 |
 | 3 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.36 | 25.01 @4x | 1x | 86.9 |
 | 4 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
 | 5 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 20.79 | -- | 1x | 65.3 |
 | 6 | Splash `flint-gguf` (40B-A2.5B) | MoE | 262,144 | 17.19 | 19.49 @2x | 2x | 152.9 |
-| 7 | Splash `ornith1.5-122b` (122B-A10B) | MoE | 262,144 | 11.00 | 12.21 @4x | 4x | 65.2 |
-| 8 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.88 | -- | 1x | 59.8 |
+| 7 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.88 | -- | 1x | 59.8 |
+| 8 | Splash `ornith1.5-122b` (122B-A10B) | MoE | 262,144 | 11.87 | 11.80 @2x | 1x | 73.5 |
 | 9 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
 | 10 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
-| 11 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 12 | Splash `bonsai2-27b-pq2` (ternary) | dense | 262,144 | 7.32 | 7.99 @4x | 4x | 56.4 |
+| 11 | Splash `bonsai2-27b-pq2` (ternary) | dense | 262,144 | 8.10 | 8.48 @2x | 2x | 58.3 |
+| 12 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
 | 13 | Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` (74B-A9B) | hybrid MoE | 262,144 | 7.73 | -- | 1x | 31.7 |
 | 14 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
 | 15 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |

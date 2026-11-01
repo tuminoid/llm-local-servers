@@ -56,7 +56,7 @@ trial-directory copies remain, and the figures stay here and in git history.
   samples) and completes no session: its reports run to the output cap.
 - The `ornith1.5-122b-a10b-4bit` profile (2.31 / 2.77 @4x sessions/h, 12
   of 12 fitness, an interactive profile) was dropped: Splash serves Ornith
-  1.5 122B at 12.21 sessions/h. Its row is in git history.
+  1.5 122B at 11.87 sessions/h. Its row is in git history.
 
 ## Audit conversation profile
 
