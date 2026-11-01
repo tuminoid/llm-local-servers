@@ -182,27 +182,29 @@ only, and a MoE or hybrid row and a dense row are not comparable.
 ### A100-SXM4-80GB
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.40.7 (its rows; the 0.40.13 default is not measured
-there). Sessions per hour, 1 stream and the largest of 2/4/8 the pool
-admits; context, slots, KV pool, completion, the pp512/tg128 reference and
-the retained JSON names are in [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
+isolated Ollama 0.40.13 (its rows). Sessions per hour by stream count: the vLLM
+rows ran 1 stream and the largest of 2/4/8 the pool admits, the Ollama rows the
+2.5.0 stream ladder; context, slots, KV pool, completion, the pp512/tg128
+reference and the retained JSON names are in
+[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md) and
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 | Rank | Runtime and profile | Tier | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | -- | --: |
 | 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | 38.49 | 58.67 @8x | 8x | 111.4 |
 | 2 | vLLM `gemma4-26b-a4b-awq` | MoE | 37.20 | 45.99 @8x | 8x | 63.6 |
-| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 32.48 | -- | 1x | 59.6 |
+| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 34.00 | -- | 1x | 58.1 |
 | 4 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 4x | 49.8 |
 | 5 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 4x | 36.7 |
-| 6 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 15.68 | -- | 1x | 107.7 |
+| 6 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 17.62 | -- | 1x | 117.4 |
 | 7 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
-| 8 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 8.79 | 9.49 @2x | 2x | 27.3 |
+| 8 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 8.55 | 11.21 @2x | 2x | 27.8 |
 | 9 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
 
-Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) fails Capability
-Check v2 audit fitness. DFlash 2 loses to plain qwen3.8 at the declared
-sampling (8.40 / 13.04 @2x); see [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
+Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and Ollama
+`flint-40b-a2b-nvfp4` (8.51 at 1x) fail Capability Check v2 audit fitness.
+DFlash 2 loses to plain qwen3.8 at the declared sampling (8.40 / 13.04 @2x); see
+[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 
 ### Apple M5 Max (128 GB unified memory)
 

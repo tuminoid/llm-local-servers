@@ -21,34 +21,34 @@ git history.
 
 ## AuditBench v2: A100-SXM4-80GB
 
-Isolated remote Ollama 0.40.7 (the 0.40.13 default is not measured there),
-Flash Attention, q8 KV.
-Canonical AuditBench v2 `session` profile at each conf's declared sampling:
-Ornith and Flash-Next ran 2026-10-21/22 on llm-audit-bench 2.2.0 from the
-0.40.7 pin's trial commit `31fd6d5`, Bolt ran 2026-10-22 on 2.3.0 from its
-trial commit `67fe0b6`; both trees match the profile files on main. Each
-JSON records its harness hash. The harness measured 1 stream and the largest
-of 2/4/8 that fits admission and the KV pool: 16 tool steps from 32k
-evidence, report at about 165k. Sessions/h is the median over 2-3 samples;
-complete counts sessions whose report ended on its own and named at least
-7/8 of its findings. pp512/tg128 is the llama-bench-method reference (one
-stream, greedy, depth ~0), not a serving result. JSON files are retained
-under `auditbench-trials/2026-10-21-releases/` and
-`auditbench-trials/2026-10-22-night/` on the host. Slots are the conf's
-`OLLAMA_NUM_PARALLEL`: one for Ornith and Bolt, two for flash-next. The KV
-column is configured context times slots, not a measured pool. Ollama has no
-`ignore_eos`, so the reference is unavailable where the model stopped before
-128 tokens.
+Isolated remote Ollama 0.40.13, the fleet default, Flash Attention, q8 KV.
+Canonical AuditBench v2 `session` profile at each conf's declared sampling, run
+2026-10-31/11-01 on llm-audit-bench 2.5.0 from commit `1d98099`. Each JSON
+records its harness hash. The harness climbs 1, 2, 4, 8 streams within admission
+and the KV pool while each rung completes every session and gains 10%: 16 tool
+steps from 32k evidence, report at about 165k. Sessions/h is the median over 2-3
+samples; complete counts sessions whose report ended on its own and named at
+least 7/8 of its findings. pp512/tg128 is the llama-bench-method reference (one
+stream, greedy, depth ~0), not a serving result. JSON files are retained under
+`auditbench-trials/2026-11-01-a100/` on the host. Slots are the conf's
+`OLLAMA_NUM_PARALLEL`: one for Ornith and Bolt, two for Flash-Next, four for
+Flint. The KV column is configured context times slots, not a measured pool.
+Ollama has no `ignore_eos`, so the reference is unavailable where the model
+stopped before 128 tokens.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 32.48 | 3,685 | 2,865.2 | 59.6 | 2/2 | unavailable | pass | yes | `20261021T202437.074872+0000_ollama_ornith1-5-35b-a3b_session.json` |
-| Ollama `nemotron-3.5-bolt-74b-a9b-iq2` | 262,144 | 1 | 262,144 | 1x 15.68 | 10,364 | 1,202.1 | 107.7 | 2/2 | unavailable | pass | yes | `20261022T210656.512707+0000_ollama_nemotron-3-5-bolt-74b-a9b-iq2_session.json` |
-| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 8.79 / 2x 9.49 | 6,016 | 820.2 | 27.3 | 9/9 | unavailable | pass | yes | `20261022T025429.165613+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
+| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 34.00 | 3,643 | 2,892.9 | 58.1 | 2/2 | unavailable | pass | yes | `20261031T231429.435767+0000_ollama_ornith1-5-35b-a3b_session.json` |
+| Ollama `nemotron-3.5-bolt-74b-a9b-iq2` | 262,144 | 1 | 262,144 | 1x 17.62 | 7,187 | 1,147.0 | 117.4 | 3/3 | unavailable | pass | yes | `20261031T233641.204064+0000_ollama_nemotron-3-5-bolt-74b-a9b-iq2_session.json` |
+| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 8.55 / 2x 11.21 | 6,754 | 865.1 | 27.8 | 6/6 | unavailable | pass | yes | `20261101T020335.276090+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
+| Ollama `flint-40b-a2b-nvfp4` | 262,144 | 4 | 1,048,576 | 1x 8.51 / 2x 11.40, incomplete | 8,913 | 764.5 | 39.8 | 7/8 | unavailable | fail | yes | `20261101T002449.578797+0000_ollama_flint-40b-a2b-nvfp4_session.json` |
 
-- All three pass Capability Check v2. Against 0.40.3 (2026-10-11,
-  `98e4052`): Ornith 27.77 to 32.48 sessions/h, Flash-Next 7.98 / 8.68 to
-  8.79 / 9.49.
+- Ornith, Bolt and Flash-Next pass Capability Check v2. Against 0.40.7
+  (2026-10-21/22): Ornith 32.48 to 34.00 sessions/h, Bolt 15.68 to 17.62,
+  Flash-Next 8.79 / 9.49 to 8.55 / 11.21, now optimal at 2x.
+- `flint-40b-a2b-nvfp4` fails audit fitness (CAPABILITIES.md) and is
+  unranked. Its ladder stopped at 2x on an incomplete session, so 1x is its
+  operating point; the 2x rate is reported, not published.
 - `nemotron-3.5-bolt-74b-a9b-iq2` (Nemotron 3.5 Bolt 74B-A9B, NVIDIA's 24 GB
   IQ2_XXS) passes 12 of 12. Ollama runs its `nemotron_h_moe` runner on one
   slot: a 4-slot start served one (`runner uses 1 slot(s)`), so 1x is its only

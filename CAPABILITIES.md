@@ -155,7 +155,7 @@ proves nothing about parser compatibility.
 - vLLM: `qwen3.6-35b-a3b-awq`, `qwen3.8-27b`, `qwen3.8-27b-dflash2`,
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
 - Ollama: `qwen3.8-flash-next-gguf-iq4xs`, `ornith1.5-35b-a3b`,
-  `nemotron-3.5-bolt-74b-a9b-iq2`
+  `nemotron-3.5-bolt-74b-a9b-iq2`, `flint-40b-a2b-nvfp4` (fails audit fitness)
 
 ## Apple M5 Max campaign
 
@@ -287,21 +287,18 @@ in its model config.
 
 ## A100-SXM4-80GB campaign
 
-Host: shared A100 test host, reached over ssh through the `HOST` alias
-supplied by `.envrc`. Capability Check v2 (`capability-v2`, SCHEMA_VERSION
-5), llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11 from fleet commit
+Host: shared A100 test host, reached over ssh through the `HOST` alias supplied
+by `.envrc`. Capability Check v2 (`capability-v2`, SCHEMA_VERSION 5),
+llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11 from fleet commit
 `ad06c70` on vLLM 0.31.0 with Transformers 5.15.1; reports under
-`auditbench-trials/2026-10-10-v2-canonical/` on the host. The Ollama rows
-ran on Ollama 0.40.7: Ornith and Flash-Next on 2026-10-21 (llm-audit-bench
-2.2.0) from the pin's trial commit `31fd6d5`, Bolt on 2026-10-22 (2.3.0)
-from its trial commit `67fe0b6`, both matching the profile files on main;
-reports under `auditbench-trials/2026-10-21-releases/` and
-`auditbench-trials/2026-10-22-night/`. vLLM `nanbeige4.3-33b-w4a16` ran
-2026-10-26 on llm-audit-bench 2.4.0 (SCHEMA_VERSION 7) from `852441d`, its
-profile before a rebase, under
-`auditbench-trials/2026-10-26-nanbeige-hunt/`. Audit fitness ran 4 samples
-per task at each conf's declared sampling and passes with at least 11 of 12
-samples passed.
+`auditbench-trials/2026-10-10-v2-canonical/` on the host. The Ollama rows ran
+2026-10-31/11-01 on Ollama 0.40.13 (llm-audit-bench 2.5.0) from commit
+`1d98099`; reports under `auditbench-trials/2026-11-01-a100/`. vLLM
+`nanbeige4.3-33b-w4a16` ran 2026-10-26 on llm-audit-bench 2.4.0 (SCHEMA_VERSION
+7) from `852441d`, its profile before a rebase, under
+`auditbench-trials/2026-10-26-nanbeige-hunt/`. Audit fitness ran 4 samples per
+task at each conf's declared sampling and passes with at least 11 of 12 samples
+passed.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -312,9 +309,10 @@ samples passed.
 | vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `flint-40b-a2b-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: wrong_verdicts 2, tool_misuse 1) | fail |
 | Ollama | `nemotron-3.5-bolt-74b-a9b-iq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
-| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
+| Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | valid | truncated | pass 12/12 | pass |
 
 Every row's live identity matched the revision or digest pinned in its
 model config.
@@ -324,8 +322,13 @@ model config.
 - Nine profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
   checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each),
   `gemma4-26b-a4b-awq` and `nanbeige4.3-33b-w4a16` (11 of 12 each), and Ollama
-  `nemotron-3.5-bolt-74b-a9b-iq2` (12 of 12), `ornith1.5-35b-a3b` and
-  `qwen3.8-flash-next-gguf-iq4xs` (11 of 12 each; 12 of 12 each on 0.40.3).
+  `nemotron-3.5-bolt-74b-a9b-iq2`, `ornith1.5-35b-a3b` and
+  `qwen3.8-flash-next-gguf-iq4xs` (12 of 12 each). Ornith's row is its second
+  0.40.13 run; the first passed 10 of 12 (format 1, missed findings 1).
+- `flint-40b-a2b-nvfp4` (Recursive's CUDA build, every layer on the GPU)
+  fails audit fitness twice on 0.40.13, 10 then 9 of 12, with reasoning
+  preserved as the card requires: wrong triage verdicts in both, plus a
+  missed finding and a tool misuse. Splash Flint GGUF passes on the M5.
 - Audit fitness is what v1 could not see. MiMo (5 of 12 on 0.31.0: no
   reasoning, invented findings, wrong triage verdicts) passed every v1
   check and fails here. So did GLM 4.7 Flash (8 of 12 on vLLM, 7 on
@@ -339,10 +342,11 @@ model config.
   (`VLLM_STRUCTURED_OUTPUTS_CONFIG`, xgrammar), and both enforce the
   schema and pass. The 512k profile keeps the FP8 weights and differs from
   the former FP8 `qwen3.8-27b` only by static YaRN at factor 2.0.
-- `qwen3.8-flash-next-gguf-iq4xs`'s unaided document is `valid` on 0.40.7.
-  Through 0.40.3 that request killed the CUDA llama.cpp path with an
-  illegal memory access and an HTTP 500 (diagnosis in its conf). `unaided`
-  never gates.
+- `qwen3.8-flash-next-gguf-iq4xs`'s unaided document is `valid` since 0.40.7; on
+  0.40.13 its schema-enforced document hit the 16,384-token budget before
+  closing (`truncated`, advisory). Through 0.40.3 that request killed the CUDA
+  llama.cpp path with an illegal memory access and an HTTP 500 (diagnosis in its
+  conf). `unaided` never gates.
 - `mimo-v2.6-9b-awq` runs on its fixed chat template
   (`VLLM_CHAT_TEMPLATE`); the API checks pass, audit fitness does not.
 - `qwen3.8-27b-dflash2` (FP8 target) passes check for check like the plain
