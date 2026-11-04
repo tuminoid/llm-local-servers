@@ -1,5 +1,31 @@
 # Strata benchmarks
 
+## AuditBench v2: A100-SXM4-80GB
+
+Strata 0.2.10 (`ffa80d73`) built by `strata-install` for sm_80 against CUDA
+13.2, one slot, context 262,144, int8 KV streamed from pinned RAM past a
+32,768-token window and the n-gram table in RAM (both derived from the
+host's 211 GiB), MTP drafts four deep, every routed expert in VRAM.
+Canonical AuditBench v2 `session` profile at the conf's declared sampling,
+llm-audit-bench 2.5.0, from the clean fleet commit `9f94bad`, 2026-11-04.
+One slot admits one stream, so the ladder measured 1x. Sessions/h is the
+median over 3 samples; complete counts sessions whose report ended on its
+own and named at least 7/8 of its findings. JSON files are under
+`~/.local/state/auditbench/` on the host.
+
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
+| Strata `qwen3.8-flash-next-nvfp4` | 262,144 | 1 | 262,144 | 1x 28.76 | 5,480 | 2,294.5 | 106.8 | 3/3 | unavailable | pass | yes | `20261104T174104.076114+0000_strata_qwen3-8-flash-next-nvfp4_session.json` |
+
+- Capability Check v2 passes with audit fitness 11 of 12 (selection
+  invented 1), `json_schema` enforced and a valid unaided document:
+  `20261104T173911.625858+0000_strata_qwen3-8-flash-next-nvfp4.json`, the
+  same commit. The trial runs of the same pack passed 12 of 12.
+- Mid-session decode ran 112-133 tok/s; the near-context phase
+  (245,760-token prompt) read 2,796 tok/s.
+- Strata ends a response at EOS rather than at `max_tokens`, so the
+  reference measurement is unavailable; it is a diagnostic only.
+
 ## Pack and setting comparison: A100-SXM4-80GB (exploratory)
 
 Strata 0.2.10 (`ffa80d73`) built from source for sm_80 by its own setup

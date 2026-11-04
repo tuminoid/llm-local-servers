@@ -161,6 +161,7 @@ proves nothing about parser compatibility.
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
 - Ollama: `qwen3.8-flash-next-gguf-iq4xs`, `ornith1.5-35b-a3b`,
   `nemotron-3.5-bolt-74b-a9b-iq2`, `flint-40b-a2b-nvfp4` (fails audit fitness)
+- Strata: `qwen3.8-flash-next-nvfp4`
 
 ## Apple M5 Max campaign
 
@@ -301,7 +302,10 @@ llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11 from fleet commit
 `1d98099`; reports under `auditbench-trials/2026-11-01-a100/`. vLLM
 `nanbeige4.3-33b-w4a16` ran 2026-10-26 on llm-audit-bench 2.4.0 (SCHEMA_VERSION
 7) from `852441d`, its profile before a rebase, under
-`auditbench-trials/2026-10-26-nanbeige-hunt/`. Audit fitness ran 4 samples per
+`auditbench-trials/2026-10-26-nanbeige-hunt/`. Strata
+`qwen3.8-flash-next-nvfp4` ran 2026-11-04 on Strata 0.2.10 (llm-audit-bench
+2.5.0) from `9f94bad`, its report under `~/.local/state/capability-check/`
+on the host. Audit fitness ran 4 samples per
 task at each conf's declared sampling and passes with at least 11 of 12 samples
 passed.
 
@@ -318,17 +322,19 @@ passed.
 | Ollama | `nemotron-3.5-bolt-74b-a9b-iq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | valid | truncated | pass 12/12 | pass |
+| Strata | `qwen3.8-flash-next-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 
 Every row's live identity matched the revision or digest pinned in its
 model config.
 
 ### Findings
 
-- Nine profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
+- Ten profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
   checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each),
-  `gemma4-26b-a4b-awq` and `nanbeige4.3-33b-w4a16` (11 of 12 each), and Ollama
+  `gemma4-26b-a4b-awq` and `nanbeige4.3-33b-w4a16` (11 of 12 each), Ollama
   `nemotron-3.5-bolt-74b-a9b-iq2`, `ornith1.5-35b-a3b` and
-  `qwen3.8-flash-next-gguf-iq4xs` (12 of 12 each). Ornith's row is its second
+  `qwen3.8-flash-next-gguf-iq4xs` (12 of 12 each), and Strata
+  `qwen3.8-flash-next-nvfp4` (11 of 12). Ornith's row is its second
   0.40.13 run; the first passed 10 of 12 (format 1, missed findings 1).
 - `flint-40b-a2b-nvfp4` (Recursive's CUDA build, every layer on the GPU)
   fails audit fitness twice on 0.40.13, 10 then 9 of 12, with reasoning
