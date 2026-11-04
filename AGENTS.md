@@ -62,6 +62,7 @@ What this means in practice:
 | `lmstudio/` | LM Studio service with its Splash and MLX engines | `lmstudio-{install,pull,start,stop,status,logs,bench,capability}` |
 | `ds4/` | ds4 (DwarfStar) native Metal server for large MoE models; interactive use | `ds4-{install,pull,start,stop,status,logs,bench,capability}` |
 | `kapitsa/` | Kapitsa native Metal server for DiffuSpace's Clover block-diffusion MoE | `kapitsa-{install,pull,start,stop,status,logs,bench,capability}` |
+| `strata/` | Strata CUDA server for Qwen3.8-Flash-Next, built from source for the host's GPUs | Local lifecycle, benchmark and capability targets, plus `strata-remote-*` |
 
 [README.md](README.md) is the front page and the cross-runtime, host-oriented
 executive summary of measured results. The per-runtime `BENCHMARKS.md` files

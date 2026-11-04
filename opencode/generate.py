@@ -27,6 +27,7 @@ RUNTIMES = {
     "ollama": ("OLLAMA_MODEL", "OLLAMA_CONTEXT_LENGTH", "OLLAMA", None),
     "ds4": ("DS4_SERVED_NAME", "DS4_CTX", "DS4", "reasoning_content"),
     "kapitsa": ("KAPITSA_SERVED_NAME", "KAPITSA_CTX", "KAPITSA", "reasoning_content"),
+    "strata": ("STRATA_SERVED_NAME", "STRATA_CTX", "STRATA", "reasoning_content"),
 }
 
 # Provider: runtime, display name, base URL on the launcher's default port,
@@ -47,6 +48,9 @@ PROVIDERS = {
                       "http://127.0.0.1:11436/v1", "gguf"),
     "ds4": ("ds4", "ds4 (DwarfStar)", "http://127.0.0.1:8023/v1", None),
     "kapitsa": ("kapitsa", "Kapitsa", "http://127.0.0.1:8024/v1", None),
+    "strata": ("strata", "Strata", "http://127.0.0.1:8025/v1", None),
+    "strata-remote": ("strata", "Strata remote (make strata-remote-tunnel)",
+                      "http://127.0.0.1:8026/v1", None),
 }
 FORMATS = {"gguf", "safetensors"}
 

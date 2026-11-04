@@ -25,6 +25,8 @@ PORTS = {
     "ollama-remote": ("Makefile", "OLLAMA_TUNNEL_PORT ?= 11436"),
     "ds4": ("ds4/lib.sh", 'DS4_PORT="${DS4_PORT:-8023}"'),
     "kapitsa": ("kapitsa/runtime.py", 'os.environ.get("KAPITSA_PORT", "8024")'),
+    "strata": ("strata/runtime.py", 'os.environ.get("STRATA_PORT", "8025")'),
+    "strata-remote": ("Makefile", "STRATA_TUNNEL_PORT ?= 8026"),
 }
 
 ENTRY = {"name": "Qwen3.8 27B", "tool_call": True,
