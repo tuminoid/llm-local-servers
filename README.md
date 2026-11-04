@@ -1,8 +1,8 @@
 # llm-local-servers
 
-Measured, Makefile-driven local LLM serving. Seven managed runtimes --
-vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio, ds4
-and Kapitsa -- with one portable config per model, host-adaptive
+Measured, Makefile-driven local LLM serving. Eight managed runtimes --
+vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio, ds4,
+Kapitsa and Strata (CUDA) -- with one portable config per model, host-adaptive
 launchers, isolated remote-host operation, and the retained benchmark and
 capability results for every host in the fleet. The workload everything
 is tuned for is deep-context security-audit calls; [AGENTS.md](AGENTS.md)
@@ -42,8 +42,9 @@ the concepts these documents assume.
    [vllm-metal/README.md](vllm-metal/README.md),
    [splash/README.md](splash/README.md),
    [lmstudio/README.md](lmstudio/README.md),
-   [ds4/README.md](ds4/README.md), and
-   [kapitsa/README.md](kapitsa/README.md).
+   [ds4/README.md](ds4/README.md),
+   [kapitsa/README.md](kapitsa/README.md), and
+   [strata/README.md](strata/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
 newer for `make lint` and `make test`. CI installs the linters at the
@@ -64,10 +65,11 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v2 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, `lmstudio`,
-`ds4` or `kapitsa` (plus `ollama-install`, `vllm-metal-install`,
+`ds4`, `kapitsa` or `strata` (plus `ollama-install`, `vllm-metal-install`,
 `vllm-metal-pull`, `splash-install`, `splash-pull`, `lmstudio-install`,
-`lmstudio-pull`, `ds4-install`, `ds4-pull`, `kapitsa-install`, and
-`kapitsa-pull` for runtime and model installation).
+`lmstudio-pull`, `ds4-install`, `ds4-pull`, `kapitsa-install`,
+`kapitsa-pull`, `strata-install`, and `strata-pull` for runtime and model
+installation).
 `MODEL` names a config file in that runtime's `models/` directory, never a
 served model ID or registry tag; there is deliberately no default model.
 `make status` shows whether each local runtime is running, and with which model.
@@ -111,8 +113,8 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
   project's root as `opencode.json`.
 - Entries with reasoning-effort variants take `opencode run --variant
   <effort>`; no variant leaves the model's default.
-- The remote providers need their tunnel running (`make vllm-remote-tunnel`
-  or `make ollama-remote-tunnel`).
+- The remote providers need their tunnel running (`make vllm-remote-tunnel`,
+  `make ollama-remote-tunnel` or `make strata-remote-tunnel`).
 - Do not point `OPENCODE_CONFIG_DIR` at these directories: opencode writes
   its plugin files into that directory.
 
@@ -128,6 +130,8 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
 | `ollama-remote` | `http://127.0.0.1:11436/v1`, `make ollama-remote-tunnel` | [ollama-remote/opencode.json](opencode/ollama-remote/opencode.json) | not declared |
 | `ds4` | `http://127.0.0.1:8023/v1` | [ds4/opencode.json](opencode/ds4/opencode.json) | `reasoning_content` |
 | `kapitsa` | `http://127.0.0.1:8024/v1` | [kapitsa/opencode.json](opencode/kapitsa/opencode.json) | `reasoning_content` |
+| `strata` | `http://127.0.0.1:8025/v1` | [strata/opencode.json](opencode/strata/opencode.json) | `reasoning_content` |
+| `strata-remote` | `http://127.0.0.1:8026/v1`, `make strata-remote-tunnel` | [strata-remote/opencode.json](opencode/strata-remote/opencode.json) | `reasoning_content` |
 
 ### How the files are generated
 
@@ -142,7 +146,8 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
   run on which host.
 - The id is `VLLM_SERVED_NAME`, the `OLLAMA_MODEL` tag, the
   `SPLASH_MODEL_REPO` repository, `DS4_SERVED_NAME`,
-  `KAPITSA_SERVED_NAME`, or for LM Studio the config name.
+  `KAPITSA_SERVED_NAME`, `STRATA_SERVED_NAME`, or for LM Studio the config
+  name.
   Configs that share a served id become one model, with the smaller
   context.
 - The display name is derived from the config name.

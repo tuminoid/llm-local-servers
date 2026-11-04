@@ -93,6 +93,16 @@ class ModelConfigInventoryTest(unittest.TestCase):
                     "KAPITSA_CAP_SYSTEM_PROMPT",
                 ),
             ),
+            (
+                REPO_DIR / "strata" / "models",
+                (
+                    "STRATA_CAP_REASONING",
+                    "STRATA_CAP_TOOLS",
+                    "STRATA_CAP_REASONING_MODE",
+                    "STRATA_CAP_DISABLE_MODE",
+                    "STRATA_CAP_SYSTEM_PROMPT",
+                ),
+            ),
         )
         for directory, names in inventories:
             configs = sorted(directory.glob("*.conf"))
@@ -121,6 +131,7 @@ class ModelConfigInventoryTest(unittest.TestCase):
             (REPO_DIR / "ollama" / "models", "OLLAMA_SAMPLING"),
             (REPO_DIR / "ds4" / "models", "DS4_SAMPLING"),
             (REPO_DIR / "kapitsa" / "models", "KAPITSA_SAMPLING"),
+            (REPO_DIR / "strata" / "models", "STRATA_SAMPLING"),
         ):
             configs = sorted(directory.glob("*.conf"))
             self.assertTrue(configs, f"no model configs found in {directory}")

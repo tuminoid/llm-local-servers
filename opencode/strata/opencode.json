@@ -1,0 +1,26 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "strata": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Strata",
+      "options": {
+        "baseURL": "http://127.0.0.1:8025/v1"
+      },
+      "models": {
+        "qwen3.8-flash-next-nvfp4": {
+          "name": "Qwen3.8 Flash Next NVFP4",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        }
+      }
+    }
+  }
+}

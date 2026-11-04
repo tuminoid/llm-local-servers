@@ -84,6 +84,11 @@ make ollama-remote-start HOST=<host> MODEL=<profile>
 make ollama-remote-pull HOST=<host> MODEL=<profile>
 make ollama-remote-capability HOST=<host> MODEL=<profile>
 make ollama-remote-stop HOST=<host>
+
+make strata-remote-status HOST=<host>
+make strata-remote-start HOST=<host> MODEL=<profile>
+make strata-remote-capability HOST=<host> MODEL=<profile>
+make strata-remote-stop HOST=<host>
 ```
 
 Always stop the server afterward and confirm resource release, including

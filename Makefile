@@ -23,6 +23,11 @@
 .PHONY: ds4-bench ds4-capability
 .PHONY: kapitsa-model-check kapitsa-install kapitsa-pull kapitsa-start kapitsa-stop
 .PHONY: kapitsa-status kapitsa-logs kapitsa-bench kapitsa-capability
+.PHONY: strata-model-check strata-install strata-pull strata-start strata-stop
+.PHONY: strata-status strata-logs strata-bench strata-capability
+.PHONY: strata-remote-check strata-remote-deploy strata-remote-harness strata-remote-bootstrap
+.PHONY: strata-remote-pull strata-remote-start strata-remote-stop strata-remote-status
+.PHONY: strata-remote-logs strata-remote-bench strata-remote-capability strata-remote-tunnel
 
 # Every target here is phony, so GNU Make's built-in rules can only do harm.
 # Left on, a mistyped target matches the built-in `%: %.sh` rule and silently
@@ -139,6 +144,19 @@ KAPITSA_SOURCE_COMMIT ?= b46d9e56b68675226bfb4e685c31fc1bf1e496bc
 export KAPITSA_VERSION KAPITSA_ARCHIVE_SHA256 KAPITSA_SOURCE_COMMIT
 KAPITSA_MODEL_CONF ?= $(KAPITSA_DIR)/models/$(MODEL).conf
 
+STRATA_DIR := strata
+# Strata is built from source on the host that serves it, for that host's
+# GPUs: the release packages carry no sm_80 code. The tag's commit pins the
+# engine, its llama.cpp checkout (setup.py's LLAMA_CPP_COMMIT) and the MTP
+# draft layer's checkpoint revision (tools/mtp_fetch.py).
+STRATA_VERSION ?= 0.2.10
+STRATA_COMMIT ?= ffa80d73133ea5c548aefe57889a16e8085a938f
+export STRATA_VERSION STRATA_COMMIT
+STRATA_MODEL_CONF ?= $(STRATA_DIR)/models/$(MODEL).conf
+STRATA_REMOTE_DIR ?= tmp/strata
+STRATA_REMOTE_PORT ?= 8025
+STRATA_TUNNEL_PORT ?= 8026
+
 LMSTUDIO_DIR := lmstudio
 # The operator installs and updates the desktop app and its engines, so the pins
 # name the release measured here: bench and capability refuse any other, while
@@ -239,18 +257,22 @@ help:
 	@echo "    kapitsa     Kapitsa on Apple Silicon, port 8024; pull converts what needs it"
 	@$(call print_models,$(KAPITSA_DIR))
 	@echo ""
+	@echo "    strata      Strata on Linux NVIDIA, port 8025; install builds the engine for this host's GPUs"
+	@$(call print_models,$(STRATA_DIR))
+	@echo ""
 	@echo "    lmstudio    LM Studio, port 1234; install checks the user-installed app and engines"
 	@$(call print_models,$(LMSTUDIO_DIR))
 	@echo ""
 	@echo "  Remote runtimes (HOST=<ssh-host>; models as above; start syncs scripts to the host first):"
 	@echo "    vllm-remote    vllm verbs, bootstrap for install, plus tunnel (localhost:$(VLLM_TUNNEL_PORT))"
 	@echo "    ollama-remote  ollama verbs, bootstrap for install, plus tunnel (localhost:$(OLLAMA_TUNNEL_PORT) to $(OLLAMA_REMOTE_PORT)); start needs an idle GPU"
+	@echo "    strata-remote  strata verbs, bootstrap for install, plus tunnel (localhost:$(STRATA_TUNNEL_PORT) to $(STRATA_REMOTE_PORT)); start needs an idle GPU"
 	@echo ""
 
 # Every local runtime's server and model lines, one after another; a failing
 # one does not hide the rest, but fails the target.
 status:
-	@rc=0; for r in vllm vllm-metal splash lmstudio ollama ds4 kapitsa; do \
+	@rc=0; for r in vllm vllm-metal splash lmstudio ollama ds4 kapitsa strata; do \
 		echo "== $$r"; out="$$($(MAKE) --no-print-directory $$r-status)" || rc=1; \
 		printf '%s\n' "$$out" | grep -E '^(server|model): '; \
 	done; exit $$rc
@@ -283,7 +305,7 @@ markdownlint:
 pycompile:
 	@$(call require,python3)
 	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) \
-		$(LMSTUDIO_DIR) $(KAPITSA_DIR) opencode tests
+		$(LMSTUDIO_DIR) $(KAPITSA_DIR) $(STRATA_DIR) opencode tests
 
 # --- Test ---
 
@@ -718,6 +740,127 @@ kapitsa-capability: kapitsa-model-check audit-bench-check
 	@$(call require,uv)
 	@KAPITSA_MODEL_CONF="$(KAPITSA_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
 		bash -c 'source kapitsa/lib.sh; exec uv run --no-project --python 3.12 kapitsa/capability.py "$$1"' bash $(MODEL)
+
+# --- Strata (Linux, NVIDIA) ---
+
+strata-model-check:
+	@test -n "$(MODEL)" -a -f "$(STRATA_MODEL_CONF)" || { \
+		echo "error: set MODEL to a Strata config name:" >&2; \
+		echo "  $(patsubst $(STRATA_DIR)/models/%.conf,%,$(wildcard $(STRATA_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+
+strata-install:
+	@$(call require,python3 git nvidia-smi)
+	@./$(STRATA_DIR)/install.sh
+
+strata-pull: strata-model-check
+	@$(call require,python3)
+	@STRATA_MODEL_CONF="$(STRATA_MODEL_CONF)" ./$(STRATA_DIR)/pull.sh $(MODEL)
+
+strata-start: strata-model-check
+	@$(call require,python3 nvidia-smi)
+	@STRATA_MODEL_CONF="$(STRATA_MODEL_CONF)" ./$(STRATA_DIR)/run.sh $(MODEL)
+
+strata-stop:
+	@$(call require,python3 nvidia-smi)
+	@./$(STRATA_DIR)/stop.sh
+
+strata-status:
+	@$(call require,python3)
+	@./$(STRATA_DIR)/status.sh
+
+strata-logs:
+	@tail -f "$${STRATA_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/strata}/server.log"
+
+strata-bench: strata-model-check audit-bench-check
+	@$(call require,python3)
+	@STRATA_MODEL_CONF="$(STRATA_MODEL_CONF)" $(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source strata/lib.sh; exec python3 strata/bench.py "$$1"' bash $(MODEL)
+
+strata-capability: strata-model-check audit-bench-check
+	@$(call require,python3)
+	@STRATA_MODEL_CONF="$(STRATA_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source strata/lib.sh; exec python3 strata/capability.py "$$1"' bash $(MODEL)
+
+# --- Isolated remote Strata ---
+#
+# The remote tree owns the source build, its venv, the model files and the
+# state, and serves on its own port; deploy excludes data/ and state/ so
+# rsync --delete never touches them. The fixed values cannot be overridden
+# from the caller's environment; STRATA_ENV forwards only the caller's model
+# overrides. start/pull/bench/capability deploy; stop/status/logs/tunnel never
+# do, as for the other remote runtimes.
+override STRATA_REMOTE_FIXED_ENV = \
+	STRATA_DATA_DIR=$$HOME/$(STRATA_REMOTE_DIR)/data \
+	STRATA_STATE_DIR=$$HOME/$(STRATA_REMOTE_DIR)/state \
+	STRATA_PORT=$(STRATA_REMOTE_PORT) \
+	STRATA_VERSION=$(STRATA_VERSION) STRATA_COMMIT=$(STRATA_COMMIT) \
+	HF_HUB_VERSION=$(HF_HUB_VERSION)
+override STRATA_RESERVED := STRATA_DIR STRATA_VERSION STRATA_COMMIT STRATA_MODEL_CONF \
+	STRATA_REMOTE_% STRATA_TUNNEL_PORT STRATA_RESERVED STRATA_ENV \
+	STRATA_DATA_DIR STRATA_STATE_DIR STRATA_PORT
+override STRATA_ENV = $(strip $(foreach v, \
+	$(filter-out $(STRATA_RESERVED),$(filter STRATA_%,$(.VARIABLES))), \
+	$(if $(filter environment% command line,$(origin $(v))),$(v)='\''$($(v))'\'')))
+
+strata-remote-check:
+	@test -n "$(HOST)" || { \
+		echo "error: set HOST=<ssh-host> (see .envrc.example)" >&2; \
+		exit 1; }
+	@$(call require,ssh)
+	@test "$(STRATA_TUNNEL_PORT)" != "$(STRATA_REMOTE_PORT)" || { \
+		echo "error: use distinct local and remote Strata ports" >&2; \
+		exit 1; }
+
+strata-remote-deploy: strata-remote-check
+	@$(call require,rsync)
+	@rsync -a --delete --exclude data --exclude state --exclude __pycache__ \
+		./$(STRATA_DIR)/ $(HOST):$(STRATA_REMOTE_DIR)/
+	@ssh $(HOST) 'chmod +x $(STRATA_REMOTE_DIR)/*.sh $(STRATA_REMOTE_DIR)/*.py'
+	@echo "deployed to $(HOST):$(STRATA_REMOTE_DIR)"
+
+# bench and capability only, as ollama-remote-harness.
+strata-remote-harness: strata-remote-check audit-bench-check
+	@rsync -a "$(AUDIT_BENCH_SRC)/audit_bench.py" "$(AUDIT_BENCH_SRC)/capability_check.py" \
+		$(HOST):$(STRATA_REMOTE_DIR)/
+
+# Install refuses a live managed server itself (runtime.py require_stopped).
+strata-remote-bootstrap: strata-remote-check strata-remote-deploy
+	@ssh $(HOST) '$(call require,python3 git nvidia-smi) $(STRATA_REMOTE_FIXED_ENV) \
+		$(STRATA_REMOTE_DIR)/install.sh'
+
+strata-remote-pull: strata-remote-check strata-model-check strata-remote-deploy
+	@ssh $(HOST) '$(call require,python3) $(STRATA_ENV) $(STRATA_REMOTE_FIXED_ENV) \
+		$(STRATA_REMOTE_DIR)/pull.sh $(MODEL)'
+
+strata-remote-start: strata-remote-check strata-model-check strata-remote-deploy
+	@ssh $(HOST) '$(call require,python3 nvidia-smi) $(STRATA_ENV) $(STRATA_REMOTE_FIXED_ENV) \
+		$(STRATA_REMOTE_DIR)/run.sh $(MODEL)'
+
+strata-remote-stop: strata-remote-check
+	@ssh $(HOST) '$(STRATA_REMOTE_FIXED_ENV) $(STRATA_REMOTE_DIR)/stop.sh'
+
+strata-remote-status: strata-remote-check
+	@ssh $(HOST) '$(STRATA_REMOTE_FIXED_ENV) $(STRATA_REMOTE_DIR)/status.sh'
+
+strata-remote-logs: strata-remote-check
+	@ssh $(HOST) 'tail -f $(STRATA_REMOTE_DIR)/state/server.log'
+
+strata-remote-bench: strata-remote-check strata-model-check strata-remote-deploy strata-remote-harness
+	@ssh $(HOST) '$(call require,python3) $(STRATA_ENV) $(AUDIT_BENCH_ENV) $(STRATA_REMOTE_FIXED_ENV) \
+		python3 $(STRATA_REMOTE_DIR)/bench.py $(MODEL)'
+
+strata-remote-capability: strata-remote-check strata-model-check strata-remote-deploy \
+	strata-remote-harness
+	@ssh $(HOST) '$(call require,python3) $(STRATA_ENV) $(CAPABILITY_ENV) $(STRATA_REMOTE_FIXED_ENV) \
+		python3 $(STRATA_REMOTE_DIR)/capability.py $(MODEL)'
+
+# Both ends bind loopback; the server has no authentication.
+strata-remote-tunnel: strata-remote-check
+	@echo "forwarding localhost:$(STRATA_TUNNEL_PORT) -> $(HOST):$(STRATA_REMOTE_PORT) (Ctrl-C to stop)"
+	@ssh -N -T -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+		-L 127.0.0.1:$(STRATA_TUNNEL_PORT):127.0.0.1:$(STRATA_REMOTE_PORT) \
+		$(HOST)
 
 # --- ds4 (DwarfStar, Apple Silicon) ---
 
