@@ -207,8 +207,7 @@ reference and the retained JSON names are in
 | 6 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 4x | 36.7 |
 | 7 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 17.62 | -- | 1x | 117.4 |
 | 8 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
-| 9 | Ollama `qwen3.8-flash-next-gguf-iq4xs` (125B-A6B) | MoE | 8.55 | 11.21 @2x | 2x | 27.8 |
-| 10 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
+| 9 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
 
 Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and Ollama
 `flint-40b-a2b-nvfp4` (8.51 at 1x) fail Capability Check v2 audit fitness.

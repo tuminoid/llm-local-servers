@@ -40,12 +40,14 @@ stopped before 128 tokens.
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 34.00 | 3,643 | 2,892.9 | 58.1 | 2/2 | unavailable | pass | yes | `20261031T231429.435767+0000_ollama_ornith1-5-35b-a3b_session.json` |
 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` | 262,144 | 1 | 262,144 | 1x 17.62 | 7,187 | 1,147.0 | 117.4 | 3/3 | unavailable | pass | yes | `20261031T233641.204064+0000_ollama_nemotron-3-5-bolt-74b-a9b-iq2_session.json` |
-| Ollama `qwen3.8-flash-next-gguf-iq4xs` | 262,144 | 2 | 524,288 | 1x 8.55 / 2x 11.21 | 6,754 | 865.1 | 27.8 | 6/6 | unavailable | pass | yes | `20261101T020335.276090+0000_ollama_qwen3-8-flash-next-gguf-iq4xs_session.json` |
 | Ollama `flint-40b-a2b-nvfp4` | 262,144 | 4 | 1,048,576 | 1x 8.51 / 2x 11.40, incomplete | 8,913 | 764.5 | 39.8 | 7/8 | unavailable | fail | yes | `20261101T002449.578797+0000_ollama_flint-40b-a2b-nvfp4_session.json` |
 
-- Ornith, Bolt and Flash-Next pass Capability Check v2. Against 0.40.7
-  (2026-10-21/22): Ornith 32.48 to 34.00 sessions/h, Bolt 15.68 to 17.62,
-  Flash-Next 8.79 / 9.49 to 8.55 / 11.21, now optimal at 2x.
+- Ornith and Bolt pass Capability Check v2. Against 0.40.7 (2026-10-21/22):
+  Ornith 32.48 to 34.00 sessions/h, Bolt 15.68 to 17.62.
+- `qwen3.8-flash-next-gguf-iq4xs` (UD-IQ4_XS, 2 x 262,144) passed too, at
+  8.55 / 11.21 @2x, and was dropped on 2026-11-04: Strata serves
+  Qwen3.8-Flash-Next on the A100 at 28.76 (strata/BENCHMARKS.md). Its rows,
+  import recipe and v1 history are in git history.
 - `flint-40b-a2b-nvfp4` fails audit fitness (CAPABILITIES.md) and is
   unranked. Its ladder stopped at 2x on an incomplete session, so 1x is its
   operating point; the 2x rate is reported, not published.
@@ -459,47 +461,6 @@ never-conclude output, which is an alignment property, not a serving
 fault. Audit-shaped calls/hour for Glimmer therefore have no canonical
 number on this runtime.
 
-### Qwen3.8-Flash-Next GGUF IQ4_XS -- AuditBench v1 canonical (A100)
-
-The `qwen3.8-flash-next-gguf-iq4xs` profile (Ollama 0.34.2, 2 x 262,144
-q8_0 shape, 62.84 GiB GPU allocation, 49/49 layers on GPU) has canonical
-AuditBench v1 full and conversation rows; replay is blocked by the
-truncated-tool-call 500 below.
-
-| Metric | 1 slot | 2 slots |
-| -- | --: | --: |
-| 32k / 64k / 128k prefill tok/s | 958.8 / 875.8 / 740.2 | |
-| Decode tok/s | 51.38 | 83.26 |
-| Audit 32k calls/h | 59.11 | 63.50 |
-| Audit half calls/h | 15.88 | |
-| Audit deep calls/h | 8.96 | 8.72 |
-| Near-context proof | 245,748 in 424.06 s | 2 x 245,748 in 853.61 s |
-| Conversation | 10.5/h, compliant, 16/16 | |
-
-The model is PLE-over-PCIe and QSA bound, so cold deep prefills serialize
-across slots and starve the sibling slot's decode. The
-2 x 262,144 shape is locked: an 8 x 65,536 shape batched decode to only
-143.5 tok/s aggregate at 63% GPU utilisation, and a big model on tiny
-windows serves no fleet need.
-
-The capability check's unaided long-document request reproducibly kills
-the runner with a CUDA illegal memory access (Xid 31 in the quantized
-matmul launch) on 0.33.3 and 0.34.2 alike; the same document under a
-JSON schema completes, Ollama restarts the runner in ~10 s, and a later
-12k-token unconstrained generation in the same session completed.
-Constrain long generations with a schema; retest on every runtime bump.
-
-The replay and replay-concurrent profiles CANNOT run canonically on
-this model at its pin: their 32-token probe turns cap-truncate a tool
-call mid-arguments and Ollama 0.33.3 and 0.34.2 return HTTP 500 ("invalid
-tool call arguments ... unexpected end of JSON input") on both endpoints.
-Minimal deterministic repro at temp 0: tools plus max_tokens 32 (16
-stops before the call opens, 200 completes it) -- the same
-truncated-tool-call parser class first found on GLM 4.7 Flash (its
-profile was dropped 2026-10-12; the diagnosis is in git history), here on
-the qwen4exp path. Retest on a release
-whose parsers degrade truncation gracefully.
-
 ## Audit conversation profile
 
 The conversation profile (AuditBench protocol) measures the production
@@ -551,7 +512,3 @@ available-memory watchdog could act; the host hard-reset. The MLX
 profiles stayed on 0.32.14 until 0.40.6 passed the same retest on
 2026-10-17. GGUF profiles never dispatch to the MLX runner and are
 unaffected.
-
-Remote A100 profile (16-file/~165k shape, isolated Ollama 0.34.2):
-`qwen3.8-flash-next-gguf-iq4xs` was compliant at 10.5 conversations/hour
-with 16/16 recall.

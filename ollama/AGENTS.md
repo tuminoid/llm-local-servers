@@ -89,10 +89,6 @@ in [README.md](README.md); shared server conventions live in
   inside `tmp/ollama/` -- a staged 87 GiB GGUF download was silently deleted
   by the next deploy. Stage local-import sources in the remote home
   directory instead.
-- `qwen3.8-flash-next-gguf-iq4xs` is the A100 Flash-Next profile
-  (UD-IQ4_XS, 73 GB VRAM at 2 x 262,144 with q8_0 KV, locked to that
-  shape -- llama.cpp has no fungible KV pool, so slots divide the
-  context partition statically).
 - A remote profile whose conf declares `OLLAMA_RUNTIME_VERSION` (none
   today) needs the same `OLLAMA_VERSION` at the make level on remote
   lifecycle calls: the remote fixed environment
@@ -109,15 +105,6 @@ in [README.md](README.md); shared server conventions live in
   its legacy manifest. Back up `manifests/` and `manifests-v2/` before a new
   0.40.x release touches a store. 0.40 also refuses a relative
   `OLLAMA_MODELS`; start.sh makes it absolute.
-- `qwen3.8-flash-next-gguf-iq4xs` needs llama.cpp >= b10760 (qwen4exp),
-  hence `OLLAMA_MIN_VERSION=0.33.3`. The artifact is a
-  LOCAL `ollama create` import, not a registry pull -- pull.sh refuses
-  profiles with `OLLAMA_LOCAL_IMPORT=1` -- and its import recipe (real-file
-  staging dir, mandatory `use_mmap false`, orphaned shard-upload blob
-  cleanup) lives in the conf comments. Serving
-  default is two full 262,144 slots with q8_0 KV; qwen4exp has no one-slot
-  architecture guard and two-slot decode batching is real, but cold deep
-  prefills serialize across slots.
 - The macOS install extracts the flat universal `ollama-darwin.tgz` into
   `lib/ollama/` and moves the CLI to `bin/ollama`, recreating the Linux
   layout. The binary resolves its bundled MLX and llama.cpp runtimes from

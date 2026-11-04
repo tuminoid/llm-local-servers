@@ -34,13 +34,6 @@ every profile. A profile that needs another release declares it with
 left their older release once the MLX memory runaway retest passed on
 0.40.6 ([BENCHMARKS.md](BENCHMARKS.md)).
 
-`qwen3.8-flash-next-gguf-iq4xs` (Qwen3.8-Flash-Next 125B-A6B, locally
-imported UD-IQ4_XS GGUF sized for the A100's 80 GB, locked to 2 x 262,144
-with q8_0 KV) needs a qwen4exp-capable llama.cpp, Ollama 0.33.3 or newer.
-On the M5 the model is served by ds4. The model is imported
-with `ollama create`, never pulled (`make ollama-pull` refuses it); the
-import recipe and the mandatory `use_mmap false` are documented in the
-conf, and the measured operating point in [BENCHMARKS.md](BENCHMARKS.md).
 Install a per-profile runtime with the reviewed digests recorded beside it in
 the root Makefile.
 
@@ -127,7 +120,7 @@ instead of leaving a misleading SSH process.
 
 ### A100 profiles
 
-The A100 runs on Ollama only the models no vLLM profile serves there;
+The A100 runs on Ollama only the models no vLLM or Strata profile serves there;
 throughput, residency and full-context proofs are in
 [BENCHMARKS.md](BENCHMARKS.md):
 
@@ -135,7 +128,6 @@ throughput, residency and full-context proofs are in
 | -- | -- | --: | --: |
 | `ornith1.5-35b-a3b` | `ornith-1.5:35b` | 262,144 | 1 |
 | `nemotron-3.5-bolt-74b-a9b-iq2` | `nemotron-3.5-bolt:74b-a9b-iq2` | 262,144 | 1 |
-| `qwen3.8-flash-next-gguf-iq4xs` | `qwen3.8-flash-next:ud-iq4xs` (local import) | 262,144 | 2 |
 
 ### Remote workflow
 

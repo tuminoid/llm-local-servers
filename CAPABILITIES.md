@@ -159,8 +159,8 @@ proves nothing about parser compatibility.
 
 - vLLM: `qwen3.6-35b-a3b-awq`, `qwen3.8-27b`, `qwen3.8-27b-dflash2`,
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
-- Ollama: `qwen3.8-flash-next-gguf-iq4xs`, `ornith1.5-35b-a3b`,
-  `nemotron-3.5-bolt-74b-a9b-iq2`, `flint-40b-a2b-nvfp4` (fails audit fitness)
+- Ollama: `ornith1.5-35b-a3b`, `nemotron-3.5-bolt-74b-a9b-iq2`,
+  `flint-40b-a2b-nvfp4` (fails audit fitness)
 - Strata: `qwen3.8-flash-next-nvfp4`
 
 ## Apple M5 Max campaign
@@ -321,7 +321,6 @@ passed.
 | Ollama | `flint-40b-a2b-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: wrong_verdicts 2, tool_misuse 1) | fail |
 | Ollama | `nemotron-3.5-bolt-74b-a9b-iq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| Ollama | `qwen3.8-flash-next-gguf-iq4xs` | pass | pass | pass | pass | pass | pass | pass | valid | truncated | pass 12/12 | pass |
 | Strata | `qwen3.8-flash-next-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 
 Every row's live identity matched the revision or digest pinned in its
@@ -329,12 +328,14 @@ model config.
 
 ### Findings
 
-- Ten profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
+- Nine profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
   checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each),
   `gemma4-26b-a4b-awq` and `nanbeige4.3-33b-w4a16` (11 of 12 each), Ollama
-  `nemotron-3.5-bolt-74b-a9b-iq2`, `ornith1.5-35b-a3b` and
-  `qwen3.8-flash-next-gguf-iq4xs` (12 of 12 each), and Strata
-  `qwen3.8-flash-next-nvfp4` (11 of 12). Ornith's row is its second
+  `nemotron-3.5-bolt-74b-a9b-iq2` and `ornith1.5-35b-a3b` (12 of 12 each),
+  and Strata `qwen3.8-flash-next-nvfp4` (11 of 12). Ollama
+  `qwen3.8-flash-next-gguf-iq4xs` passed 12 of 12 and was dropped on
+  2026-11-04: Strata serves the model faster here; its row is in git
+  history. Ornith's row is its second
   0.40.13 run; the first passed 10 of 12 (format 1, missed findings 1).
 - `flint-40b-a2b-nvfp4` (Recursive's CUDA build, every layer on the GPU)
   fails audit fitness twice on 0.40.13, 10 then 9 of 12, with reasoning
@@ -353,11 +354,6 @@ model config.
   (`VLLM_STRUCTURED_OUTPUTS_CONFIG`, xgrammar), and both enforce the
   schema and pass. The 512k profile keeps the FP8 weights and differs from
   the former FP8 `qwen3.8-27b` only by static YaRN at factor 2.0.
-- `qwen3.8-flash-next-gguf-iq4xs`'s unaided document is `valid` since 0.40.7; on
-  0.40.13 its schema-enforced document hit the 16,384-token budget before
-  closing (`truncated`, advisory). Through 0.40.3 that request killed the CUDA
-  llama.cpp path with an illegal memory access and an HTTP 500 (diagnosis in its
-  conf). `unaided` never gates.
 - `mimo-v2.6-9b-awq` runs on its fixed chat template
   (`VLLM_CHAT_TEMPLATE`); the API checks pass, audit fitness does not.
 - `qwen3.8-27b-dflash2` (FP8 target) passes check for check like the plain
