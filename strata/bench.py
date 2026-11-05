@@ -37,10 +37,6 @@ def evidence(tag):
         raise RuntimeError("installed engine differs from the running server")
     identity = runtime.verify_model(values)
     base, health = runtime.check_live(values, owner, identity)
-    residency = owner.get("residency") or {}
-    if residency.get("experts") is None or residency["experts_in_vram"] != residency["experts"]:
-        raise RuntimeError(f"routed experts are not all in VRAM ({residency}); "
-                           "a run with experts on the CPU is not a GPU serving result")
     identity = {**identity, "checked": True, "matched": True, "managed_pid": owner["pid"],
                 "configured_context": health["max_context"], "receipt": receipt}
     return values, owner, base, health, identity
@@ -49,6 +45,12 @@ def evidence(tag):
 def main():
     tag = sys.argv[1]
     values, owner, base, health, identity = evidence(tag)
+    # The capability gate runs on any profile; a serving result needs every
+    # routed expert on the GPU.
+    residency = owner.get("residency") or {}
+    if residency.get("experts") is None or residency["experts_in_vram"] != residency["experts"]:
+        raise RuntimeError(f"routed experts are not all in VRAM ({residency}); "
+                           "a run with experts on the CPU is not a GPU serving result")
     slots, pool = capacity(owner, health)
     model = values["STRATA_SERVED_NAME"]
     # The checkpoint's sampling, a model fact; the harness decodes at it.

@@ -30,7 +30,9 @@ STATE = Path(os.environ.get("STRATA_STATE_DIR", Path(os.environ.get(
 VERSION = os.environ.get("STRATA_VERSION", "")
 COMMIT = os.environ.get("STRATA_COMMIT", "")
 SOURCE = DATA / "source" / COMMIT
-ENGINE = SOURCE / "build" / "strata"
+# Flash Next runs on the main engine; DeepSeek V4.1 (GGUF architecture
+# deepseek41) on the port of Project Maya's engine, a build of its own.
+ENGINES = {"qwen": SOURCE / "build" / "strata", "deepseek41": SOURCE / "build-dsv41" / "strata-dsv41"}
 PYTHON = SOURCE / ".venv" / "bin" / "python"
 RECEIPT = SOURCE / "llm-local-servers.json"
 MODELS = DATA / "models"
@@ -38,18 +40,26 @@ PIDFILE = STATE / "server.json"
 LOG = STATE / "server.log"
 ENGINE_LOG = STATE / "engine.log"
 RUN_CONFIG = STATE / "run.json"
+# Strata's server has the DeepSeek engine keep set-aside conversations in a
+# folder beside the engine log and restore them on later starts: run state.
+SLOTS = STATE / "ds4-slots"
 REPOSITORY = "https://github.com/Niko1221/Strata"
 LLAMA_REPOSITORY = "https://github.com/ggml-org/llama.cpp"
 HF_HUB = "huggingface_hub[hf_xet]==" + os.environ.get("HF_HUB_VERSION", "1.33.0")
 CONFIG_KEYS = tuple("STRATA_" + name for name in (
-    "SERVED_NAME", "MODEL_REPO", "MODEL_REVISION", "PACK", "DENSE_GGUF", "PLE_GGUF", "EMBD_GGUF",
+    "FAMILY", "SERVED_NAME", "MODEL_REPO", "MODEL_REVISION", "PACK", "DENSE_GGUF", "PLE_GGUF", "EMBD_GGUF",
+    "SHARDS", "ENGRAM", "ENGRAM_META", "DRAFTER", "EXPERT_PROFILE",
     "CTX", "PARALLEL", "ENGINE_ARGS", "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE",
     "CAP_DISABLE_MODE", "CAP_SYSTEM_PROMPT", "SAMPLING",
 ))
 # Engine flags a config may set. Everything else the launcher owns: paths,
 # context, slots, and the host-derived memory placement.
-ENGINE_FLAGS = {"--spec": r"[0-9]+", "--spec-min-p": r"[0-9.]+", "--kv": r"int8|k8v4|q4_0",
-                "--expert-cache": r"auto", "--prefill": r"auto|[0-9]+"}
+ENGINE_FLAGS = {"qwen": {"--spec": r"[0-9]+", "--spec-min-p": r"[0-9.]+", "--kv": r"int8|k8v4|q4_0",
+                         "--expert-cache": r"auto", "--prefill": r"auto|[0-9]+"},
+                "deepseek41": {"--dspark": r"auto|none", "--dspark-conf": r"[0-9.]+"}}
+NAME = r"[a-zA-Z0-9_][a-zA-Z0-9_.-]*"
+# A file of another repository: owner/name@commit:path.
+REFERENCE = re.compile(rf"([a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+)@([0-9a-f]{{40}}):({NAME}(?:/{NAME})*)")
 # From this context the KV cache streams: the engine keeps a window resident
 # and the rest in pinned RAM, about 13.7 KB per token and slot (Strata
 # setup's rule, which also requires the RAM to hold it).
@@ -81,16 +91,31 @@ def config_path(tag):
 
 def config(tag):
     path = config_path(tag)
-    script = 'set -eu; source "$1"; shift; for name; do printf "%s\\0" "${!name}"; done'
+    script = 'set -eu; source "$1"; shift; for name; do printf "%s\\0" "${!name-}"; done'
     output = subprocess.check_output(["bash", "-c", script, "bash", str(path), *CONFIG_KEYS])
     values = dict(zip(CONFIG_KEYS, output.decode().split("\0")[:-1]))
+    values["STRATA_FAMILY"] = values["STRATA_FAMILY"] or "qwen"
+    if values["STRATA_FAMILY"] not in ENGINES:
+        raise ValueError(f"STRATA_FAMILY must be one of {sorted(ENGINES)}")
+    if not re.fullmatch(NAME, values["STRATA_SERVED_NAME"]):
+        raise ValueError("STRATA_SERVED_NAME must be a plain model name")
     if not re.fullmatch(r"[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+", values["STRATA_MODEL_REPO"]):
         raise ValueError("STRATA_MODEL_REPO must be a full Hugging Face repository ID")
     if not re.fullmatch(r"[0-9a-f]{40}", values["STRATA_MODEL_REVISION"]):
         raise ValueError("STRATA_MODEL_REVISION must be an immutable commit")
-    for key in ("STRATA_PACK", "STRATA_DENSE_GGUF", "STRATA_PLE_GGUF", "STRATA_EMBD_GGUF"):
-        if not re.fullmatch(r"[a-zA-Z0-9_][a-zA-Z0-9_.-]*", values[key]):
-            raise ValueError(f"{key} must be a file or folder name in the repository's top level")
+    if values["STRATA_FAMILY"] == "qwen":
+        for key in ("STRATA_PACK", "STRATA_DENSE_GGUF", "STRATA_PLE_GGUF", "STRATA_EMBD_GGUF"):
+            if not re.fullmatch(NAME, values[key]):
+                raise ValueError(f"{key} must be a file or folder name in the repository's top level")
+    else:
+        shards = values["STRATA_SHARDS"].split()
+        if not shards or not all(re.fullmatch(rf"(?:{NAME}/)?{NAME}", shard) for shard in shards) \
+                or len({str(Path(shard).parent) for shard in shards}) != 1:
+            raise ValueError("STRATA_SHARDS must name the set's files, all in one folder of the repository")
+        for key in ("STRATA_ENGRAM", "STRATA_ENGRAM_META", "STRATA_DRAFTER"):
+            reference(values[key], key)
+        if not re.fullmatch(NAME, values["STRATA_EXPERT_PROFILE"]):
+            raise ValueError("STRATA_EXPERT_PROFILE must name a profile in the source tree's data/dsv41")
     if int(values["STRATA_CTX"]) <= 0:
         raise ValueError("STRATA_CTX must be positive")
     if not 1 <= int(values["STRATA_PARALLEL"]) <= 8:
@@ -99,15 +124,24 @@ def config(tag):
     return values
 
 
+def reference(text, key):
+    """A file of another repository as (repository, revision, path)."""
+    match = REFERENCE.fullmatch(text)
+    if not match:
+        raise ValueError(f"{key} must be owner/name@commit:path")
+    return match.groups()
+
+
 def engine_flags(values):
     """STRATA_ENGINE_ARGS: the model's documented engine flags, as pairs."""
     words = values["STRATA_ENGINE_ARGS"].split()
     if len(words) % 2:
         raise ValueError("STRATA_ENGINE_ARGS must be flag/value pairs")
+    allowed = ENGINE_FLAGS[values["STRATA_FAMILY"]]
     result = []
     for flag, value in zip(words[::2], words[1::2]):
-        if flag not in ENGINE_FLAGS or not re.fullmatch(ENGINE_FLAGS[flag], value):
-            raise ValueError(f"STRATA_ENGINE_ARGS entry {flag} {value} is not one of {sorted(ENGINE_FLAGS)}")
+        if flag not in allowed or not re.fullmatch(allowed[flag], value):
+            raise ValueError(f"STRATA_ENGINE_ARGS entry {flag} {value} is not one of {sorted(allowed)}")
         result += [flag, value]
     return result
 
@@ -189,7 +223,7 @@ def verify_source():
     if subprocess.check_output(["git", "-C", str(SOURCE), "status", "--porcelain", "--untracked-files=no"], text=True):
         raise RuntimeError(f"{SOURCE} has local changes; run make strata-install after removing it")
     receipt = json.loads(RECEIPT.read_text())
-    if receipt["engine_sha256"] != digest(ENGINE):
+    if receipt.get("engines_sha256") != {family: digest(path) for family, path in ENGINES.items()}:
         raise RuntimeError("engine checksum mismatch; run make strata-install")
     if git_head(llama_dir()) != receipt["llama_cpp"]:
         raise RuntimeError("the llama.cpp checkout differs from the install")
@@ -229,11 +263,23 @@ def install():
                     f"-DSTRATA_GGML_DIR={llama}"], check=True)
     subprocess.run([str(bin_dir / "cmake"), "--build", str(SOURCE / "build"), "--target", "strata",
                     "-j", str(os.cpu_count() or 4)], check=True)
+    # The DeepSeek engine with the options of Strata's DeepSeek build notes,
+    # portable CPU code for its CPU expert lane.
+    subprocess.run([str(bin_dir / "cmake"), "-G", "Ninja", f"-DCMAKE_MAKE_PROGRAM={bin_dir / 'ninja'}",
+                    "-S", str(SOURCE), "-B", str(SOURCE / "build-dsv41"), "-DCMAKE_BUILD_TYPE=Release",
+                    "-DSTRATA_ENABLE_CUDA=ON", "-DSTRATA_BUILD_TESTS=OFF", "-DSTRATA_BUILD_DSV41=ON",
+                    "-DSTRATA_NATIVE_EXPERTS=ON", "-DSTRATA_PORTABLE=ON",
+                    f"-DCMAKE_CUDA_ARCHITECTURES={';'.join(map(str, archs))}",
+                    f"-DCMAKE_CUDA_COMPILER={cuda / 'bin' / 'nvcc'}", f"-DCUDAToolkit_ROOT={cuda}",
+                    f"-DSTRATA_GGML_DIR={llama}"], check=True)
+    subprocess.run([str(bin_dir / "cmake"), "--build", str(SOURCE / "build-dsv41"), "--target", "strata-dsv41",
+                    "-j", str(os.cpu_count() or 4)], check=True)
     save(RECEIPT, {"version": VERSION, "commit": COMMIT, "llama_cpp": git_head(llama),
-                   "cuda": str(cuda), "archs": archs, "engine_sha256": digest(ENGINE)})
+                   "cuda": str(cuda), "archs": archs,
+                   "engines_sha256": {family: digest(path) for family, path in ENGINES.items()}})
     receipt = verify_source()
-    print(f"Strata {VERSION} ({COMMIT}) built for sm_{','.join(map(str, archs))} at {ENGINE}, "
-          f"CUDA {receipt['cuda']}, llama.cpp {receipt['llama_cpp']}")
+    print(f"Strata {VERSION} ({COMMIT}) built for sm_{','.join(map(str, archs))}: "
+          f"{', '.join(map(str, ENGINES.values()))}; CUDA {receipt['cuda']}, llama.cpp {receipt['llama_cpp']}")
 
 
 def hf_command():
@@ -243,8 +289,32 @@ def hf_command():
     return [str(SOURCE / ".venv" / "bin" / "hf")]
 
 
+def repo_dir(repository, revision):
+    return MODELS / repository.replace("/", "--") / revision
+
+
 def model_dir(values):
-    return MODELS / values["STRATA_MODEL_REPO"].replace("/", "--") / values["STRATA_MODEL_REVISION"]
+    return repo_dir(values["STRATA_MODEL_REPO"], values["STRATA_MODEL_REVISION"])
+
+
+def dsv41_sources(values):
+    """A DeepSeek set's downloads as (repository, revision, path): its shards,
+    the Engram table, the metadata shard pack_gguf reads it with, the DSpark
+    drafter. Configs naming the same file share one copy."""
+    repository, revision = values["STRATA_MODEL_REPO"], values["STRATA_MODEL_REVISION"]
+    return [(repository, revision, shard) for shard in values["STRATA_SHARDS"].split()] + [
+        reference(values[key], key) for key in ("STRATA_ENGRAM", "STRATA_ENGRAM_META", "STRATA_DRAFTER")]
+
+
+def source_path(source):
+    return repo_dir(source[0], source[1]) / source[2]
+
+
+def dsv41_pack(values):
+    """The pack holds hash tables and paths taken from its inputs, so its
+    folder is named by them and the source pin: another input is a new pack."""
+    inputs = json.dumps([COMMIT, *dsv41_sources(values)]).encode()
+    return model_dir(values) / ("pack-" + hashlib.sha256(inputs).hexdigest()[:16])
 
 
 def mtp_dir():
@@ -255,6 +325,12 @@ def mtp_dir():
 
 def model_files(values):
     """Every file the engine reads from the model folder."""
+    if values["STRATA_FAMILY"] == "deepseek41":
+        pack = dsv41_pack(values)
+        files = sorted(path for path in pack.rglob("*") if path.is_file())
+        if not files:
+            raise RuntimeError(f"{pack} holds no pack; run make strata-pull")
+        return [source_path(source) for source in dsv41_sources(values)] + files
     root = model_dir(values)
     pack = root / values["STRATA_PACK"]
     files = sorted(path for path in pack.rglob("*") if path.is_file())
@@ -264,6 +340,9 @@ def model_files(values):
 
 
 def identity_record(values):
+    if values["STRATA_FAMILY"] == "deepseek41":
+        return {"source": values["STRATA_MODEL_REPO"], "revision": values["STRATA_MODEL_REVISION"],
+                "files": {str(path.relative_to(MODELS)): digest(path) for path in model_files(values)}}
     root, mtp = model_dir(values), mtp_dir() / "rt"
     return {"source": values["STRATA_MODEL_REPO"], "revision": values["STRATA_MODEL_REVISION"],
             "mtp_revision": mtp.parent.name,
@@ -272,11 +351,17 @@ def identity_record(values):
                     for path in sorted(mtp.rglob("*")) if path.is_file()}}
 
 
+def identity_path(values):
+    if values["STRATA_FAMILY"] == "deepseek41":
+        return model_dir(values) / f"llm-local-servers-{values['STRATA_SERVED_NAME']}.json"
+    return model_dir(values) / "llm-local-servers.json"
+
+
 def verify_model(values):
-    record = json.loads((model_dir(values) / "llm-local-servers.json").read_text())
+    record = json.loads(identity_path(values).read_text())
     if record != identity_record(values):
         raise RuntimeError("the model files differ from the pulled and verified ones; run make strata-pull")
-    return {"source": record["source"], "revision": record["revision"], "mtp_revision": record["mtp_revision"],
+    return {"source": record["source"], "revision": record["revision"], "mtp_revision": record.get("mtp_revision"),
             "identity_sha256": hashlib.sha256(json.dumps(record, sort_keys=True).encode()).hexdigest(),
             "full_artifact_hash_verification": True}
 
@@ -286,11 +371,43 @@ def tool(name, *argv):
     subprocess.run([str(PYTHON), str(SOURCE / "tools" / name), *argv], check=True, env=environment)
 
 
+def download(repository, revision, paths):
+    subprocess.run([*hf_command(), "download", repository, "--revision", revision,
+                    "--local-dir", str(repo_dir(repository, revision)),
+                    *[word for path in paths for word in ("--include", path)], "--quiet"],
+                   check=True, stdout=subprocess.DEVNULL)
+
+
+def pull_dsv41(values):
+    sources = dsv41_sources(values)
+    for repository, revision in dict.fromkeys(source[:2] for source in sources):
+        download(repository, revision, [path for *pin, path in sources if pin == [repository, revision]])
+    pack = dsv41_pack(values)
+    if not pack.is_dir():
+        # Strata setup's recipe for the ISTA-DAS sets, the drafter's noise
+        # token and markov rank stated as it states them: the pack holds the
+        # tensor map, hash tables and tokenizer and points at the shards.
+        shards, (engram, meta, drafter) = [source_path(s) for s in sources[:-3]], map(source_path, sources[-3:])
+        stage = pack.with_name(pack.name + ".partial")
+        if stage.exists():
+            shutil.rmtree(stage)
+        tool("dsv41/pack_gguf.py", "--model", str(shards[0].parent), "--shards", *[path.name for path in shards],
+             "--engram", str(engram), "--engram-meta", str(meta), "--dspark-gguf", str(drafter),
+             "--dspark-noise-token", "128799", "--dspark-markov-rank", "256", "--out", str(stage))
+        stage.rename(pack)
+
+
 def pull(values):
     require_stopped()
     verify_source()
     MODELS.mkdir(parents=True, exist_ok=True)
     root = model_dir(values)
+    if values["STRATA_FAMILY"] == "deepseek41":
+        pull_dsv41(values)
+        save(identity_path(values), identity_record(values))
+        identity = verify_model(values)
+        print(f"Verified {identity['source']} at {identity['revision']} and {dsv41_pack(values)}")
+        return
     subprocess.run([*hf_command(), "download", values["STRATA_MODEL_REPO"],
                     "--revision", values["STRATA_MODEL_REVISION"], "--local-dir", str(root),
                     "--include", values["STRATA_PACK"] + "/*", "--include", values["STRATA_DENSE_GGUF"],
@@ -342,6 +459,21 @@ def placement(values):
 
 
 def run_config(values, receipt):
+    cuda = Path(receipt["cuda"])
+    common = {"model_name": values["STRATA_SERVED_NAME"], "log": str(ENGINE_LOG),
+              "lib_dirs": [str(cuda / "bin"), str(cuda / "lib64")],
+              "port": port(), "gpu": 0, "parallel": int(values["STRATA_PARALLEL"]), "open_browser": False}
+    if values["STRATA_FAMILY"] == "deepseek41":
+        # Strata setup's DeepSeek launch: the end-of-text token, pictures off
+        # as in every fleet profile, its load allowance. The shipped hot-expert
+        # profile is read only, so the engine never rewrites a pinned input.
+        pack = dsv41_pack(values)
+        args = ["--pack", str(pack), "--max-context", values["STRATA_CTX"], "--eos", "1", "--vision", "off",
+                "--expert-profile", str(SOURCE / "data" / "dsv41" / values["STRATA_EXPERT_PROFILE"]),
+                "--profile-readonly", *engine_flags(values)]
+        return {**common, "exe": str(ENGINES["deepseek41"]), "args": args, "cwd": str(SOURCE),
+                "tokenizer": str(pack / "tokenizer"), "arch": "deepseek41", "engine_ready_s": 3600,
+                "lib_dirs": [*common["lib_dirs"], str(ENGINES["deepseek41"].parent)]}
     root = model_dir(values)
     dense = str(root / values["STRATA_DENSE_GGUF"])
     args = ["--pack", str(root / values["STRATA_PACK"]), "--native", dense, "--native-dense-gguf", dense,
@@ -350,12 +482,8 @@ def run_config(values, receipt):
             "--expert-profile", str(SOURCE / "data" / "expert-profile.bin"),
             "--mtp", str(mtp_dir() / "rt"), "--max-context", values["STRATA_CTX"],
             *engine_flags(values), *placement(values)]
-    cuda = Path(receipt["cuda"])
-    return {"exe": str(ENGINE), "args": args, "cwd": str(SOURCE),
-            "tokenizer": str(root / values["STRATA_PACK"] / "tokenizer"),
-            "model_name": values["STRATA_SERVED_NAME"], "log": str(ENGINE_LOG),
-            "lib_dirs": [str(cuda / "bin"), str(cuda / "lib64")],
-            "port": port(), "gpu": 0, "parallel": int(values["STRATA_PARALLEL"]), "open_browser": False}
+    return {**common, "exe": str(ENGINES["qwen"]), "args": args, "cwd": str(SOURCE),
+            "tokenizer": str(root / values["STRATA_PACK"] / "tokenizer")}
 
 
 def port():
@@ -437,9 +565,10 @@ def server_owned(owner):
 def engine_owned(owner):
     """The server restarts a dead engine on the next request, so the engine
     is looked up again under the server when the recorded one is gone."""
-    if owner.get("engine") and owned(owner["engine"], str(ENGINE)):
+    engine = owner["run_config"]["exe"]
+    if owner.get("engine") and owned(owner["engine"], engine):
         return True
-    owner["engine"] = engine_child(owner["pid"]) if started(owner["pid"]) is not None else None
+    owner["engine"] = engine_child(owner["pid"], engine) if started(owner["pid"]) is not None else None
     return bool(owner["engine"])
 
 
@@ -448,9 +577,9 @@ def request(url):
         return json.load(response)
 
 
-def engine_child(server_pid):
+def engine_child(server_pid, engine):
     for entry in Path("/proc").iterdir():
-        if entry.name.isdigit() and executable(int(entry.name)) == os.path.realpath(ENGINE):
+        if entry.name.isdigit() and executable(int(entry.name)) == os.path.realpath(engine):
             try:
                 parent = int((entry / "stat").read_text().rsplit(")", 1)[1].split()[1])
             except (OSError, IndexError, ValueError):
@@ -462,10 +591,15 @@ def engine_child(server_pid):
 
 def residency():
     """The engine's own report of where the routed experts live."""
-    match = re.search(r"every expert is in the GPU cache \(([0-9]+) of ([0-9]+)\)", ENGINE_LOG.read_text())
+    log = ENGINE_LOG.read_text()
+    # DeepSeek, on the one card a run uses: "experts 73.45 GB (8064 of 8064 in VRAM)".
+    match = re.search(r"experts [0-9.]+ GB \(([0-9]+) of ([0-9]+) in VRAM\)", log)
     if match:
         return {"experts_in_vram": int(match.group(1)), "experts": int(match.group(2))}
-    match = re.search(r"expert cache ([0-9]+) slots", ENGINE_LOG.read_text())
+    match = re.search(r"every expert is in the GPU cache \(([0-9]+) of ([0-9]+)\)", log)
+    if match:
+        return {"experts_in_vram": int(match.group(1)), "experts": int(match.group(2))}
+    match = re.search(r"expert cache ([0-9]+) slots", log)
     return {"experts_in_vram": int(match.group(1)) if match else 0, "experts": None}
 
 
@@ -501,6 +635,7 @@ def start(tag, values):
     STATE.mkdir(parents=True, exist_ok=True)
     save(RUN_CONFIG, run_config(values, receipt))
     ENGINE_LOG.unlink(missing_ok=True)
+    shutil.rmtree(SLOTS, ignore_errors=True)
     argv = command()
     with LOG.open("w") as log:
         log.write("starting " + shlex.join(argv) + "\n")
@@ -524,7 +659,7 @@ def start(tag, values):
             if process.poll() is not None:
                 raise RuntimeError(f"Strata exited during startup; see {LOG} and {ENGINE_LOG}")
             if not owner.get("engine"):
-                owner["engine"] = engine_child(process.pid)
+                owner["engine"] = engine_child(process.pid, owner["run_config"]["exe"])
                 if owner["engine"]:
                     save(PIDFILE, owner)
             try:
@@ -583,6 +718,7 @@ def stop(preserve_log=False):
     port_free(owner["port"])
     PIDFILE.unlink()
     RUN_CONFIG.unlink(missing_ok=True)
+    shutil.rmtree(SLOTS, ignore_errors=True)
     if not running:
         print(f"Strata was not running; removed its pidfile and kept the logs in {STATE} as evidence.")
         return
