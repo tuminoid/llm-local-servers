@@ -8,6 +8,30 @@
         "baseURL": "http://127.0.0.1:8026/v1"
       },
       "models": {
+        "deepseek-v4.1-flash-coder-iq2xxs": {
+          "name": "DeepSeek V4.1 Flash Coder IQ2XXS",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 1048576,
+            "output": 262144
+          }
+        },
+        "deepseek-v4.1-flash-q2": {
+          "name": "DeepSeek V4.1 Flash Q2",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 1048576,
+            "output": 262144
+          }
+        },
         "qwen3.8-flash-next-nvfp4": {
           "name": "Qwen3.8 Flash Next NVFP4",
           "reasoning": true,

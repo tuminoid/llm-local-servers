@@ -161,7 +161,8 @@ proves nothing about parser compatibility.
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
 - Ollama: `ornith1.5-35b-a3b`, `nemotron-3.5-bolt-74b-a9b-iq2`,
   `flint-40b-a2b-nvfp4` (fails audit fitness)
-- Strata: `qwen3.8-flash-next-nvfp4`
+- Strata: `qwen3.8-flash-next-nvfp4`, `deepseek-v4.1-flash-coder-iq2xxs`
+  and `deepseek-v4.1-flash-q2` (both fail audit fitness)
 
 ## Apple M5 Max campaign
 
@@ -305,7 +306,8 @@ llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11 from fleet commit
 `auditbench-trials/2026-10-26-nanbeige-hunt/`. Strata
 `qwen3.8-flash-next-nvfp4` ran 2026-11-04 on Strata 0.2.10 (llm-audit-bench
 2.5.0) from `9f94bad`, its report under `~/.local/state/capability-check/`
-on the host. Audit fitness ran 4 samples per
+on the host; the two DeepSeek rows ran 2026-11-05 from `7d3b5ff`, the
+same way. Audit fitness ran 4 samples per
 task at each conf's declared sampling and passes with at least 11 of 12 samples
 passed.
 
@@ -321,6 +323,8 @@ passed.
 | Ollama | `flint-40b-a2b-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: wrong_verdicts 2, tool_misuse 1) | fail |
 | Ollama | `nemotron-3.5-bolt-74b-a9b-iq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Strata | `deepseek-v4.1-flash-coder-iq2xxs` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 1, no_reasoning 3) | fail |
+| Strata | `deepseek-v4.1-flash-q2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: no_reasoning 3) | fail |
 | Strata | `qwen3.8-flash-next-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 
 Every row's live identity matched the revision or digest pinned in its
@@ -337,6 +341,11 @@ model config.
   2026-11-04: Strata serves the model faster here; its row is in git
   history. Ornith's row is its second
   0.40.13 run; the first passed 10 of 12 (format 1, missed findings 1).
+- Both DeepSeek-V4.1-Flash sets fail on the audit's opening turn: the model
+  answers it with a tool call and no thinking at the template's default
+  effort, pruned or not, and `reasoning_effort` max only halved it in a
+  replay ([strata/BENCHMARKS.md](strata/BENCHMARKS.md)). The Coder also
+  invented a finding once. Both serve for interactive use.
 - `flint-40b-a2b-nvfp4` (Recursive's CUDA build, every layer on the GPU)
   fails audit fitness twice on 0.40.13, 10 then 9 of 12, with reasoning
   preserved as the card requires: wrong triage verdicts in both, plus a

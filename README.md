@@ -188,10 +188,10 @@ only, and a MoE or hybrid row and a dense row are not comparable.
 ### A100-SXM4-80GB
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.40.13 (its rows), Strata 0.2.10 built for sm_80 (its row).
+isolated Ollama 0.40.13 (its rows), Strata 0.2.10 built for sm_80 (its rows).
 Sessions per hour by stream count: the vLLM rows ran 1 stream and the largest
 of 2/4/8 the pool admits, the Ollama rows the 2.5.0 stream ladder, the Strata
-row its one slot; context, slots, KV pool, completion, the pp512/tg128
+rows their one slot; context, slots, KV pool, completion, the pp512/tg128
 reference and the retained JSON names are in
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md) and
@@ -209,8 +209,12 @@ reference and the retained JSON names are in
 | 8 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
 | 9 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
 
-Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and Ollama
-`flint-40b-a2b-nvfp4` (8.51 at 1x) fail Capability Check v2 audit fitness.
+Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x), Ollama
+`flint-40b-a2b-nvfp4` (8.51 at 1x) and Strata
+`deepseek-v4.1-flash-coder-iq2xxs` (9.89 at 1x, 1,048,576 context) fail
+Capability Check v2 audit fitness. Strata `deepseek-v4.1-flash-q2` fails it
+too and has no serving rate: part of its experts run on the CPU. Both
+DeepSeek profiles serve for interactive use.
 DFlash 2 loses to plain qwen3.8 at the declared sampling (8.40 / 13.04 @2x); see
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 

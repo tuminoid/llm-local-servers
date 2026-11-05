@@ -3,10 +3,11 @@
 Managed [Strata](https://github.com/Niko1221/Strata), a C++/CUDA engine for
 Qwen3.8-Flash-Next built on parts of llama.cpp's ggml, with its own decode,
 prompt and MoE kernels, MTP speculative decoding and an OpenAI-compatible
-Python server. It keeps the routed experts in a VRAM expert cache and
-computes the ones that do not fit on the CPU; on a card that holds every
-expert, it serves entirely from the GPU. Measured operating points are in
-[BENCHMARKS.md](BENCHMARKS.md).
+Python server. DeepSeek-V4.1-Flash runs on a second engine from the same
+tree, Strata's port of Project Maya's, with DSpark drafting. Both keep the
+routed experts in VRAM as far as they fit and compute the rest on the CPU;
+on a card that holds every expert, they serve entirely from the GPU.
+Measured operating points are in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Install and run
 
@@ -37,16 +38,23 @@ Install fetches the pinned source commit (`STRATA_COMMIT`, the
 `STRATA_VERSION` tag's commit) into `~/.local/share/strata/source/`, and the
 llama.cpp commit that tree's `setup.py` pins beside it. It installs the
 tree's pinned Python requirements into its own `.venv`, and builds the
-engine with the options Strata's own setup uses, for the compute
-capabilities of this host's GPUs. The release packages carry no sm_80 code,
-so an A100 needs this build.
+engine with the options Strata's own setup uses, and the DeepSeek engine
+with those of Strata's DeepSeek build notes, for the compute capabilities of
+this host's GPUs. The release packages carry no sm_80 code, so an A100 needs
+this build.
 
 Pull downloads the pack's pinned Hugging Face revision into
 `~/.local/share/strata/models/<owner>--<repo>/<revision>/`. It builds the
 MTP draft layer once, with Strata's own tools from the original checkpoint's
 MTP tensors at the source tree's pinned revision. Every file's SHA-256 goes
-into the folder's `llm-local-servers.json`. Startup never downloads: every
-file is checked against that record before launch and before measurement.
+into the folder's `llm-local-servers.json`. A DeepSeek config names its
+set's shards and three shared files (the Engram n-gram table, the metadata
+shard it is packed with, the DSpark drafter), each at a pinned revision,
+into the same per-repository folders, so two sets share one copy. Strata's
+`pack_gguf.py` then writes the engine's pack beside the shards: the tensor
+map, hash tables and tokenizer, a few MB, no weights. Those records are
+`llm-local-servers-<served name>.json`. Startup never downloads: every file
+is checked against its record before launch and before measurement.
 
 ## Serving settings
 
@@ -65,6 +73,8 @@ The launcher derives the memory placement from the host. The n-gram (PLE)
 table is held in RAM when the available memory covers it beside the pinned
 expert copy, plus 16 GiB, and is otherwise read from the disk. Above 65,536
 tokens of context the KV cache streams from pinned RAM with a 32,768-token
-window in VRAM. Model facts live in `models/<name>.conf`: the pack's
+window in VRAM. The DeepSeek engine places its experts itself, from the
+source tree's shipped hot-expert profile, which it reads without writing
+back. Model facts live in `models/<name>.conf`: the pack's
 immutable revision and file names, context, slots, engine flags, capability
 expectations and the checkpoint's sampling.
