@@ -16,6 +16,7 @@ own and named at least 7/8 of its findings. JSON files are under
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Strata `qwen3.8-flash-next-nvfp4` | 262,144 | 1 | 262,144 | 1x 28.76 | 5,480 | 2,294.5 | 106.8 | 3/3 | unavailable | pass | yes | `20261104T174104.076114+0000_strata_qwen3-8-flash-next-nvfp4_session.json` |
+| Strata `deepseek-v4.1-flash-coder-iq2xxs` | 1,048,576 | 1 | 1,048,576 | 1x 9.89 | 8,571 | 845.1 | 50.3 | 3/3 | unavailable | fail | yes | `20261105T180708.678813+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json` |
 
 - Capability Check v2 passes with audit fitness 11 of 12 (selection
   invented 1), `json_schema` enforced and a valid unaided document:
@@ -23,6 +24,17 @@ own and named at least 7/8 of its findings. JSON files are under
   same commit. The trial runs of the same pack passed 12 of 12.
 - Mid-session decode ran 112-133 tok/s; the near-context phase
   (245,760-token prompt) read 2,796 tok/s.
+- The DeepSeek Coder row ran 2026-11-05 from the clean fleet commit
+  `7d3b5ff` on the DeepSeek engine, DSpark at a 0.65 floor, every routed
+  expert in VRAM. Turn decode 58.3/81.3/76.3 tok/s; the 983,040-token
+  near-context prompt read 890 tok/s (1,105 s). 39 of 51 calls streamed no
+  reasoning. Capability Check v2 fails audit fitness, 8 of 12 (workflow
+  no_reasoning 3, selection invented 1), every API check passing:
+  `20261105T180334.427287+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json`.
+- `deepseek-v4.1-flash-q2` has no row: 8,666 of its 15,360 experts are on
+  the GPU at 1,048,576, and `strata-bench` refuses it. Capability Check v2
+  fails audit fitness, 9 of 12 (workflow no_reasoning 3), the same commit:
+  `20261105T194933.439664+0000_strata_deepseek-v4-1-flash-q2.json`.
 - Strata ends a response at EOS rather than at `max_tokens`, so the
   reference measurement is unavailable; it is a diagnostic only.
 
