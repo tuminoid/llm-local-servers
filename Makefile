@@ -138,9 +138,9 @@ SPLASH_MODEL_CONF ?= $(SPLASH_DIR)/models/$(MODEL).conf
 KAPITSA_DIR := kapitsa
 # The release's darwin-arm64 archive, and its source commit (the tag's merge
 # commit), which carries the model converters the archive leaves out.
-KAPITSA_VERSION ?= 0.2.24
-KAPITSA_ARCHIVE_SHA256 ?= 09f7b424a712afea0534661c4475fef01bbc6cf322d5e6c529d83260cd559917
-KAPITSA_SOURCE_COMMIT ?= b46d9e56b68675226bfb4e685c31fc1bf1e496bc
+KAPITSA_VERSION ?= 0.2.36
+KAPITSA_ARCHIVE_SHA256 ?= c88e9eecad73dab17aa300aa6dfab4a4a3370bc06b8f44e04a3e6928c482d1b3
+KAPITSA_SOURCE_COMMIT ?= fe6a17af95a58085dcea40f06764b893c2c58ec8
 export KAPITSA_VERSION KAPITSA_ARCHIVE_SHA256 KAPITSA_SOURCE_COMMIT
 KAPITSA_MODEL_CONF ?= $(KAPITSA_DIR)/models/$(MODEL).conf
 
@@ -149,8 +149,8 @@ STRATA_DIR := strata
 # GPUs: the release packages carry no sm_80 code. The tag's commit pins the
 # engine, its llama.cpp checkout (setup.py's LLAMA_CPP_COMMIT) and the MTP
 # draft layer's checkpoint revision (tools/mtp_fetch.py).
-STRATA_VERSION ?= 0.2.10
-STRATA_COMMIT ?= ffa80d73133ea5c548aefe57889a16e8085a938f
+STRATA_VERSION ?= 0.2.13
+STRATA_COMMIT ?= d2f096475817d4666c364c820b0ca830f751cfc5
 export STRATA_VERSION STRATA_COMMIT
 STRATA_MODEL_CONF ?= $(STRATA_DIR)/models/$(MODEL).conf
 STRATA_REMOTE_DIR ?= tmp/strata
@@ -172,7 +172,7 @@ OLLAMA_DIR := ollama
 # ollama-linux-amd64.tar.zst for the A100, _LINUX_ARM64 the arm64 build,
 # _DARWIN the universal ollama-darwin.tgz); ollama-install refuses an
 # unverified archive.
-# Default 0.40.13, for every profile: Flint off macOS, and llama.cpp b11963,
+# Default 0.40.16, for every profile: Flint off macOS, and llama.cpp b12177,
 # past the Metal mul_mat_id fix for nine-expert MoE layers. The M5's MLX
 # profiles passed the post-prefill commit memory runaway retest on 0.40.6
 # (2026-10-17: three cache-busted deep prefills under a watchdog), which
@@ -180,10 +180,10 @@ OLLAMA_DIR := ollama
 # (2026-10-23, ollama/BENCHMARKS.md). 0.40.x keeps a second model index,
 # manifests-v2/; 0.40.1's local compat migration rewrote older GGUF tags
 # there, which 0.40.3 and later no longer do on load (ollama/AGENTS.md).
-OLLAMA_VERSION ?= 0.40.13
-OLLAMA_ARCHIVE_SHA256 ?= c9490e0f520be21271d969e6703f012268b1d39f8b70dd58854e5bfef7a75bb6
-OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= 913d9a28da6da86d551ce4ca531457767bb14d511cbc1d5ca93e9b3b8b9a8666
-OLLAMA_ARCHIVE_SHA256_DARWIN ?= bae29252232b9e1358cf5801a7d65a07442af18fb5467cb68c7fc3711f59c511
+OLLAMA_VERSION ?= 0.40.16
+OLLAMA_ARCHIVE_SHA256 ?= 87bfafb2acbc89b2e6a1be0a9043de6aa75fb450696f86bc426e65fc448f788d
+OLLAMA_ARCHIVE_SHA256_LINUX_ARM64 ?= e45b8e6dcb86cb9f3057396351655079c9a4879b4ced2678c9350d375dcbc224
+OLLAMA_ARCHIVE_SHA256_DARWIN ?= a743717494315da7cd352982b805f6b992d4b4452ca117fd5fbf86c4ee46fca0
 # Expected active runner slots; must match the OLLAMA_NUM_PARALLEL used at start.
 OLLAMA_BENCH_JOBS ?= 1
 OLLAMA_BENCH_LOAD_ONLY ?= 0
