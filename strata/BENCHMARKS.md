@@ -2,39 +2,44 @@
 
 ## AuditBench v2: A100-SXM4-80GB
 
-Strata 0.2.10 (`ffa80d73`) built by `strata-install` for sm_80 against CUDA
+Strata 0.2.13 (`d2f09647`) built by `strata-install` for sm_80 against CUDA
 13.2, one slot, context 262,144, int8 KV streamed from pinned RAM past a
 32,768-token window and the n-gram table in RAM (both derived from the
 host's 211 GiB), MTP drafts four deep, every routed expert in VRAM.
 Canonical AuditBench v2 `session` profile at the conf's declared sampling,
-llm-audit-bench 2.5.0, from the clean fleet commit `9f94bad`, 2026-11-04.
-One slot admits one stream, so the ladder measured 1x. Sessions/h is the
-median over 3 samples; complete counts sessions whose report ended on its
-own and named at least 7/8 of its findings. JSON files are under
-`~/.local/state/auditbench/` on the host.
+llm-audit-bench 2.5.0, from the clean trial commit `54822f2` (this pin with
+the same profile files), 2026-11-15. One slot admits one stream, so the
+ladder measured 1x. Sessions/h is the median over 3 samples; complete
+counts sessions whose report ended on its own and named at least 7/8 of its
+findings. JSON files are under `auditbench-trials/2026-11-15-a100/` on the
+host; the 0.2.10 rows are in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Strata `qwen3.8-flash-next-nvfp4` | 262,144 | 1 | 262,144 | 1x 28.76 | 5,480 | 2,294.5 | 106.8 | 3/3 | unavailable | pass | yes | `20261104T174104.076114+0000_strata_qwen3-8-flash-next-nvfp4_session.json` |
-| Strata `deepseek-v4.1-flash-coder-iq2xxs` | 1,048,576 | 1 | 1,048,576 | 1x 9.89 | 8,571 | 845.1 | 50.3 | 3/3 | unavailable | fail | yes | `20261105T180708.678813+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json` |
+| Strata `qwen3.8-flash-next-nvfp4` | 262,144 | 1 | 262,144 | 1x 27.66 | 6,188 | 2,136.0 | 110.2 | 3/3 | unavailable | pass | yes | `20261115T164004.814930+0000_strata_qwen3-8-flash-next-nvfp4_session.json` |
+| Strata `deepseek-v4.1-flash-coder-iq2xxs` | 1,048,576 | 1 | 1,048,576 | 1x 9.77 | 8,571 | 827.5 | 50.3 | 3/3 | unavailable | fail | yes | `20261115T174556.949264+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json` |
 
 - Capability Check v2 passes with audit fitness 11 of 12 (selection
   invented 1), `json_schema` enforced and a valid unaided document:
-  `20261104T173911.625858+0000_strata_qwen3-8-flash-next-nvfp4.json`, the
-  same commit. The trial runs of the same pack passed 12 of 12.
-- Mid-session decode ran 112-133 tok/s; the near-context phase
-  (245,760-token prompt) read 2,796 tok/s.
-- The DeepSeek Coder row ran 2026-11-05 from the clean fleet commit
-  `7d3b5ff` on the DeepSeek engine, DSpark at a 0.65 floor, every routed
-  expert in VRAM. Turn decode 58.3/81.3/76.3 tok/s; the 983,040-token
-  near-context prompt read 890 tok/s (1,105 s). 39 of 51 calls streamed no
-  reasoning. Capability Check v2 fails audit fitness, 8 of 12 (workflow
-  no_reasoning 3, selection invented 1), every API check passing:
-  `20261105T180334.427287+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json`.
-- `deepseek-v4.1-flash-q2` has no row: 8,666 of its 15,360 experts are on
-  the GPU at 1,048,576, and `strata-bench` refuses it. Capability Check v2
-  fails audit fitness, 9 of 12 (workflow no_reasoning 3), the same commit:
-  `20261105T194933.439664+0000_strata_deepseek-v4-1-flash-q2.json`.
+  `20261115T163746.218824+0000_strata_qwen3-8-flash-next-nvfp4.json`, the
+  same commit. Against 0.2.10 (2026-11-04): 28.76 to 27.66 sessions/h, with
+  6,188 output tokens per session against 5,480; its three samples spread
+  24.89-29.91.
+- Mid-session decode ran 116-137 tok/s; the near-context phase
+  (245,776-token prompt) read 3,389 tok/s (2,796 on 0.2.10).
+- The DeepSeek Coder row runs on the DeepSeek engine, DSpark at a 0.65
+  floor, every routed expert in VRAM. Turn decode 58.7/81.6/76.3 tok/s; the
+  983,045-token near-context prompt read 888 tok/s (1,107 s). 39 calls
+  streamed no reasoning. Capability Check v2 fails audit fitness, 8 of 12
+  (workflow no_reasoning 3, selection invented 1), every API check passing:
+  `20261115T174216.285313+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json`.
+  Against 0.2.10: 9.89 to 9.77 sessions/h.
+- `deepseek-v4.1-flash-q2` has no row: on 0.2.10 8,666 of its 15,360
+  experts were on the GPU at 1,048,576, and `strata-bench` refuses a set
+  with experts off the GPU, so 0.2.13 checked its capability only.
+  Capability Check v2 fails audit fitness, 8 of 12 (workflow no_reasoning
+  4; 9 of 12 on 0.2.10), the same commit:
+  `20261115T191906.321559+0000_strata_deepseek-v4-1-flash-q2.json`.
 - Strata ends a response at EOS rather than at `max_tokens`, so the
   reference measurement is unavailable; it is a diagnostic only.
 

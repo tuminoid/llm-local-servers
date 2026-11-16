@@ -188,7 +188,7 @@ only, and a MoE or hybrid row and a dense row are not comparable.
 ### A100-SXM4-80GB
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.40.13 (its rows), Strata 0.2.10 built for sm_80 (its rows).
+isolated Ollama 0.40.16 (its rows), Strata 0.2.13 built for sm_80 (its rows).
 Sessions per hour by stream count: the vLLM rows ran 1 stream and the largest
 of 2/4/8 the pool admits, the Ollama rows the 2.5.0 stream ladder, the Strata
 rows their one slot; context, slots, KV pool, completion, the pp512/tg128
@@ -201,17 +201,17 @@ reference and the retained JSON names are in
 | --: | -- | -- | --: | --: | -- | --: |
 | 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | 38.49 | 58.67 @8x | 8x | 111.4 |
 | 2 | vLLM `gemma4-26b-a4b-awq` | MoE | 37.20 | 45.99 @8x | 8x | 63.6 |
-| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 34.00 | -- | 1x | 58.1 |
-| 4 | Strata `qwen3.8-flash-next-nvfp4` (125B-A6B, NVFP4) | MoE | 28.76 | -- | 1x | 106.8 |
+| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 32.21 | -- | 1x | 59.9 |
+| 4 | Strata `qwen3.8-flash-next-nvfp4` (125B-A6B, NVFP4) | MoE | 27.66 | -- | 1x | 110.2 |
 | 5 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 4x | 49.8 |
 | 6 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 4x | 36.7 |
-| 7 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 17.62 | -- | 1x | 117.4 |
+| 7 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 15.53 | -- | 1x | 119.6 |
 | 8 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
-| 9 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
+| 9 | Ollama `flint-40b-a2b-nvfp4` (40B-A2.5B) | MoE | 9.94 | 12.14 @2x, incomplete | 1x | 40.7 |
+| 10 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
 
-Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x), Ollama
-`flint-40b-a2b-nvfp4` (8.51 at 1x) and Strata
-`deepseek-v4.1-flash-coder-iq2xxs` (9.89 at 1x, 1,048,576 context) fail
+Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and Strata
+`deepseek-v4.1-flash-coder-iq2xxs` (9.77 at 1x, 1,048,576 context) fail
 Capability Check v2 audit fitness. Strata `deepseek-v4.1-flash-q2` fails it
 too and has no serving rate: part of its experts run on the CPU. Both
 DeepSeek profiles serve for interactive use.
@@ -221,8 +221,8 @@ DFlash 2 loses to plain qwen3.8 at the declared sampling (8.40 / 13.04 @2x); see
 ### Apple M5 Max (128 GB unified memory)
 
 Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
-0.31.0, Splash 1.5.0, LM Studio 0.4.25+1, Ollama 0.40.13 (MiMo, Nanbeige and
-Lightning rows on 0.40.8), ds4, Kapitsa 0.2.24. Context, slots, KV pool,
+0.31.0, Splash 1.5.0, LM Studio 0.4.25+1, Ollama 0.40.16, ds4, Kapitsa
+0.2.36. Context, slots, KV pool,
 completion, the pp512/tg128 reference and the retained JSON names are in
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
 [splash/BENCHMARKS.md](splash/BENCHMARKS.md),
@@ -237,25 +237,25 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 | --: | -- | -- | --: | --: | --: | -- | --: |
 | 1 | Splash `qwen3.8-flash-next-q2` (125B-A6B, GSQ-RCO Q2_0) | MoE | 262,144 | 31.65 | 32.27 @2x | 2x | 128.7 |
 | 2 | Splash `qwen3.8-flash-next-iq3s` (125B-A6B, GSQ-RCO IQ3_S) | MoE | 262,144 | 27.17 | 28.73 @2x | 2x | 118.3 |
-| 3 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 25.36 | 25.01 @4x | 1x | 86.9 |
+| 3 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 27.58 | 27.01 @2x | 1x | 84.4 |
 | 4 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
-| 5 | Ollama `muse-glimmer-30b-mlx` | dense | 131,072 | 20.79 | -- | 1x | 65.3 |
-| 6 | Splash `flint-gguf` (40B-A2.5B) | MoE | 262,144 | 17.19 | 19.49 @2x | 2x | 152.9 |
-| 7 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 11.88 | -- | 1x | 59.8 |
-| 8 | Splash `ornith1.5-122b` (122B-A10B) | MoE | 262,144 | 11.87 | 11.80 @2x | 1x | 73.5 |
-| 9 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
+| 5 | Splash `flint-gguf` (40B-A2.5B) | MoE | 262,144 | 17.19 | 19.49 @2x | 2x | 152.9 |
+| 6 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 12.79 | -- | 1x | 55.3 |
+| 7 | Splash `ornith1.5-122b` (122B-A10B) | MoE | 262,144 | 11.87 | 11.80 @2x | 1x | 73.5 |
+| 8 | vLLM-Metal `ornith1.5-35b-a3b-4bit` | MoE | 262,144 | 9.15 | 10.52 @4x, incomplete | 1x | 33.9 |
+| 9 | Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` (74B-A9B) | hybrid MoE | 262,144 | 9.09 | -- | 1x | 32.2 |
 | 10 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
 | 11 | Splash `bonsai2-27b-pq2` (ternary) | dense | 262,144 | 8.10 | 8.48 @2x | 2x | 58.3 |
 | 12 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 13 | Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` (74B-A9B) | hybrid MoE | 262,144 | 7.73 | -- | 1x | 31.7 |
-| 14 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.34 | -- | 1x | 22.2 |
-| 15 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
-| 16 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
-| 17 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.44 | -- | 1x | 6.0 |
+| 13 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.29 | -- | 1x | 22.3 |
+| 14 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 15 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
 
 Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
-and Ollama `nemotron-3.5-lightning-30b-mlx` fail Capability Check v2 audit
-fitness; their rates (Lightning 29.41/h at 262k) cannot promote them. The
+and Ollama `muse-glimmer-30b-mlx` (20.12/h at 131k) and
+`nanbeige4.3-33b-q4km` (1.47/h) fail Capability Check v2 audit fitness, and
+Ollama `nemotron-3.5-lightning-30b-mlx` (31.07/h at 262k) fails its tool
+loop; their rates cannot promote them. The
 LM Studio MLX-engine profiles pass but their runs are noncanonical by
 design (off-by-one token allowance). Details are in each runtime's
 BENCHMARKS.md.
@@ -283,7 +283,7 @@ the advisory schema check. Details are in
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6 (the 0.40.13
+Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6 (the 0.40.16
 default is not measured there). Details are
 in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 

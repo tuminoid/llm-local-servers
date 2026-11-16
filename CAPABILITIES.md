@@ -160,7 +160,7 @@ proves nothing about parser compatibility.
 - vLLM: `qwen3.6-35b-a3b-awq`, `qwen3.8-27b`, `qwen3.8-27b-dflash2`,
   `gemma4-26b-a4b-awq`, `qwen3.8-27b-512k`, `mimo-v2.6-9b-awq`
 - Ollama: `ornith1.5-35b-a3b`, `nemotron-3.5-bolt-74b-a9b-iq2`,
-  `flint-40b-a2b-nvfp4` (fails audit fitness)
+  `flint-40b-a2b-nvfp4`
 - Strata: `qwen3.8-flash-next-nvfp4`, `deepseek-v4.1-flash-coder-iq2xxs`
   and `deepseek-v4.1-flash-q2` (both fail audit fitness)
 
@@ -192,20 +192,15 @@ with at least 11 of 12 samples passed. Six groups differ:
 - The vLLM-Metal rows are the canonical runs of 2026-10-16 and 2026-10-17
   from fleet commit `2e990d6` on vLLM-Metal 0.31.0, under
   `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`.
-- The Glimmer, Super VL and Bolt rows ran on Ollama 0.40.13 on
-  2026-10-30/31 (llm-audit-bench 2.4.0) from a clean trial tree of its pin
-  (`18bf1a9`) and Bolt's on 2026-10-31 from its profile's trial commit
-  `14d6a7f`, under
-  `~/.local/state/auditbench/trials/2026-10-30-m5-night/ollama/`;
-  Lightning's row ran on 0.40.8 on 2026-10-23 from main `8cea7ce`, under
-  `~/.local/state/auditbench/trials/2026-10-23-ollama-0408-retest/results/`;
-  MiMo-V2.6-Flash's ran 2026-10-26 (llm-audit-bench 2.4.0) from its profile
-  commit `a414742` and Nanbeige's 2026-10-26 from `c57c223`, both on 0.40.8,
-  under `~/.local/state/auditbench/trials/2026-10-26-mimo-hunt/ollama/`.
+- The Ollama rows ran on Ollama 0.40.16 on 2026-11-15/16 (llm-audit-bench
+  2.5.0) from the clean trial commit `54822f2` (this pin with the same
+  profile files), under
+  `~/.local/state/auditbench/trials/2026-11-15-m5/ollama/`.
 - The ds4 row ran 2026-10-23 (llm-audit-bench 2.3.0) from fleet commit
   `3c3a5ab`, under `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
-- The Kapitsa row ran 2026-10-29 on Kapitsa 0.2.24 (llm-audit-bench 2.4.0)
-  from fleet commit `3526eac`, under `~/.local/state/capability-check/`.
+- The Kapitsa row ran 2026-11-15 on Kapitsa 0.2.36 (llm-audit-bench 2.5.0)
+  from the same trial commit, under
+  `~/.local/state/auditbench/trials/2026-11-15-m5/kapitsa/`.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Audit fitness (passed of 12) | Result |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -224,30 +219,36 @@ with at least 11 of 12 samples passed. Six groups differ:
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
 | vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
 | vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
-| Ollama | `mimo-v2.6-flash-q2ks` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: format 1) | pass |
-| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
-| Ollama | `nanbeige4.3-33b-q4km` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | pass 12/12 | pass |
-| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 2, leak 1, missed_findings 1) | fail |
+| Ollama | `mimo-v2.6-flash-q2ks` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 10/12 (failed: invented 2) | fail |
+| Ollama | `nanbeige4.3-33b-q4km` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | fail 9/12 (failed: incomplete 1, runaway 2) | fail |
+| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | fail | pass | valid | enforced | pass 11/12 (failed: invented 1) | fail |
 | Ollama | `nemotron-3.5-bolt-74b-a9b-q3kxl` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | ds4 | `qwen3.8-flash-next-q4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
-| Kapitsa | `clover-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | ignored | unsupported | pass 12/12 | pass |
+| Kapitsa | `clover-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | pass 12/12 | pass |
 
 Every checked row's live identity matched the revision or digest pinned
 in its model config.
 
 ### Findings
 
-- Twenty profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
+- Eighteen profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
   `qwen3.8-flash-next-iq3s`, `ornith1.5-122b` and `bonsai2-27b-pq2` (12 of 12
   each), `qwen3.8-27b` and `flint-gguf` (11 of 12 each), LM Studio
   `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12 each) and
   `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` (12 of 12),
   `granite4.2-30b-4bit` and `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama
-  `nemotron-3.5-super-mlx`, `nemotron-3.5-bolt-74b-a9b-q3kxl` and
-  `nanbeige4.3-33b-q4km` (12 of 12 each), `muse-glimmer-30b-mlx` and
-  `mimo-v2.6-flash-q2ks` (11 of 12 each), and ds4 `qwen3.8-flash-next-q4` and
-  Kapitsa `clover-35b-a3b` (12 of 12 each).
+  `nemotron-3.5-bolt-74b-a9b-q3kxl` and `mimo-v2.6-flash-q2ks` (12 of 12
+  each) and `nemotron-3.5-super-mlx` (11 of 12), and ds4
+  `qwen3.8-flash-next-q4` and Kapitsa `clover-35b-a3b` (12 of 12 each).
+- On Ollama 0.40.16 `muse-glimmer-30b-mlx` (10 of 12, two invented findings)
+  and `nanbeige4.3-33b-q4km` (9 of 12, two runaways and an incomplete
+  answer) fail audit fitness on this draw, after 11 and 12 of 12 on 0.40.13
+  and 0.40.8; both sit near the limit. `nemotron-3.5-lightning-30b-mlx`
+  passes audit fitness for the first time (11 of 12, after 8 of 12) but
+  fails the tool loop: its final answer wrote the status token with a
+  non-breaking hyphen (U+2011), which the check's exact match rejects.
 - `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the
@@ -271,12 +272,12 @@ in its model config.
   The row stays the stock-template campaign result until a campaign rerun.
 - Both LM Studio MLX rows ignore the schema, which no longer fails them
   (advisory since llm-audit-bench 2.3.0), and so does ds4, which has no
-  `response_format`. The Ollama MLX runner enforces it on 0.40.6, 0.40.8
-  and 0.40.13 for every profile checked; 0.32.14 ignored it, and an
+  `response_format`. The Ollama MLX runner enforces it on 0.40.6, 0.40.8,
+  0.40.13 and 0.40.16 for every profile checked; 0.32.14 ignored it, and an
   exploratory 0.40.5 Super VL run from an uncommitted tree ran away in
-  structural whitespace. Lightning fails audit fitness (8 of 12).
+  structural whitespace.
 - Ollama `nemotron-3.5-super-mlx` is the M5 route for Nemotron 3.5 Super VL
-  (11.88 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
+  (12.79 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
 - Two profiles were dropped for faster Splash ones: Ollama
   `flint-40b-a2b-qat-int4-mlx`, which also fails audit fitness on 0.40.13 (10
   of 12, two wrong triage verdicts), and vLLM-Metal
@@ -298,16 +299,14 @@ Host: shared A100 test host, reached over ssh through the `HOST` alias supplied
 by `.envrc`. Capability Check v2 (`capability-v2`, SCHEMA_VERSION 5),
 llm-audit-bench 2.1.0. The vLLM rows ran 2026-10-10/11 from fleet commit
 `ad06c70` on vLLM 0.31.0 with Transformers 5.15.1; reports under
-`auditbench-trials/2026-10-10-v2-canonical/` on the host. The Ollama rows ran
-2026-10-31/11-01 on Ollama 0.40.13 (llm-audit-bench 2.5.0) from commit
-`1d98099`; reports under `auditbench-trials/2026-11-01-a100/`. vLLM
+`auditbench-trials/2026-10-10-v2-canonical/` on the host. The Ollama and
+Strata rows ran 2026-11-15 on Ollama 0.40.16 and Strata 0.2.13
+(llm-audit-bench 2.5.0) from the clean trial commit `54822f2` (these pins
+with the same profile files); reports under
+`auditbench-trials/2026-11-15-a100/`. vLLM
 `nanbeige4.3-33b-w4a16` ran 2026-10-26 on llm-audit-bench 2.4.0 (SCHEMA_VERSION
 7) from `852441d`, its profile before a rebase, under
-`auditbench-trials/2026-10-26-nanbeige-hunt/`. Strata
-`qwen3.8-flash-next-nvfp4` ran 2026-11-04 on Strata 0.2.10 (llm-audit-bench
-2.5.0) from `9f94bad`, its report under `~/.local/state/capability-check/`
-on the host; the two DeepSeek rows ran 2026-11-05 from `7d3b5ff`, the
-same way. Audit fitness ran 4 samples per
+`auditbench-trials/2026-10-26-nanbeige-hunt/`. Audit fitness ran 4 samples per
 task at each conf's declared sampling and passes with at least 11 of 12 samples
 passed.
 
@@ -320,11 +319,11 @@ passed.
 | vLLM | `qwen3.8-27b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM | `qwen3.8-27b-512k` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM | `qwen3.8-27b-dflash2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| Ollama | `flint-40b-a2b-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: wrong_verdicts 2, tool_misuse 1) | fail |
+| Ollama | `flint-40b-a2b-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: leak 1) | pass |
 | Ollama | `nemotron-3.5-bolt-74b-a9b-iq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Strata | `deepseek-v4.1-flash-coder-iq2xxs` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: invented 1, no_reasoning 3) | fail |
-| Strata | `deepseek-v4.1-flash-q2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: no_reasoning 3) | fail |
+| Strata | `deepseek-v4.1-flash-q2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 8/12 (failed: no_reasoning 4) | fail |
 | Strata | `qwen3.8-flash-next-nvfp4` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 
 Every row's live identity matched the revision or digest pinned in its
@@ -332,24 +331,24 @@ model config.
 
 ### Findings
 
-- Nine profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
+- Ten profiles pass: vLLM `qwen3.6-35b-a3b-awq`, `qwen3.8-27b` (now the W4A16
   checkpoint), `qwen3.8-27b-dflash2`, `qwen3.8-27b-512k` (12 of 12 each),
   `gemma4-26b-a4b-awq` and `nanbeige4.3-33b-w4a16` (11 of 12 each), Ollama
-  `nemotron-3.5-bolt-74b-a9b-iq2` and `ornith1.5-35b-a3b` (12 of 12 each),
-  and Strata `qwen3.8-flash-next-nvfp4` (11 of 12). Ollama
+  `nemotron-3.5-bolt-74b-a9b-iq2` and `ornith1.5-35b-a3b` (12 of 12 each)
+  and `flint-40b-a2b-nvfp4` (11 of 12), and Strata
+  `qwen3.8-flash-next-nvfp4` (11 of 12). Ollama
   `qwen3.8-flash-next-gguf-iq4xs` passed 12 of 12 and was dropped on
   2026-11-04: Strata serves the model faster here; its row is in git
-  history. Ornith's row is its second
-  0.40.13 run; the first passed 10 of 12 (format 1, missed findings 1).
+  history. Ornith passed 10 and 12 of 12 on 0.40.13.
 - Both DeepSeek-V4.1-Flash sets fail on the audit's opening turn: the model
   answers it with a tool call and no thinking at the template's default
   effort, pruned or not, and `reasoning_effort` max only halved it in a
   replay ([strata/BENCHMARKS.md](strata/BENCHMARKS.md)). The Coder also
   invented a finding once. Both serve for interactive use.
 - `flint-40b-a2b-nvfp4` (Recursive's CUDA build, every layer on the GPU)
-  fails audit fitness twice on 0.40.13, 10 then 9 of 12, with reasoning
-  preserved as the card requires: wrong triage verdicts in both, plus a
-  missed finding and a tool misuse. Splash Flint GGUF passes on the M5.
+  passes on 0.40.16, 11 of 12 (one leak), after failing twice on 0.40.13,
+  10 then 9 of 12, with reasoning preserved as the card requires: wrong
+  triage verdicts in both, plus a missed finding and a tool misuse.
 - Audit fitness is what v1 could not see. MiMo (5 of 12 on 0.31.0: no
   reasoning, invented findings, wrong triage verdicts) passed every v1
   check and fails here. So did GLM 4.7 Flash (8 of 12 on vLLM, 7 on
