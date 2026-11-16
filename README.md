@@ -249,21 +249,23 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 | 12 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
 | 13 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.29 | -- | 1x | 22.3 |
 | 14 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
-| 15 | vLLM-Metal `gemma4-31b-4bit` | dense | 262,144 | 1.80 | 1.89 @2x | 2x | 2.8 |
 
-Unranked: the vLLM-Metal MiMo profile, LM Studio `qwen3.6-35b-a3b-splash`
-and Ollama `muse-glimmer-30b-mlx` (20.12/h at 131k) and
-`nanbeige4.3-33b-q4km` (1.47/h) fail Capability Check v2 audit fitness, and
-Ollama `nemotron-3.5-lightning-30b-mlx` (31.07/h at 262k) fails its tool
-loop; their rates cannot promote them. The
-LM Studio MLX-engine profiles pass but their runs are noncanonical by
-design (off-by-one token allowance). Details are in each runtime's
-BENCHMARKS.md.
+Unranked: LM Studio `qwen3.6-35b-a3b-splash`, Ollama `muse-glimmer-30b-mlx`
+(20.12/h at 131k) and `nanbeige4.3-33b-q4km` (1.47/h) fail Capability Check v2
+audit fitness, and Ollama `nemotron-3.5-lightning-30b-mlx` (31.07/h at 262k)
+fails its tool loop; their rates cannot promote them. The LM Studio MLX-engine
+profiles pass but their runs are noncanonical by design (off-by-one token
+allowance). Details are in each runtime's BENCHMARKS.md.
 
 #### Interactive use
 
 These profiles serve interactive agentic sessions and are not ranked for
 audits.
+
+Ollama `gemma4-26b-mlx` (Gemma 4 26B-A4B, MLX NVFP4, 262,144) passes
+Capability Check v2 12 of 12; a generic model, it serves interactive use
+(25.63 sessions/h in an unpublishable session run, one report recalling no
+findings). Details are in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
 Capability Check v2 and runs 10.00 sessions/h; Splash serves the same model for
