@@ -252,8 +252,7 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 
 Unranked: LM Studio `qwen3.6-35b-a3b-splash`, Ollama `muse-glimmer-30b-mlx`
 (20.12/h at 131k) and `nanbeige4.3-33b-q4km` (1.47/h) fail Capability Check v2
-audit fitness, and Ollama `nemotron-3.5-lightning-30b-mlx` (31.07/h at 262k)
-fails its tool loop; their rates cannot promote them. The LM Studio MLX-engine
+audit fitness; their rates cannot promote them. The LM Studio MLX-engine
 profiles pass but their runs are noncanonical by design (off-by-one token
 allowance). Details are in each runtime's BENCHMARKS.md.
 
@@ -266,6 +265,11 @@ Ollama `gemma4-26b-mlx` (Gemma 4 26B-A4B, MLX NVFP4, 262,144) passes
 Capability Check v2 12 of 12; a generic model, it serves interactive use
 (25.63 sessions/h in an unpublishable session run, one report recalling no
 findings). Details are in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+
+Ollama `nemotron-3.5-lightning-30b-mlx` (Nemotron 3.5 Lightning 30B-A3B, MLX
+NVFP4, 262,144) runs 31.07 sessions/h but passed audit fitness in 3 of 13
+Capability Check v2 runs, its 8-bit builds included, so it serves
+interactive use. Details are in [CAPABILITIES.md](CAPABILITIES.md).
 
 ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
 Capability Check v2 and runs 10.00 sessions/h; Splash serves the same model for
