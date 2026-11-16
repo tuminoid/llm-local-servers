@@ -5,7 +5,9 @@ Silicon. The cross-runtime summary is [../README.md](../README.md). The
 qwen3.6, qwen3.8 and nemotron profiles left this runtime on 2026-10-12
 (Splash serves both Qwen models on the M5 and passes the gate, Ollama MLX
 serves nemotron faster); their records are in this file at commit
-`a7e8f3f`.
+`a7e8f3f`. `ornith1.5-35b-a3b-4bit` left on 2026-11-16: Splash serves
+Ornith 1.5 35B at 30.72 sessions/h against its 9.15; its records are in
+this file at commit `3daa808`.
 
 The AuditBench v1 sections below (operating-point, conversation and
 replay profiles) are
@@ -36,7 +38,6 @@ trial-directory copies remain, and the figures stay here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| vLLM-Metal `ornith1.5-35b-a3b-4bit` | 262,144 | 5 | 1,398,101 | 1x 9.15 / 4x 10.52 | 7,042 | 883.0 | 33.9 | 11/15 | 2,966 / 98.3 | pass | yes, 1x | `20261016T180845.140792+0000_vllm-metal_ornith1-5-35b-a3b-4bit_session.json` |
 | vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 2.14 / 2x 3.18 | 17,456 | 330.0 | 10.5 | 9/9 | 759 / 30.9 | pass | yes | `20261016T205227.908811+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
 | vLLM-Metal `gemma4-31b-4bit` | 262,144 | 5 | 585,801 | 1x 1.80 / 2x 1.89 | 1,557 | 110.3 | 2.8 | 9/9 | 661 / 27.8 | pass | yes | `20261017T004920.426416+0000_vllm-metal_gemma4-31b-4bit_session.json` |
 | vLLM-Metal `mimo-v2.6-9b-4bit` | 262,144 | 5 | 1,378,992 | 1x 1.56 / 4x 2.25 | 43,097 | 891.7 | 16.9 | 0/15 | 2,429 / 69.0 | fail | no | `20261017T083034.292323+0000_vllm-metal_mimo-v2-6-9b-4bit_session.json` |
@@ -45,13 +46,6 @@ trial-directory copies remain, and the figures stay here and in git history.
   and are publishable but slow: granite 2.14 sessions/h (3.18 at two
   streams) with 17,456 output tokens per session at 131k, gemma4 1.80
   with 2.8 tok/s report decode at depth.
-- `ornith1.5-35b-a3b-4bit` passes Capability Check v2 at this pin (11 of
-  12 fitness samples, one selection runaway) and is the fastest profile at
-  9.15 sessions/h at one stream, its optimal operating point: 4 of its 12
-  four-stream reports hit the output cap or missed findings, so the 10.52
-  at four streams is not a serving rate. The JSON records `publishable:
-  false` under llm-audit-bench 2.2.0; under the 2.3.0 rule its complete 1x
-  leg publishes.
 - MiMo fails Capability Check v2 (tool arguments `{}`, 0 of 12 fitness
   samples) and completes no session: its reports run to the output cap.
 - The `ornith1.5-122b-a10b-4bit` profile (2.31 / 2.77 @4x sessions/h, 12
@@ -70,7 +64,6 @@ compliant samples; cached fraction from the engine's own counters.
 | Profile | Cache pin | Compliant | Conversations/hour | Cached | Recall |
 | -- | -- | -- | --: | --: | -- |
 | `gemma4-31b-4bit` | APC on | yes | 2.4 | 0.902 | 16/16 |
-| `ornith1.5-35b-a3b-4bit` | APC on | 1/2 | 7.6 | 0.896 | 16/16 |
 | `granite4.2-30b-4bit` (131k fixture) | APC on | no | -- | 0.525 | 2/9 files |
 | `mimo-v2.6-9b-4bit` | APC on | yes | 15.7 | 0.900 | 16/16 |
 
@@ -81,9 +74,6 @@ Findings:
   perfect recall on both samples.
 - gemma4 completes with perfect recall but at 1,500 s per conversation
   (decode-bound); it stays a capability point, not an audit choice.
-- ornith completes a conversation in 471 s with 89.6% cached and
-  perfect recall when it completes, but one of two samples stopped at
-  15/16 files, so the row stays unranked in the cross-runtime table.
 - granite stopped after one or two of its 131k fixture's nine files in
   both samples: not a conversation server on this host.
 
@@ -95,14 +85,11 @@ serving-default cache pins (align APC on the hybrids), repo commit
 dedicated server lifecycle per model. Replays/hour is never comparable
 to conversations/hour, and here it is not even comparable across
 models: granite, gemma4 and MiMo (two of three samples) filled the
-forced 16,384-token verdict (`finish_reason: length`) while ornith
-ignored the never-conclude control in both samples and stopped at 0.9k
-tokens, so its replays/h ride on about 18x less verdict decode. The
+forced 16,384-token verdict (`finish_reason: length`). The
 server-comparable columns are the turn walls and the verdict decode rate.
 
 | Profile | Replays/h | Turn walls (16 turns) | Cached | Verdict decode at ~164k depth |
 | -- | --: | -- | --: | -- |
-| `ornith1.5-35b-a3b-4bit` | 12.6* | 13.2 s cold, 6.1 -> 18.6 s | 0.897 | 0.9k tok @ 10.5 tok/s (stopped early) |
 | `granite4.2-30b-4bit` (131k fixture, 9 turns) | 0.95 | 58.8 s cold, 22.3 -> 38.9 s | 0.848 | 16,384 tok @ 4.7 tok/s (107k depth) |
 | `gemma4-31b-4bit` | 0.42 | 96.8 s cold, 40.5 -> 121.3 s | 0.902 | 16,384 tok @ 2.3 tok/s |
 | `mimo-v2.6-9b-4bit` | 3.28 | 17.5 s cold, 7.0 -> 17.6 s | 0.899 | 16,384 tok @ 18.2 tok/s (2 of 3 samples) |
@@ -113,11 +100,7 @@ server-comparable columns are the turn walls and the verdict decode rate.
   18.2 tok/s, so the harness extended to three samples and the median
   is the forced-decode case. Every sample was a cache hit on different
   blocks, and align mode resumes from the hit boundary, so greedy
-  decoding can flip at 164k depth; ornith's 931 vs 881 tokens is the
-  same effect.
-- ornith: 12.6 replays/h with turn walls of 6-19 s at 89.7% cached;
-  the verdict stopped at 0.9k tokens (never-conclude control ignored)
-  decoding at 10.5 tok/s at 165k depth.
+  decoding can flip at 164k depth.
 - granite: 0.95 replays/h on the 9-turn 131k fixture; 92% of the
   3,783 s wall is the forced verdict at 4.7 tok/s.
 - `gemma4-31b-4bit`: 8,497 s per replay, 85% of it the forced
@@ -133,7 +116,7 @@ Host: MacBook Pro `Mac17,6`, Apple M5 Max, 40 GPU cores, 128 GB unified
 memory, macOS 26.6.2 (25G83), on external power. Each table names its
 plugin pin.
 
-### ornith, granite, gemma4 -- AuditBench v1 canonical
+### granite, gemma4 -- AuditBench v1 canonical
 
 Plugin 0.29.0, repo commit `705c493`, serving-default cache pins,
 `max-num-seqs` 5, Dell brick at the 140 W contract, dedicated server
@@ -142,7 +125,6 @@ the best stream count.
 
 | Profile | Cache pin | Context | KV pool | Prefill 32k/64k/128k tok/s | Decode 1/2/4 tok/s | audit_32k /h | audit_half /h | audit_deep /h | Near-context proof |
 | -- | -- | --: | --: | --: | --: | --: | --: | --: | -- |
-| `ornith1.5-35b-a3b-4bit` | align APC, util 0.70 | 262,144 | 1,300,439 | 2,623 / 1,664 / 1,075 | 101.5 / 173.5 / 264.3 | 117.5 @4x | 19.0 | 9.9 @4x | 4 x 245,752 in 1,539.43s |
 | `granite4.2-30b-4bit` | APC, util 0.91 | 131,072 | 331,584 | 558 / 446 / - | 30.8 / 55.6 / 88.6 | 31.0 @2x | 13.8 (65k) | 9.3 @1x (114.7k) | 2 x 122,876 in 753.08s |
 | `gemma4-31b-4bit` | APC, util 0.91 | 262,144 | 617,308 | 355 / 243 / 148 | 26.6 / 47.9 / 72.0 | 17.3 @4x | 2.6 | 1.4 @2x | 2 x 245,774 in 5,601.60s |
 

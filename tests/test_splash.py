@@ -118,6 +118,16 @@ class SplashTest(unittest.TestCase):
             self.assertEqual(runtime.memory_limit(values), "80G")
         self.assertEqual(runtime.config("qwen3.6-35b-a3b")["SPLASH_MEMORY_GIB"], "64")
 
+    def test_language_only_reaches_the_installer(self):
+        with mock.patch.object(runtime, "draft_snapshot", return_value=Path("/draft")):
+            plain = runtime.config("qwen3.6-35b-a3b")
+            self.assertNotIn("--language-only", runtime.installer(plain, "link"))
+            text = runtime.config("ornith1.5-35b-a3b")
+            self.assertEqual(runtime.installer(text, "link")[-2:], ["--language-only", "link"])
+        with mock.patch.dict(os.environ, {"SPLASH_LANGUAGE_ONLY": "yes"}):
+            with self.assertRaisesRegex(ValueError, "SPLASH_LANGUAGE_ONLY"):
+                runtime.config("qwen3.6-35b-a3b")
+
     def test_bind_requires_auth_and_does_not_put_key_in_arguments(self):
         values = runtime.config("qwen3.6-35b-a3b")
         with mock.patch.dict(os.environ, {"SPLASH_HOST": "0.0.0.0", "SPLASH_API_KEY": ""}), \

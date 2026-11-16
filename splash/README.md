@@ -58,7 +58,8 @@ sources are checked against the config.
 
 Host settings can be exported or prefixed to `make`. Model facts live in
 `models/<name>.conf`: immutable target and draft revisions,
-262,144-token context, memory need, and capability expectations. `SPLASH_MODEL_CONF`
+262,144-token context, memory need, a text-only install for a target
+without a processor config, and capability expectations. `SPLASH_MODEL_CONF`
 can select an alternate config file. Environment values override config
 defaults. Carry `SPLASH_API_KEY` into status, benchmark and capability
 commands when authentication is enabled; the key is never put in argv

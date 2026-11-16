@@ -139,11 +139,11 @@ proves nothing about parser compatibility.
 ### Apple M5 Max
 
 - Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`, `qwen3.8-flash-next-q2`,
-  `qwen3.8-flash-next-iq3s`, `flint-gguf`, `ornith1.5-122b`, `bonsai2-27b-pq2`
+  `qwen3.8-flash-next-iq3s`, `flint-gguf`, `ornith1.5-122b`,
+  `ornith1.5-35b-a3b`, `bonsai2-27b-pq2`
 - LM Studio: `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash`,
   `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx`
-- vLLM-Metal: `gemma4-31b-4bit`, `granite4.2-30b-4bit`,
-  `ornith1.5-35b-a3b-4bit`, `mimo-v2.6-9b-4bit`
+- vLLM-Metal: `gemma4-31b-4bit`, `granite4.2-30b-4bit`, `mimo-v2.6-9b-4bit`
 - Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`,
   `nemotron-3.5-super-mlx`
 - Ollama GGUF: `nemotron-3.5-bolt-74b-a9b-q3kxl`, `mimo-v2.6-flash-q2ks`,
@@ -181,7 +181,9 @@ with at least 11 of 12 samples passed. Six groups differ:
   IQ3_S of 2026-10-30 from `d5c9a46`, under
   `~/.local/state/auditbench/trials/2026-10-30-m5-night/splash/`, and
   Flash-Next Q2_0 of 2026-10-31 from `a815828`, under
-  `.../2026-10-31-flash-next-q2-confirm/splash/`. On 1.3.2
+  `.../2026-10-31-flash-next-q2-confirm/splash/`, and Ornith 1.5 35B of
+  2026-11-15 (llm-audit-bench 2.5.0) from the trial commit `54822f2`, under
+  `.../2026-11-15-m5/splash/`. On 1.3.2
   a 2026-10-19 qwen3.6 run passed only 10 of 12, as did a 1.3.1 trial run
   and same-day 1.0 reruns (9 and 10): that profile sits at the fitness
   limit on every release.
@@ -207,6 +209,7 @@ with at least 11 of 12 samples passed. Six groups differ:
 | Splash | `bonsai2-27b-pq2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Splash | `flint-gguf` | pass | pass | unsupported | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: wrong_verdicts 1) | pass |
 | Splash | `ornith1.5-122b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
+| Splash | `ornith1.5-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | json only | enforced | pass 12/12 | pass |
 | Splash | `qwen3.8-flash-next-iq3s` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Splash | `qwen3.8-flash-next-q2` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Splash | `qwen3.6-35b-a3b` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
@@ -218,7 +221,6 @@ with at least 11 of 12 samples passed. Six groups differ:
 | vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
 | vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
-| vLLM-Metal | `ornith1.5-35b-a3b-4bit` | pass | pass | pass | pass | pass | pass | pass | ignored | enforced | pass 11/12 (failed: runaway 1) | pass |
 | Ollama | `mimo-v2.6-flash-q2ks` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 10/12 (failed: invented 2) | fail |
 | Ollama | `nanbeige4.3-33b-q4km` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | fail 9/12 (failed: incomplete 1, runaway 2) | fail |
@@ -234,14 +236,14 @@ in its model config.
 ### Findings
 
 - Eighteen profiles pass: Splash `qwen3.6-35b-a3b`, `qwen3.8-flash-next-q2`,
-  `qwen3.8-flash-next-iq3s`, `ornith1.5-122b` and `bonsai2-27b-pq2` (12 of 12
-  each), `qwen3.8-27b` and `flint-gguf` (11 of 12 each), LM Studio
-  `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12 each) and
-  `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` (12 of 12),
-  `granite4.2-30b-4bit` and `ornith1.5-35b-a3b-4bit` (11 of 12 each), Ollama
-  `nemotron-3.5-bolt-74b-a9b-q3kxl` and `mimo-v2.6-flash-q2ks` (12 of 12
-  each) and `nemotron-3.5-super-mlx` (11 of 12), and ds4
-  `qwen3.8-flash-next-q4` and Kapitsa `clover-35b-a3b` (12 of 12 each).
+  `qwen3.8-flash-next-iq3s`, `ornith1.5-122b`, `ornith1.5-35b-a3b` and
+  `bonsai2-27b-pq2` (12 of 12 each), `qwen3.8-27b` and `flint-gguf` (11 of 12
+  each), LM Studio `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12 each)
+  and `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` (12 of 12),
+  `granite4.2-30b-4bit` (11 of 12), Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` and
+  `mimo-v2.6-flash-q2ks` (12 of 12 each) and `nemotron-3.5-super-mlx` (11 of
+  12), and ds4 `qwen3.8-flash-next-q4` and Kapitsa `clover-35b-a3b` (12 of 12
+  each).
 - On Ollama 0.40.16 `muse-glimmer-30b-mlx` (10 of 12, two invented findings)
   and `nanbeige4.3-33b-q4km` (9 of 12, two runaways and an incomplete
   answer) fail audit fitness on this draw, after 11 and 12 of 12 on 0.40.13
@@ -253,12 +255,6 @@ in its model config.
   whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
   does). On 2026-09-27 the check hit the 600 s request timeout in the
   whitespace runaway.
-- `ornith1.5-35b-a3b-4bit` passes 11 of 12 on 0.31.0 (one selection
-  runaway), after 10 of 12 on 0.30.0 (2026-10-12) and 11 on 2026-09-27: it
-  sits at the fitness limit. vLLM-Metal replays its sampled draws after a
-  restart, so a rerun is not a second result. An exploratory 0.30.0 run at
-  12 samples per task passed 31 of 36 (86%, against the gate's 11 of 12):
-  all five failures were selection samples (3 runaways, 2 invented).
 - MiMo on vLLM-Metal 0.31.0 fails both tool calls with arguments `{}` and
   passes 0 of 12 fitness samples (10 without reasoning). The tool-call
   regression against 0.30.0 is in what the model generates, not in
@@ -278,10 +274,14 @@ in its model config.
   structural whitespace.
 - Ollama `nemotron-3.5-super-mlx` is the M5 route for Nemotron 3.5 Super VL
   (12.79 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).
-- Two profiles were dropped for faster Splash ones: Ollama
+- Three profiles were dropped for faster Splash ones: Ollama
   `flint-40b-a2b-qat-int4-mlx`, which also fails audit fitness on 0.40.13 (10
   of 12, two wrong triage verdicts), and vLLM-Metal
-  `ornith1.5-122b-a10b-4bit` (12 of 12). Their rows are in git history.
+  `ornith1.5-122b-a10b-4bit` (12 of 12) and `ornith1.5-35b-a3b-4bit` (11 of
+  12 on 0.31.0, at the fitness limit). Their rows are in git history.
+- Splash `ornith1.5-35b-a3b` returns a parseable unaided document that
+  violates the schema (`json_only`); the check records it and never gates
+  on it.
 - LM Studio `qwen3.6-35b-a3b-splash` sits at the fitness limit: two draws
   on 2026-10-12 passed 11 and 9 of 12, after 9 on 2026-09-28. The row is
   the later draw; two of the three draws fail. Splash 1.0's own server
