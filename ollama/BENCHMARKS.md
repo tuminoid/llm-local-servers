@@ -151,6 +151,17 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   Dense 33B decode on the M5 is slow: 16.9 falling to 6.3 tok/s through a
   session, and the 245,755-token cold prefill takes 2,750 s (89 tok/s). The
   A100 serves it on vLLM at 7.19 sessions/h.
+- `gemma4-26b-mlx` (Gemma 4 26B-A4B, the registry's NVFP4 safetensors on
+  the MLX runner) is an interactive profile and has no row. On Apple Silicon
+  the plain `gemma4:26b` and `gemma4:31b` tags resolve to these NVFP4 builds,
+  not the Q4_K_M GGUFs, so the conf pins the explicit `-nvfp4` tag. It
+  passes Capability Check v2 12 of 12; its canonical session ran 25.63
+  sessions/h (1,723 output tokens per session, 35.0 tok/s report decode) but
+  one of three reports recalled no findings, so the run is unpublishable:
+  `20261116T081609.374316+0000_ollama_gemma4-26b-mlx_session.json`, from the
+  trial commit `6a91a36`. Gemma 4 31B on the same runner passed 12 of 12 but
+  at 262,144 its unquantized KV took the M5 from 81 to 9.8 GiB available in
+  the 245,759-token near-context prefill, and it has no profile.
 - `nemotron-3.5-super-mlx` (Nemotron 3.5 Super VL 120B-A12B, NVFP4) holds
   74.41 GiB on the GPU at 524,288 and prefills a 491,526-token cold prompt
   in 806 s (610 tok/s); at that depth available memory falls to about

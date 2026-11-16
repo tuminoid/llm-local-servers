@@ -132,8 +132,9 @@ separate state pools (42,838 B/token on the since-dropped qwen3.6
 profile).
 
 The history below was measured mostly on the qwen3.6, qwen3.8 and
-nemotron profiles dropped from this runtime on 2026-10-12; the confs and
-BENCHMARKS.md tables it cites are at `a7e8f3f`.
+nemotron profiles dropped from this runtime on 2026-10-12, whose confs and
+BENCHMARKS.md tables are at `a7e8f3f`, and on the ornith, gemma4 and MiMo
+profiles dropped on 2026-11-16, at `3daa808`.
 
 Correctness was gated on 2026-08-24 with divergent conversations sharing
 a 15k-token prefix at temperature 0: cold compute and cache-hit compute

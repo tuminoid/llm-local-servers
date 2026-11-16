@@ -143,9 +143,9 @@ proves nothing about parser compatibility.
   `ornith1.5-35b-a3b`, `bonsai2-27b-pq2`
 - LM Studio: `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash`,
   `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx`
-- vLLM-Metal: `gemma4-31b-4bit`, `granite4.2-30b-4bit`, `mimo-v2.6-9b-4bit`
+- vLLM-Metal: `granite4.2-30b-4bit`
 - Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`,
-  `nemotron-3.5-super-mlx`
+  `nemotron-3.5-super-mlx`, `gemma4-26b-mlx` (interactive)
 - Ollama GGUF: `nemotron-3.5-bolt-74b-a9b-q3kxl`, `mimo-v2.6-flash-q2ks`,
   `nanbeige4.3-33b-q4km`
 - ds4: `qwen3.8-flash-next-q4`
@@ -196,7 +196,8 @@ with at least 11 of 12 samples passed. Six groups differ:
   `~/.local/state/auditbench/trials/2026-10-16-m5-canonical/results/`.
 - The Ollama rows ran on Ollama 0.40.16 on 2026-11-15/16 (llm-audit-bench
   2.5.0) from the clean trial commit `54822f2` (this pin with the same
-  profile files), under
+  profile files), and Gemma 4 26B-A4B's on 2026-11-16 from the trial
+  commit `6a91a36`, under
   `~/.local/state/auditbench/trials/2026-11-15-m5/ollama/`.
 - The ds4 row ran 2026-10-23 (llm-audit-bench 2.3.0) from fleet commit
   `3c3a5ab`, under `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
@@ -218,9 +219,8 @@ with at least 11 of 12 samples passed. Six groups differ:
 | LM Studio | `qwen3.6-35b-a3b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: instruction 1, missed_findings 1, runaway 1) | fail |
 | LM Studio | `qwen3.8-27b-mlx` | pass | pass | unsupported | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
 | LM Studio | `qwen3.8-27b-splash` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
-| vLLM-Metal | `gemma4-31b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | vLLM-Metal | `granite4.2-30b-4bit` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: runaway 1) | pass |
-| vLLM-Metal | `mimo-v2.6-9b-4bit` | pass | pass | pass | fail | fail | skipped | pass | valid | enforced | fail 0/12 (failed: no_reasoning 10, runaway 2) | fail |
+| Ollama | `gemma4-26b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | whitespace runaway | pass 12/12 | pass |
 | Ollama | `mimo-v2.6-flash-q2ks` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 10/12 (failed: invented 2) | fail |
 | Ollama | `nanbeige4.3-33b-q4km` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | fail 9/12 (failed: incomplete 1, runaway 2) | fail |
@@ -239,9 +239,9 @@ in its model config.
   `qwen3.8-flash-next-iq3s`, `ornith1.5-122b`, `ornith1.5-35b-a3b` and
   `bonsai2-27b-pq2` (12 of 12 each), `qwen3.8-27b` and `flint-gguf` (11 of 12
   each), LM Studio `qwen3.8-27b-splash` and `qwen3.8-27b-mlx` (12 of 12 each)
-  and `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `gemma4-31b-4bit` (12 of 12),
-  `granite4.2-30b-4bit` (11 of 12), Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` and
-  `mimo-v2.6-flash-q2ks` (12 of 12 each) and `nemotron-3.5-super-mlx` (11 of
+  and `qwen3.6-35b-a3b-mlx` (11 of 12), vLLM-Metal `granite4.2-30b-4bit` (11
+  of 12), Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl`, `mimo-v2.6-flash-q2ks` and
+  `gemma4-26b-mlx` (12 of 12 each) and `nemotron-3.5-super-mlx` (11 of
   12), and ds4 `qwen3.8-flash-next-q4` and Kapitsa `clover-35b-a3b` (12 of 12
   each).
 - On Ollama 0.40.16 `muse-glimmer-30b-mlx` (10 of 12, two invented findings)
@@ -251,26 +251,21 @@ in its model config.
   passes audit fitness for the first time (11 of 12, after 8 of 12) but
   fails the tool loop: its final answer wrote the status token with a
   non-breaking hyphen (U+2011), which the check's exact match rejects.
-- `gemma4-31b-4bit` now enforces the schema: its conf forbids grammar
-  whitespace (xgrammar `disable_any_whitespace`, as the A100 Gemma 4 conf
-  does). On 2026-09-27 the check hit the 600 s request timeout in the
-  whitespace runaway.
-- MiMo on vLLM-Metal 0.31.0 fails both tool calls with arguments `{}` and
-  passes 0 of 12 fitness samples (10 without reasoning). The tool-call
-  regression against 0.30.0 is in what the model generates, not in
-  parsing: the prompt tokens are identical and greedy decoding diverges
-  right after `<function=lookup_issue>`, where 0.31.0 writes a JSON body
-  that the `qwen3_xml` parser does not read instead of
-  `<parameter=issue_number>`. Retest on the next plugin or mlx-lm bump.
-  Its conf now declares the fixed chat template and preserved reasoning;
-  exploratory runs on that configuration (2026-10-26) passed 3 and 4 of
-  12 with no sample lacking reasoning, and both tool calls still got `{}`.
-  The row stays the stock-template campaign result until a campaign rerun.
+- Ollama `gemma4-26b-mlx` passes but serves interactive use, not audits: a
+  generic model, and one of its three canonical sessions recalled no
+  findings in its report (25.63 sessions/h, unpublishable,
+  [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)). Its schema request runs away
+  in structural whitespace on the MLX runner. Gemma 4 31B on the same
+  runner passed 12 of 12 but cannot hold 262,144 on the M5, and vLLM-Metal
+  `gemma4-31b-4bit` (12 of 12, 1.89 sessions/h) was dropped with it.
+- vLLM-Metal `mimo-v2.6-9b-4bit` was dropped on 2026-11-16: it failed both
+  tool calls with arguments `{}` and passed 0 of 12 fitness samples on
+  0.31.0. Its row is in git history.
 - Both LM Studio MLX rows ignore the schema, which no longer fails them
   (advisory since llm-audit-bench 2.3.0), and so does ds4, which has no
   `response_format`. The Ollama MLX runner enforces it on 0.40.6, 0.40.8,
-  0.40.13 and 0.40.16 for every profile checked; 0.32.14 ignored it, and an
-  exploratory 0.40.5 Super VL run from an uncommitted tree ran away in
+  0.40.13 and 0.40.16 for every profile checked but Gemma 4; 0.32.14 ignored it,
+  and an exploratory 0.40.5 Super VL run from an uncommitted tree ran away in
   structural whitespace.
 - Ollama `nemotron-3.5-super-mlx` is the M5 route for Nemotron 3.5 Super VL
   (12.79 sessions/h at 524,288, [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md)).

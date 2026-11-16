@@ -8,6 +8,14 @@
         "baseURL": "http://127.0.0.1:11434/v1"
       },
       "models": {
+        "gemma4:26b-nvfp4": {
+          "name": "Gemma4 26B MLX",
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
+          }
+        },
         "muse-glimmer:30b-mlx": {
           "name": "Muse Glimmer 30B MLX",
           "tool_call": true,
