@@ -25,10 +25,10 @@ Hybrid GDN layers do not use it, so Qwen3.x-class hybrids gain little.
 
 ```bash
 make vllm-metal-install                        # pinned venv (one time)
-make vllm-metal-pull  MODEL=ornith1.5-35b-a3b-4bit   # pinned model revision
-make vllm-metal-start MODEL=ornith1.5-35b-a3b-4bit
+make vllm-metal-pull  MODEL=granite4.2-30b-4bit   # pinned model revision
+make vllm-metal-start MODEL=granite4.2-30b-4bit
 make vllm-metal-status
-make vllm-metal-bench MODEL=ornith1.5-35b-a3b-4bit
+make vllm-metal-bench MODEL=granite4.2-30b-4bit
 make vllm-metal-stop
 ```
 
@@ -116,7 +116,7 @@ runtime (Splash serves both models on the M5). The environment override
 below still wins.
 
 ```bash
-VLLM_PREFIX_CACHING=1 make vllm-metal-start MODEL=ornith1.5-35b-a3b-4bit
+VLLM_PREFIX_CACHING=1 make vllm-metal-start MODEL=granite4.2-30b-4bit
 ```
 
 For hybrid GDN models the opt-in carries GDN state in the pool. Align mode
@@ -125,8 +125,9 @@ state slab besides its KV pages; the conf declares the effective figure as
 `VLLM_KV_BYTES_PER_TOKEN_APC` and the launcher's utilization inversion uses
 it, so the full-native-sequence budget stays honest. Since plugin 0.30.0
 KV and state share one cache, and the figure is the planner's backing over
-its pool: for ornith1.5-35b-a3b-4bit 21,038 B/token against 20,480 plain,
-which plans a 1,403,241-token pool (5.35x admission). Plugin 0.29.0 kept
+its pool: for the since-dropped ornith1.5-35b-a3b-4bit 21,038 B/token
+against 20,480 plain, which planned a 1,403,241-token pool (5.35x
+admission). Plugin 0.29.0 kept
 separate state pools (42,838 B/token on the since-dropped qwen3.6
 profile).
 

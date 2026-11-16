@@ -40,7 +40,10 @@ CONFIG_KEYS = tuple("SPLASH_" + name for name in (
 ))
 # Keys a conf may omit, with their defaults. SPLASH_MEMORY_GIB is the model's
 # memory need: weights, draft and four full-context KV streams.
-OPTIONAL_KEYS = {"SPLASH_PRESERVE_REASONING": "0", "SPLASH_MEMORY_GIB": "64"}
+# SPLASH_LANGUAGE_ONLY=1 installs a target that ships no processor config
+# text-only (the installer's --language-only).
+OPTIONAL_KEYS = {"SPLASH_PRESERVE_REASONING": "0", "SPLASH_MEMORY_GIB": "64",
+                 "SPLASH_LANGUAGE_ONLY": "0"}
 # Unified memory left to the host when a need above 64 GiB is granted: at
 # 98 GiB of 128 an 84 GB model left 14 GiB available at four streams, at
 # 105 GiB only 12.
@@ -85,6 +88,8 @@ def config(tag):
             raise ValueError(f"{key} must be an immutable commit")
     if not values["SPLASH_MEMORY_GIB"].isdigit() or int(values["SPLASH_MEMORY_GIB"]) <= 0:
         raise ValueError("SPLASH_MEMORY_GIB must be a positive whole number of GiB")
+    if values["SPLASH_LANGUAGE_ONLY"] not in ("0", "1"):
+        raise ValueError("SPLASH_LANGUAGE_ONLY must be 0 or 1")
     if int(values["SPLASH_MAX_LEN"]) <= 0:
         raise ValueError("SPLASH_MAX_LEN must be positive")
     return values
@@ -107,7 +112,8 @@ def installer(values, *command):
     default branch, so the draft is passed as its pinned snapshot directory."""
     return [str(PYTHON), "-m", "install.models", "--models", str(DATA / "models"),
             "--model", values["SPLASH_MODEL_REPO"], "--revision", values["SPLASH_MODEL_REVISION"],
-            "--draft-model", str(draft_snapshot(values)), *command]
+            "--draft-model", str(draft_snapshot(values)),
+            *(["--language-only"] if values["SPLASH_LANGUAGE_ONLY"] == "1" else []), *command]
 
 
 def model_path(values):

@@ -131,11 +131,11 @@ Serving measurements follow
 ```bash
 make lint
 make vllm-metal-install
-make vllm-metal-pull  MODEL=ornith1.5-35b-a3b-4bit
-make vllm-metal-start MODEL=ornith1.5-35b-a3b-4bit
+make vllm-metal-pull  MODEL=granite4.2-30b-4bit
+make vllm-metal-start MODEL=granite4.2-30b-4bit
 make vllm-metal-status      # host line, KV sizing, NAX evidence
-make vllm-metal-capability MODEL=ornith1.5-35b-a3b-4bit
-make vllm-metal-bench MODEL=ornith1.5-35b-a3b-4bit
+make vllm-metal-capability MODEL=granite4.2-30b-4bit
+make vllm-metal-bench MODEL=granite4.2-30b-4bit
 make vllm-metal-stop        # must report the process group empty
 ```
 

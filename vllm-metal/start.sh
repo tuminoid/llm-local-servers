@@ -48,7 +48,7 @@ VLLM_HF_OVERRIDES="${VLLM_HF_OVERRIDES:-}"
 VLLM_STRUCTURED_OUTPUTS_CONFIG="${VLLM_STRUCTURED_OUTPUTS_CONFIG:-}"
 VLLM_CHAT_TEMPLATE="${VLLM_CHAT_TEMPLATE:-}"
 
-# shellcheck source=models/ornith1.5-35b-a3b-4bit.conf disable=SC1091
+# shellcheck source=models/granite4.2-30b-4bit.conf disable=SC1091
 source "${CONF_FILE}"
 
 for var in VLLM_MODEL_REPO VLLM_MODEL_REVISION VLLM_SERVED_NAME VLLM_MAX_LEN; do
@@ -136,7 +136,7 @@ fi
 # KV-expensive one lands back on the cap. Verified against the planner on
 # the since-dropped profiles: qwen3.6-35b-a3b-4bit (align APC, plugin
 # 0.30.0) computed 0.46 -> 1,403,241-token pool >= 5 x 262,144, the pool
-# ornith1.5-35b-a3b-4bit plans too, while qwen3.8-27b-4bit computed past
+# ornith1.5-35b-a3b-4bit planned too, while qwen3.8-27b-4bit computed past
 # the cap and kept 0.91.
 if [[ -z "${VLLM_GPU_UTIL:-}" && -n "${VLLM_KV_BYTES_PER_TOKEN}" ]]; then
     # Align-mode prefix caching makes every pool block carry GDN state
