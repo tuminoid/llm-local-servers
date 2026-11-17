@@ -144,8 +144,8 @@ proves nothing about parser compatibility.
 - LM Studio: `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash`,
   `qwen3.6-35b-a3b-mlx`, `qwen3.8-27b-mlx`
 - vLLM-Metal: `granite4.2-30b-4bit`
-- Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`,
-  `nemotron-3.5-super-mlx`, `gemma4-26b-mlx` (interactive)
+- Ollama MLX: `muse-glimmer-30b-mlx`, `nemotron-3.5-lightning-30b-mlx`
+  (interactive), `nemotron-3.5-super-mlx`, `gemma4-26b-mlx` (interactive)
 - Ollama GGUF: `nemotron-3.5-bolt-74b-a9b-q3kxl`, `mimo-v2.6-flash-q2ks`,
   `nanbeige4.3-33b-q4km`
 - ds4: `qwen3.8-flash-next-q4`
@@ -224,7 +224,7 @@ with at least 11 of 12 samples passed. Six groups differ:
 | Ollama | `mimo-v2.6-flash-q2ks` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `muse-glimmer-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 10/12 (failed: invented 2) | fail |
 | Ollama | `nanbeige4.3-33b-q4km` | pass | pass | pass | pass | pass | pass | pass | valid | unsupported | fail 9/12 (failed: incomplete 1, runaway 2) | fail |
-| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | fail | pass | valid | enforced | pass 11/12 (failed: invented 1) | fail |
+| Ollama | `nemotron-3.5-lightning-30b-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | fail 9/12 (failed: invented 1, missed_findings 1, leak 1) | fail |
 | Ollama | `nemotron-3.5-bolt-74b-a9b-q3kxl` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 12/12 | pass |
 | Ollama | `nemotron-3.5-super-mlx` | pass | pass | pass | pass | pass | pass | pass | valid | enforced | pass 11/12 (failed: invented 1) | pass |
 | ds4 | `qwen3.8-flash-next-q4` | pass | pass | pass | pass | pass | pass | pass | valid | ignored | pass 12/12 | pass |
@@ -247,10 +247,17 @@ in its model config.
 - On Ollama 0.40.16 `muse-glimmer-30b-mlx` (10 of 12, two invented findings)
   and `nanbeige4.3-33b-q4km` (9 of 12, two runaways and an incomplete
   answer) fail audit fitness on this draw, after 11 and 12 of 12 on 0.40.13
-  and 0.40.8; both sit near the limit. `nemotron-3.5-lightning-30b-mlx`
-  passes audit fitness for the first time (11 of 12, after 8 of 12) but
-  fails the tool loop: its final answer wrote the status token with a
-  non-breaking hyphen (U+2011), which the check's exact match rejects.
+  and 0.40.8; both sit near the limit.
+- Ollama `nemotron-3.5-lightning-30b-mlx` fails and serves interactive use.
+  On 2026-11-15 it passed audit fitness 11 of 12 but failed the tool loop on
+  a typeset hyphen in the status token, which llm-audit-bench now accepts.
+  Rerun under that harness from main `6ecbf41` on 2026-11-16, it passed 1 of
+  6 runs (fitness 9, 11, 10, 9, 7 and 9 of 12; the row is the last). The
+  workflow task's planted admin export goes unreported and the selection
+  task invents docs paths. The registry's mxfp8 (MLX) and q8_0 (GGUF,
+  f16 KV) builds of the same weights passed 1 of 3 and 0 of 3, so neither
+  quantization nor runner is the cause. Evidence:
+  `~/.local/state/auditbench/trials/2026-11-16-lightning/`.
 - Ollama `gemma4-26b-mlx` passes but serves interactive use, not audits: a
   generic model, and one of its three canonical sessions recalled no
   findings in its report (25.63 sessions/h, unpublishable,

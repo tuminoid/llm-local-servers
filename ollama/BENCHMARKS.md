@@ -101,10 +101,10 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   findings) and Nanbeige (9 of 12, two runaways and an incomplete answer)
   fail audit fitness on this draw after passing on 0.40.13 and 0.40.8; both
   sit near the limit, and the gate's failure limit is two samples.
-  Lightning passes audit fitness (11 of 12, after 8 of 12 on 0.40.6 and
-  0.40.8) but fails the tool loop: its final answer wrote the status token
-  with a non-breaking hyphen (U+2011), which the check's exact match
-  rejects. Its 31.07 sessions/h still cannot promote it.
+  Lightning failed the tool loop on a typeset hyphen; rerun under the
+  fixed harness it fails audit fitness in most runs, at 8-bit as well, and
+  serves interactive use (see its conf and CAPABILITIES.md). Its 31.07
+  sessions/h cannot promote it.
 - Against 0.40.13: Glimmer 20.79 to 20.12, Super VL 11.88 to 12.79 and Bolt
   7.73 to 9.09. Against 0.40.8: Lightning 29.41 to 31.07, MiMo-V2.6-Flash
   5.34 to 5.29 and Nanbeige 1.44 to 1.47. Lightning's 21.12 on 0.32.14 was
