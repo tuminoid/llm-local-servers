@@ -9,13 +9,13 @@ is tuned for is deep-context security-audit calls; [AGENTS.md](AGENTS.md)
 states the mission and the invariants.
 
 Each host keeps the best provider per model: one runtime, chosen by
-Capability Check v2 and then the AuditBench session rate. LM Studio is kept
+Capability Check v3 and then the AuditBench session rate. LM Studio is kept
 beside it as the entry-level option, since it installs cleanly on every
 platform.
 
-Serving performance is measured with AuditBench v2, and API compatibility
-and audit fitness are gated with Capability Check v2. Both
-live in the sibling [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
+Serving performance is measured with AuditBench v2, and engine and model
+compatibility (API semantics and clean audit-shaped work) is gated with
+Capability Check v3. Both live in the sibling [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 repository (`docs/PROTOCOL.md` and `docs/CAPABILITY.md` are the
 canonical protocol documents); this repository holds the runtime
 adapters, model configs, and results.
@@ -62,7 +62,7 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-status` | Process, memory split, context allocation, KV sizing |
 | `make <runtime>-logs` | Follow the server log |
 | `make <runtime>-bench MODEL=<name>` | Run AuditBench v2 |
-| `make <runtime>-capability MODEL=<name>` | Run Capability Check v2 |
+| `make <runtime>-capability MODEL=<name>` | Run Capability Check v3 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, `lmstudio`,
 `ds4`, `kapitsa` or `strata` (plus `ollama-install`, `vllm-metal-install`,

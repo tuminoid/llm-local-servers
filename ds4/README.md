@@ -31,7 +31,7 @@ make ds4-stop
 `ds4-install` clones ds4 into `~/.local/share/ds4/src/<commit>` and builds
 it with the Xcode command-line tools. Point `DS4_SRC` at another checkout
 of the pinned commit to build there instead; it must be clean.
-`make ds4-capability` runs Capability Check v2. `make ds4-bench` exists for
+`make ds4-capability` runs the Capability Check. `make ds4-bench` exists for
 diagnosis only.
 
 From opencode, use the `ds4` provider in

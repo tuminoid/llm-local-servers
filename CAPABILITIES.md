@@ -1,18 +1,15 @@
 # Capability Check results
 
-Capability Check is the pass/fail gate for models in the serving inventory.
-Its API checks prove the response semantics coding agents need; since v2 its
-audit fitness check also proves the model finishes audit-shaped work at its
-declared sampling. AuditBench
-separately measures serving performance and capacity. The protocol -- fixed
-checks, model expectations, and the mapping from the retained JSON report to
-the tables below -- is defined in
+Capability Check is the gate for models in the serving inventory. Its
+verdict is the compatibility of the engine and model combination: the
+response semantics agents need, and audit-shaped work finished without engine
+failures at the declared sampling. Audit aptitude is scored beside it, never
+a verdict. AuditBench separately measures serving performance and
+capacity. The protocol -- fixed checks, model expectations, and the mapping
+from the retained JSON report to the tables below -- is defined in
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 (`docs/CAPABILITY.md`); this file holds the fleet's campaign inventory and
 retained results.
-
-Every host table is a Capability Check v2 campaign. A v1 pass is not a v2
-pass: re-check a model at v2 before promoting it.
 
 Capability results never rank model quality or serving performance.
 
@@ -36,11 +33,16 @@ Check pass. `uv run capability-check --list` (in the llm-audit-bench
 checkout) names every retained report and
 `uv run capability-check --show FILE` re-prints one.
 
-Audit fitness samples at the model config's `<PREFIX>_SAMPLING`, so the
-config must declare it. A check takes about 10 to 80 minutes per model on
-the M5, most of it the selection task; `CAPABILITY_FITNESS_SAMPLES=0` makes
-an API-only run, which cannot promote a model. A v2 host row adds the audit
-fitness column from `checks.audit_fitness.status`.
+Fitness samples at the model config's `<PREFIX>_SAMPLING`, so the config
+must declare it.
+`CAPABILITY_FITNESS_SAMPLES=0` makes an API-only run, which cannot promote a
+model. `CAPABILITY_TIME_LIMIT=<minutes>` stops starting samples on a slow
+host; the report keeps what ran and, unless a check already failed, reads
+`undecided`, as does a local run stopped with one SIGINT or SIGTERM (a
+second aborts it). Remote targets run over ssh without a tty, so a Ctrl-C
+there leaves the remote check running: bound remote runs with the time
+limit, or stop the process on the host. A host row follows the protocol
+document's projection table.
 
 Local lifecycle:
 
@@ -122,10 +124,10 @@ automatic when it is provably safe.
 
 ### Promotion rule
 
-A model intended for agent workloads must pass identity, streaming, the
-non-streaming and streaming tool calls, tool round trip, structured JSON, and
-audit fitness at the default sample count.
-Its reasoning result must match the model-config expectation. A throughput
+A model intended for agent workloads is promoted by the protocol
+document's promotion rule: compatibility `passed`, never `undecided`, at the
+default sample count, with tools declared in its model config. Its
+reasoning result must match the model-config expectation. A throughput
 result cannot override a capability failure.
 
 Both tool-call checks offer the tools with automatic choice, so they exercise

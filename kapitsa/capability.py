@@ -1,4 +1,4 @@
-"""Capability Check v2 against the owned, pinned Kapitsa server."""
+"""Capability Check against the owned, pinned Kapitsa server."""
 
 import os
 import sys

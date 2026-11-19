@@ -1,4 +1,4 @@
-"""Capability Check v2 against the owned, pinned Splash server."""
+"""Capability Check against the owned, pinned Splash server."""
 
 import os
 import sys
