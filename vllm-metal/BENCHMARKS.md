@@ -8,8 +8,8 @@ serves nemotron faster); their records are in this file at commit
 `a7e8f3f`. `ornith1.5-35b-a3b-4bit` left on 2026-11-16 (Splash serves
 Ornith 1.5 35B at 30.72 sessions/h against its 9.15), and so did
 `gemma4-31b-4bit` (1.89 sessions/h; Gemma 4 stays on the M5 as Ollama's
-interactive 26B-A4B MLX profile) and `mimo-v2.6-9b-4bit` (fails Capability
-Check v2); their records are in this file at commit `3daa808`.
+interactive 26B-A4B MLX profile) and `mimo-v2.6-9b-4bit` (both tool calls
+failed); their records are in this file at commit `3daa808`.
 
 The AuditBench v1 sections below (operating-point, conversation and
 replay profiles) are
@@ -38,19 +38,20 @@ section of this file is AuditBench v1 or older, never comparable with v2.
 Their top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
 trial-directory copies remain, and the figures stay here and in git history.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 2.14 / 2x 3.18 | 17,456 | 330.0 | 10.5 | 9/9 | 759 / 30.9 | pass | yes | `20261016T205227.908811+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
 
-- `granite4.2-30b-4bit` passes Capability Check v2 and is publishable but
+- `granite4.2-30b-4bit` passes Capability Check v3 (36 of 36 clean,
+  2026-11-19) and is publishable but
   slow: 2.14 sessions/h (3.18 at two streams) with 17,456 output tokens per
   session at 131k. It stays on this runtime as the proof that the plugin
-  path works: on Ollama 0.40.16 it passes Capability Check v2 12 of 12, but
+  path works: on Ollama 0.40.16 its capability check passed, but
   its session fails on an intermittent stream that ends without a usage
   chunk or `[DONE]` (2026-11-15/16). Retest on the next Ollama release.
-- The `ornith1.5-122b-a10b-4bit` profile (2.31 / 2.77 @4x sessions/h, 12
-  of 12 fitness, an interactive profile) was dropped: Splash serves Ornith
-  1.5 122B at 11.87 sessions/h. Its row is in git history.
+- The `ornith1.5-122b-a10b-4bit` profile (2.31 / 2.77 @4x sessions/h, an
+  interactive profile) was dropped for Splash's Ornith 1.5 122B (11.87
+  sessions/h), which fails Capability Check v3. Its row is in git history.
 
 ## Audit conversation profile
 

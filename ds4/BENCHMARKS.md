@@ -17,7 +17,7 @@ complete counts sessions whose report ended on its own and named at least
 7/8 of its findings. Retained under
 `~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
 
-| Profile | Context | Slots | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Profile | Context | Slots | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | `qwen3.8-flash-next-q4` | 524,288 | 1 | 1x 10.00 | 4,499 | 1,306.2 | 60.8 | 2/2 | unavailable | pass | yes | `20261023T024918.235133+0000_ds4_qwen3-8-flash-next-q4_session.json` |
 
@@ -31,46 +31,39 @@ complete counts sessions whose report ended on its own and named at least
 
 ## Interactive measurements
 
-The rows below, except the Qwen capability column: Apple M5 Max (128 GB,
+The rows below: Apple M5 Max (128 GB,
 macOS 27.0), ds4 `0aaea5a`, the pinned
 GGUFs in `models/`, 262,144 configured context, one slot and one stream,
 each config's declared sampling. Measured 2026-09-30 to 2026-10-02 with the
 pre-commit form of this directory (dirty tree), so every JSON is
 `publishable: false`; most rows are one sample. Retained under
 `~/.local/state/auditbench/trials/2026-09-30-ds4/`. The
-`deepseek-v4.1-flash-q2` column is the 1017 checkpoint, measured 2026-10-19
-(session) and 2026-10-20 (capability) at the 1017 card sampling, under
-`~/.local/state/auditbench/trials/2026-10-19-m5-night/ds4/` and
-`.../2026-10-20-m5-night/ds4/`. The Qwen capability column is the
-2026-10-23 run at 524,288 from fleet commit `3c3a5ab`, beside its canonical
-session row.
+`deepseek-v4.1-flash-q2` column is the 1017 checkpoint, measured
+2026-10-19 at the 1017 card sampling, under
+`~/.local/state/auditbench/trials/2026-10-19-m5-night/ds4/`.
 
-## Capability Check v2
+## Capability Check v3
 
-| Check | `qwen3.8-flash-next-q4` | `deepseek-v4-flash-q2` | `glm5.3-flash-q2` | `deepseek-v4.1-flash-q2` |
-| -- | -- | -- | -- | -- |
-| Streaming reasoning | pass | pass | pass | pass |
-| Thinking disabled | pass | pass | pass | pass |
-| Tool call / streaming | pass / pass | pass / pass | fail / fail | pass / pass |
-| Tool round trip | pass | pass | skipped | pass |
-| Structured JSON | pass | pass | pass | pass |
-| `json_schema` | fail (`ignored`) | fail (`ignored`) | fail (`ignored`) | fail (`ignored`) |
-| Unaided document | valid | valid | valid | valid |
-| Audit fitness (passed of 12) | pass, 12/12 | pass, 11/12 (failed: invented 1) | pass, 11/12 (failed: no reasoning 1) | pass, 11/12 (failed: no reasoning 1) |
+Capability Check v3 (llm-audit-bench 3.0.0, `365510b`), run 2026-11-19/22
+on ds4 `0aaea5a` from fleet commit `a21fd8a`, under
+`~/.local/state/auditbench/trials/2026-11-19-v3-campaign/m5/`. Model
+identity shows the first 12 characters of the revision.
 
-Qwen JSON `20261023T022404.573283+0000_ds4_qwen3-8-flash-next-q4.json`
-(under `.../2026-10-22-night/ds4/`; it passed 12 of 12 on 2026-09-30 too);
-the others in `results/`:
-`20260930T104359.910549+0000_ds4_deepseek-v4-flash-q2.json`,
-`20260930T120743.672386+0000_ds4_glm5-3-flash-q2.json`; V4.1 Flash 1017
-`20261020T164000.412430+0000_ds4_deepseek-v4-1-flash-q2.json` in its trial
-directory.
+| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Clean samples | Compatibility | Audit aptitude | Model identity | Artifact |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| ds4 | `qwen3.8-flash-next-q4` | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.86 [+0.52, +0.98]; sound 8 of 8 | `d600fe1a43d2` | `20261119T225509.672284+0000_ds4_qwen3-8-flash-next-q4.json` |
+| ds4 | `deepseek-v4-flash-q2` | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 33 of 36 (92%); fitness 7 of 8 | passed | +0.71 [+0.36, +0.89]; sound 6 of 7 | `f71f23d552d6` | `20261120T201931.719098+0000_ds4_deepseek-v4-flash-q2.json` |
+| ds4 | `glm5.3-flash-q2` | passed | passed | supported | broken | broken | untested | supported | valid | ignored (broken) | 19 of 23 (83%); fitness 7 of 8 | failed (tool_call, streaming_tool_call, clean_rate) | not scored | `b2fa29d7a6b4` | `20261120T063720.265124+0000_ds4_glm5-3-flash-q2.json` |
+| ds4 | `deepseek-v4.1-flash-q2` | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 34 of 36 (94%); fitness 8 of 8 | passed | +0.71 [+0.36, +0.89]; sound 8 of 8 | `9dcee51692e6` | `20261122T023508.810868+0000_ds4_deepseek-v4-1-flash-q2.json` |
 
-- `json_schema` fails on every model because ds4 has no structured output:
-  `ds4_server.c` never parses `response_format`. Each model writes a valid
-  document when the schema is stated in words. The check is advisory since
-  llm-audit-bench 2.3.0, so Flash Next, V4 Flash and V4.1 Flash pass
-  Capability Check v2; GLM fails on its tool calls.
+- Schema enforcement is broken on every model because ds4 has no
+  structured output: `ds4_server.c` never parses `response_format`. It
+  never gates. Each model writes a valid document when the schema is
+  stated in words.
+- Qwen3.8-Flash-Next scores +0.86, the highest on the M5. V4 Flash passes
+  with three format failures (33 of 36 clean) and V4.1 Flash with two (34
+  of 36, the same +0.71), in 10.9 hours from SSD. GLM fails on its tool
+  calls.
 - GLM's tool parser emits every argument as a JSON string
   (`tool_call_json_args_add(..., "true")` in its `<arg_value>` parser), so
   `{"issue_number": 42}` arrives as `"42"`. GLM's tool format carries no
@@ -145,9 +138,6 @@ exploratory `AUDIT_BENCH_CONV_MAX_STEPS=50` at one stream. Retained under
 
 ### Qwen3.8 Flash Next, static YaRN factor 2
 
-- **Capability Check v2:** as at 262,144; audit fitness pass, 12/12, and
-  `json_schema` fails (`ignored`).
-  `results/20261013T174602.562772+0000_ds4_qwen3-8-flash-next-q4-512k.json`.
 - **Deep session:** complete, the report decoded from 444,683 prompt tokens to its
   own stop, recalled 50 of 50 findings, no truncated or unreasoned calls;
   4.18 sessions/h, prefill 1,196 tok/s, turn decode 63.2/58.6/62.0, report
@@ -162,10 +152,6 @@ Both are trained to 1,048,576, so they need no YaRN. Above 393,216 ds4
 stops downgrading `reasoning_effort` max to high; traced requests rendered
 V4's max-effort prefix and GLM's "Reasoning Effort: Max".
 
-- **V4 Flash capability:** audit fitness fail, 10/12 (selection: invented
-  2), against 11/12 at 262,144; its prompts are far below either context,
-  so this is sampling at the gate. `json_schema` fails (`ignored`).
-  `results/20261013T191613.651852+0000_ds4_deepseek-v4-flash-q2.json`.
 - **V4 Flash deep session,** twice: both complete, the report from 447,366
   prompt tokens recalling 50 of 50 findings.
 
@@ -188,9 +174,8 @@ V4's max-effort prefix and GLM's "Reasoning Effort: Max".
   under `~/.local/state/auditbench/trials/2026-10-14-m5-day/`.
 - **GLM 5.3 deep session:** incomplete; the report from 445,103 prompt
   tokens recalled 0 of 50 findings in 1,989 characters, and 48 of 51 calls
-  streamed no reasoning, at cached 0.963. Its capability check matched
-  262,144 (audit fitness 11/12, string-typed tool arguments). GLM stays at
-  262,144, where the 16-step session recalled 16 of 16.
+  streamed no reasoning, at cached 0.963. GLM stays at 262,144, where the
+  16-step session recalled 16 of 16.
   `results/20261014T012312.788040+0000_ds4_glm5-3-flash-q2_session.json`.
 - **Memory planned at 524,288:** V4 Flash 89.13 GiB (85.13 at 262,144),
   GLM 98.88 GiB (95.96).

@@ -37,37 +37,41 @@ Flint. The KV column is configured context times slots, not a measured pool.
 Ollama has no `ignore_eos`, so the reference is unavailable where the model
 stopped before 128 tokens.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 32.21 | 3,968 | 3,051.4 | 59.9 | 2/2 | unavailable | pass | yes | `20261115T194107.762686+0000_ollama_ornith1-5-35b-a3b_session.json` |
+| Ollama `ornith1.5-35b-a3b` | 262,144 | 1 | 262,144 | 1x 32.21 | 3,968 | 3,051.4 | 59.9 | 2/2 | unavailable | fail | yes | `20261115T194107.762686+0000_ollama_ornith1-5-35b-a3b_session.json` |
 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` | 262,144 | 1 | 262,144 | 1x 15.53 | 11,157 | 1,185.9 | 119.6 | 3/3 | unavailable | pass | yes | `20261115T200425.049712+0000_ollama_nemotron-3-5-bolt-74b-a9b-iq2_session.json` |
 | Ollama `flint-40b-a2b-nvfp4` | 262,144 | 4 | 1,048,576 | 1x 9.94 / 2x 12.14, incomplete | 8,496 | 918.7 | 40.7 | 7/8 | unavailable | pass | yes | `20261116T071203.318342+0000_ollama_flint-40b-a2b-nvfp4_session.json` |
 
-- All three pass Capability Check v2. Against 0.40.13 (2026-10-31/11-01):
+- Bolt and Flint pass Capability Check v3 (llm-audit-bench 3.0.0,
+  2026-11-19, fleet `a21fd8a`). Ornith fails compatibility on clean rate,
+  19 of 23: four vulnerability answers wrapped the JSON array in analysis
+  prose, while the same model passes on M5 Splash. Against 0.40.13
+  (2026-10-31/11-01):
   Ornith 34.00 to 32.21 sessions/h, Bolt 17.62 to 15.53 (its sessions wrote
   11,157 output tokens against 7,187, at the same report decode), Flint
   8.51 to 9.94.
-- `qwen3.8-flash-next-gguf-iq4xs` (UD-IQ4_XS, 2 x 262,144) passed too, at
-  8.55 / 11.21 @2x, and was dropped on 2026-11-04: Strata serves
+- `qwen3.8-flash-next-gguf-iq4xs` (UD-IQ4_XS, 2 x 262,144) ran 8.55 /
+  11.21 @2x and was dropped on 2026-11-04: Strata serves
   Qwen3.8-Flash-Next on the A100 at 28.76 (strata/BENCHMARKS.md). Its rows,
   import recipe and v1 history are in git history.
-- `flint-40b-a2b-nvfp4` passes audit fitness for the first time on 0.40.16
-  (11 of 12; 9 of 12 on 0.40.13). Its ladder stopped at 2x on an incomplete
-  session again, so 1x is its operating point; the 2x rate is reported, not
-  published.
+- `flint-40b-a2b-nvfp4` passes, 36 of 36 clean, with the lowest audit
+  aptitude on the host (+0.29, interval including zero). Its ladder
+  stopped at 2x on an incomplete session again, so 1x is its operating
+  point; the 2x rate is reported, not published.
 - `nemotron-3.5-bolt-74b-a9b-iq2` (Nemotron 3.5 Bolt 74B-A9B, NVIDIA's 24 GB
-  IQ2_XXS) passes 12 of 12. Ollama runs its `nemotron_h_moe` runner on one
+  IQ2_XXS) passes, 34 of 36 clean. Ollama runs its `nemotron_h_moe` runner on one
   slot: a 4-slot start served one (`runner uses 1 slot(s)`), so 1x is its only
   operating point here. On the M5 its NVFP4 tensors run on the CPU under
   llama.cpp's Metal backend (see its conf); the M5 serves Bolt from Unsloth's
   UD-Q3_K_XL instead.
 - The same campaign measured the A100's other Ollama profiles, dropped on
-  2026-10-12 because vLLM serves those models faster here or they failed the
-  gate on both runtimes: `qwen3.6-35b-a3b` 18.06, `qwen3-coder-30b` 18.51
-  (fail), `gemma4-26b` 14.18 (unpublishable), `qwen3.8-27b-native` 11.24 and
-  `glm4.7-flash` 7.37 (fail), all on 0.40.3. Their rows, and the A100
-  AuditBench v1, conversation, replay and pre-v1 evidence for them, are in
-  git history.
+  2026-10-12 because vLLM serves those models faster here or they failed
+  their capability check on both runtimes: `qwen3.6-35b-a3b` 18.06,
+  `qwen3-coder-30b` 18.51, `gemma4-26b` 14.18 (unpublishable),
+  `qwen3.8-27b-native` 11.24 and `glm4.7-flash` 7.37, all on 0.40.3. Their
+  rows, and the A100 AuditBench v1, conversation, replay and pre-v1
+  evidence for them, are in git history.
 
 ## AuditBench v2: Apple M5 Max
 
@@ -86,33 +90,27 @@ greedy, depth ~0), not a serving result. JSON files are retained under
 `~/.local/state/auditbench/trials/2026-11-15-m5/ollama/`; the 0.40.13 and
 0.40.8 rows they replace are in git history.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 31.07 | 6,104 | 2,330.8 | 123.3 | 3/3 | 3,372 / 178.7 | fail | yes | `20261115T174450.386607+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
-| Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 20.12 | 1,514 | 699.0 | 44.0 | 2/2 | unavailable | fail | yes | `20261115T163512.190267+0000_ollama_muse-glimmer-30b-mlx_session.json` |
+| Ollama `nemotron-3.5-lightning-30b-mlx` | 262,144 | 1 | 262,144 | 1x 31.07 | 6,104 | 2,330.8 | 123.3 | 3/3 | 3,372 / 178.7 | pass | yes | `20261115T174450.386607+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json` |
+| Ollama `muse-glimmer-30b-mlx` | 131,072 | 1 | 131,072 | 1x 20.12 | 1,514 | 699.0 | 44.0 | 2/2 | unavailable | pass | yes | `20261115T163512.190267+0000_ollama_muse-glimmer-30b-mlx_session.json` |
 | Ollama `nemotron-3.5-super-mlx` | 524,288 | 1 | 524,288 | 1x 12.79 | 5,961 | 939.4 | 55.3 | 3/3 | unavailable | pass | yes | `20261115T170024.380238+0000_ollama_nemotron-3-5-super-mlx_session.json` |
 | Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` | 262,144 | 1 | 262,144 | 1x 9.09 | 6,056 | 743.0 | 32.2 | 2/2 | unavailable | pass | yes | `20261115T183056.692043+0000_ollama_nemotron-3-5-bolt-74b-a9b-q3kxl_session.json` |
-| Ollama `mimo-v2.6-flash-q2ks` | 262,144 | 1 | 262,144 | 1x 5.29 | 3,720 | 313.7 | 22.3 | 3/3 | unavailable | pass | yes | `20261116T010801.194651+0000_ollama_mimo-v2-6-flash-q2ks_session.json` |
-| Ollama `nanbeige4.3-33b-q4km` | 262,144 | 1 | 262,144 | 1x 1.47 | 9,242 | 128.4 | 6.0 | 2/2 | unavailable | fail | yes | `20261115T223449.004542+0000_ollama_nanbeige4-3-33b-q4km_session.json` |
+| Ollama `mimo-v2.6-flash-q2ks` | 262,144 | 1 | 262,144 | 1x 5.29 | 3,720 | 313.7 | 22.3 | 3/3 | unavailable | fail | yes | `20261116T010801.194651+0000_ollama_mimo-v2-6-flash-q2ks_session.json` |
+| Ollama `nanbeige4.3-33b-q4km` | 262,144 | 1 | 262,144 | 1x 1.47 | 9,242 | 128.4 | 6.0 | 2/2 | unavailable | pass | yes | `20261115T223449.004542+0000_ollama_nanbeige4-3-33b-q4km_session.json` |
 
-- All rows but Nanbeige enforce the JSON schema (0.32.14 ignored it); for
-  Nanbeige the check reports enforcement unsupported. Super VL, Bolt and
-  MiMo-V2.6-Flash pass Capability Check v2. Glimmer (10 of 12, two invented
-  findings) and Nanbeige (9 of 12, two runaways and an incomplete answer)
-  fail audit fitness on this draw after passing on 0.40.13 and 0.40.8; both
-  sit near the limit, and the gate's failure limit is two samples.
-  Lightning failed the tool loop on a typeset hyphen; rerun under the
-  fixed harness it fails audit fitness in most runs, at 8-bit as well, and
-  serves interactive use (see its conf and CAPABILITIES.md). Its 31.07
-  sessions/h cannot promote it.
+- Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-19/20, fleet
+  `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)): every row
+  passes but MiMo-V2.6-Flash, which fails on clean rate (23 of 27: two
+  format failures, two runaways). All rows but Nanbeige enforce the JSON
+  schema; Nanbeige refuses it, which never gates.
 - Against 0.40.13: Glimmer 20.79 to 20.12, Super VL 11.88 to 12.79 and Bolt
   7.73 to 9.09. Against 0.40.8: Lightning 29.41 to 31.07, MiMo-V2.6-Flash
   5.34 to 5.29 and Nanbeige 1.44 to 1.47. Lightning's 21.12 on 0.32.14 was
   an earlier digest: the tag moved to `d1e17d7d` (see its conf).
 - The `flint-40b-a2b-qat-int4-mlx` profile (Recursive Flint 40B-A2.5B, QAT
-  INT4, MLX runner) was dropped: on 0.40.13 it fails audit fitness 10 of 12
-  (two wrong triage verdicts; 11 of 12 on 0.40.8, 9 of 12 without preserved
-  reasoning) at 11.35 sessions/h, and Splash serves Flint at 19.49. Its rows
+  INT4, MLX runner) was dropped: it ran 11.35 sessions/h on 0.40.13, and
+  Splash's Flint ran 19.49 but fails Capability Check v3. Its rows
   are in git history.
 - The MLX runner's post-prefill commit memory runaway, which kept these
   profiles on 0.32.14, did not recur on 0.40.6 or 0.40.8: three cache-busted
@@ -124,7 +122,7 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   once; Flint shows a 15.6 GiB step at about 41 GiB available.
 - `nemotron-3.5-bolt-74b-a9b-q3kxl` (Nemotron 3.5 Bolt 74B-A9B, Unsloth
   UD-Q3_K_XL, 39 GB, a local import without a draft: Unsloth's DFlash draft
-  is NVFP4 too) passes 12 of 12. All 89 layers run on the GPU, 36.7 GiB of
+  is NVFP4 too). All 89 layers run on the GPU, 36.7 GiB of
   weights with only the token embeddings CPU-mapped, and it prefills a
   245,760-token cold prompt in 395 s (622 tok/s).
 - `mimo-v2.6-flash-q2ks` (Xiaomi MiMo-V2.6-Flash-MOPD, 309B-A15B, the
@@ -133,34 +131,31 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   (`OLLAMA_CACHE_RAM=0`). Each prompt-cache save at its 8 GiB default
   (5.3 GiB at 246k, 1.9 GiB at 167k) and, with the cache off, f16 KV past
   148k took available memory under 4 GiB. It prefills a 245,747-token cold
-  prompt in 963 s (255 tok/s). Audit fitness passed 71 of 72 over six
-  runs on 0.40.8 and 0.40.11 and 12 of 12 on 0.40.16; 0.40.11 ran 5.25
-  sessions/h, so the newer runners change nothing. As for Super VL, a host
+  prompt in 963 s (255 tok/s). 0.40.11 ran 5.25 sessions/h, so the newer
+  runners change nothing. As for Super VL, a host
   watchdog needs a floor below 12 GiB: one at 12 GiB tripped during load
   (2026-11-15). The pp512/tg128 reference is unavailable (17 of 128
-  tokens). The AesSedai
-  BPW2.5 conversion (90 GiB) failed audit fitness 9 of 12 on format at 4.75
-  sessions/h.
+  tokens). The AesSedai BPW2.5 conversion (90 GiB) ran 4.75 sessions/h and
+  has no profile.
 - `nanbeige4.3-33b-q4km` (Nanbeige4.3-33B, dense, bartowski Q4_K_M) holds
-  71.48 GiB on the GPU at 262,144 with f16 KV. It passed audit fitness 12 of
-  12 on 0.40.8 with its reasoning resent inline (`OLLAMA_REASONING_INLINE`: this
-  llama-server path drops a history message's reasoning, and a probe with an
-  empty think block in its history got an empty answer) and under
-  llm-audit-bench 2.4.0's 65,536 answer cap, where its selection answers ran
-  25-56k tokens; with neither it passed 9 of 12, and no run separates the two.
+  71.48 GiB on the GPU at 262,144 with f16 KV. Its reasoning is resent
+  inline (`OLLAMA_REASONING_INLINE`: this llama-server path drops a history
+  message's reasoning, and a probe with an empty think block in its history
+  got an empty answer), and its selection answers need the 65,536 answer
+  cap. Capability Check v3 took about 10 hours on one slot.
   Dense 33B decode on the M5 is slow: 16.9 falling to 6.3 tok/s through a
   session, and the 245,755-token cold prefill takes 2,750 s (89 tok/s). The
-  A100 serves it on vLLM at 7.19 sessions/h.
+  A100's vLLM profile runs 7.19 sessions/h but fails Capability Check v3.
 - `gemma4-26b-mlx` (Gemma 4 26B-A4B, the registry's NVFP4 safetensors on
   the MLX runner) is an interactive profile and has no row. On Apple Silicon
   the plain `gemma4:26b` and `gemma4:31b` tags resolve to these NVFP4 builds,
   not the Q4_K_M GGUFs, so the conf pins the explicit `-nvfp4` tag. It
-  passes Capability Check v2 12 of 12; its canonical session ran 25.63
+  passes Capability Check v3; its canonical session ran 25.63
   sessions/h (1,723 output tokens per session, 35.0 tok/s report decode) but
   one of three reports recalled no findings, so the run is unpublishable:
   `20261116T081609.374316+0000_ollama_gemma4-26b-mlx_session.json`, from the
-  trial commit `6a91a36`. Gemma 4 31B on the same runner passed 12 of 12 but
-  at 262,144 its unquantized KV took the M5 from 81 to 9.8 GiB available in
+  trial commit `6a91a36`. Gemma 4 31B on the same runner was tried, but at
+  262,144 its unquantized KV took the M5 from 81 to 9.8 GiB available in
   the 245,759-token near-context prefill, and it has no profile.
 - `nemotron-3.5-super-mlx` (Nemotron 3.5 Super VL 120B-A12B, NVFP4) holds
   74.41 GiB on the GPU at 524,288 and prefills a 491,526-token cold prompt
@@ -183,40 +178,40 @@ at 262,144 configured context, 13 at 163,840 and 9 at 131,072. Columns as
 in the A100 table. The 0.40.3 rows they replace (2026-10-12/14) are in git
 history.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Ollama `qwen3.6-35b-a3b-reap48` (q4_0 KV) | 262,144 | 1 | 262,144 | 1x 6.74 | 5,144 | 968.1 | 19.3 | 2/2 | unavailable | pass | yes | `20261017T185430.239983+0000_ollama_qwen3-6-35b-a3b-reap48_session.json` |
 | Ollama `lfm2.5-24b-a2b` (f16 KV) | 131,072 | 1 | 131,072 | 1x 7.49 | 19,666 | 1,223.5 | 39.6 | 1/2 | 1,561 / 105.8 | fail | no | `20261017T215853.192531+0000_ollama_lfm2-5-24b-a2b_session.json` |
 | Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 4.56 | 4,039 | 307.2 | 11.4 | 3/3 | unavailable | pass | yes | `20261017T205648.105797+0000_ollama_saluki-27b_session.json` |
 
-- `qwen3.6-35b-a3b-reap48` passes Capability Check v2 (11 of 12): 6.74
-  sessions/h over 16 steps with all 10.78 GiB on the GPU (7.37 on 0.40.3).
-  Turn decode falls from 58.9 to 30.8 tok/s across the session. q8_0 KV
-  fits entirely only up to 163,840 (196,608 puts 0.7 GB of experts on the
-  CPU); an exploratory 0.40.3 run there passed 11 of 12 and measured 11.68
-  over 13 steps. Both KV types completed every session with no truncated
-  tool call and every finding recalled on 0.40.3, so the model card's
-  warning against sub-bf16 KV did not reproduce, and the profile keeps
-  262,144 with q4_0. Its sessions skip reasoning on most tool calls (24 of
-  34 unreasoned); the count never gates.
-- `saluki-27b` passes Capability Check v2 (11 of 12): 4.56 sessions/h over
-  13 steps, all 65 layers and its 10.92 GiB on the GPU, 1.4x its 3.26 on
-  0.40.3. Turn decode falls from 19.6 to 10.8 tok/s across the session.
-- `lfm2.5-24b-a2b` fails Capability Check v2 (2 of 12), so its 7.49
-  sessions/h over 9 steps cannot rank it, and one of two reports hit the
-  output cap, so the run is unpublishable; it is the host's interactive
-  profile. Its 19,666 output tokens per session are 3.8x REAP-48's at half
-  the steps, and every call counts as unreasoned, its reasoning reaching
-  the client unseparated.
-- The byteshape IQ2_S Qwen3.6 35B-A3B also ran entirely on the GPU at
-  262,144 with q4_0 KV (4.32 sessions/h, unpublishable) and failed audit
-  fitness; it was not committed.
+- Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-21, fleet `a21fd8a`; rows
+  in [CAPABILITIES.md](../CAPABILITIES.md)): REAP-48 and Saluki pass;
+  `lfm2.5-24b-a2b` fails compatibility, 4 of 8 fitness samples clean (four
+  format failures).
+- `qwen3.6-35b-a3b-reap48` runs 6.74 sessions/h over 16 steps with all 10.78 GiB
+  on the GPU (7.37 on 0.40.3). Turn decode falls from 58.9 to 30.8 tok/s across
+  the session. q8_0 KV fits entirely only up to 163,840 (196,608 puts 0.7 GB of
+  experts on the CPU); an exploratory 0.40.3 run there measured 11.68 over 13
+  steps. Both KV types completed every session with no truncated tool call and
+  every finding recalled on 0.40.3, so the model card's warning against sub-bf16
+  KV did not reproduce, and the profile keeps 262,144 with q4_0. Its sessions
+  skip reasoning on most tool calls (24 of 34 unreasoned); the count never
+  gates.
+- `saluki-27b` runs 4.56 sessions/h over 13 steps, all 65 layers and its 10.92
+  GiB on the GPU, 1.4x its 3.26 on 0.40.3. Turn decode falls from 19.6 to 10.8
+  tok/s across the session.
+- `lfm2.5-24b-a2b` fails Capability Check v3, so its 7.49 sessions/h over 9
+  steps cannot rank it, and one of two reports hit the output cap, so the run is
+  unpublishable; it is the host's interactive profile. Its 19,666 output tokens
+  per session are 3.8x REAP-48's at half the steps, and every call counts as
+  unreasoned, its reasoning reaching the client unseparated.
+- The byteshape IQ2_S Qwen3.6 35B-A3B also ran entirely on the GPU at 262,144
+  with q4_0 KV (4.32 sessions/h, unpublishable); it was not committed.
 - The 2026-10-11 campaign also measured `gemma4-e2b` (40.98 sessions/h),
-  `qwen3.5-4b` (17.49), `qwen3.5-9b` (14.73) and `gemma4-12b` (7.87), all
-  fully on the GPU and all failing audit fitness, and the CPU-assisted
-  `qwen3.6-35b-a3b` (3.06, unpublishable). They were dropped on 2026-10-12;
-  their rows and the host's AuditBench v1 operating points are in git
-  history.
+  `qwen3.5-4b` (17.49), `qwen3.5-9b` (14.73) and `gemma4-12b` (7.87), all fully
+  on the GPU, and the CPU-assisted `qwen3.6-35b-a3b` (3.06, unpublishable). They
+  were dropped on 2026-10-12; their rows and the host's AuditBench v1 operating
+  points are in git history.
 
 ## Apple M5 Max MLX operating points
 
