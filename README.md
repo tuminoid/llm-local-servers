@@ -233,21 +233,20 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
-| 1 | Splash `qwen3.8-flash-next-q2` (125B-A6B, GSQ-RCO Q2_0) | MoE | 262,144 | 31.65 | 32.27 @2x | 2x | 128.7 |
-| 2 | Ollama `nemotron-3.5-lightning-30b-mlx` (30B-A3B) | hybrid MoE | 262,144 | 31.07 | -- | 1x | 123.3 |
-| 3 | Splash `ornith1.5-35b-a3b` (35B-A3B, text-only) | MoE | 262,144 | 28.01 | 30.72 @2x | 2x | 167.4 |
-| 4 | Splash `qwen3.8-flash-next-iq3s` (125B-A6B, GSQ-RCO IQ3_S) | MoE | 262,144 | 27.17 | 28.73 @2x | 2x | 118.3 |
-| 5 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 27.58 | 27.01 @2x | 1x | 84.4 |
-| 6 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
-| 7 | Ollama `muse-glimmer-30b-mlx` (32B, 3:1 sliding-window attention) | dense | 131,072 | 20.12 | -- | 1x | 44.0 |
-| 8 | LM Studio `qwen3.6-35b-a3b-splash` | MoE | 262,144 | 18.70 | -- | 1x | 177.0 |
-| 9 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 12.79 | -- | 1x | 55.3 |
-| 10 | Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` (74B-A9B) | hybrid MoE | 262,144 | 9.09 | -- | 1x | 32.2 |
-| 11 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
-| 12 | Splash `bonsai2-27b-pq2` (ternary) | dense | 262,144 | 8.10 | 8.48 @2x | 2x | 58.3 |
-| 13 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 14 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
-| 15 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.47 | -- | 1x | 6.0 |
+| 1 | Ollama `nemotron-3.5-lightning-30b-mlx` (30B-A3B) | hybrid MoE | 262,144 | 31.07 | -- | 1x | 123.3 |
+| 2 | Splash `ornith1.5-35b-a3b` (35B-A3B, text-only) | MoE | 262,144 | 28.01 | 30.72 @2x | 2x | 167.4 |
+| 3 | Splash `qwen3.8-flash-next-iq3s` (125B-A6B, GSQ-RCO IQ3_S) | MoE | 262,144 | 27.17 | 28.73 @2x | 2x | 118.3 |
+| 4 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 27.58 | 27.01 @2x | 1x | 84.4 |
+| 5 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
+| 6 | Ollama `muse-glimmer-30b-mlx` (32B, 3:1 sliding-window attention) | dense | 131,072 | 20.12 | -- | 1x | 44.0 |
+| 7 | LM Studio `qwen3.6-35b-a3b-splash` | MoE | 262,144 | 18.70 | -- | 1x | 177.0 |
+| 8 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 12.79 | -- | 1x | 55.3 |
+| 9 | Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` (74B-A9B) | hybrid MoE | 262,144 | 9.09 | -- | 1x | 32.2 |
+| 10 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
+| 11 | Splash `bonsai2-27b-pq2` (ternary) | dense | 262,144 | 8.10 | 8.48 @2x | 2x | 58.3 |
+| 12 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
+| 13 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 14 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.47 | -- | 1x | 6.0 |
 
 Unranked: Splash `flint-gguf` (19.49 @2x) and `ornith1.5-122b` (11.87),
 Ollama `mimo-v2.6-flash-q2ks` (5.29) and LM Studio `qwen3.8-27b-mlx` fail
@@ -267,7 +266,7 @@ findings). Details are in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
 Capability Check v3 and runs 10.00 sessions/h; Splash serves the same model for
-audits 3.6x faster, so ds4 keeps it for interactive use. Speed is from the
+audits 2.9x faster, so ds4 keeps it for interactive use. Speed is from the
 262,144 runs, one stream, in tok/s. At 524,288 a 50-step session to about 445k
 tokens took Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its
 checkpoints evicted at depth. ds4 has no `response_format`, so schema

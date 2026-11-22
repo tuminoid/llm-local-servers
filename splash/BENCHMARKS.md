@@ -13,7 +13,7 @@ macOS 27.0.1), on llm-audit-bench 2.4.0 from clean trees. `qwen3.6-35b-a3b` and
 2026-10-30, from the trial tree `18bf1a9`, Flash-Next IQ3_S from `d5c9a46`;
 those trees predate the conf's memory need, so the cap each conf now declares
 was passed as `SPLASH_MAX_MEMORY`, and their lifecycle hashes differ from this
-tree's. Flash-Next Q2_0 and IQ3_S, Ornith 1.5 122B and Bonsai 2 ran again
+tree's. Flash-Next IQ3_S, Ornith 1.5 122B and Bonsai 2 ran again
 2026-10-31 on llm-audit-bench 2.5.0 from `27411b0`, at their declared needs.
 `ornith1.5-35b-a3b` ran 2026-11-15 on llm-audit-bench 2.5.0 from the clean trial
 commit `54822f2` (this profile), its JSON under `.../2026-11-15-m5/splash/`.
@@ -33,7 +33,6 @@ trial-directory copies remain, and the figures stay here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Splash `qwen3.8-flash-next-q2` | 262,144 | 4 | 1,482,752 | 1x 31.65 / 2x 32.27 | 5,057 | 2,185.3 | 128.7 | 7/7 | 2,149 / 236.5 | pass | yes, 2x | `20261031T114729.877926+0000_splash_qwen3-8-flash-next-q2_session.json` |
 | Splash `qwen3.8-flash-next-iq3s` | 262,144 | 4 | 1,138,688 | 1x 27.17 / 2x 28.73 | 6,360 | 2,054.0 | 118.3 | 9/9 | 2,014 / 180.4 | pass | yes, 2x | `20261031T121538.911180+0000_splash_qwen3-8-flash-next-iq3s_session.json` |
 | Splash `ornith1.5-35b-a3b` | 262,144 | 4 | 4,448,256 | 1x 28.01 / 2x 30.72 | 8,366 | 2,012.5 | 167.4 | 8/8 | 5,374 / 279.4 | pass | yes, 2x | `20261115T131122.781662+0000_splash_ornith1-5-35b-a3b_session.json` |
 | Splash `flint-gguf` | 262,144 | 4 | 802,816 | 1x 17.19 / 2x 19.49 | 14,971 | 1,593.9 | 152.9 | 9/9 | 5,086 / 215.2 | fail | yes | `20261030T163459.898585+0000_splash_flint-gguf_session.json` |
@@ -43,7 +42,7 @@ trial-directory copies remain, and the figures stay here and in git history.
 | Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 8.57 / 4x 8.49 | 7,164 | 557.4 | 63.0 | 15/15 | 1,010 / 116.6 | pass | yes | `20261031T022632.490447+0000_splash_qwen3-8-27b_session.json` |
 
 - Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-19/20, fleet
-  `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)): six of eight
+  `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)): five of seven
   profiles pass. `flint-gguf` (two tool misuses) and `ornith1.5-122b`
   (analysis prose around its JSON answers) fail, so their rates cannot
   promote them.
@@ -53,14 +52,12 @@ trial-directory copies remain, and the figures stay here and in git history.
   serving rate. 212 of its 255 calls streamed no reasoning.
 - `qwen3.8-27b` now peaks at one stream (8.57; four streams 0.99x), where
   1.3.2 gained 1.09x from four.
-- `qwen3.8-flash-next-q2` (Qwen3.8-Flash-Next 125B-A6B, ISTA-DASLab's
-  GSQ-RCO Q2_0, 66.4 GB, Splash's suggested build) is the host's fastest
-  audit profile at 32.27 sessions/h at two streams. At its declared 85 GiB
-  cap available memory stayed above 26 GiB.
-- `qwen3.8-flash-next-iq3s` is the same model in ISTA-DASLab's recommended
-  IQ3_S build (83.6 GB), at 28.73 sessions/h: 11% slower than Q2_0
-  for a higher-quality quantization. Unsloth's UD-IQ4_XS (93.7 GB) streamed
-  experts from the SSD under an 88 GiB cap; it has no profile.
+- `qwen3.8-flash-next-iq3s` (Qwen3.8-Flash-Next 125B-A6B, ISTA-DASLab's
+  recommended GSQ-RCO IQ3_S build, 83.6 GB) runs 28.73 sessions/h at two
+  streams. Splash's suggested Q2_0 build (66.4 GB) ran 32.27 but scored
+  +0.57 against IQ3_S's +0.79 in Capability Check v3; it was dropped on
+  2026-11-22 and its rows are in git history. Unsloth's UD-IQ4_XS (93.7
+  GB) streamed experts from the SSD under an 88 GiB cap; it has no profile.
 - `ornith1.5-35b-a3b` (DeepReinforce's MLX 4-bit, text-only: the build
   ships no processor config) runs 30.72 sessions/h at
   two streams, its optimal point, against 9.15 for the vLLM-Metal profile it
@@ -85,14 +82,14 @@ trial-directory copies remain, and the figures stay here and in git history.
 
 ### Stream ladder against four streams (2026-10-31)
 
-Two streams gain 2% (Q2_0), 6% (IQ3_S), 5% (Bonsai 2) and -1% (Ornith) over
+Two streams gain 6% (IQ3_S), 5% (Bonsai 2) and -1% (Ornith) over
 one in the 2.5.0 runs, so every ladder stopped at 2x. Noncanonical
 `AUDIT_BENCH_STREAMS=1,4` runs on the same tree measured the four-stream
-leg: Q2_0 1x 29.84 / 4x 33.60, IQ3_S 26.42 / 30.22, Ornith 11.42 / 12.28 and
+leg: IQ3_S 1x 26.42 / 4x 30.22, Ornith 11.42 / 12.28 and
 Bonsai 2 7.56 / 8.21, every session complete (JSON in the same directory).
 Four streams beat the ladder's two by 4 to 5% and fall 3% short for Bonsai,
 within the 3-7% between runs of the same 1x; the 2.4.0 four-stream rows
-were Q2_0 35.76, IQ3_S 28.84, Ornith 12.21 and Bonsai 2 7.99.
+were IQ3_S 28.84, Ornith 12.21 and Bonsai 2 7.99.
 
 ### Against Splash 1.3.2
 

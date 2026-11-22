@@ -31,29 +31,6 @@
             }
           }
         },
-        "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF:Q2_0": {
-          "name": "Qwen3.8 Flash Next Q2",
-          "reasoning": true,
-          "interleaved": {
-            "field": "reasoning"
-          },
-          "tool_call": true,
-          "limit": {
-            "context": 262144,
-            "output": 65536
-          },
-          "variants": {
-            "low": {
-              "reasoningEffort": "low"
-            },
-            "medium": {
-              "reasoningEffort": "medium"
-            },
-            "xhigh": {
-              "reasoningEffort": "xhigh"
-            }
-          }
-        },
         "mlx-community/Qwen3.6-35B-A3B-4bit": {
           "name": "Qwen3.6 35B A3B",
           "reasoning": true,

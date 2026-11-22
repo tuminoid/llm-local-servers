@@ -138,9 +138,9 @@ proves nothing about parser compatibility.
 
 ### Apple M5 Max
 
-- Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`, `qwen3.8-flash-next-q2`,
-  `qwen3.8-flash-next-iq3s`, `ornith1.5-35b-a3b`, `bonsai2-27b-pq2`, and
-  `flint-gguf` and `ornith1.5-122b` (both fail compatibility)
+- Splash: `qwen3.6-35b-a3b`, `qwen3.8-27b`, `qwen3.8-flash-next-iq3s`,
+  `ornith1.5-35b-a3b`, `bonsai2-27b-pq2`, and `flint-gguf` and
+  `ornith1.5-122b` (both fail compatibility)
 - LM Studio: `qwen3.6-35b-a3b-splash`, `qwen3.8-27b-splash`,
   `qwen3.6-35b-a3b-mlx`, and `qwen3.8-27b-mlx` (fails compatibility)
 - vLLM-Metal: `granite4.2-30b-4bit`
@@ -185,7 +185,6 @@ identity shows the first 12 characters of the digest or revision.
 | Splash | `qwen3.6-35b-a3b` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 34 of 36 (94%); fitness 7 of 8 | passed | +0.43 [+0.08, +0.67]; sound 7 of 7 | `38740b847e4c` | `20261119T142240.648293+0000_splash_qwen3-6-35b-a3b.json` |
 | Splash | `qwen3.8-27b` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 35 of 36 (97%); fitness 8 of 8 | passed | +0.57 [+0.21, +0.79]; sound 8 of 8 | `10c35caafbb8` | `20261119T183126.227604+0000_splash_qwen3-8-27b.json` |
 | Splash | `qwen3.8-flash-next-iq3s` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.79 [+0.44, +0.94]; sound 6 of 8 | `ed59f92082b1` | `20261119T204311.255698+0000_splash_qwen3-8-flash-next-iq3s.json` |
-| Splash | `qwen3.8-flash-next-q2` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 34 of 36 (94%); fitness 8 of 8 | passed | +0.57 [+0.20, +0.80]; sound 8 of 8 | `ed59f92082b1` | `20261119T200252.121007+0000_splash_qwen3-8-flash-next-q2.json` |
 | LM Studio | `qwen3.6-35b-a3b-mlx` | passed | passed | untested | supported | supported | supported | supported | valid | ignored (broken) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.36 [+0.02, +0.60]; sound 8 of 8 | `38740b847e4c` | `20261120T170233.333159+0000_lmstudio_qwen3-6-35b-a3b-mlx.json` |
 | LM Studio | `qwen3.6-35b-a3b-splash` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.36 [+0.02, +0.60]; sound 8 of 8 | `0f4714b2db37` | `20261120T164513.676448+0000_lmstudio_qwen3-6-35b-a3b-splash.json` |
 | LM Studio | `qwen3.8-27b-mlx` | passed | passed | untested | supported | supported | supported | supported | valid | ignored (broken) | 24 of 31 (77%); fitness 7 of 8 | failed (clean_rate) | not scored | `10c35caafbb8` | `20261120T185445.662511+0000_lmstudio_qwen3-8-27b-mlx.json` |
@@ -206,9 +205,12 @@ model config.
 
 ### Findings
 
-- Eighteen of 22 profiles pass. ds4 `qwen3.8-flash-next-q4` (+0.86) and
+- Seventeen of 21 profiles pass. ds4 `qwen3.8-flash-next-q4` (+0.86) and
   Splash `qwen3.8-flash-next-iq3s` (+0.79) score highest; with 28 cases
   the interval spans about +-0.3, so only the ends of the range separate.
+- Splash `qwen3.8-flash-next-q2` passed at +0.57 (22 of 28 cases right
+  against IQ3_S's 25) and was dropped on 2026-11-22: IQ3_S audits better
+  at 11% less throughput. Its row is in git history.
 - Splash `flint-gguf` fails fitness, 6 of 8 clean: two tool misuses.
 - Splash `ornith1.5-122b` fails on clean rate, 22 of 29: seven
   vulnerability answers put analysis prose before a fenced JSON array, and
