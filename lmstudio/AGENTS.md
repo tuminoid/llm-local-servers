@@ -9,7 +9,7 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and rationale are in
 | -- | -- |
 | `runtime.py` | Lifecycle, pin checks, pulls and live identity; the Makefile calls its verbs |
 | `bench.py` | AuditBench transport, admission and provenance |
-| `capability.py` | Capability Check v2 with LM Studio's top-level thinking control |
+| `capability.py` | Capability Check with LM Studio's top-level thinking control |
 | `models/*.conf` | One artifact each: format, repo, revision, context, expectations |
 | `Makefile` | Guard against built-in script-copy rules |
 

@@ -39,9 +39,9 @@ What this means in practice:
   "mostly fine".
 - Tool calls and reasoning must work mid-context, in streaming requests,
   at depth, and the model must finish audit work at its own sampling
-  without running away, skipping its thinking, or ignoring the task --
-  that is what capability-v2 gates and why a throughput number can never
-  override a capability failure.
+  without running away, breaking its tool calls, or ignoring the task --
+  that is what the Capability Check gates and why a throughput number can
+  never override a capability failure.
 - Repeated-prefix reuse matters because audit clients resend the whole
   growing conversation every step. Trading a flat decode percentage for
   a large warm-prefix prefill win is the correct trade for this
@@ -79,7 +79,7 @@ claims, never measurements, and never feed a `BENCHMARKS.md` or README row.
 
 ## The shared harness
 
-AuditBench v2 (the serving benchmark) and Capability Check v2 (the model gate)
+AuditBench v2 (the serving benchmark) and Capability Check v3 (the model gate)
 are defined and implemented in the sibling
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench) repository:
 `docs/PROTOCOL.md`, `docs/CAPABILITY.md`, and the two stdlib-only modules
@@ -166,7 +166,7 @@ them beside the parser and model identity rather than inferring them in the
 shared checker. So is the checkpoint's sampling: each config declares
 `<PREFIX>_SAMPLING` from its `generation_config.json` at the pinned revision
 (else the model card or registry params), and the adapters pass it to
-AuditBench and audit fitness.
+AuditBench and the Capability Check's sampled tasks.
 
 Host-specific settings (bind address, port, accelerator backend) belong in
 the launcher, not the model config. A model config should be portable
@@ -315,13 +315,14 @@ KV capacity of that workload.
 
 ### Gate agent API capabilities separately
 
-Run Capability Check v2 before promoting a model for agent workloads. It must
-prove the configured reasoning semantics, structured tool call, tool-result
-continuation, and direct JSON output, and pass audit fitness at the
-declared sampling. Schema enforcement (`json_schema`) is recorded but
-advisory: it never decides the verdict. Keep these pass/fail fixtures out of
-AuditBench: serving speed cannot compensate for malformed agent responses or
-unfinished work.
+Run Capability Check v3 before promoting a model for agent workloads. Its
+compatibility verdict must pass: the configured reasoning semantics, the
+features the model config declares (tool calls, tool-result continuation,
+thinking off), and audit-shaped work without engine failures at the
+declared sampling; audit aptitude is scored beside it and never gates. The
+promotion rule is in [CAPABILITIES.md](CAPABILITIES.md). Keep these
+pass/fail fixtures out of AuditBench: serving speed cannot compensate for
+malformed agent responses or unfinished work.
 
 Any run intended to update the serving inventory must follow
 [CAPABILITIES.md](CAPABILITIES.md) and update its host row in the same
@@ -335,7 +336,7 @@ Never infer them from a parser name or registry capability list.
 ### Keep the best provider per model
 
 A host serves each model from one runtime: the best measured one, judged by
-Capability Check v2 first and the AuditBench session rate second. When a
+Capability Check v3 first and the AuditBench session rate second. When a
 second runtime on the same host serves the same model, drop the losing
 profile with its benchmark rows, capability rows and generated provider
 entries; launcher rationale that rests on its measurements stays, marked as

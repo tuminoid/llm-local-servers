@@ -191,7 +191,7 @@ preference, and parsers.
 
 The small-card figures below were measured on the RTX PRO 3000 with the
 `qwen3.5-4b-awq` profile. The RTX vLLM profiles were dropped on 2026-10-12
-(every one failed Capability Check v2); the measurements stay as the
+(every one failed its capability check); the measurements stay as the
 launcher's rationale, and the confs and their result rows are in git
 history.
 

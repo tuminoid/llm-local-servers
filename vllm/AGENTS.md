@@ -17,7 +17,7 @@ Tree conventions are in [AGENTS.md](../AGENTS.md).
 | `stop.sh` | Shutdown | Pidfile-targeted, escalates to SIGKILL, verifies VRAM released, removes the log on a clean stop |
 | `status.sh` | Introspection | Process, GPU, pinned model revision, backend, KV sizing, plus a live `/v1/models` probe |
 | `bench.py` | Benchmark | CUDA adapter for shared AuditBench v2; records model identity, exact configs, and the resolved host profile |
-| `capability.py` | Capability gate | OpenAI-compatible adapter for shared Capability Check v2 |
+| `capability.py` | Capability gate | OpenAI-compatible adapter for the shared Capability Check |
 | `mimo-v2.6-chat-template.jinja` | Chat template | Loaded when the MiMo config sets `VLLM_CHAT_TEMPLATE`. The checkpoint's template with the thinking opener prefilled; the config records why |
 | `models/*.conf` | Per-model settings | Portable model facts, including an immutable HF revision; all `${VAR:-default}` so env wins |
 | `Makefile` | Guard, defines no targets | Fails with the root target list. Present only to disable Make's built-in `%: %.sh` rule, which turns `make stop` here into an executable copy of `stop.sh` |

@@ -38,7 +38,7 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
   every file. The conversion is deterministic: two separate conversions
   of the pinned revision produced identical files.
 - Kapitsa serves only Clover. Its Qwen3.6-35B-A3B and Qwen3.8-27B catalog
-  profiles (DFlash2 drafters) passed Capability Check v2 but lost to Splash
+  profiles (DFlash2 drafters) lost to Splash
   on sessions/h (16.28 against 20.29, 6.65 against 8.01) and were dropped
   on 2026-10-29; reconsider with a release that moves those numbers.
 - Kapitsa clamps `--context` to `max_position_embeddings`. A positions
@@ -57,7 +57,7 @@ Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
 - Ambient `NI_*` variables are dropped; a model's decode switches come only
   from `KAPITSA_ENGINE_ENV`. Clover decodes self-speculatively
   (`NI_CLOVER_DECODE=spec`) with threshold acceptance: exact acceptance
-  and the 35B's DFlash2 drafter both fail audit fitness. Retest when a
+  and the 35B's DFlash2 drafter both break fitness answers. Retest when a
   release changes Clover's decode modes.
 - The KV pool is the KV room the engine plans at load, read from its
   launch log; `/v1/models` lists the whole catalog and the served model

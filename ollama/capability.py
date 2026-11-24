@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run capability-v2 against the managed Ollama server."""
+"""Run the Capability Check against the managed Ollama server."""
 
 import os
 import pathlib

@@ -18,11 +18,12 @@ llama-bench-method reference, not a serving result. JSON files are under
 `~/.local/state/auditbench/trials/2026-11-15-m5/kapitsa/`; the 0.2.24 row
 is in git history.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Kapitsa `clover-35b-a3b` | 262,144 | 4 | 4,367,951 | 1x 27.58 / 2x 27.01 | 3,900 | 1,787.1 | 84.4 | 9/9 | unavailable | pass | yes | `20261115T155501.941627+0000_kapitsa_clover-35b-a3b_session.json` |
 
-- Capability Check v2 passes 12 of 12. One stream is the optimal
+- Capability Check v3 passes (34 of 36 clean, 2026-11-19; schema
+  enforcement refused, which never gates). One stream is the optimal
   operating point; two streams hold the rate (0.98x) and the ladder stops
   there. Against 0.2.24 (2026-10-29): 25.36 to 27.58 sessions/h at one
   stream, with 3,900 output tokens per session against 4,499; 0.2.24 held
@@ -44,19 +45,16 @@ is in git history.
 
 Exploratory runs of 2026-10-28 on a source build of the same release
 (`b46d9e5`), two slots, `AUDIT_BENCH_STREAMS=1,2` (non-canonical), under
-`~/.local/state/auditbench/trials/2026-10-28-clover/m5/`. Capability Check
-v2 audit fitness, then sessions/h:
+`~/.local/state/auditbench/trials/2026-10-28-clover/m5/`, sessions/h:
 
-| Mode | Fitness | Sessions/h 1x / 2x |
-| -- | -- | -- |
-| self-speculative, threshold, the checkpoint's ramps | 12/12 | 24.88 / 24.45 |
-| self-speculative, `dllm_length_penalty` 0 | 12/12 | -- |
-| self-speculative, `NI_CLOVER_ACCEPT=exact` | 8/12: triage format 3, selection invented 1 | -- |
-| 35B DFlash2 drafter (`NI_CLOVER_DECODE=dflash`) | 8/12: workflow runaway 3, triage format 1 | 25.63 (2/3 complete) / 24.73 |
+| Mode | Sessions/h 1x / 2x |
+| -- | -- |
+| self-speculative, threshold, the checkpoint's ramps | 24.88 / 24.45 |
+| 35B DFlash2 drafter (`NI_CLOVER_DECODE=dflash`) | 25.63 (2/3 complete) / 24.73 |
 
-Exact acceptance decodes the causal pathway greedily with presence 0.9
-counted on every reply token, reasoning included, and the triage answers
-lose the array's brackets. The drafter mode decodes the same pathway at
-the request's sampling without the model's `</think>` ramp, and the
-workflow task never closes its thinking. Retest when a release changes
-Clover's decode modes.
+Exact acceptance (`NI_CLOVER_ACCEPT=exact`) decodes the causal pathway
+greedily with presence 0.9 counted on every reply token, reasoning
+included, and JSON answers lose the array's brackets. The drafter mode
+decodes the same pathway at the request's sampling without the model's
+`</think>` ramp, and long agent turns never close their thinking. Retest
+when a release changes Clover's decode modes.

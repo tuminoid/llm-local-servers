@@ -68,12 +68,12 @@ class SplashTest(unittest.TestCase):
                 runtime.verify_model(values)
 
     def test_gguf_target_names_its_variant_and_the_record_its_repository(self):
-        values = runtime.config("qwen3.8-flash-next-q2")
+        values = runtime.config("qwen3.8-flash-next-iq3s")
         repo, variant = values["SPLASH_MODEL_REPO"].split(":")
-        self.assertEqual(variant, "Q2_0")
-        with mock.patch.dict(os.environ, {"SPLASH_DRAFT_REPO": "incoai/draft:Q2_0"}):
+        self.assertEqual(variant, "IQ3_S")
+        with mock.patch.dict(os.environ, {"SPLASH_DRAFT_REPO": "incoai/draft:IQ3_S"}):
             with self.assertRaisesRegex(ValueError, "SPLASH_DRAFT_REPO"):
-                runtime.config("qwen3.8-flash-next-q2")
+                runtime.config("qwen3.8-flash-next-iq3s")
         draft = Path("/hub/draft/snapshots") / values["SPLASH_DRAFT_REVISION"]
         assembly, hub = mock.Mock(), mock.Mock()
         assembly.verify.return_value = {

@@ -14,15 +14,15 @@ counts sessions whose report ended on its own and named at least 7/8 of its
 findings. JSON files are under `auditbench-trials/2026-11-15-a100/` on the
 host; the 0.2.10 rows are in git history.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Strata `qwen3.8-flash-next-nvfp4` | 262,144 | 1 | 262,144 | 1x 27.66 | 6,188 | 2,136.0 | 110.2 | 3/3 | unavailable | pass | yes | `20261115T164004.814930+0000_strata_qwen3-8-flash-next-nvfp4_session.json` |
-| Strata `deepseek-v4.1-flash-coder-iq2xxs` | 1,048,576 | 1 | 1,048,576 | 1x 9.77 | 8,571 | 827.5 | 50.3 | 3/3 | unavailable | fail | yes | `20261115T174556.949264+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json` |
+| Strata `deepseek-v4.1-flash-coder-iq2xxs` | 1,048,576 | 1 | 1,048,576 | 1x 9.77 | 8,571 | 827.5 | 50.3 | 3/3 | unavailable | pass | yes | `20261115T174556.949264+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json` |
 
-- Capability Check v2 passes with audit fitness 11 of 12 (selection
-  invented 1), `json_schema` enforced and a valid unaided document:
-  `20261115T163746.218824+0000_strata_qwen3-8-flash-next-nvfp4.json`, the
-  same commit. Against 0.2.10 (2026-11-04): 28.76 to 27.66 sessions/h, with
+- Capability Check v3 passes, 36 of 36 clean, audit aptitude +0.86:
+  `20261119T220514.667979+0000_strata_qwen3-8-flash-next-nvfp4.json`
+  (2026-11-19, llm-audit-bench 3.0.0, fleet commit `a21fd8a`). Against
+  0.2.10 (2026-11-04): 28.76 to 27.66 sessions/h, with
   6,188 output tokens per session against 5,480; its three samples spread
   24.89-29.91.
 - Mid-session decode ran 116-137 tok/s; the near-context phase
@@ -30,16 +30,15 @@ host; the 0.2.10 rows are in git history.
 - The DeepSeek Coder row runs on the DeepSeek engine, DSpark at a 0.65
   floor, every routed expert in VRAM. Turn decode 58.7/81.6/76.3 tok/s; the
   983,045-token near-context prompt read 888 tok/s (1,107 s). 39 calls
-  streamed no reasoning. Capability Check v2 fails audit fitness, 8 of 12
-  (workflow no_reasoning 3, selection invented 1), every API check passing:
-  `20261115T174216.285313+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json`.
+  streamed no reasoning. Capability Check v3 passes, 35 of 36 clean (one
+  leak), audit aptitude +0.86:
+  `20261120T015850.589411+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json`.
   Against 0.2.10: 9.89 to 9.77 sessions/h.
 - `deepseek-v4.1-flash-q2` has no row: on 0.2.10 8,666 of its 15,360
   experts were on the GPU at 1,048,576, and `strata-bench` refuses a set
   with experts off the GPU, so 0.2.13 checked its capability only.
-  Capability Check v2 fails audit fitness, 8 of 12 (workflow no_reasoning
-  4; 9 of 12 on 0.2.10), the same commit:
-  `20261115T191906.321559+0000_strata_deepseek-v4-1-flash-q2.json`.
+  Capability Check v3 passes, 36 of 36 clean, audit aptitude +0.86:
+  `20261120T062422.397959+0000_strata_deepseek-v4-1-flash-q2.json`.
 - Strata ends a response at EOS rather than at `max_tokens`, so the
   reference measurement is unavailable; it is a diagnostic only.
 
@@ -55,8 +54,7 @@ top_p 0.95, top_k 20). These runs are not publishable: no fleet adapter
 checked identity. Evidence is under
 `~/.local/state/auditbench/trials/2026-11-04-strata-a100/`.
 
-Every pack kept all 24,576 routed experts in VRAM and passed Capability
-Check v2 with audit fitness 12 of 12 and `json_schema` enforced:
+Every pack kept all 24,576 routed experts in VRAM:
 
 | Pack | Slots | Sessions/h 1x | 2x | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | 245,760-token prompt |
 | -- | --: | --: | --: | --: | --: | --: | --: |
@@ -117,9 +115,8 @@ to the 50 and 104 steps that fit 7/8 of the context. Evidence is under
   0.49 at 512K and 0.97 at 1M: the Coder keeps every expert on the card at
   all three, and the IQ2_XXS set moves about a hundred more to the CPU lane
   at 1M. Its CPU experts (56.7-57.6 GB) are copied into RAM at load.
-- Both sets fail Capability Check v2 audit fitness the same way, 10 of 12:
-  every API check, selection and triage pass, and two workflow samples
-  answer the audit's opening turn with a 46-token tool call and no thinking
+- In both sets two of four workflow samples answered the audit's opening
+  turn with a 46-token tool call and no thinking
   (`no_reasoning 2`). The template opens the thinking block and asks for
   reasoning before any tool call at effort 75 of 100; the model scales its
   thinking to the step. A replay of that opening turn on the Coder left 4 of

@@ -43,7 +43,7 @@ MAKEFLAGS += --no-builtin-rules
 	$(MAKE) --no-print-directory help >&2; \
 	exit 1
 
-# The AuditBench v2 and Capability Check v2 harnesses live in the sibling
+# The AuditBench v2 and Capability Check v3 harnesses live in the sibling
 # llm-audit-bench repository. Local bench, capability, and test targets import
 # them via PYTHONPATH; deploy targets rsync the two modules next to the
 # adapters on remote hosts, where they import as adjacent files.
@@ -99,12 +99,16 @@ CAPABILITY_TIMEOUT ?= 600
 CAPABILITY_REASONING_TOKENS ?= 2048
 # Empty means the harness default state directory on the executing host.
 CAPABILITY_OUTPUT_DIR ?=
-# Empty means the harness default samples per audit fitness task; 0 skips it.
+# Empty means the harness default samples per fitness task; 0 skips fitness
+# and vulnerability identification.
 CAPABILITY_FITNESS_SAMPLES ?=
+# Minutes after which no further sample starts. Empty means none.
+CAPABILITY_TIME_LIMIT ?=
 CAPABILITY_ENV = CAPABILITY_TIMEOUT=$(CAPABILITY_TIMEOUT) \
 	CAPABILITY_REASONING_TOKENS=$(CAPABILITY_REASONING_TOKENS) \
 	CAPABILITY_OUTPUT_DIR=$(CAPABILITY_OUTPUT_DIR) \
-	CAPABILITY_FITNESS_SAMPLES=$(CAPABILITY_FITNESS_SAMPLES)
+	CAPABILITY_FITNESS_SAMPLES=$(CAPABILITY_FITNESS_SAMPLES) \
+	CAPABILITY_TIME_LIMIT=$(CAPABILITY_TIME_LIMIT)
 
 # The hf CLI that pulls run through uv when the host has no hf of its own and
 # the runtime has no venv to take one from (ds4, LM Studio).
@@ -163,7 +167,7 @@ LMSTUDIO_DIR := lmstudio
 # install and start report the drift and serve it.
 LMSTUDIO_VERSION ?= 0.4.25+1
 LMSTUDIO_SPLASH_ENGINE_VERSION ?= 0.0.5
-LMSTUDIO_MLX_ENGINE_VERSION ?= 1.13.1
+LMSTUDIO_MLX_ENGINE_VERSION ?= 1.14.0
 export LMSTUDIO_VERSION LMSTUDIO_SPLASH_ENGINE_VERSION LMSTUDIO_MLX_ENGINE_VERSION
 
 OLLAMA_DIR := ollama
@@ -217,7 +221,7 @@ help:
 	@echo "  make all         - Run lint and test"
 	@echo "  make clean       - Remove Python bytecode and editor droppings"
 	@echo ""
-	@echo "  AuditBench v2 and Capability Check v2 run from the sibling"
+	@echo "  AuditBench v2 and Capability Check v3 run from the sibling"
 	@echo "  llm-audit-bench checkout: AUDIT_BENCH_DIR=$(AUDIT_BENCH_DIR)"
 	@echo ""
 	@echo "  Usage: make <runtime>-<verb> [MODEL=<name>]"
@@ -230,7 +234,7 @@ help:
 	@echo "    status      Show process, identity, context and memory"
 	@echo "    logs        Follow the server log"
 	@echo "    bench       Run AuditBench v2"
-	@echo "    capability  Check API capabilities and audit fitness"
+	@echo "    capability  Check engine and model compatibility, score audit aptitude"
 	@echo "    stop        Stop and verify the GPU, memory and port were released"
 	@echo "    bootstrap   Remote only: install the pinned runtime on the host"
 	@echo "    tunnel      Remote only: forward a loopback port to the remote server"

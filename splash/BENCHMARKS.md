@@ -13,7 +13,7 @@ macOS 27.0.1), on llm-audit-bench 2.4.0 from clean trees. `qwen3.6-35b-a3b` and
 2026-10-30, from the trial tree `18bf1a9`, Flash-Next IQ3_S from `d5c9a46`;
 those trees predate the conf's memory need, so the cap each conf now declares
 was passed as `SPLASH_MAX_MEMORY`, and their lifecycle hashes differ from this
-tree's. Flash-Next Q2_0 and IQ3_S, Ornith 1.5 122B and Bonsai 2 ran again
+tree's. Flash-Next IQ3_S, Ornith 1.5 122B and Bonsai 2 ran again
 2026-10-31 on llm-audit-bench 2.5.0 from `27411b0`, at their declared needs.
 `ornith1.5-35b-a3b` ran 2026-11-15 on llm-audit-bench 2.5.0 from the clean trial
 commit `54822f2` (this profile), its JSON under `.../2026-11-15-m5/splash/`.
@@ -31,66 +31,65 @@ section of this file is AuditBench v1 or older, never comparable with v2. Their
 top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
 trial-directory copies remain, and the figures stay here and in git history.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Splash `qwen3.8-flash-next-q2` | 262,144 | 4 | 1,482,752 | 1x 31.65 / 2x 32.27 | 5,057 | 2,185.3 | 128.7 | 7/7 | 2,149 / 236.5 | pass | yes, 2x | `20261031T114729.877926+0000_splash_qwen3-8-flash-next-q2_session.json` |
 | Splash `qwen3.8-flash-next-iq3s` | 262,144 | 4 | 1,138,688 | 1x 27.17 / 2x 28.73 | 6,360 | 2,054.0 | 118.3 | 9/9 | 2,014 / 180.4 | pass | yes, 2x | `20261031T121538.911180+0000_splash_qwen3-8-flash-next-iq3s_session.json` |
 | Splash `ornith1.5-35b-a3b` | 262,144 | 4 | 4,448,256 | 1x 28.01 / 2x 30.72 | 8,366 | 2,012.5 | 167.4 | 8/8 | 5,374 / 279.4 | pass | yes, 2x | `20261115T131122.781662+0000_splash_ornith1-5-35b-a3b_session.json` |
-| Splash `flint-gguf` | 262,144 | 4 | 802,816 | 1x 17.19 / 2x 19.49 | 14,971 | 1,593.9 | 152.9 | 9/9 | 5,086 / 215.2 | pass | yes | `20261030T163459.898585+0000_splash_flint-gguf_session.json` |
-| Splash `ornith1.5-122b` | 262,144 | 4 | 1,974,272 | 1x 11.87 / 2x 11.80 | 6,254 | 744.2 | 73.5 | 6/6 | 1,807 / 170.1 | pass | yes, 1x | `20261031T125002.145677+0000_splash_ornith1-5-122b_session.json` |
+| Splash `flint-gguf` | 262,144 | 4 | 802,816 | 1x 17.19 / 2x 19.49 | 14,971 | 1,593.9 | 152.9 | 9/9 | 5,086 / 215.2 | fail | yes | `20261030T163459.898585+0000_splash_flint-gguf_session.json` |
+| Splash `ornith1.5-122b` | 262,144 | 4 | 1,974,272 | 1x 11.87 / 2x 11.80 | 6,254 | 744.2 | 73.5 | 6/6 | 1,807 / 170.1 | fail | yes, 1x | `20261031T125002.145677+0000_splash_ornith1-5-122b_session.json` |
 | Splash `bonsai2-27b-pq2` | 262,144 | 4 | 1,675,264 | 1x 8.10 / 2x 8.48 | 9,201 | 534.9 | 58.3 | 9/9 | 1,007 / 77.7 | pass | yes, 2x | `20261031T140229.049761+0000_splash_bonsai2-27b-pq2_session.json` |
 | Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 20.90 / 4x 20.18 | 4,320 | 1,906.2 | 211.5 | 14/15 | 5,507 / 421.6 | pass | yes, 1x | `20261031T011046.486492+0000_splash_qwen3-6-35b-a3b_session.json` |
 | Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 8.57 / 4x 8.49 | 7,164 | 557.4 | 63.0 | 15/15 | 1,010 / 116.6 | pass | yes | `20261031T022632.490447+0000_splash_qwen3-8-27b_session.json` |
 
-- Both profiles pass Capability Check v2: `qwen3.6-35b-a3b` 12 of 12,
-  `qwen3.8-27b` 11 of 12 (failed: format 1). `qwen3.6-35b-a3b` leads the
+- Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-19/20, fleet
+  `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)): five of seven
+  profiles pass. `flint-gguf` (two tool misuses) and `ornith1.5-122b`
+  (analysis prose around its JSON answers) fail, so their rates cannot
+  promote them.
+- `qwen3.6-35b-a3b` leads the
   host's Splash rows at 20.90 at one stream, its optimal operating point:
   one of 12 sessions at 4x was incomplete, so the 20.18 there is not a
   serving rate. 212 of its 255 calls streamed no reasoning.
 - `qwen3.8-27b` now peaks at one stream (8.57; four streams 0.99x), where
   1.3.2 gained 1.09x from four.
-- `qwen3.8-flash-next-q2` (Qwen3.8-Flash-Next 125B-A6B, ISTA-DASLab's
-  GSQ-RCO Q2_0, 66.4 GB, Splash's suggested build) is the host's fastest
-  audit profile at 32.27 sessions/h at two streams. It passed Capability
-  Check v2 12 of 12 twice: in the 2026-10-30 trial at a 100 GiB cap and at
-  its declared 85 GiB, where available memory stayed above 26 GiB.
-- `qwen3.8-flash-next-iq3s` is the same model in ISTA-DASLab's recommended
-  IQ3_S build (83.6 GB), 12 of 12 at 28.73 sessions/h: 11% slower than Q2_0
-  for a higher-quality quantization. Unsloth's UD-IQ4_XS (93.7 GB) failed
-  audit fitness 10 of 12 (two invented findings) and streamed experts from
-  the SSD under an 88 GiB cap; it has no profile.
+- `qwen3.8-flash-next-iq3s` (Qwen3.8-Flash-Next 125B-A6B, ISTA-DASLab's
+  recommended GSQ-RCO IQ3_S build, 83.6 GB) runs 28.73 sessions/h at two
+  streams. Splash's suggested Q2_0 build (66.4 GB) ran 32.27 but scored
+  +0.57 against IQ3_S's +0.79 in Capability Check v3; it was dropped on
+  2026-11-22 and its rows are in git history. Unsloth's UD-IQ4_XS (93.7
+  GB) streamed experts from the SSD under an 88 GiB cap; it has no profile.
 - `ornith1.5-35b-a3b` (DeepReinforce's MLX 4-bit, text-only: the build
-  ships no processor config) passes 12 of 12 and runs 30.72 sessions/h at
+  ships no processor config) runs 30.72 sessions/h at
   two streams, its optimal point, against 9.15 for the vLLM-Metal profile it
   replaces. It decodes with the Qwen3.6-35B-A3B DFlash2 draft, trained on
   the base model's weights: Ornith is a structural twin of Qwen3.6-35B-A3B,
   and the report decodes at 167.4 tok/s at one stream. Its 245,772-token
   near-context prefill reads 1,492 tok/s.
-- `flint-gguf` (Recursive Flint 40B-A2.5B, Unsloth UD-Q4_K_XL) passes 11 of
-  12 (failed: wrong_verdicts 1); Splash documents no thinking-off control
+- `flint-gguf` (Recursive Flint 40B-A2.5B, Unsloth UD-Q4_K_XL): Splash
+  documents no thinking-off control
   for Flint, so that check is skipped. Its KV pool admits three
   full-context streams; two, its optimal point, is the largest canonical
   stream count that fits.
 - `ornith1.5-122b` (DeepReinforce's MLX 4-bit, with its vision tower)
-  passes 12 of 12 and peaks at one stream (11.87; two streams 0.99x). Its
+  peaks at one stream (11.87; two streams 0.99x). Its
   first 2.4.0 bench at a 100 GiB cap was stopped by the campaign's memory
   watchdog at 12 GiB available.
-- `bonsai2-27b-pq2` (PrismML Ternary Bonsai 2 27B, PQ2_0, 7.2 GB) passes 12 of
-  12 at 8.48 sessions/h at two streams, 99% of the MLX 4-bit Qwen3.8-27B's
+- `bonsai2-27b-pq2` (PrismML Ternary Bonsai 2 27B, PQ2_0, 7.2 GB) runs
+  8.48 sessions/h at two streams, 99% of the MLX 4-bit Qwen3.8-27B's
   8.57 in less than half its weight memory (7.2 against 16.1 GB). Its 245,760-token
   near-context prefill takes 584 s (421 tok/s), level with the MLX 27B's 560
   s.
 
 ### Stream ladder against four streams (2026-10-31)
 
-Two streams gain 2% (Q2_0), 6% (IQ3_S), 5% (Bonsai 2) and -1% (Ornith) over
+Two streams gain 6% (IQ3_S), 5% (Bonsai 2) and -1% (Ornith) over
 one in the 2.5.0 runs, so every ladder stopped at 2x. Noncanonical
 `AUDIT_BENCH_STREAMS=1,4` runs on the same tree measured the four-stream
-leg: Q2_0 1x 29.84 / 4x 33.60, IQ3_S 26.42 / 30.22, Ornith 11.42 / 12.28 and
+leg: IQ3_S 1x 26.42 / 4x 30.22, Ornith 11.42 / 12.28 and
 Bonsai 2 7.56 / 8.21, every session complete (JSON in the same directory).
 Four streams beat the ladder's two by 4 to 5% and fall 3% short for Bonsai,
 within the 3-7% between runs of the same 1x; the 2.4.0 four-stream rows
-were Q2_0 35.76, IQ3_S 28.84, Ornith 12.21 and Bonsai 2 7.99.
+were IQ3_S 28.84, Ornith 12.21 and Bonsai 2 7.99.
 
 ### Against Splash 1.3.2
 
@@ -136,11 +135,6 @@ the release's own changes, not the new tier.
   trial session measured 384 tok/s near-context at 1x.
 - The Mac reached thermal state `fair` within two minutes of each
   canonical start; 1.0 does not report it.
-- `qwen3.6-35b-a3b` sits at the audit-fitness limit on both releases: the
-  same-day 1.0 checks passed only 9 and 10 of 12 (invented paths, one
-  instruction miss, one runaway), and a 1.3.1 trial run failed at 10 of 12
-  before the canonical 11-of-12 pass. Its gate result is a draw from that
-  rate, not a release property.
 
 ### Growing conversation (2026-10-12)
 
@@ -159,21 +153,21 @@ two compliant samples do not show that the failure rate fell.
 Splash 1.1.0 and later also serve `unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_M`,
 which upstream recommends over the uniform 4-bit MLX checkpoint for
 thinking loops (upstream #326). An uncommitted profile at revision
-`4ca72078` with the same DFlash2 draft and sampling ran two Capability
-Check v2 runs and one session on 1.3.1. It was not kept:
+`4ca72078` with the same DFlash2 draft and sampling ran two capability
+checks and one session on 1.3.1. It was not kept:
 
 - `json_schema` failed both runs with identical retained output (the
   first 8,000 of 17,721 characters; equal length): the check decodes
   greedily, and under the schema grammar the model invents a
   `sk_live_...` token in a finding's evidence string, then repeats a
   180-character alphanumeric cycle until the 16,384-token budget ends, so
-  the document never closes. The unaided document is valid; audit fitness
-  passed 12 of 12 both times. The MLX target passes the same check.
+  the document never closes. The unaided document is valid. The MLX target
+  passes the same check.
 - Its session (1x 6.66 / 4x 7.20 sessions/h, prefill 448.9 tok/s 1x) is
   no faster than the MLX target, which ran 6.41 to 6.73 at 1x and 7.47 to
   7.65 at 4x on 1.3.1.
 - Retest when a release changes grammar-constrained decoding or the GGUF
-  target kernels: rerun Capability Check v2 first.
+  target kernels: rerun Capability Check first.
 
 ## Managed campaign, Apple M5 Max, 2026-09-19 to 2026-09-20
 

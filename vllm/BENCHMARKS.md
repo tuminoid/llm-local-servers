@@ -12,7 +12,7 @@ failure modes behind those summaries.
 The A100 rows at the top use canonical [AuditBench
 v2](https://github.com/tuminoid/llm-audit-bench); every later section is
 AuditBench v1 or older history, never comparable with v2. The RTX PRO 3000
-vLLM profiles were dropped on 2026-10-12 (two failed Capability Check v2,
+vLLM profiles were dropped on 2026-10-12 (two failed their capability check,
 Nemotron Nano was in no inventory); their rows are in git history. Retired
 A100 measurements remain clearly separated later in this file and must not be
 combined with canonical rates. Their top-level retained JSON on the M5 and
@@ -36,7 +36,7 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
 `852441d`, its profile before a rebase onto main, under
 `auditbench-trials/2026-10-26-nanbeige-hunt/` on the host.
 
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v2 | Publishable | JSON |
+| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | vLLM `mimo-v2.6-9b-awq` | 262,144 | 8 | 2,229,526 | 1x 58.97 / 8x 93.99 | 3,263 | 5,032.5 | 109.1 | 16/27 | 7,663 / 175.5 | fail | no | `20261011T051029.048101+0000_vllm-cuda_mimo-v2-6-9b-awq_session.json` |
 | vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,797,230 | 1x 38.49 / 8x 58.67 | 5,328 | 6,219.1 | 111.4 | 27/27 | 4,591 / 152.2 | pass | yes | `20261011T053833.661461+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json` |
@@ -44,12 +44,12 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
 | vLLM `qwen3.8-27b-512k` | 524,288 | 8 | 779,829 | 1x 14.49 / 4x 19.55 | 5,654 | 1,718.9 | 36.7 | 15/15 | 2,519 / 49.3 | pass | yes | `20261011T014610.294573+0000_vllm-cuda_qwen3-8-27b-512k_session.json` |
 | vLLM `qwen3.8-27b` | 262,144 | 8 | 954,019 | 1x 11.83 / 4x 21.48 | 10,860 | 1,827.6 | 49.8 | 15/15 | 2,870 / 75.4 | pass | yes | `20261010T220419.237789+0000_vllm-cuda_qwen3-8-27b_session.json` |
 | vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 522,956 | 1x 8.40 / 2x 13.04 | 7,744 | 1,736.4 | 22.8 | 9/9 | 2,561 / 110.0 | pass | yes | `20261010T231305.575650+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json` |
-| vLLM `nanbeige4.3-33b-w4a16` | 262,144 | 8 | 284,704 | 1x 7.19 | 10,566 | 918.2 | 27.7 | 2/2 | 2,836 / 71.4 | pass | yes | `20261026T160414.161697+0000_vllm-cuda_nanbeige4-3-33b-w4a16_session.json` |
+| vLLM `nanbeige4.3-33b-w4a16` | 262,144 | 8 | 284,704 | 1x 7.19 | 10,566 | 918.2 | 27.7 | 2/2 | 2,836 / 71.4 | fail | yes | `20261026T160414.161697+0000_vllm-cuda_nanbeige4-3-33b-w4a16_session.json` |
 
-- Five of eight profiles pass Capability Check v2, against three on
-  0.30.0: `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` failed only on
-  json_schema `whitespace_runaway` and now pass with grammar whitespace
-  forbidden in their confs.
+- Five of seven profiles pass Capability Check v3 (llm-audit-bench 3.0.0,
+  2026-11-19, fleet `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)).
+  `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` enforce the schema with
+  grammar whitespace forbidden in their confs.
 - `qwen3.6-35b-a3b-awq` is the fastest profile that passes: 38.49
   sessions/h at one stream and 58.67 at eight, every session complete.
   The campaign's first run measured 41.50 / 59.00 but left one 8x session
@@ -61,14 +61,13 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
   tok/s and the KV pool from 774,131 to 954,019 tokens.
   `qwen3.8-27b-512k` keeps FP8; its one-stream 14.49 is a single run
   (10.62 to 11.92 in the same week's trials).
-- `nanbeige4.3-33b-w4a16` (Nanbeige4.3-33B, dense, AutoRound INT4) passes
-  Capability Check v2 11 of 12 (one workflow runaway) only under 2.4.0's
-  context-scaled answer cap: at the old 32,768 it deliberates selection past
-  the cap on topic, failing 8 of 12 on this build and 9 of 12 on the FP8 one,
-  and passes 12 of 12 twice at 65,536. One session fits the 284,704-token
-  pool, so it measures one stream: 7.19 sessions/h, about 10.6k output tokens
-  per session with preserved reasoning. The schema check, advisory, ran into a
-  whitespace runaway.
+- `nanbeige4.3-33b-w4a16` (Nanbeige4.3-33B, dense, AutoRound INT4) fails
+  Capability Check v3 compatibility, 6 of 8 fitness samples clean: one
+  workflow turn emitted tool arguments that are not JSON and one ran out of
+  turn budget. Its selection answers run 33k to 64k tokens. One session fits
+  the 284,704-token pool, so it measures one stream: 7.19 sessions/h, about
+  10.6k output tokens per session with preserved reasoning. The schema
+  check, which never gates, ran into a whitespace runaway.
 - DFlash 2 still loses at the declared sampling: 8.40 / 13.04 sessions/h,
   report decode 22.8 tok/s. A fixed-depth decode probe of the two profiles
   as configured (2026-10-22, the vLLM 0.32.0 trial tree, not the pin; 2,048
@@ -83,11 +82,12 @@ The 2026-09-27 rows on vLLM 0.30.0 (fleet `d9ad1a7`) are in git history.
   (x1.01). The profile stays for greedy short-context use; serve plain for
   audits.
 - MiMo is the fastest profile (58.97 / 93.99) but 11 of 27 sessions did
-  not finish their report's findings and it fails audit fitness, so
-  neither its rate nor the model is usable.
-- `qwen3-coder-30b` (36.77 / 38.83 @2x, fails both tool-call checks and
-  fitness) and `glm4.7-flash-awq` (11.17 / 11.09 @4x, 9 of 15 sessions
-  incomplete, fails fitness) were also measured; both models were dropped
+  not finish their report's findings and it fails Capability Check v3
+  compatibility (5 of 8 fitness samples clean), so neither its rate nor the
+  model is usable.
+- `qwen3-coder-30b` (36.77 / 38.83 @2x, fails both tool-call checks) and
+  `glm4.7-flash-awq` (11.17 / 11.09 @4x, 9 of 15 sessions incomplete) were
+  also measured; both models were dropped
   from the A100 on 2026-10-12, and their rows here and below are in git
   history.
 

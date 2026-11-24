@@ -241,7 +241,7 @@ active) as unsloth's `LFM2.5-24B-A2B-UD-IQ3_XXS.gguf` (9.0 GB), at the
 revision and sha256 in the conf, imported like Saluki as
 `lfm2.5:24b-a2b-iq3xxs` with the Modelfile in its conf (`RENDERER lfm2`,
 `PARSER lfm2-thinking`). It runs at its native 131,072 with f16 KV, all on
-the GPU. It fails Capability Check v2 audit fitness, so it serves
+the GPU. It fails Capability Check v3 compatibility, so it serves
 interactive use and is not an audit profile; measurements are in
 [BENCHMARKS.md](BENCHMARKS.md).
 

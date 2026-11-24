@@ -9,13 +9,13 @@ is tuned for is deep-context security-audit calls; [AGENTS.md](AGENTS.md)
 states the mission and the invariants.
 
 Each host keeps the best provider per model: one runtime, chosen by
-Capability Check v2 and then the AuditBench session rate. LM Studio is kept
+Capability Check v3 and then the AuditBench session rate. LM Studio is kept
 beside it as the entry-level option, since it installs cleanly on every
 platform.
 
-Serving performance is measured with AuditBench v2, and API compatibility
-and audit fitness are gated with Capability Check v2. Both
-live in the sibling [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
+Serving performance is measured with AuditBench v2, and engine and model
+compatibility (API semantics and clean audit-shaped work) is gated with
+Capability Check v3. Both live in the sibling [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 repository (`docs/PROTOCOL.md` and `docs/CAPABILITY.md` are the
 canonical protocol documents); this repository holds the runtime
 adapters, model configs, and results.
@@ -62,7 +62,7 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-status` | Process, memory split, context allocation, KV sizing |
 | `make <runtime>-logs` | Follow the server log |
 | `make <runtime>-bench MODEL=<name>` | Run AuditBench v2 |
-| `make <runtime>-capability MODEL=<name>` | Run Capability Check v2 |
+| `make <runtime>-capability MODEL=<name>` | Run Capability Check v3 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, `lmstudio`,
 `ds4`, `kapitsa` or `strata` (plus `ollama-install`, `vllm-metal-install`,
@@ -178,7 +178,7 @@ derived. Capability pass/fail is in [CAPABILITIES.md](CAPABILITIES.md).
 The mission workload: a growing tool-loop conversation resent every turn,
 report or verdict at depth, 16 tool steps at 262,144 configured context
 (fewer at shorter contexts), at the declared sampling. Ranked rows pass
-Capability Check v2 (schema enforcement is advisory) and publish their
+Capability Check v3 compatibility and publish their
 optimal operating point: the fastest measured stream count whose sessions
 all completed, where one stream qualifies as much as N. `@Nx` names the
 measured concurrency; an `@Nx` rate with an incomplete session is shown
@@ -201,20 +201,18 @@ reference and the retained JSON names are in
 | --: | -- | -- | --: | --: | -- | --: |
 | 1 | vLLM `qwen3.6-35b-a3b-awq` | MoE | 38.49 | 58.67 @8x | 8x | 111.4 |
 | 2 | vLLM `gemma4-26b-a4b-awq` | MoE | 37.20 | 45.99 @8x | 8x | 63.6 |
-| 3 | Ollama `ornith1.5-35b-a3b` GGUF | MoE | 32.21 | -- | 1x | 59.9 |
-| 4 | Strata `qwen3.8-flash-next-nvfp4` (125B-A6B, NVFP4) | MoE | 27.66 | -- | 1x | 110.2 |
-| 5 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 4x | 49.8 |
-| 6 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 4x | 36.7 |
-| 7 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 15.53 | -- | 1x | 119.6 |
-| 8 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
-| 9 | Ollama `flint-40b-a2b-nvfp4` (40B-A2.5B) | MoE | 9.94 | 12.14 @2x, incomplete | 1x | 40.7 |
-| 10 | vLLM `nanbeige4.3-33b-w4a16` | dense | 7.19 | -- | 1x | 27.7 |
+| 3 | Strata `qwen3.8-flash-next-nvfp4` (125B-A6B, NVFP4) | MoE | 27.66 | -- | 1x | 110.2 |
+| 4 | vLLM `qwen3.8-27b` (W4A16) | dense | 11.83 | 21.48 @4x | 4x | 49.8 |
+| 5 | vLLM `qwen3.8-27b-512k` | dense | 14.49 | 19.55 @4x | 4x | 36.7 |
+| 6 | Ollama `nemotron-3.5-bolt-74b-a9b-iq2` (74B-A9B) | hybrid MoE | 15.53 | -- | 1x | 119.6 |
+| 7 | vLLM `qwen3.8-27b-dflash2` | dense | 8.40 | 13.04 @2x | 2x | 22.8 |
+| 8 | Ollama `flint-40b-a2b-nvfp4` (40B-A2.5B) | MoE | 9.94 | 12.14 @2x, incomplete | 1x | 40.7 |
+| 9 | Strata `deepseek-v4.1-flash-coder-iq2xxs` (1,048,576 context) | MoE | 9.77 | -- | 1x | 50.3 |
 
-Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and Strata
-`deepseek-v4.1-flash-coder-iq2xxs` (9.77 at 1x, 1,048,576 context) fail
-Capability Check v2 audit fitness. Strata `deepseek-v4.1-flash-q2` fails it
-too and has no serving rate: part of its experts run on the CPU. Both
-DeepSeek profiles serve for interactive use.
+Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and
+`nanbeige4.3-33b-w4a16` (7.19/h) and Ollama `ornith1.5-35b-a3b` (32.21/h)
+fail Capability Check v3 compatibility. Strata `deepseek-v4.1-flash-q2`
+passes but has no serving rate: part of its experts run on the CPU.
 DFlash 2 loses to plain qwen3.8 at the declared sampling (8.40 / 13.04 @2x); see
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 
@@ -235,26 +233,26 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 
 | Rank | Runtime and profile | Tier | Context | Sessions/h 1x | Sessions/h @Nx | Optimal | Report decode 1x |
 | --: | -- | -- | --: | --: | --: | -- | --: |
-| 1 | Splash `qwen3.8-flash-next-q2` (125B-A6B, GSQ-RCO Q2_0) | MoE | 262,144 | 31.65 | 32.27 @2x | 2x | 128.7 |
+| 1 | Ollama `nemotron-3.5-lightning-30b-mlx` (30B-A3B) | hybrid MoE | 262,144 | 31.07 | -- | 1x | 123.3 |
 | 2 | Splash `ornith1.5-35b-a3b` (35B-A3B, text-only) | MoE | 262,144 | 28.01 | 30.72 @2x | 2x | 167.4 |
 | 3 | Splash `qwen3.8-flash-next-iq3s` (125B-A6B, GSQ-RCO IQ3_S) | MoE | 262,144 | 27.17 | 28.73 @2x | 2x | 118.3 |
 | 4 | Kapitsa `clover-35b-a3b` (block diffusion, 35B-A3B) | MoE | 262,144 | 27.58 | 27.01 @2x | 1x | 84.4 |
 | 5 | Splash `qwen3.6-35b-a3b` | MoE | 262,144 | 20.90 | 20.18 @4x, incomplete | 1x | 211.5 |
-| 6 | Splash `flint-gguf` (40B-A2.5B) | MoE | 262,144 | 17.19 | 19.49 @2x | 2x | 152.9 |
-| 7 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 12.79 | -- | 1x | 55.3 |
-| 8 | Splash `ornith1.5-122b` (122B-A10B) | MoE | 262,144 | 11.87 | 11.80 @2x | 1x | 73.5 |
+| 6 | Ollama `muse-glimmer-30b-mlx` (32B, 3:1 sliding-window attention) | dense | 131,072 | 20.12 | -- | 1x | 44.0 |
+| 7 | LM Studio `qwen3.6-35b-a3b-splash` | MoE | 262,144 | 18.70 | -- | 1x | 177.0 |
+| 8 | Ollama `nemotron-3.5-super-mlx` (120B-A12B) | hybrid MoE | 524,288 | 12.79 | -- | 1x | 55.3 |
 | 9 | Ollama `nemotron-3.5-bolt-74b-a9b-q3kxl` (74B-A9B) | hybrid MoE | 262,144 | 9.09 | -- | 1x | 32.2 |
 | 10 | Splash `qwen3.8-27b` | dense | 262,144 | 8.57 | 8.49 @4x | 1x | 63.0 |
 | 11 | Splash `bonsai2-27b-pq2` (ternary) | dense | 262,144 | 8.10 | 8.48 @2x | 2x | 58.3 |
 | 12 | LM Studio `qwen3.8-27b-splash` | dense | 262,144 | 8.12 | -- | 1x | 53.5 |
-| 13 | Ollama `mimo-v2.6-flash-q2ks` (309B-A15B) | MoE | 262,144 | 5.29 | -- | 1x | 22.3 |
-| 14 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 13 | vLLM-Metal `granite4.2-30b-4bit` | hybrid MoE | 131,072 | 2.14 | 3.18 @2x | 2x | 10.5 |
+| 14 | Ollama `nanbeige4.3-33b-q4km` | dense | 262,144 | 1.47 | -- | 1x | 6.0 |
 
-Unranked: LM Studio `qwen3.6-35b-a3b-splash`, Ollama `muse-glimmer-30b-mlx`
-(20.12/h at 131k) and `nanbeige4.3-33b-q4km` (1.47/h) fail Capability Check v2
-audit fitness; their rates cannot promote them. The LM Studio MLX-engine
-profiles pass but their runs are noncanonical by design (off-by-one token
-allowance). Details are in each runtime's BENCHMARKS.md.
+Unranked: Splash `flint-gguf` (19.49 @2x) and `ornith1.5-122b` (11.87),
+Ollama `mimo-v2.6-flash-q2ks` (5.29) and LM Studio `qwen3.8-27b-mlx` fail
+Capability Check v3 compatibility; their rates cannot promote them. LM
+Studio `qwen3.6-35b-a3b-mlx` passes but its runs are noncanonical by design
+(off-by-one token allowance). Details are in each runtime's BENCHMARKS.md.
 
 #### Interactive use
 
@@ -262,30 +260,25 @@ These profiles serve interactive agentic sessions and are not ranked for
 audits.
 
 Ollama `gemma4-26b-mlx` (Gemma 4 26B-A4B, MLX NVFP4, 262,144) passes
-Capability Check v2 12 of 12; a generic model, it serves interactive use
-(25.63 sessions/h in an unpublishable session run, one report recalling no
+Capability Check v3; a generic model, it serves interactive use (25.63
+sessions/h in an unpublishable session run, one report recalling no
 findings). Details are in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
-Ollama `nemotron-3.5-lightning-30b-mlx` (Nemotron 3.5 Lightning 30B-A3B, MLX
-NVFP4, 262,144) runs 31.07 sessions/h but passed audit fitness in 3 of 13
-Capability Check v2 runs, its 8-bit builds included, so it serves
-interactive use. Details are in [CAPABILITIES.md](CAPABILITIES.md).
-
 ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
-Capability Check v2 and runs 10.00 sessions/h; Splash serves the same model for
-audits 3.6x faster, so ds4 keeps it for interactive use. Speed is from the
+Capability Check v3 and runs 10.00 sessions/h; Splash serves the same model for
+audits 2.9x faster, so ds4 keeps it for interactive use. Speed is from the
 262,144 runs, one stream, in tok/s. At 524,288 a 50-step session to about 445k
 tokens took Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its
-checkpoints evicted at depth. ds4 has no `response_format`, which fails only
-the advisory schema check. Details are in
+checkpoints evicted at depth. ds4 has no `response_format`, so schema
+enforcement, which never gates, is broken. Details are in
 [ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
 
-| Model | Context | Audit fitness | Tool calls | Turn decode, mid session | Report decode, ~160k deep | Session prefill | Interactive use |
+| Model | Context | Capability v3 | Tool calls | Turn decode, mid session | Report decode, ~160k deep | Session prefill | Interactive use |
 | -- | --: | -- | -- | --: | --: | --: | -- |
-| `qwen3.8-flash-next-q4` | 524,288 (YaRN) | pass, 12/12 | pass | 69.3 | 60.9 | 1,277 | yes, the pick |
-| `deepseek-v4-flash-q2` | 524,288 | 11/12 at 262,144, 10/12 at 524,288 | pass | 33.4 | 27.2 | 420 | yes, slower |
-| `glm5.3-flash-q2` | 262,144 | pass, 11/12 | fail: string-typed arguments | 54.2 | 26.9 | 364 | no |
-| `deepseek-v4.1-flash-q2` | 262,144 | pass, 11/12 | pass | 14.7 | 14.2 | 629 | yes, slow: SSD streaming |
+| `qwen3.8-flash-next-q4` | 524,288 (YaRN) | pass, +0.86 | pass | 69.3 | 60.9 | 1,277 | yes, the pick |
+| `deepseek-v4-flash-q2` | 524,288 | pass, +0.71 | pass | 33.4 | 27.2 | 420 | yes, slower |
+| `glm5.3-flash-q2` | 262,144 | fail | fail: string-typed arguments | 54.2 | 26.9 | 364 | no |
+| `deepseek-v4.1-flash-q2` | 262,144 | pass, +0.71 | pass | 14.7 | 14.2 | 629 | yes, slow: SSD streaming |
 
 ### RTX PRO 3000 Blackwell laptop GPU
 
@@ -299,5 +292,5 @@ in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 | 2 | Ollama `saluki-27b` (2-bit Qwen3.8-27B, all on GPU) | dense | 163,840 | 4.56 | -- | 1x | 11.4 |
 
 Unranked: Ollama `lfm2.5-24b-a2b` (7.49/h at 131,072, all on GPU) fails
-Capability Check v2 audit fitness and its 1x run is incomplete; it is the
+Capability Check v3 compatibility and its 1x run is incomplete; it is the
 RTX's interactive profile.

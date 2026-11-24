@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capability Check v2 against the managed ds4-server."""
+"""Capability Check against the managed ds4-server."""
 
 import os
 import sys
