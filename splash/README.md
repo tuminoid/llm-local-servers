@@ -87,7 +87,7 @@ tool-call, streaming, JSON and schema results in
 [CAPABILITIES.md](../CAPABILITIES.md).
 
 The generated provider `splash` lists every config, keyed by
-`SPLASH_MODEL_REPO`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+`SPLASH_MODEL_REPO`. See [opencode/README.md](../opencode/README.md).
 
 ```bash
 OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/splash/opencode.json opencode

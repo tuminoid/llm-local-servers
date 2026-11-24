@@ -111,7 +111,7 @@ not reconnect automatically.
 
 The generated providers `vllm` (`127.0.0.1:8000`) and `vllm-remote`
 (`127.0.0.1:8001`, where `make vllm-remote-tunnel` lands) list every config
-here; see [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+here; see [opencode/README.md](../opencode/README.md).
 
 ```bash
 make vllm-start MODEL=qwen3.6-35b-a3b-awq
