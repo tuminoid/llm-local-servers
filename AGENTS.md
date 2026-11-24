@@ -295,9 +295,10 @@ Do not remove that distinction: exploratory or dirty runs remain useful
 evidence without becoming publication artifacts.
 
 The overview tables in `README.md` are derived from the runtimes'
-`BENCHMARKS.md` files. Update the matching host overview whenever a
-benchmark source changes a model, context, memory allocation, KV pool,
-active slots, or canonical metric.
+`BENCHMARKS.md` files, and their OWASP vuln score from
+[CAPABILITIES.md](CAPABILITIES.md). Update the matching host overview
+whenever a benchmark source changes a model, context, memory allocation, KV
+pool, active slots, or canonical metric, or a capability run changes a score.
 
 Use hardware host labels and exact measured tokenizer counts. Personal
 hostnames belong only in retained evidence outside the repository.
