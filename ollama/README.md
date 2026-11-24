@@ -251,7 +251,7 @@ The generated providers `ollama` (`127.0.0.1:11434`) and `ollama-remote`
 (`127.0.0.1:11436`, where `make ollama-remote-tunnel` lands) list every config
 here, keyed by the `OLLAMA_MODEL` tag. The entries declare no reasoning,
 because the capability check verifies Ollama reasoning only on its native
-API, not on `/v1`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+API, not on `/v1`. See [opencode/README.md](../opencode/README.md).
 
 ```bash
 OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/ollama/opencode.json opencode

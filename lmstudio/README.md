@@ -42,7 +42,7 @@ make lmstudio-stop
 
 The generated provider `lmstudio` lists every config here, keyed by the
 config name that start loads as the identifier. Reasoning arrives in
-`reasoning_content`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+`reasoning_content`. See [opencode/README.md](../opencode/README.md).
 
 ```bash
 OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/lmstudio/opencode.json opencode

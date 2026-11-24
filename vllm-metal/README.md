@@ -44,7 +44,7 @@ phase 0) with no authentication; do not expose it.
 ## Using it from opencode
 
 The generated provider `vllm-metal` lists every config here, keyed by
-`VLLM_SERVED_NAME`. See [Using the servers from opencode](../README.md#using-the-servers-from-opencode).
+`VLLM_SERVED_NAME`. See [opencode/README.md](../opencode/README.md).
 
 ```bash
 OPENCODE_CONFIG=/path/to/llm-local-servers/opencode/vllm-metal/opencode.json opencode
