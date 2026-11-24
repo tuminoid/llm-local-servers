@@ -13,7 +13,7 @@ Capability Check v3 and then the AuditBench session rate. LM Studio is kept
 beside it as the entry-level option, since it installs cleanly on every
 platform.
 
-Serving performance is measured with AuditBench v2, and engine and model
+Serving performance is measured with AuditBench v3, and engine and model
 compatibility (API semantics and clean audit-shaped work) is gated with
 Capability Check v3. Both live in the sibling [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench)
 repository (`docs/PROTOCOL.md` and `docs/CAPABILITY.md` are the
@@ -61,7 +61,7 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-stop` | Stop by pidfile, verify the GPU or process group was released |
 | `make <runtime>-status` | Process, memory split, context allocation, KV sizing |
 | `make <runtime>-logs` | Follow the server log |
-| `make <runtime>-bench MODEL=<name>` | Run AuditBench v2 |
+| `make <runtime>-bench MODEL=<name>` | Run AuditBench v3 |
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v3 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, `lmstudio`,
@@ -99,7 +99,7 @@ table and how the files are generated are in
 
 ## Measured overview
 
-Every host is measured with AuditBench v2. Canonical medians copied from
+Every host is measured with AuditBench v3. Canonical medians copied from
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
 [vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),

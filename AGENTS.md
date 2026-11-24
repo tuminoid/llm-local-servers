@@ -79,7 +79,7 @@ claims, never measurements, and never feed a `BENCHMARKS.md` or README row.
 
 ## The shared harness
 
-AuditBench v2 (the serving benchmark) and Capability Check v3 (the model gate)
+AuditBench v3 (the serving benchmark) and Capability Check v3 (the model gate)
 are defined and implemented in the sibling
 [llm-audit-bench](https://github.com/tuminoid/llm-audit-bench) repository:
 `docs/PROTOCOL.md`, `docs/CAPABILITY.md`, and the two stdlib-only modules
@@ -272,9 +272,11 @@ cannot be established.
 ### Use one benchmark protocol
 
 All new and replacement measurements use
-[AuditBench v2](https://github.com/tuminoid/llm-audit-bench). Published
-AuditBench v1 rows are history: never compare them with v2 rows, and replace
-them as each host is re-measured.
+[AuditBench v3](https://github.com/tuminoid/llm-audit-bench), the session
+benchmark of llm-audit-bench 3.x. A result is v3 when its recorded harness
+hash is a 3.x release's; its stored `protocol` is still `audit-v2`, so never
+reject one for that. AuditBench v1 rows are history: never compare them with
+later rows.
 Runtime adapters may implement transport,
 model loading, and residency checks, but prompt generation, target sizes,
 sample count, stream counts, validation, metrics, and JSON schema belong only

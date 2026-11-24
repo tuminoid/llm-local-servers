@@ -1,4 +1,4 @@
-"""Splash transport and admission evidence for the shared AuditBench v2."""
+"""Splash transport and admission evidence for the shared AuditBench v3."""
 
 import json
 import os

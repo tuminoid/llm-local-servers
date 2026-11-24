@@ -4,7 +4,7 @@ Script-managed vLLM-Metal server (Apple Silicon). User-facing usage and the
 memory rationale live in [README.md](README.md); shared server conventions
 live in [../AGENTS.md](../AGENTS.md).
 Serving measurements follow
-[AuditBench v2](https://github.com/tuminoid/llm-audit-bench).
+[AuditBench v3](https://github.com/tuminoid/llm-audit-bench).
 
 ## File inventory
 
@@ -16,7 +16,7 @@ Serving measurements follow
 | `start.sh` | Foreground launcher and host memory policy |
 | `run.sh` | Detached launcher and readiness wait |
 | `status.sh` | Process, KV sizing, NAX evidence, footprint, live API probe |
-| `bench.py` | vLLM-Metal adapter for shared AuditBench v2, including exact config and resolved host-profile provenance |
+| `bench.py` | vLLM-Metal adapter for shared AuditBench v3, including exact config and resolved host-profile provenance |
 | `capability.py` | OpenAI-compatible adapter for the shared Capability Check |
 | `battery-gate.sh` | AuditBench sample gate: charge floor plus 140 W adapter contract |
 | `stop.sh` | Process-group teardown and release verification |

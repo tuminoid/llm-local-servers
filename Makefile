@@ -43,7 +43,7 @@ MAKEFLAGS += --no-builtin-rules
 	$(MAKE) --no-print-directory help >&2; \
 	exit 1
 
-# The AuditBench v2 and Capability Check v3 harnesses live in the sibling
+# The AuditBench v3 and Capability Check v3 harnesses live in the sibling
 # llm-audit-bench repository. Local bench, capability, and test targets import
 # them via PYTHONPATH; deploy targets rsync the two modules next to the
 # adapters on remote hosts, where they import as adjacent files.
@@ -73,7 +73,7 @@ VLLM_TUNNEL_PORT ?= 8001
 # fail fast when it is unset.
 HOST ?=
 
-# AuditBench v2 canonical settings. Override streams with 1,N per candidate
+# AuditBench v3 canonical settings. Override streams with 1,N per candidate
 # N while locating a host's serving concurrency; publish the canonical run.
 # Sampling is a model fact: each model config declares <PREFIX>_SAMPLING.
 AUDIT_BENCH_STREAMS ?= 1,2,4,8
@@ -221,7 +221,7 @@ help:
 	@echo "  make all         - Run lint and test"
 	@echo "  make clean       - Remove Python bytecode and editor droppings"
 	@echo ""
-	@echo "  AuditBench v2 and Capability Check v3 run from the sibling"
+	@echo "  AuditBench v3 and Capability Check v3 run from the sibling"
 	@echo "  llm-audit-bench checkout: AUDIT_BENCH_DIR=$(AUDIT_BENCH_DIR)"
 	@echo ""
 	@echo "  Usage: make <runtime>-<verb> [MODEL=<name>]"
@@ -233,7 +233,7 @@ help:
 	@echo "    start       Start the server detached and load the model"
 	@echo "    status      Show process, identity, context and memory"
 	@echo "    logs        Follow the server log"
-	@echo "    bench       Run AuditBench v2"
+	@echo "    bench       Run AuditBench v3"
 	@echo "    capability  Check engine and model compatibility, score audit aptitude"
 	@echo "    stop        Stop and verify the GPU, memory and port were released"
 	@echo "    bootstrap   Remote only: install the pinned runtime on the host"

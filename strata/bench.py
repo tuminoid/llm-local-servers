@@ -1,4 +1,4 @@
-"""Strata transport and admission evidence for the shared AuditBench v2."""
+"""Strata transport and admission evidence for the shared AuditBench v3."""
 
 import json
 import os

@@ -71,8 +71,9 @@ or reimplement benchmark workloads.
 - Splash expects top-level `reasoning_effort`. Do not use the shared
   vLLM control mapping, which nests it in `chat_template_kwargs`.
 - Keep trial full-run provenance intact: retained v1 full runs are
-  history, replaced only by canonical v2 session runs. Update the root
-  README and CAPABILITIES alongside changes to retained serving results.
+  history, replaced only by canonical AuditBench session runs. Update the
+  root README and CAPABILITIES alongside changes to retained serving
+  results.
 - Validate with `make lint`, `make test`, and the full managed lifecycle
   for every configured model. Stop and verify release even on failure.
 - `start.sh` refuses a runtime directory whose `release.json` version differs

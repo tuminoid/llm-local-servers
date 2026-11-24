@@ -16,7 +16,7 @@ Tree conventions are in [AGENTS.md](../AGENTS.md).
 | `run.sh` | Detached launcher | `setsid` + readiness wait, parses the log for success or failure |
 | `stop.sh` | Shutdown | Pidfile-targeted, escalates to SIGKILL, verifies VRAM released, removes the log on a clean stop |
 | `status.sh` | Introspection | Process, GPU, pinned model revision, backend, KV sizing, plus a live `/v1/models` probe |
-| `bench.py` | Benchmark | CUDA adapter for shared AuditBench v2; records model identity, exact configs, and the resolved host profile |
+| `bench.py` | Benchmark | CUDA adapter for shared AuditBench v3; records model identity, exact configs, and the resolved host profile |
 | `capability.py` | Capability gate | OpenAI-compatible adapter for the shared Capability Check |
 | `mimo-v2.6-chat-template.jinja` | Chat template | Loaded when the MiMo config sets `VLLM_CHAT_TEMPLATE`. The checkpoint's template with the thinking opener prefilled; the config records why |
 | `models/*.conf` | Per-model settings | Portable model facts, including an immutable HF revision; all `${VAR:-default}` so env wins |
@@ -459,7 +459,7 @@ The measured throughput, memory and concurrency numbers live in
 [BENCHMARKS.md](BENCHMARKS.md); only the A100 has current vLLM rows (the
 small-card rows left with the RTX profiles on 2026-10-12). New and replacement
 results follow
-[AuditBench v2](https://github.com/tuminoid/llm-audit-bench)
+[AuditBench v3](https://github.com/tuminoid/llm-audit-bench)
 and must have
 `canonical: true`.
 
