@@ -165,7 +165,7 @@ speculated than plain. At full audit depth the greedy verdict decode leads
 about 1.25x at equal verdict length (the 1.45x first published here divided
 verdicts of different lengths), so the deep single-shot penalty measured on
 0.28.0 is confined to the mid-depth 1,024-token shape on 0.29.0. Superseded
-for serving by AuditBench v2 at the declared sampling, where plain qwen3.8
+for serving by AuditBench v3 at the declared sampling, where plain qwen3.8
 wins (top of this file).
 
 These rankings describe serving performance only. They do not establish which

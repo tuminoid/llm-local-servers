@@ -221,14 +221,14 @@ enforcement, which never gates, is broken. Details are in
 ### RTX PRO 3000 Blackwell laptop GPU
 
 Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6 (the 0.40.16
-default is not measured there). Details are
-in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
+default is not measured there). Measured under background load, so the
+rates are a floor. Details are in
+[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 | Rank | Model | Runtime | Engine | Tier | Context | OWASP vuln score [95% CI] | Best sessions/h | Report decode 1x |
 | --: | -- | -- | -- | -- | --: | -- | --: | --: |
-| 1 | `qwen3.6-35b-a3b-reap48` | Ollama | llama.cpp | MoE | 262,144 | +0.07 [-0.14, +0.26] | 6.74 @1x | 19.3 |
-| 2 | `saluki-27b` | Ollama | llama.cpp | dense | 163,840 | +0.29 [-0.09, +0.59] | 4.56 @1x | 11.4 |
+| 1 | `qwen3.6-35b-a3b-reap48` | Ollama | llama.cpp | MoE | 262,144 | +0.07 [-0.14, +0.26] | 5.74 @1x | 15.4 |
+| 2 | `saluki-27b` | Ollama | llama.cpp | dense | 163,840 | +0.29 [-0.09, +0.59] | 3.62 @1x | 7.9 |
 
-Unranked: Ollama `lfm2.5-24b-a2b` (7.49/h at 131,072, all on GPU) fails
-Capability Check v3 compatibility and its 1x run is incomplete; it is the
-RTX's interactive profile.
+Unranked: Ollama `lfm2.5-24b-a2b` (8.51/h at 131,072, all on GPU) fails
+Capability Check v3 compatibility; it is the RTX's interactive profile.
