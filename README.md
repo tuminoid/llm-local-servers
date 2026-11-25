@@ -1,14 +1,14 @@
 # llm-local-servers
 
-Measured, Makefile-driven local LLM serving. Eight managed runtimes --
-vLLM (CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio, ds4,
-Kapitsa and Strata (CUDA) -- with one portable config per model, host-adaptive
-launchers, isolated remote-host operation, and the retained benchmark and
-capability results for every host in the fleet. The workload everything
-is tuned for is deep-context security-audit calls; [AGENTS.md](AGENTS.md)
-states the mission and the invariants.
+Measured, Makefile-driven local LLM serving. Eight managed runtimes -- vLLM
+(CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio, ds4, Kapitsa and
+Strata (CUDA) -- with one portable config per model, host-adaptive launchers,
+isolated remote-host operation, and benchmark and capability results per
+hardware ([Results by hardware](#results-by-hardware)). The workload everything
+is tuned for is deep-context security-audit calls; [AGENTS.md](AGENTS.md) states
+the mission and the invariants.
 
-Each host keeps the best provider per model: one runtime, chosen by
+Each hardware keeps the best provider per model: one runtime, chosen by
 Capability Check v3 and then the AuditBench session rate. LM Studio is kept
 beside it as the entry-level option, since it installs cleanly on every
 platform.
@@ -97,138 +97,20 @@ Each provider has a generated opencode config; usage, the provider
 table and how the files are generated are in
 [opencode/README.md](opencode/README.md).
 
-## Measured overview
+## Results by hardware
 
-Every host is measured with AuditBench v3. Canonical medians copied from
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
-[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
-[splash/BENCHMARKS.md](splash/BENCHMARKS.md),
-[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md),
-[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md),
-[kapitsa/BENCHMARKS.md](kapitsa/BENCHMARKS.md) and
-[strata/BENCHMARKS.md](strata/BENCHMARKS.md), which hold the
-evidence, ranges, caveats, replay results, and history; nothing here is
-derived. OWASP vuln score is Capability Check v3's audit aptitude:
-true-positive minus false-positive rate on 28 OWASP BenchmarkPython cases
-(+1 perfect, 0 chance) with its 95% interval, copied with the compatibility
-verdicts and findings from [CAPABILITIES.md](CAPABILITIES.md). Intervals
-span about +-0.3, so rows stay ranked by rate.
+Each page ranks the measured profiles by completed audit sessions per hour
+(AuditBench v3, at the optimal stream count, gated by Capability Check v3),
+lists the interactive profiles, and gives every profile's capability
+verdict. Pick the page closest to your machine:
 
-The mission workload: a growing tool-loop conversation resent every turn,
-report or verdict at depth, 16 tool steps at 262,144 configured context
-(fewer at shorter contexts), at the declared sampling. Ranked rows pass
-Capability Check v3 compatibility. Best sessions/h is their optimal
-operating point: the fastest measured stream count whose sessions all
-completed, where one stream qualifies as much as N; `@Nx` names that
-concurrency. Rows are ranked by the optimal rate within a host
-only, and a MoE or hybrid row and a dense row are not comparable.
+- Apple Silicon Mac: [Apple M5 Max, 128 GB](docs/hardware/apple-m5-max-128gb.md)
+- NVIDIA datacenter GPU:
+  [NVIDIA A100 SXM4 80GB](docs/hardware/nvidia-a100-sxm4-80gb.md)
+- NVIDIA laptop GPU:
+  [NVIDIA RTX PRO 3000 Blackwell laptop GPU, 12 GB](docs/hardware/nvidia-rtx-pro-3000-blackwell-laptop-12gb.md)
 
-### A100-SXM4-80GB
-
-Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
-isolated Ollama 0.40.16 (its rows), Strata 0.2.13 built for sm_80 (its rows).
-Sessions per hour at the optimal stream count: the vLLM and Ollama rows ran the
-stream ladder, the Strata rows their one slot; context, slots, KV pool,
-completion, the pp512/tg128 reference and the retained JSON names are in
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md) and
-[strata/BENCHMARKS.md](strata/BENCHMARKS.md).
-
-| Rank | Model | Runtime | Engine | Tier | Context | OWASP vuln score [95% CI] | Best sessions/h | Report decode 1x |
-| --: | -- | -- | -- | -- | --: | -- | --: | --: |
-| 1 | `qwen3.6-35b-a3b-awq` | vLLM | vLLM, CUDA | MoE | 262,144 | +0.50 [+0.15, +0.73] | 55.22 @4x | 111.2 |
-| 2 | `gemma4-26b-a4b-awq` | vLLM | vLLM, CUDA | MoE | 262,144 | +0.71 [+0.36, +0.89] | 41.59 @2x | 63.7 |
-| 3 | `qwen3.8-flash-next-nvfp4` | Strata | Strata | MoE | 262,144 | +0.86 [+0.52, +0.98] | 27.66 @1x | 110.2 |
-| 4 | `qwen3.8-27b-512k` | vLLM | vLLM, CUDA | dense | 524,288 | +0.64 [+0.28, +0.85] | 20.52 @4x | 36.7 |
-| 5 | `qwen3.8-27b` | vLLM | vLLM, CUDA | dense | 262,144 | +0.71 [+0.35, +0.90] | 20.12 @4x | 50.0 |
-| 6 | `nemotron-3.5-bolt-74b-a9b-iq2` | Ollama | llama.cpp | hybrid MoE | 262,144 | +0.43 [+0.05, +0.70] | 15.53 @1x | 119.6 |
-| 7 | `qwen3.8-27b-dflash2` | vLLM | vLLM, CUDA | dense | 262,144 | +0.64 [+0.28, +0.85] | 12.63 @2x | 22.0 |
-| 8 | `flint-40b-a2b-nvfp4` | Ollama | llama.cpp | MoE | 262,144 | +0.29 [-0.08, +0.58] | 9.94 @1x | 40.7 |
-| 9 | `deepseek-v4.1-flash-coder-iq2xxs` | Strata | Strata DeepSeek | MoE | 1,048,576 | +0.86 [+0.52, +0.98] | 9.77 @1x | 50.3 |
-
-Unranked: vLLM `mimo-v2.6-9b-awq` (57.08/h at 1x, incomplete) and
-`nanbeige4.3-33b-w4a16` (7.59/h) and Ollama `ornith1.5-35b-a3b` (32.21/h)
-fail Capability Check v3 compatibility. Strata `deepseek-v4.1-flash-q2`
-passes but has no serving rate: part of its experts run on the CPU.
-DFlash 2 loses to plain qwen3.8 at the declared sampling (8.86 / 12.63 @2x); see
-[vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
-
-### Apple M5 Max (128 GB unified memory)
-
-Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0.1. vLLM-Metal
-0.31.0, Splash 1.5.0, LM Studio 0.4.25+1, Ollama 0.40.16, ds4, Kapitsa
-0.2.36. Context, slots, KV pool,
-completion, the pp512/tg128 reference and the retained JSON names are in
-[vllm-metal/BENCHMARKS.md](vllm-metal/BENCHMARKS.md),
-[splash/BENCHMARKS.md](splash/BENCHMARKS.md),
-[lmstudio/BENCHMARKS.md](lmstudio/BENCHMARKS.md),
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md),
-[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md) and
-[kapitsa/BENCHMARKS.md](kapitsa/BENCHMARKS.md).
-
-#### Audit throughput
-
-| Rank | Model | Runtime | Engine | Tier | Context | OWASP vuln score [95% CI] | Best sessions/h | Report decode 1x |
-| --: | -- | -- | -- | -- | --: | -- | --: | --: |
-| 1 | `nemotron-3.5-lightning-30b-mlx` | Ollama | MLX | hybrid MoE | 262,144 | +0.36 [+0.00, +0.62] | 31.07 @1x | 123.3 |
-| 2 | `ornith1.5-35b-a3b` | Splash | Splash | MoE | 262,144 | +0.57 [+0.21, +0.79] | 30.72 @2x | 167.4 |
-| 3 | `qwen3.8-flash-next-iq3s` | Splash | Splash | MoE | 262,144 | +0.79 [+0.44, +0.94] | 28.73 @2x | 118.3 |
-| 4 | `clover-35b-a3b` | Kapitsa | Kapitsa, Metal | MoE | 262,144 | +0.36 [+0.00, +0.62] | 27.58 @1x | 84.4 |
-| 5 | `qwen3.6-35b-a3b` | Splash | Splash | MoE | 262,144 | +0.43 [+0.08, +0.67] | 20.58 @1x | 198.3 |
-| 6 | `muse-glimmer-30b-mlx` | Ollama | MLX | dense | 131,072 | +0.64 [+0.28, +0.84] | 20.12 @1x | 44.0 |
-| 7 | `qwen3.6-35b-a3b-splash` | LM Studio | Splash | MoE | 262,144 | +0.43 [+0.08, +0.67] | 19.59 @1x | 196.2 |
-| 8 | `nemotron-3.5-super-mlx` | Ollama | MLX | hybrid MoE | 524,288 | +0.57 [+0.21, +0.79] | 12.79 @1x | 55.3 |
-| 9 | `qwen3.8-27b-splash` | LM Studio | Splash | dense | 262,144 | +0.79 [+0.44, +0.94] | 9.42 @1x | 56.3 |
-| 10 | `qwen3.8-27b` | Splash | Splash | dense | 262,144 | +0.57 [+0.21, +0.79] | 9.16 @1x | 56.8 |
-| 11 | `nemotron-3.5-bolt-74b-a9b-q3kxl` | Ollama | llama.cpp | hybrid MoE | 262,144 | +0.36 [-0.01, +0.64] | 9.09 @1x | 32.2 |
-| 12 | `bonsai2-27b-pq2` | Splash | Splash | dense | 262,144 | +0.64 [+0.30, +0.83] | 8.48 @2x | 58.3 |
-| 13 | `granite4.2-30b-4bit` | vLLM-Metal | vLLM, MLX | hybrid MoE | 131,072 | +0.57 [+0.21, +0.79] | 2.94 @2x | 10.8 |
-| 14 | `nanbeige4.3-33b-q4km` | Ollama | llama.cpp | dense | 262,144 | +0.43 [+0.06, +0.69] | 1.47 @1x | 6.0 |
-
-Unranked: Splash `flint-gguf` (20.59 @1x) and `ornith1.5-122b` (11.87),
-Ollama `mimo-v2.6-flash-q2ks` (5.29) and LM Studio `qwen3.8-27b-mlx` fail
-Capability Check v3 compatibility; their rates cannot promote them. LM
-Studio `qwen3.6-35b-a3b-mlx` passes but its runs are noncanonical by design
-(off-by-one token allowance). Details are in each runtime's BENCHMARKS.md.
-
-#### Interactive use
-
-These profiles serve interactive agentic sessions and are not ranked for
-audits.
-
-Ollama `gemma4-26b-mlx` (Gemma 4 26B-A4B, MLX NVFP4, 262,144) passes
-Capability Check v3; a generic model, it serves interactive use (25.63
-sessions/h in an unpublishable session run, one report recalling no
-findings). Details are in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
-
-ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
-Capability Check v3 and runs 9.57 sessions/h; Splash serves the same model for
-audits 3.0x faster, so ds4 keeps it for interactive use. Speed is from the
-262,144 runs, one stream, in tok/s. At 524,288 a 50-step session to about 445k
-tokens took Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its
-checkpoints evicted at depth. ds4 has no `response_format`, so schema
-enforcement, which never gates, is broken. Details are in
-[ds4/BENCHMARKS.md](ds4/BENCHMARKS.md).
-
-| Model | Context | Capability v3 | Tool calls | Turn decode, mid session | Report decode, ~160k deep | Session prefill | Interactive use |
-| -- | --: | -- | -- | --: | --: | --: | -- |
-| `qwen3.8-flash-next-q4` | 524,288 (YaRN) | pass, +0.86 | pass | 69.3 | 60.9 | 1,277 | yes, the pick |
-| `deepseek-v4-flash-q2` | 524,288 | pass, +0.71 | pass | 33.4 | 27.2 | 420 | yes, slower |
-| `glm5.3-flash-q2` | 262,144 | fail | fail: string-typed arguments | 54.2 | 26.9 | 364 | no |
-| `deepseek-v4.1-flash-q2` | 262,144 | pass, +0.71 | pass | 14.7 | 14.2 | 629 | yes, slow: SSD streaming |
-
-### RTX PRO 3000 Blackwell laptop GPU
-
-Local host: sm_120, 12,227 MiB VRAM, 62 GiB RAM; Ollama 0.40.6 (the 0.40.16
-default is not measured there). Measured under background load, so the
-rates are a floor. Details are in
-[ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
-
-| Rank | Model | Runtime | Engine | Tier | Context | OWASP vuln score [95% CI] | Best sessions/h | Report decode 1x |
-| --: | -- | -- | -- | -- | --: | -- | --: | --: |
-| 1 | `qwen3.6-35b-a3b-reap48` | Ollama | llama.cpp | MoE | 262,144 | +0.07 [-0.14, +0.26] | 5.74 @1x | 15.4 |
-| 2 | `saluki-27b` | Ollama | llama.cpp | dense | 163,840 | +0.29 [-0.09, +0.59] | 3.62 @1x | 7.9 |
-
-Unranked: Ollama `lfm2.5-24b-a2b` (8.51/h at 131,072, all on GPU) fails
-Capability Check v3 compatibility; it is the RTX's interactive profile.
+With less memory than the page's hardware, a profile whose weights and KV
+cache do not fit runs slower or not at all; with more, the ranking still
+holds and longer contexts may fit. Rates compare only within one page, and a
+MoE or hybrid row is not comparable with a dense one.

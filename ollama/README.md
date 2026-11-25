@@ -121,8 +121,8 @@ instead of leaving a misleading SSH process.
 ### A100 profiles
 
 The A100 runs on Ollama only the models no vLLM or Strata profile serves there;
-throughput, residency and full-context proofs are in
-[BENCHMARKS.md](BENCHMARKS.md):
+results are on the
+[NVIDIA A100 SXM4 80GB](../docs/hardware/nvidia-a100-sxm4-80gb.md) page:
 
 | Ollama config | Ollama model | Context | Slots |
 | -- | -- | --: | --: |
@@ -221,8 +221,8 @@ The import's manifest digest is pinned in the conf; a different digest
 means a different file or Modelfile. The operating point is 163,840 tokens
 with q4_0 KV, where weights, KV and compute buffer keep all 65 layers on
 the 12 GiB card under the launcher's no-display fit margin. Larger
-contexts move layers to the CPU; measurements are in
-[BENCHMARKS.md](BENCHMARKS.md).
+contexts move layers to the CPU; measurements are on the
+[RTX PRO 3000 page](../docs/hardware/nvidia-rtx-pro-3000-blackwell-laptop-12gb.md).
 
 ## Qwen3.6 35B-A3B REAP-48
 
@@ -231,8 +231,8 @@ Qwen3.6-35B-A3B: `Qwen3.6-35B-A3B-REAP-48-v2.gguf` (9.4 GB, 48% of the
 routed experts pruned), from `crucible-labs/Qwen3.6-35B-A3B-REAP-48-v2-GGUF`
 at the revision and sha256 in the conf. It is imported like Saluki, as
 `qwen3.6:35b-a3b-reap48` with the Modelfile in its conf, and runs at
-262,144 with q4_0 KV, weights and KV all on the GPU; measurements are in
-[BENCHMARKS.md](BENCHMARKS.md).
+262,144 with q4_0 KV, weights and KV all on the GPU; measurements are on
+the [RTX PRO 3000 page](../docs/hardware/nvidia-rtx-pro-3000-blackwell-laptop-12gb.md).
 
 ## LFM2.5 24B-A2B
 
@@ -242,8 +242,8 @@ revision and sha256 in the conf, imported like Saluki as
 `lfm2.5:24b-a2b-iq3xxs` with the Modelfile in its conf (`RENDERER lfm2`,
 `PARSER lfm2-thinking`). It runs at its native 131,072 with f16 KV, all on
 the GPU. It fails Capability Check v3 compatibility, so it serves
-interactive use and is not an audit profile; measurements are in
-[BENCHMARKS.md](BENCHMARKS.md).
+interactive use and is not an audit profile; measurements are on the
+[RTX PRO 3000 page](../docs/hardware/nvidia-rtx-pro-3000-blackwell-laptop-12gb.md).
 
 ## Using it from opencode
 

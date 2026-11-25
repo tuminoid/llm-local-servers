@@ -185,7 +185,7 @@ hybrid compute path itself: temp-0 outputs diverge from the cache-off
 server starting at the first generated token (both variants are
 internally deterministic and answered the factual probe correctly).
 Because of it the cache-off and APC operating points each carry their
-own canonical AuditBench run in BENCHMARKS.md; never quote one
+own canonical AuditBench run; never quote one
 condition's rates for the other.
 
 2026-09-03 re-gate at plugin 0.28.0 (the first stable release; upstream

@@ -2,33 +2,14 @@
 
 ds4 serves models too large for any fleet host to run audit campaigns on,
 so most of these are interactive-use measurements, not audit-throughput
-rankings. `qwen3.8-flash-next-q4` has a canonical row too, but Splash serves
-the same model for audits faster, so it stays out of the root README's M5
-ranking.
+rankings. `qwen3.8-flash-next-q4`'s canonical session is on the
+[Apple M5 Max](../docs/hardware/apple-m5-max-128gb.md) page; Splash serves the
+same model for audits faster.
 
-## AuditBench v3: Apple M5 Max
+## Apple M5 Max
 
-ds4 `0aaea5a`, `qwen3.8-flash-next-q4` at its conf's 524,288 context (YaRN),
-one slot, MTP at exact sampling, disk KV checkpoints on. Canonical
-AuditBench v3 `session` profile (llm-audit-bench 3.0.0) at the declared
-sampling, run 2026-11-24 from fleet commit `8ab4e09`; 16 tool steps from
-32k evidence, report at depth. Sessions/h is the median over the samples;
-complete counts sessions whose report ended on its own and named at least
-7/8 of its findings. Retained under
-`~/.local/state/auditbench/trials/2026-11-24-v3-sessions/m5/`; the 2.3.0
-row (2026-10-23) is in git history.
-
-| Profile | Context | Slots | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
-| -- | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| `qwen3.8-flash-next-q4` | 524,288 | 1 | 1x 9.57 | 5,896 | 1,265.0 | 62.7 | 3/3 | unavailable | pass | yes | `20261124T205128.945378+0000_ds4_qwen3-8-flash-next-q4_session.json` |
-
-- The three samples are 7.82 to 10.07 sessions/h; 76-81% of each session's
-  prompt tokens came from cache, against about 90% on Splash, because ds4
-  cannot rewind its live state to a shared prefix (see below).
-- The near-context phase prefilled a 491,538-token cold prompt in 429 s
-  (1,145 tok/s). The pp512/tg128 reference is unavailable (64 of 128
-  tokens).
-- One slot is the only operating point: see "One slot" below.
+Results on this hardware are on its page,
+[Apple M5 Max, 128 GB](../docs/hardware/apple-m5-max-128gb.md).
 
 ## Interactive measurements
 
@@ -37,25 +18,14 @@ macOS 27.0), ds4 `0aaea5a`, the pinned
 GGUFs in `models/`, 262,144 configured context, one slot and one stream,
 each config's declared sampling. Measured 2026-09-30 to 2026-10-02 with the
 pre-commit form of this directory (dirty tree), so every JSON is
-`publishable: false`; most rows are one sample. Retained under
-`~/.local/state/auditbench/trials/2026-09-30-ds4/`. The
+`publishable: false`; most rows are one sample. The
 `deepseek-v4.1-flash-q2` column is the 1017 checkpoint, measured
-2026-10-19 at the 1017 card sampling, under
-`~/.local/state/auditbench/trials/2026-10-19-m5-night/ds4/`.
+2026-10-19 at the 1017 card sampling.
 
 ## Capability Check v3
 
-Capability Check v3 (llm-audit-bench 3.0.0, `365510b`), run 2026-11-19/22
-on ds4 `0aaea5a` from fleet commit `a21fd8a`, under
-`~/.local/state/auditbench/trials/2026-11-19-v3-campaign/m5/`. Model
-identity shows the first 12 characters of the revision.
-
-| Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Clean samples | Compatibility | Audit aptitude | Model identity | Artifact |
-| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| ds4 | `qwen3.8-flash-next-q4` | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.86 [+0.52, +0.98]; sound 8 of 8 | `d600fe1a43d2` | `20261119T225509.672284+0000_ds4_qwen3-8-flash-next-q4.json` |
-| ds4 | `deepseek-v4-flash-q2` | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 33 of 36 (92%); fitness 7 of 8 | passed | +0.71 [+0.36, +0.89]; sound 6 of 7 | `f71f23d552d6` | `20261120T201931.719098+0000_ds4_deepseek-v4-flash-q2.json` |
-| ds4 | `glm5.3-flash-q2` | passed | passed | supported | broken | broken | untested | supported | valid | ignored (broken) | 19 of 23 (83%); fitness 7 of 8 | failed (tool_call, streaming_tool_call, clean_rate) | not scored | `b2fa29d7a6b4` | `20261120T063720.265124+0000_ds4_glm5-3-flash-q2.json` |
-| ds4 | `deepseek-v4.1-flash-q2` | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 34 of 36 (94%); fitness 8 of 8 | passed | +0.71 [+0.36, +0.89]; sound 8 of 8 | `9dcee51692e6` | `20261122T023508.810868+0000_ds4_deepseek-v4-1-flash-q2.json` |
+The ds4 capability rows are on the
+[Apple M5 Max](../docs/hardware/apple-m5-max-128gb.md#capability-check) page.
 
 - Schema enforcement is broken on every model because ds4 has no
   structured output: `ds4_server.c` never parses `response_format`. It
@@ -134,8 +104,7 @@ times from the `results/` session runs, which ran before disk KV.
 The tables above ran at 262,144. The Qwen and V4 Flash configs now serve
 524,288, rechecked 2026-10-13 on the same host and pin from uncommitted
 changes (`publishable: false`, one sample each). Deep sessions are
-exploratory `AUDIT_BENCH_CONV_MAX_STEPS=50` at one stream. Retained under
-`~/.local/state/auditbench/trials/2026-10-13-ds4-512k/`.
+exploratory `AUDIT_BENCH_CONV_MAX_STEPS=50` at one stream.
 
 ### Qwen3.8 Flash Next, static YaRN factor 2
 
@@ -171,8 +140,7 @@ V4's max-effort prefix and GLM's "Reasoning Effort: Max".
   session filled part of the budget both times (1,953 s, 252 tok/s).
   `results/20261013T191613.869606+0000_ds4_deepseek-v4-flash-q2_session.json`,
   and from a clean tree (the JSON records `8200c38`, the merged config
-  before a rebase) `results/20261014T090808.397409+0000_ds4_deepseek-v4-flash-q2_session.json`
-  under `~/.local/state/auditbench/trials/2026-10-14-m5-day/`.
+  before a rebase) `20261014T090808.397409+0000_ds4_deepseek-v4-flash-q2_session.json`.
 - **GLM 5.3 deep session:** incomplete; the report from 445,103 prompt
   tokens recalled 0 of 50 findings in 1,989 characters, and 48 of 51 calls
   streamed no reasoning, at cached 0.963. GLM stays at 262,144, where the

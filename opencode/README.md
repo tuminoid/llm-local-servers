@@ -49,8 +49,8 @@ opencode run -m splash/mlx-community/Qwen3.8-27B-4bit "Summarise the auth flow."
   that Ollama splits by artifact format: safetensors tags run on the MLX
   runner, which the fleet serves on Apple Silicon only, so they are
   `ollama-mlx` models and stay off `ollama` and `ollama-remote`, which list
-  the GGUF configs. [CAPABILITIES.md](../CAPABILITIES.md) lists which configs
-  run on which host.
+  the GGUF configs. The hardware pages under
+  [docs/hardware/](../docs/hardware/) list which configs run on which hardware.
 - The id is `VLLM_SERVED_NAME`, the `OLLAMA_MODEL` tag, the
   `SPLASH_MODEL_REPO` repository, `DS4_SERVED_NAME`,
   `KAPITSA_SERVED_NAME`, `STRATA_SERVED_NAME`, or for LM Studio the config

@@ -1,0 +1,225 @@
+{
+  "profiles": {
+    "ollama/lfm2.5-24b-a2b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261121T145211.214731+0000_ollama_lfm2-5-24b-a2b.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.5,
+        "clean_samples": 4,
+        "failed_checks": [
+          "fitness_clean",
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "untested",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 4,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "lfm2.5:24b-a2b-iq3xxs",
+        "model_identity": "d4220f26c6ddf75ca1c67ab1eb5738bcd8a61fd37be0cad11a024bb7b6de8d43",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 8,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "lfm2.5-24b-a2b",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "interactive",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261124T221221.273338+0000_ollama_lfm2-5-24b-a2b_session.json",
+        "canonical": true,
+        "configured_context": 131072,
+        "kv_pool_tokens": 131072,
+        "model": "lfm2.5:24b-a2b-iq3xxs",
+        "model_identity": "d4220f26c6ddf75ca1c67ab1eb5738bcd8a61fd37be0cad11a024bb7b6de8d43",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 1554.4732262114676,
+          "tg128": 102.07648638557465
+        },
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 14759,
+            "prefill_tokens_per_second": 1061.2223396791398,
+            "report_decode_tokens_per_second": 38.28888349491802,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 8.507150554790476
+          }
+        },
+        "tag": "lfm2.5-24b-a2b"
+      },
+      "tier": "MoE"
+    },
+    "ollama/qwen3.6-35b-a3b-reap48": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261121T113025.392154+0000_ollama_qwen3-6-35b-a3b-reap48.json",
+        "audit_aptitude": {
+          "interval": [
+            -0.13832155480674876,
+            0.2633215548067488
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.0714285714285714
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.6:35b-a3b-reap48",
+        "model_identity": "a738d78e39f3d5e0f548f419e93341d4d177c85364fc2f2a2ad218de60303e76",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.6-35b-a3b-reap48",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261124T205015.123622+0000_ollama_qwen3-6-35b-a3b-reap48_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "qwen3.6:35b-a3b-reap48",
+        "model_identity": "a738d78e39f3d5e0f548f419e93341d4d177c85364fc2f2a2ad218de60303e76",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 5464,
+            "prefill_tokens_per_second": 830.3132374923741,
+            "report_decode_tokens_per_second": 15.375501953226351,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 5.742941722366787
+          }
+        },
+        "tag": "qwen3.6-35b-a3b-reap48"
+      },
+      "tier": "MoE"
+    },
+    "ollama/saluki-27b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261121T143918.523126+0000_ollama_saluki-27b.json",
+        "audit_aptitude": {
+          "interval": [
+            -0.08548006647191425,
+            0.5854800664719142
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 6,
+          "vuln_score": 0.2857142857142858
+        },
+        "clean_rate": 0.9166666666666666,
+        "clean_samples": 33,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "saluki:27b-iq2mix",
+        "model_identity": "4868fcc0efd98b2e5f6be4a494b883707916cae81a27418032f133a9d6b8ce5a",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "saluki-27b",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261124T212700.242161+0000_ollama_saluki-27b_session.json",
+        "canonical": true,
+        "configured_context": 163840,
+        "kv_pool_tokens": 163840,
+        "model": "saluki:27b-iq2mix",
+        "model_identity": "4868fcc0efd98b2e5f6be4a494b883707916cae81a27418032f133a9d6b8ce5a",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 3828.5,
+            "prefill_tokens_per_second": 253.62209639742147,
+            "report_decode_tokens_per_second": 7.86529526559854,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 3.620528459631182
+          }
+        },
+        "tag": "saluki-27b"
+      },
+      "tier": "dense"
+    }
+  }
+}

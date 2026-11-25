@@ -1,0 +1,1763 @@
+{
+  "profiles": {
+    "ds4/deepseek-v4-flash-q2": {
+      "campaign": false,
+      "capability": {
+        "artifact": "20261120T201931.719098+0000_ds4_deepseek-v4-flash-q2.json",
+        "audit_aptitude": {
+          "interval": [
+            0.3580174397081337,
+            0.8919825602918663
+          ],
+          "judged_samples": 7,
+          "scored": true,
+          "sound_samples": 6,
+          "vuln_score": 0.7142857142857144
+        },
+        "clean_rate": 0.9166666666666666,
+        "clean_samples": 33,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 7,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "deepseek-v4-flash",
+        "model_identity": "f71f23d552d664e523b422157b2befbf74040380",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ds4",
+        "samples": 36,
+        "schema_enforcement": "ignored",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "deepseek-v4-flash-q2",
+        "unaided_document": "valid"
+      },
+      "engine": "ds4, Metal",
+      "note": null,
+      "role": "interactive",
+      "tier": "MoE"
+    },
+    "ds4/deepseek-v4.1-flash-q2": {
+      "campaign": false,
+      "capability": {
+        "artifact": "20261122T023508.810868+0000_ds4_deepseek-v4-1-flash-q2.json",
+        "audit_aptitude": {
+          "interval": [
+            0.3580174397081337,
+            0.8919825602918663
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.7142857142857144
+        },
+        "clean_rate": 0.9444444444444444,
+        "clean_samples": 34,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "deepseek-v4.1-flash",
+        "model_identity": "9dcee51692e6540f697141fc98b097e3c96492a3",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ds4",
+        "samples": 36,
+        "schema_enforcement": "ignored",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "deepseek-v4.1-flash-q2",
+        "unaided_document": "valid"
+      },
+      "engine": "ds4, Metal",
+      "note": null,
+      "role": "interactive",
+      "tier": "MoE"
+    },
+    "ds4/glm5.3-flash-q2": {
+      "campaign": false,
+      "capability": {
+        "artifact": "20261120T063720.265124+0000_ds4_glm5-3-flash-q2.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.8260869565217391,
+        "clean_samples": 19,
+        "failed_checks": [
+          "tool_call",
+          "streaming_tool_call",
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "broken",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "broken",
+          "tool_round_trip": "untested"
+        },
+        "fitness_clean": 7,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "glm-5.3-flash",
+        "model_identity": "b2fa29d7a6b410db11221c904973967b80b760f5",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ds4",
+        "samples": 23,
+        "schema_enforcement": "ignored",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "glm5.3-flash-q2",
+        "unaided_document": "valid"
+      },
+      "engine": "ds4, Metal",
+      "note": null,
+      "role": "interactive",
+      "tier": "MoE"
+    },
+    "ds4/qwen3.8-flash-next-q4": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T225509.672284+0000_ds4_qwen3-8-flash-next-q4.json",
+        "audit_aptitude": {
+          "interval": [
+            0.5208234850600961,
+            0.9791765149399039
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.8571428571428572
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.8-flash-next",
+        "model_identity": "d600fe1a43d2e1cdcadb85144ce3142f66f9eefe",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ds4",
+        "samples": 36,
+        "schema_enforcement": "ignored",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-flash-next-q4",
+        "unaided_document": "valid"
+      },
+      "engine": "ds4, Metal",
+      "note": null,
+      "role": "interactive",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261124T205128.945378+0000_ds4_qwen3-8-flash-next-q4_session.json",
+        "canonical": true,
+        "configured_context": 524288,
+        "kv_pool_tokens": 524288,
+        "model": "qwen3.8-flash-next",
+        "model_identity": "d600fe1a43d2e1cdcadb85144ce3142f66f9eefe",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ds4",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 5896,
+            "prefill_tokens_per_second": 1264.9815174521068,
+            "report_decode_tokens_per_second": 62.734443596012085,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 9.565224961468862
+          }
+        },
+        "tag": "qwen3.8-flash-next-q4"
+      },
+      "tier": "MoE"
+    },
+    "kapitsa/clover-35b-a3b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T160555.416930+0000_kapitsa_clover-35b-a3b.json",
+        "audit_aptitude": {
+          "interval": [
+            0.001690195819050777,
+            0.6233098041809493
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.3571428571428572
+        },
+        "clean_rate": 0.9444444444444444,
+        "clean_samples": 34,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "refused",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "clover-35b-a3b",
+        "model_identity": "4b0402b65e523d0183a14c431955438714cb16ff",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "kapitsa",
+        "samples": 36,
+        "schema_enforcement": "unsupported",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "clover-35b-a3b",
+        "unaided_document": "valid"
+      },
+      "engine": "Kapitsa, Metal",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261115T155501.941627+0000_kapitsa_clover-35b-a3b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 4367951,
+        "model": "clover-35b-a3b",
+        "model_identity": "4b0402b65e523d0183a14c431955438714cb16ff",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "kapitsa",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 3900,
+            "prefill_tokens_per_second": 1787.0742985960544,
+            "report_decode_tokens_per_second": 84.38931901563224,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 27.579914986377936
+          },
+          "2": {
+            "output_tokens_per_session": 3957.0,
+            "prefill_tokens_per_second": 1393.7974487554254,
+            "report_decode_tokens_per_second": 34.111682673226866,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 27.012647498853298
+          }
+        },
+        "tag": "clover-35b-a3b"
+      },
+      "tier": "MoE"
+    },
+    "lmstudio/qwen3.6-35b-a3b-mlx": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T170233.333159+0000_lmstudio_qwen3-6-35b-a3b-mlx.json",
+        "audit_aptitude": {
+          "interval": [
+            0.020356119566060427,
+            0.6046438804339396
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.3571428571428572
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "untested",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.6-35b-a3b-mlx",
+        "model_identity": "38740b847e4cb78f352aba30aa41c76e08e6eb46",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "lmstudio",
+        "samples": 36,
+        "schema_enforcement": "ignored",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.6-35b-a3b-mlx",
+        "unaided_document": "valid"
+      },
+      "engine": "MLX",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261125T013213.017922+0000_lmstudio_qwen3-6-35b-a3b-mlx_session.json",
+        "canonical": false,
+        "configured_context": 262144,
+        "kv_pool_tokens": 1048576,
+        "model": "qwen3.6-35b-a3b-mlx",
+        "model_identity": "38740b847e4cb78f352aba30aa41c76e08e6eb46",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [
+          "noncanonical_settings"
+        ],
+        "publishable": false,
+        "reference": {
+          "pp512": 2754.4506947065347,
+          "tg128": 148.78898637233857
+        },
+        "runtime": "lmstudio",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 4440.5,
+            "prefill_tokens_per_second": null,
+            "report_decode_tokens_per_second": 71.56729234634274,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 16.04804700525684
+          },
+          "2": {
+            "output_tokens_per_session": 5845.5,
+            "prefill_tokens_per_second": null,
+            "report_decode_tokens_per_second": 14.462079548182803,
+            "sessions": 4,
+            "sessions_incomplete": 1,
+            "sessions_per_hour": 11.045540012019217
+          }
+        },
+        "tag": "qwen3.6-35b-a3b-mlx"
+      },
+      "tier": "MoE"
+    },
+    "lmstudio/qwen3.6-35b-a3b-splash": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261125T051058.649609+0000_lmstudio_qwen3-6-35b-a3b-splash.json",
+        "audit_aptitude": {
+          "interval": [
+            0.08125531919709594,
+            0.6687446808029041
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.4285714285714286
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.6-35b-a3b-splash",
+        "model_identity": "0f4714b2db37b5f3c42a10de07281e74f88e4adc",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "lmstudio",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.6-35b-a3b-splash",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261125T051059.051941+0000_lmstudio_qwen3-6-35b-a3b-splash_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "qwen3.6-35b-a3b-splash",
+        "model_identity": "0f4714b2db37b5f3c42a10de07281e74f88e4adc",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 3783.585771618812,
+          "tg128": 411.4787241506149
+        },
+        "runtime": "lmstudio",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 5552,
+            "prefill_tokens_per_second": null,
+            "report_decode_tokens_per_second": 196.20545899860696,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 19.58868642085334
+          }
+        },
+        "tag": "qwen3.6-35b-a3b-splash"
+      },
+      "tier": "MoE"
+    },
+    "lmstudio/qwen3.8-27b-mlx": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T185445.662511+0000_lmstudio_qwen3-8-27b-mlx.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.7741935483870968,
+        "clean_samples": 24,
+        "failed_checks": [
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "untested",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 7,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.8-27b-mlx",
+        "model_identity": "10c35caafbb80f7dc6a7a432cdd11af10a6d4818",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "lmstudio",
+        "samples": 31,
+        "schema_enforcement": "ignored",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "qwen3.8-27b-mlx",
+        "unaided_document": "valid"
+      },
+      "engine": "MLX",
+      "note": null,
+      "role": "audit",
+      "tier": "dense"
+    },
+    "lmstudio/qwen3.8-27b-splash": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261125T054544.352552+0000_lmstudio_qwen3-8-27b-splash.json",
+        "audit_aptitude": {
+          "interval": [
+            0.4368235713614062,
+            0.9381764286385939
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.7857142857142856
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.8-27b-splash",
+        "model_identity": "9d27070b71f7142c6b6025f03ac011d70a73cb48",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "lmstudio",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-27b-splash",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261125T054544.743268+0000_lmstudio_qwen3-8-27b-splash_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "qwen3.8-27b-splash",
+        "model_identity": "9d27070b71f7142c6b6025f03ac011d70a73cb48",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "lmstudio",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 3967,
+            "prefill_tokens_per_second": null,
+            "report_decode_tokens_per_second": 56.26766764587401,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 9.416283670696654
+          }
+        },
+        "tag": "qwen3.8-27b-splash"
+      },
+      "tier": "dense"
+    },
+    "ollama/gemma4-26b-mlx": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T145038.089065+0000_ollama_gemma4-26b-mlx.json",
+        "audit_aptitude": {
+          "interval": [
+            0.276849016499155,
+            0.848150983500845
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 7,
+          "vuln_score": 0.6428571428571428
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "gemma4:26b-nvfp4",
+        "model_identity": "f60799545325362bdaa15cbf38694f997514d3d46425c900b4eb06c1d6422d18",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "whitespace_runaway",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "gemma4-26b-mlx",
+        "unaided_document": "valid"
+      },
+      "engine": "MLX",
+      "note": null,
+      "role": "interactive",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261116T081609.374316+0000_ollama_gemma4-26b-mlx_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "gemma4:26b-nvfp4",
+        "model_identity": "f60799545325362bdaa15cbf38694f997514d3d46425c900b4eb06c1d6422d18",
+        "optimal_streams": null,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [
+          "incomplete_sessions"
+        ],
+        "publishable": false,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 1723,
+            "prefill_tokens_per_second": 1679.1452383377145,
+            "report_decode_tokens_per_second": 35.01272790721631,
+            "sessions": 3,
+            "sessions_incomplete": 1,
+            "sessions_per_hour": 25.628559411203092
+          }
+        },
+        "tag": "gemma4-26b-mlx"
+      },
+      "tier": "MoE"
+    },
+    "ollama/mimo-v2.6-flash-q2ks": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T042350.276175+0000_ollama_mimo-v2-6-flash-q2ks.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.8518518518518519,
+        "clean_samples": 23,
+        "failed_checks": [
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 7,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "mimo-v2.6-flash:q2_k_s",
+        "model_identity": "aecb7b7e21a433681c8f3be361634e2cd75819ddc413a6132269572c81364709",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 27,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "mimo-v2.6-flash-q2ks",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261116T010801.194651+0000_ollama_mimo-v2-6-flash-q2ks_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "mimo-v2.6-flash:q2_k_s",
+        "model_identity": "aecb7b7e21a433681c8f3be361634e2cd75819ddc413a6132269572c81364709",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 3720,
+            "prefill_tokens_per_second": 313.71873612380466,
+            "report_decode_tokens_per_second": 22.274979710034618,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 5.2909371130350795
+          }
+        },
+        "tag": "mimo-v2.6-flash-q2ks"
+      },
+      "tier": "MoE"
+    },
+    "ollama/muse-glimmer-30b-mlx": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T154421.554447+0000_ollama_muse-glimmer-30b-mlx.json",
+        "audit_aptitude": {
+          "interval": [
+            0.28349297163870585,
+            0.8415070283612942
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.6428571428571428
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "muse-glimmer:30b-mlx",
+        "model_identity": "015fa21845bead56096c2f8773aff7a2047063507fe82897e662ad544c5b2fa6",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "muse-glimmer-30b-mlx",
+        "unaided_document": "valid"
+      },
+      "engine": "MLX",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T163512.190267+0000_ollama_muse-glimmer-30b-mlx_session.json",
+        "canonical": true,
+        "configured_context": 131072,
+        "kv_pool_tokens": 131072,
+        "model": "muse-glimmer:30b-mlx",
+        "model_identity": "015fa21845bead56096c2f8773aff7a2047063507fe82897e662ad544c5b2fa6",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 1514.0,
+            "prefill_tokens_per_second": 698.9987884398122,
+            "report_decode_tokens_per_second": 44.0102866348261,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 20.119626834823357
+          }
+        },
+        "tag": "muse-glimmer-30b-mlx"
+      },
+      "tier": "dense"
+    },
+    "ollama/nanbeige4.3-33b-q4km": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T163001.592389+0000_ollama_nanbeige4-3-33b-q4km.json",
+        "audit_aptitude": {
+          "interval": [
+            0.05673566410921882,
+            0.6932643358907812
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.4285714285714286
+        },
+        "clean_rate": 0.9722222222222222,
+        "clean_samples": 35,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "refused",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "nanbeige4.3:33b-q4_k_m",
+        "model_identity": "f630b1711fd6dd31209acc83efd4e5f9967721d836630aa416908eb5e6c18ef0",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "unsupported",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "nanbeige4.3-33b-q4km",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T223449.004542+0000_ollama_nanbeige4-3-33b-q4km_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "nanbeige4.3:33b-q4_k_m",
+        "model_identity": "f630b1711fd6dd31209acc83efd4e5f9967721d836630aa416908eb5e6c18ef0",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 9242.0,
+            "prefill_tokens_per_second": 128.3594975604434,
+            "report_decode_tokens_per_second": 6.04902073506401,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 1.4704109309739843
+          }
+        },
+        "tag": "nanbeige4.3-33b-q4km"
+      },
+      "tier": "dense"
+    },
+    "ollama/nemotron-3.5-bolt-74b-a9b-q3kxl": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T025423.974659+0000_ollama_nemotron-3-5-bolt-74b-a9b-q3kxl.json",
+        "audit_aptitude": {
+          "interval": [
+            -0.010154396181115077,
+            0.635154396181115
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.3571428571428572
+        },
+        "clean_rate": 0.9722222222222222,
+        "clean_samples": 35,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "nemotron-3.5-bolt:74b-a9b-q3kxl",
+        "model_identity": "bdeed349c1c2a9407439d562614bdb9ceb835ca61e0f20a3422bfd773133a653",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "nemotron-3.5-bolt-74b-a9b-q3kxl",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T183056.692043+0000_ollama_nemotron-3-5-bolt-74b-a9b-q3kxl_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "nemotron-3.5-bolt:74b-a9b-q3kxl",
+        "model_identity": "bdeed349c1c2a9407439d562614bdb9ceb835ca61e0f20a3422bfd773133a653",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 6056.5,
+            "prefill_tokens_per_second": 743.0193992743643,
+            "report_decode_tokens_per_second": 32.239350037940795,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 9.086557099491184
+          }
+        },
+        "tag": "nemotron-3.5-bolt-74b-a9b-q3kxl"
+      },
+      "tier": "hybrid MoE"
+    },
+    "ollama/nemotron-3.5-lightning-30b-mlx": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T153335.892402+0000_ollama_nemotron-3-5-lightning-30b-mlx.json",
+        "audit_aptitude": {
+          "interval": [
+            0.001690195819050777,
+            0.6233098041809493
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 6,
+          "vuln_score": 0.3571428571428572
+        },
+        "clean_rate": 0.9722222222222222,
+        "clean_samples": 35,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "nemotron-3.5-lightning:30b-a3b-mlx",
+        "model_identity": "d1e17d7dabacb401dec6440b4ec987ea053b9568b01f89fb3d54f8b2e71397be",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "nemotron-3.5-lightning-30b-mlx",
+        "unaided_document": "valid"
+      },
+      "engine": "MLX",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T174450.386607+0000_ollama_nemotron-3-5-lightning-30b-mlx_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "nemotron-3.5-lightning:30b-a3b-mlx",
+        "model_identity": "d1e17d7dabacb401dec6440b4ec987ea053b9568b01f89fb3d54f8b2e71397be",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 3371.7272331626464,
+          "tg128": 178.74339028213595
+        },
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 6104,
+            "prefill_tokens_per_second": 2330.835154856764,
+            "report_decode_tokens_per_second": 123.29007716247085,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 31.073606426953074
+          }
+        },
+        "tag": "nemotron-3.5-lightning-30b-mlx"
+      },
+      "tier": "hybrid MoE"
+    },
+    "ollama/nemotron-3.5-super-mlx": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T000927.447388+0000_ollama_nemotron-3-5-super-mlx.json",
+        "audit_aptitude": {
+          "interval": [
+            0.21271203471081496,
+            0.7872879652891851
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.5714285714285716
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "nemotron-3.5-super:120b-a12b-nvfp4",
+        "model_identity": "aba4cee1e75e178a69e0fa82ea888b4ae4e1715fc7b51dc03f751adffb2b5a49",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "nemotron-3.5-super-mlx",
+        "unaided_document": "valid"
+      },
+      "engine": "MLX",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T170024.380238+0000_ollama_nemotron-3-5-super-mlx_session.json",
+        "canonical": true,
+        "configured_context": 524288,
+        "kv_pool_tokens": 524288,
+        "model": "nemotron-3.5-super:120b-a12b-nvfp4",
+        "model_identity": "aba4cee1e75e178a69e0fa82ea888b4ae4e1715fc7b51dc03f751adffb2b5a49",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 5961,
+            "prefill_tokens_per_second": 939.369480684019,
+            "report_decode_tokens_per_second": 55.27966765050331,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 12.785032969169952
+          }
+        },
+        "tag": "nemotron-3.5-super-mlx"
+      },
+      "tier": "hybrid MoE"
+    },
+    "splash/bonsai2-27b-pq2": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T191858.346786+0000_splash_bonsai2-27b-pq2.json",
+        "audit_aptitude": {
+          "interval": [
+            0.29727972009101566,
+            0.8277202799089843
+          ],
+          "judged_samples": 7,
+          "scored": true,
+          "sound_samples": 7,
+          "vuln_score": 0.6428571428571428
+        },
+        "clean_rate": 0.9722222222222222,
+        "clean_samples": 35,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 7,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0",
+        "model_identity": "b072e1d3b35a0a630cece372c2127528e0994386",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "bonsai2-27b-pq2",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261031T140229.049761+0000_splash_bonsai2-27b-pq2_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 1675264,
+        "model": "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0",
+        "model_identity": "b072e1d3b35a0a630cece372c2127528e0994386",
+        "optimal_streams": 2,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 1006.5954579771173,
+          "tg128": 77.65055226957249
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 9201,
+            "prefill_tokens_per_second": 534.8887322208313,
+            "report_decode_tokens_per_second": 58.31737909330057,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 8.099900150765366
+          },
+          "2": {
+            "output_tokens_per_session": 8348.5,
+            "prefill_tokens_per_second": 243.613437614764,
+            "report_decode_tokens_per_second": 41.883831377912685,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 8.479077774753256
+          }
+        },
+        "tag": "bonsai2-27b-pq2"
+      },
+      "tier": "dense"
+    },
+    "splash/flint-gguf": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T162756.796595+0000_splash_flint-gguf.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.75,
+        "clean_samples": 6,
+        "failed_checks": [
+          "fitness_clean",
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "untested",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 6,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "unsloth/flint-GGUF:UD-Q4_K_XL",
+        "model_identity": "20468edfc38ab43d6914cc88b08cbecb05d0fc62",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 8,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "flint-gguf",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261125T000229.871788+0000_splash_flint-gguf_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 802816,
+        "model": "unsloth/flint-GGUF:UD-Q4_K_XL",
+        "model_identity": "20468edfc38ab43d6914cc88b08cbecb05d0fc62",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 5187.242675349373,
+          "tg128": 201.5183205618617
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 9857,
+            "prefill_tokens_per_second": 1568.3801867966486,
+            "report_decode_tokens_per_second": 146.40049454877044,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 20.586900759640614
+          },
+          "2": {
+            "output_tokens_per_session": 11830.5,
+            "prefill_tokens_per_second": 728.9743166358519,
+            "report_decode_tokens_per_second": 97.01249445291995,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 20.106893718193003
+          }
+        },
+        "tag": "flint-gguf"
+      },
+      "tier": "MoE"
+    },
+    "splash/ornith1.5-122b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T044622.588519+0000_splash_ornith1-5-122b.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.7586206896551724,
+        "clean_samples": 22,
+        "failed_checks": [
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "ornith-ai/Ornith-1.5-122B-MLX-4bit",
+        "model_identity": "06a57aba4fbae218efc9716bcdf7d6b3035331c8",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 29,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "ornith1.5-122b",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261031T125002.145677+0000_splash_ornith1-5-122b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 1974272,
+        "model": "ornith-ai/Ornith-1.5-122B-MLX-4bit",
+        "model_identity": "06a57aba4fbae218efc9716bcdf7d6b3035331c8",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 1806.5251604576767,
+          "tg128": 170.0663237058588
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 6253.5,
+            "prefill_tokens_per_second": 744.1864751412412,
+            "report_decode_tokens_per_second": 73.4639556961344,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 11.872369825694173
+          },
+          "2": {
+            "output_tokens_per_session": 6981.5,
+            "prefill_tokens_per_second": 339.50967892085464,
+            "report_decode_tokens_per_second": 44.05200106493706,
+            "sessions": 4,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 11.803672984733225
+          }
+        },
+        "tag": "ornith1.5-122b"
+      },
+      "tier": "MoE"
+    },
+    "splash/ornith1.5-35b-a3b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T162142.304315+0000_splash_ornith1-5-35b-a3b.json",
+        "audit_aptitude": {
+          "interval": [
+            0.21271203471081496,
+            0.7872879652891851
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 7,
+          "vuln_score": 0.5714285714285716
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "ornith-ai/Ornith-1.5-35B-A3B-MLX-4bit",
+        "model_identity": "19504d912fa8fc7622bf6b1de3db5d5d890b1f02",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "ornith1.5-35b-a3b",
+        "unaided_document": "json_only"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261115T131122.781662+0000_splash_ornith1-5-35b-a3b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 4448256,
+        "model": "ornith-ai/Ornith-1.5-35B-A3B-MLX-4bit",
+        "model_identity": "19504d912fa8fc7622bf6b1de3db5d5d890b1f02",
+        "optimal_streams": 2,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 5374.094783818147,
+          "tg128": 279.39325989659784
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 8366.5,
+            "prefill_tokens_per_second": 2012.4860752677903,
+            "report_decode_tokens_per_second": 167.40435298108235,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 28.007879820893965
+          },
+          "2": {
+            "output_tokens_per_session": 6990.5,
+            "prefill_tokens_per_second": 926.1012716776702,
+            "report_decode_tokens_per_second": 104.06955442158865,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 30.72440688502116
+          }
+        },
+        "tag": "ornith1.5-35b-a3b"
+      },
+      "tier": "MoE"
+    },
+    "splash/qwen3.6-35b-a3b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T142240.648293+0000_splash_qwen3-6-35b-a3b.json",
+        "audit_aptitude": {
+          "interval": [
+            0.08125531919709594,
+            0.6687446808029041
+          ],
+          "judged_samples": 7,
+          "scored": true,
+          "sound_samples": 7,
+          "vuln_score": 0.4285714285714286
+        },
+        "clean_rate": 0.9444444444444444,
+        "clean_samples": 34,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 7,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "mlx-community/Qwen3.6-35B-A3B-4bit",
+        "model_identity": "38740b847e4cb78f352aba30aa41c76e08e6eb46",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.6-35b-a3b",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261124T212413.351054+0000_splash_qwen3-6-35b-a3b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 4358144,
+        "model": "mlx-community/Qwen3.6-35B-A3B-4bit",
+        "model_identity": "38740b847e4cb78f352aba30aa41c76e08e6eb46",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 5487.504393736399,
+          "tg128": 425.27641254670203
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 4093,
+            "prefill_tokens_per_second": 1913.992082521301,
+            "report_decode_tokens_per_second": 198.30303501246112,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 20.5776715723888
+          },
+          "2": {
+            "output_tokens_per_session": 5977.0,
+            "prefill_tokens_per_second": 1030.4376859883612,
+            "report_decode_tokens_per_second": 158.44194818135998,
+            "sessions": 6,
+            "sessions_incomplete": 1,
+            "sessions_per_hour": 20.29377849444623
+          }
+        },
+        "tag": "qwen3.6-35b-a3b"
+      },
+      "tier": "MoE"
+    },
+    "splash/qwen3.8-27b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T183126.227604+0000_splash_qwen3-8-27b.json",
+        "audit_aptitude": {
+          "interval": [
+            0.21271203471081496,
+            0.7872879652891851
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.5714285714285716
+        },
+        "clean_rate": 0.9722222222222222,
+        "clean_samples": 35,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "mlx-community/Qwen3.8-27B-4bit",
+        "model_identity": "10c35caafbb80f7dc6a7a432cdd11af10a6d4818",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-27b",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261124T221112.414961+0000_splash_qwen3-8-27b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 1433600,
+        "model": "mlx-community/Qwen3.8-27B-4bit",
+        "model_identity": "10c35caafbb80f7dc6a7a432cdd11af10a6d4818",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 1010.9247202748618,
+          "tg128": 116.54745543024548
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 6590,
+            "prefill_tokens_per_second": 554.7314006638649,
+            "report_decode_tokens_per_second": 56.778636187764484,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 9.155280887113053
+          },
+          "2": {
+            "output_tokens_per_session": 10234.75,
+            "prefill_tokens_per_second": 257.0227902490084,
+            "report_decode_tokens_per_second": 46.027208127769555,
+            "sessions": 4,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 8.85841894789379
+          }
+        },
+        "tag": "qwen3.8-27b"
+      },
+      "tier": "dense"
+    },
+    "splash/qwen3.8-flash-next-iq3s": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T204311.255698+0000_splash_qwen3-8-flash-next-iq3s.json",
+        "audit_aptitude": {
+          "interval": [
+            0.4368235713614062,
+            0.9381764286385939
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 6,
+          "vuln_score": 0.7857142857142856
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF:IQ3_S",
+        "model_identity": "ed59f92082b1e93c0e96d60a8b11aab089b52f09",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-flash-next-iq3s",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261031T121538.911180+0000_splash_qwen3-8-flash-next-iq3s_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 1138688,
+        "model": "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF:IQ3_S",
+        "model_identity": "ed59f92082b1e93c0e96d60a8b11aab089b52f09",
+        "optimal_streams": 2,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 2014.2238073481537,
+          "tg128": 180.42965610684826
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 6360,
+            "prefill_tokens_per_second": 2054.0198918940264,
+            "report_decode_tokens_per_second": 118.34130610270924,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 27.1661725741088
+          },
+          "2": {
+            "output_tokens_per_session": 5858.0,
+            "prefill_tokens_per_second": 930.5833368359345,
+            "report_decode_tokens_per_second": 75.92697792586345,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 28.732894072132034
+          }
+        },
+        "tag": "qwen3.8-flash-next-iq3s"
+      },
+      "tier": "MoE"
+    },
+    "vllm-metal/granite4.2-30b-4bit": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T175225.897910+0000_vllm-metal_granite4-2-30b-4bit.json",
+        "audit_aptitude": {
+          "interval": [
+            0.21271203471081496,
+            0.7872879652891851
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.5714285714285716
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "granite-4.2-30b-mlx",
+        "model_identity": "d3f143b440062060eb05f7b8677ced5b4d9a8946",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-metal",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "granite4.2-30b-4bit",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, MLX",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 5,
+        "artifact": "20261125T021927.129766+0000_vllm-metal_granite4-2-30b-4bit_session.json",
+        "canonical": true,
+        "configured_context": 131072,
+        "kv_pool_tokens": 331584,
+        "model": "granite-4.2-30b-mlx",
+        "model_identity": "d3f143b440062060eb05f7b8677ced5b4d9a8946",
+        "optimal_streams": 2,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 856.0385674659376,
+          "tg128": 30.717310217552455
+        },
+        "runtime": "vllm-metal",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 14529.0,
+            "prefill_tokens_per_second": 351.512535392514,
+            "report_decode_tokens_per_second": 10.819935522525801,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 2.617516715807511
+          },
+          "2": {
+            "output_tokens_per_session": 16350.25,
+            "prefill_tokens_per_second": 290.5888981738542,
+            "report_decode_tokens_per_second": 7.943516003857674,
+            "sessions": 4,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 2.9445379628997426
+          }
+        },
+        "tag": "granite4.2-30b-4bit"
+      },
+      "tier": "hybrid MoE"
+    }
+  }
+}

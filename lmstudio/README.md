@@ -18,14 +18,13 @@ One config per artifact; the artifact decides the engine.
 
 The Splash configs load the Splash packages [splash/](../splash/README.md)
 served before 1.3.1, and the MLX configs the mlx-community checkpoints it now
-serves, at the same revisions. On an M3+ host use the Splash engine: it
-enforces schemas and decodes 2.2-2.4x faster at one stream, and
-`qwen3.8-27b-splash` passes Capability Check v3, while the MLX engine ignores
-schema enforcement and its `qwen3.8-27b-mlx` crashed on a Metal resource
-limit; results are in
-[CAPABILITIES.md](../CAPABILITIES.md). LM Studio runs Splash one
-request at a time, so the MLX engine only catches up at four streams; it
-remains the path for older Apple Silicon. Measurements are in
+serves, at the same revisions. On an M3+ host use the Splash engine: it enforces
+schemas and decodes 2.2-2.4x faster at one stream, and `qwen3.8-27b-splash`
+passes Capability Check v3, while the MLX engine ignores schema enforcement and
+its `qwen3.8-27b-mlx` crashed on a Metal resource limit; results are on the
+[Apple M5 Max](../docs/hardware/apple-m5-max-128gb.md) page. LM Studio runs
+Splash one request at a time, so the MLX engine only catches up at four streams;
+it remains the path for older Apple Silicon. Investigations are in
 [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Usage

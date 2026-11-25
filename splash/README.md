@@ -3,7 +3,8 @@
 Managed [Splash](https://github.com/incoai/splash), serving MLX and
 GGUF targets with pinned DFlash 2 drafts, Q8 KV and prefix/state
 caching. These defaults serve repeated deep agent requests; the measured
-262K operating points are in [BENCHMARKS.md](BENCHMARKS.md).
+262K operating points are on the [Apple M5 Max](../docs/hardware/apple-m5-max-128gb.md)
+page, investigations in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Install and run
 
@@ -83,8 +84,8 @@ The OpenAI-compatible endpoint is `http://127.0.0.1:8022/v1`. Thinking is
 enabled by default; top-level `reasoning_effort: "none"` disables it.
 The capability adapter preserves this wire format rather than sending
 vLLM's nested `chat_template_kwargs` option. See the measured reasoning,
-tool-call, streaming, JSON and schema results in
-[CAPABILITIES.md](../CAPABILITIES.md).
+tool-call, streaming, JSON and schema results on the
+[Apple M5 Max](../docs/hardware/apple-m5-max-128gb.md#capability-check) page.
 
 The generated provider `splash` lists every config, keyed by
 `SPLASH_MODEL_REPO`. See [opencode/README.md](../opencode/README.md).

@@ -91,7 +91,7 @@ Serving measurements follow
   inversion under-budgets the pool. Align mode changes hybrid temp-0
   outputs from the first token, so cache-off canonical benchmark rates
   do not transfer to an APC profile -- each condition carries its own
-  canonical run in BENCHMARKS.md; gate and math are in README.md.
+  canonical run in its hardware record; gate and math are in README.md.
   Rerun a session smoke (`make vllm-metal-bench MODEL=<conf>
   AUDIT_BENCH_STREAMS=1 AUDIT_BENCH_SAMPLES=1`, noncanonical) on every
   plugin bump.

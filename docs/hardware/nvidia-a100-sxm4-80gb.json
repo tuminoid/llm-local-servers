@@ -1,0 +1,1028 @@
+{
+  "profiles": {
+    "ollama/flint-40b-a2b-nvfp4": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T184514.296753+0000_ollama_flint-40b-a2b-nvfp4.json",
+        "audit_aptitude": {
+          "interval": [
+            -0.0826726525430066,
+            0.5826726525430066
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.2857142857142856
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "flint:40b-a2b-gguf-nvfp4",
+        "model_identity": "9543f736310ddf3daee4f3d5467229d0ac16cdc3d58339a97eecac1c27d37872",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "flint-40b-a2b-nvfp4",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261116T071203.318342+0000_ollama_flint-40b-a2b-nvfp4_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 1048576,
+        "model": "flint:40b-a2b-gguf-nvfp4",
+        "model_identity": "9543f736310ddf3daee4f3d5467229d0ac16cdc3d58339a97eecac1c27d37872",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 8496.5,
+            "prefill_tokens_per_second": 918.7067616429929,
+            "report_decode_tokens_per_second": 40.67236190008059,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 9.94178412153762
+          },
+          "2": {
+            "output_tokens_per_session": 9520.0,
+            "prefill_tokens_per_second": 1066.4331678860697,
+            "report_decode_tokens_per_second": 24.836954510777225,
+            "sessions": 6,
+            "sessions_incomplete": 1,
+            "sessions_per_hour": 12.143010044230026
+          }
+        },
+        "tag": "flint-40b-a2b-nvfp4"
+      },
+      "tier": "MoE"
+    },
+    "ollama/nemotron-3.5-bolt-74b-a9b-iq2": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T201109.714683+0000_ollama_nemotron-3-5-bolt-74b-a9b-iq2.json",
+        "audit_aptitude": {
+          "interval": [
+            0.05380229024789107,
+            0.6961977097521089
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.4285714285714286
+        },
+        "clean_rate": 0.9444444444444444,
+        "clean_samples": 34,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "nemotron-3.5-bolt:74b-a9b-iq2",
+        "model_identity": "d6d3deeca27134af015d1ab4d57ee655dd6d624dbef4f5dfd18f4b54f76bb554",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "nemotron-3.5-bolt-74b-a9b-iq2",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T200425.049712+0000_ollama_nemotron-3-5-bolt-74b-a9b-iq2_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "nemotron-3.5-bolt:74b-a9b-iq2",
+        "model_identity": "d6d3deeca27134af015d1ab4d57ee655dd6d624dbef4f5dfd18f4b54f76bb554",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 11157,
+            "prefill_tokens_per_second": 1185.9415056898977,
+            "report_decode_tokens_per_second": 119.61913659643902,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 15.531671204715753
+          }
+        },
+        "tag": "nemotron-3.5-bolt-74b-a9b-iq2"
+      },
+      "tier": "hybrid MoE"
+    },
+    "ollama/ornith1.5-35b-a3b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T175309.862604+0000_ollama_ornith1-5-35b-a3b.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.8260869565217391,
+        "clean_samples": 19,
+        "failed_checks": [
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "ornith-1.5:35b",
+        "model_identity": "9f3b89b2521908dd2e6f7a11fa368e62c8f89e1075f22604e4d1a76dd1240fcc",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "ollama",
+        "samples": 23,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "ornith1.5-35b-a3b",
+        "unaided_document": "valid"
+      },
+      "engine": "llama.cpp",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T194107.762686+0000_ollama_ornith1-5-35b-a3b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "ornith-1.5:35b",
+        "model_identity": "9f3b89b2521908dd2e6f7a11fa368e62c8f89e1075f22604e4d1a76dd1240fcc",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "ollama",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 3967.5,
+            "prefill_tokens_per_second": 3051.3901490963904,
+            "report_decode_tokens_per_second": 59.9489661402571,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 32.20724643961424
+          }
+        },
+        "tag": "ornith1.5-35b-a3b"
+      },
+      "tier": "MoE"
+    },
+    "strata/deepseek-v4.1-flash-coder-iq2xxs": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T015850.589411+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json",
+        "audit_aptitude": {
+          "interval": [
+            0.5208234850600961,
+            0.9791765149399039
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 7,
+          "vuln_score": 0.8571428571428572
+        },
+        "clean_rate": 0.9722222222222222,
+        "clean_samples": 35,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "deepseek-v4.1-flash-coder-iq2xxs",
+        "model_identity": "0b1d5da5734d76375bdad4e72af85a420fde7af7",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "strata",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "deepseek-v4.1-flash-coder-iq2xxs",
+        "unaided_document": "valid"
+      },
+      "engine": "Strata DeepSeek",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T174556.949264+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json",
+        "canonical": true,
+        "configured_context": 1048576,
+        "kv_pool_tokens": 1048576,
+        "model": "deepseek-v4.1-flash-coder-iq2xxs",
+        "model_identity": "0b1d5da5734d76375bdad4e72af85a420fde7af7",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "strata",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 8571,
+            "prefill_tokens_per_second": 827.4734207393162,
+            "report_decode_tokens_per_second": 50.31617478401522,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 9.771000179818682
+          }
+        },
+        "tag": "deepseek-v4.1-flash-coder-iq2xxs"
+      },
+      "tier": "MoE"
+    },
+    "strata/deepseek-v4.1-flash-q2": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261120T062422.397959+0000_strata_deepseek-v4-1-flash-q2.json",
+        "audit_aptitude": {
+          "interval": [
+            0.5208234850600961,
+            0.9791765149399039
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.8571428571428572
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "deepseek-v4.1-flash-q2",
+        "model_identity": "cb02422c900df489cea5833e8a92171224059b3c",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "strata",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "deepseek-v4.1-flash-q2",
+        "unaided_document": "valid"
+      },
+      "engine": "Strata DeepSeek",
+      "note": null,
+      "role": "audit",
+      "tier": "MoE"
+    },
+    "strata/qwen3.8-flash-next-nvfp4": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T220514.667979+0000_strata_qwen3-8-flash-next-nvfp4.json",
+        "audit_aptitude": {
+          "interval": [
+            0.5208234850600961,
+            0.9791765149399039
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.8571428571428572
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.8-flash-next-nvfp4",
+        "model_identity": "640a1db97446ddd5e89d2b70ecd0297987192c93",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "strata",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-flash-next-nvfp4",
+        "unaided_document": "valid"
+      },
+      "engine": "Strata",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261115T164004.814930+0000_strata_qwen3-8-flash-next-nvfp4_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "qwen3.8-flash-next-nvfp4",
+        "model_identity": "640a1db97446ddd5e89d2b70ecd0297987192c93",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": null,
+        "runtime": "strata",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 6188,
+            "prefill_tokens_per_second": 2136.0190930150675,
+            "report_decode_tokens_per_second": 110.19731212138255,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 27.65900258471118
+          }
+        },
+        "tag": "qwen3.8-flash-next-nvfp4"
+      },
+      "tier": "MoE"
+    },
+    "vllm/gemma4-26b-a4b-awq": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T145100.047835+0000_vllm-cuda_gemma4-26b-a4b-awq.json",
+        "audit_aptitude": {
+          "interval": [
+            0.3580174397081337,
+            0.8919825602918663
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.7142857142857144
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "gemma4-26b-a4b-awq",
+        "model_identity": "0ef577a5710035bd2d3a3f27e4f5cb2e86a9a9ba",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-cuda",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "gemma4-26b-a4b-awq",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, CUDA",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261124T212102.018862+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 1909362,
+        "model": "gemma4-26b-a4b-awq",
+        "model_identity": "0ef577a5710035bd2d3a3f27e4f5cb2e86a9a9ba",
+        "optimal_streams": 2,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 8211.965039624263,
+          "tg128": 178.37159612412395
+        },
+        "runtime": "vllm-cuda",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 1484.5,
+            "prefill_tokens_per_second": 2117.1809212656713,
+            "report_decode_tokens_per_second": 63.650139442811536,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 36.5908096780723
+          },
+          "2": {
+            "output_tokens_per_session": 1591.5,
+            "prefill_tokens_per_second": 1039.7525697058227,
+            "report_decode_tokens_per_second": 52.527967314787674,
+            "sessions": 4,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 41.59056289651677
+          },
+          "4": {
+            "output_tokens_per_session": 1590.0,
+            "prefill_tokens_per_second": 705.2579846849119,
+            "report_decode_tokens_per_second": 48.67692686267967,
+            "sessions": 12,
+            "sessions_incomplete": 1,
+            "sessions_per_hour": 45.008495248793416
+          }
+        },
+        "tag": "gemma4-26b-a4b-awq"
+      },
+      "tier": "MoE"
+    },
+    "vllm/mimo-v2.6-9b-awq": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T143611.513989+0000_vllm-cuda_mimo-v2-6-9b-awq.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.625,
+        "clean_samples": 5,
+        "failed_checks": [
+          "fitness_clean",
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 5,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "mimo-v2.6-9b-awq",
+        "model_identity": "09a55d0912c0652152ac24777f3688c408497b68",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-cuda",
+        "samples": 8,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "mimo-v2.6-9b-awq",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, CUDA",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261125T010833.773202+0000_vllm-cuda_mimo-v2-6-9b-awq_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 2229526,
+        "model": "mimo-v2.6-9b-awq",
+        "model_identity": "09a55d0912c0652152ac24777f3688c408497b68",
+        "optimal_streams": null,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [
+          "incomplete_sessions"
+        ],
+        "publishable": false,
+        "reference": {
+          "pp512": 8200.843993042929,
+          "tg128": 175.5707022603549
+        },
+        "runtime": "vllm-cuda",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 3669.5,
+            "prefill_tokens_per_second": 5152.740638427065,
+            "report_decode_tokens_per_second": 109.36972135821571,
+            "sessions": 2,
+            "sessions_incomplete": 2,
+            "sessions_per_hour": 57.078231314835676
+          }
+        },
+        "tag": "mimo-v2.6-9b-awq"
+      },
+      "tier": "dense"
+    },
+    "vllm/nanbeige4.3-33b-w4a16": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T205316.035551+0000_vllm-cuda_nanbeige4-3-33b-w4a16.json",
+        "audit_aptitude": {
+          "scored": false
+        },
+        "clean_rate": 0.75,
+        "clean_samples": 6,
+        "failed_checks": [
+          "fitness_clean",
+          "clean_rate"
+        ],
+        "features": {
+          "json_schema": "broken",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 6,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "nanbeige4.3-33b",
+        "model_identity": "1c1666af6d964ac8f315fba6a6fcb2efa6abdc23",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-cuda",
+        "samples": 8,
+        "schema_enforcement": "whitespace_runaway",
+        "schema_version": 8,
+        "status": "failed",
+        "tag": "nanbeige4.3-33b-w4a16",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, CUDA",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261125T011916.186105+0000_vllm-cuda_nanbeige4-3-33b-w4a16_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 284704,
+        "model": "nanbeige4.3-33b",
+        "model_identity": "1c1666af6d964ac8f315fba6a6fcb2efa6abdc23",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 2916.8656426537655,
+          "tg128": 71.29150055250166
+        },
+        "runtime": "vllm-cuda",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 10136.0,
+            "prefill_tokens_per_second": 930.3826483085888,
+            "report_decode_tokens_per_second": 27.85344595889005,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 7.5864802352760865
+          }
+        },
+        "tag": "nanbeige4.3-33b-w4a16"
+      },
+      "tier": "dense"
+    },
+    "vllm/qwen3.6-35b-a3b-awq": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T142313.656730+0000_vllm-cuda_qwen3-6-35b-a3b-awq.json",
+        "audit_aptitude": {
+          "interval": [
+            0.14535611956606043,
+            0.7296438804339396
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.5
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.6-35b-a3b-awq",
+        "model_identity": "119886a1072372348f73ef0df2d801cdcc0f455b",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-cuda",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.6-35b-a3b-awq",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, CUDA",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261124T204905.089471+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 2797230,
+        "model": "qwen3.6-35b-a3b-awq",
+        "model_identity": "119886a1072372348f73ef0df2d801cdcc0f455b",
+        "optimal_streams": 4,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 4430.194797119197,
+          "tg128": 153.7450972216397
+        },
+        "runtime": "vllm-cuda",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 5501.5,
+            "prefill_tokens_per_second": 6293.320812491194,
+            "report_decode_tokens_per_second": 111.23142809715222,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 38.13033950348415
+          },
+          "2": {
+            "output_tokens_per_session": 4982.0,
+            "prefill_tokens_per_second": 4465.08951540845,
+            "report_decode_tokens_per_second": 74.43465007561994,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 50.565180333264664
+          },
+          "4": {
+            "output_tokens_per_session": 5674.5,
+            "prefill_tokens_per_second": 4038.820112002698,
+            "report_decode_tokens_per_second": 40.35390321488252,
+            "sessions": 12,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 55.216342223939314
+          }
+        },
+        "tag": "qwen3.6-35b-a3b-awq"
+      },
+      "tier": "MoE"
+    },
+    "vllm/qwen3.8-27b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T153701.415810+0000_vllm-cuda_qwen3-8-27b.json",
+        "audit_aptitude": {
+          "interval": [
+            0.3545273234687097,
+            0.8954726765312904
+          ],
+          "judged_samples": 7,
+          "scored": true,
+          "sound_samples": 7,
+          "vuln_score": 0.7142857142857142
+        },
+        "clean_rate": 0.9444444444444444,
+        "clean_samples": 34,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 7,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.8-27b",
+        "model_identity": "1f05c441c4e64ae0549de44fa9ea5a6d43610314",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-cuda",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-27b",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, CUDA",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261124T220035.364825+0000_vllm-cuda_qwen3-8-27b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 954019,
+        "model": "qwen3.8-27b",
+        "model_identity": "1f05c441c4e64ae0549de44fa9ea5a6d43610314",
+        "optimal_streams": 4,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 2964.1287497858702,
+          "tg128": 75.38459197884744
+        },
+        "runtime": "vllm-cuda",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 9481.5,
+            "prefill_tokens_per_second": 1851.451160727747,
+            "report_decode_tokens_per_second": 49.96532059947529,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 12.98960429746289
+          },
+          "2": {
+            "output_tokens_per_session": 8770.0,
+            "prefill_tokens_per_second": 1408.542590447068,
+            "report_decode_tokens_per_second": 36.803702049354456,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 17.848294599932508
+          },
+          "4": {
+            "output_tokens_per_session": 8469.5,
+            "prefill_tokens_per_second": 1238.0333490968194,
+            "report_decode_tokens_per_second": 22.80533263694773,
+            "sessions": 8,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 20.118320230248145
+          }
+        },
+        "tag": "qwen3.8-27b"
+      },
+      "tier": "dense"
+    },
+    "vllm/qwen3.8-27b-512k": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T164755.866465+0000_vllm-cuda_qwen3-8-27b-512k.json",
+        "audit_aptitude": {
+          "interval": [
+            0.276849016499155,
+            0.848150983500845
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.6428571428571428
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.8-27b-512k",
+        "model_identity": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-cuda",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-27b-512k",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, CUDA",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261124T230336.466050+0000_vllm-cuda_qwen3-8-27b-512k_session.json",
+        "canonical": true,
+        "configured_context": 524288,
+        "kv_pool_tokens": 779829,
+        "model": "qwen3.8-27b-512k",
+        "model_identity": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+        "optimal_streams": 4,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 2605.61478089467,
+          "tg128": 49.25898315023868
+        },
+        "runtime": "vllm-cuda",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 10844.5,
+            "prefill_tokens_per_second": 1740.1931253940083,
+            "report_decode_tokens_per_second": 36.683687376077586,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 9.377502776766114
+          },
+          "2": {
+            "output_tokens_per_session": 7902.0,
+            "prefill_tokens_per_second": 1484.119405353115,
+            "report_decode_tokens_per_second": 29.415963776560687,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 15.995609376916766
+          },
+          "4": {
+            "output_tokens_per_session": 7554.0,
+            "prefill_tokens_per_second": 999.4369682848053,
+            "report_decode_tokens_per_second": 21.48213268038203,
+            "sessions": 8,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 20.52055435447554
+          }
+        },
+        "tag": "qwen3.8-27b-512k"
+      },
+      "tier": "dense"
+    },
+    "vllm/qwen3.8-27b-dflash2": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261119T160828.532762+0000_vllm-cuda_qwen3-8-27b-dflash2.json",
+        "audit_aptitude": {
+          "interval": [
+            0.276849016499155,
+            0.848150983500845
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.6428571428571428
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "qwen3.8-27b",
+        "model_identity": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "vllm-cuda",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "qwen3.8-27b-dflash2",
+        "unaided_document": "valid"
+      },
+      "engine": "vLLM, CUDA",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261125T001233.153991+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 522956,
+        "model": "qwen3.8-27b",
+        "model_identity": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+        "optimal_streams": 2,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 2599.101017731313,
+          "tg128": 108.59416172263941
+        },
+        "runtime": "vllm-cuda",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 7509,
+            "prefill_tokens_per_second": 1759.3084543750208,
+            "report_decode_tokens_per_second": 21.994014717881015,
+            "sessions": 3,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 8.862816347971007
+          },
+          "2": {
+            "output_tokens_per_session": 8060.5,
+            "prefill_tokens_per_second": 1316.8586441869402,
+            "report_decode_tokens_per_second": 23.575584025689864,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 12.634811359788133
+          }
+        },
+        "tag": "qwen3.8-27b-dflash2"
+      },
+      "tier": "dense"
+    }
+  }
+}

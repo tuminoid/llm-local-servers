@@ -1,7 +1,8 @@
 # vLLM-Metal benchmark results
 
 Measured baselines for the script-managed vLLM-Metal server on Apple
-Silicon. The cross-runtime summary is [../README.md](../README.md). The
+Silicon. Current results are on the hardware pages, linked from the
+[README](../README.md#results-by-hardware). The
 qwen3.6, qwen3.8 and nemotron profiles left this runtime on 2026-10-12
 (Splash serves both Qwen models on the M5 and passes the gate, Ollama MLX
 serves nemotron faster); their records are in this file at commit
@@ -18,39 +19,10 @@ plugin pin and cache condition. The other sections use the retired
 vLLM-Metal bring-up harness or the earlier prompt. Do not combine those
 legacy rates with canonical results.
 
-## AuditBench v3: Apple M5 Max
+## Apple M5 Max
 
-Plugin 0.31.0 with core vLLM 0.31.0, serving-default cache pins (align APC on
-the hybrids). Canonical AuditBench v3 `session` profile (llm-audit-bench 3.0.0;
-each JSON records its harness hash), run 2026-11-25 on the M5 Max (128 GB, macOS
-27.0.1) from fleet commit `8ab4e09` at the conf's declared sampling. The harness
-climbs 1, 2, 4, 8 streams within admission and the KV pool while each rung
-completes every session and gains 10%: tool steps from 32k evidence, 16 at
-262,144 configured context and 9 at 131,072, report at depth. Sessions/h is the
-median over 2-3 samples; complete counts sessions whose report ended on its own
-and named at least 7/8 of its findings. pp512/tg128 is the llama-bench-method
-reference (one stream, greedy, depth ~0), not a serving result. JSON files are
-retained under `~/.local/state/auditbench/trials/2026-11-24-v3-sessions/m5/`;
-the llm-audit-bench 2.1.0 row (2026-10-16/17, fleet `2e990d6`) and the plugin
-0.30.0 rows are in git history. Every later section of this file is AuditBench
-v1 or older, never comparable with v3. Their top-level retained JSON on the M5
-and A100 was removed on 2026-09-30; trial-directory copies remain, and the
-figures stay here and in git history.
-
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
-| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| vLLM-Metal `granite4.2-30b-4bit` | 131,072 | 5 | 331,584 | 1x 2.62 / 2x 2.94 | 14,529 | 351.5 | 10.8 | 6/6 | 856 / 30.7 | pass | yes | `20261125T021927.129766+0000_vllm-metal_granite4-2-30b-4bit_session.json` |
-
-- `granite4.2-30b-4bit` passes Capability Check v3 (36 of 36 clean,
-  2026-11-19) and is publishable but
-  slow: 2.62 sessions/h (2.94 at two streams) with 14,529 output tokens per
-  session at 131k. It stays on this runtime as the proof that the plugin
-  path works: on Ollama 0.40.16 its capability check passed, but
-  its session fails on an intermittent stream that ends without a usage
-  chunk or `[DONE]` (2026-11-15/16). Retest on the next Ollama release.
-- The `ornith1.5-122b-a10b-4bit` profile (2.31 / 2.77 @4x sessions/h, an
-  interactive profile) was dropped for Splash's Ornith 1.5 122B (11.87
-  sessions/h), which fails Capability Check v3. Its row is in git history.
+Results on this hardware are on its page,
+[Apple M5 Max, 128 GB](../docs/hardware/apple-m5-max-128gb.md).
 
 ## Audit conversation profile
 
