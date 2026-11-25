@@ -4,7 +4,9 @@ Managed [Kapitsa](https://github.com/nace-ai/kapitsa), a native Metal engine
 for Qwen3.5-family hybrid models with prefix reuse and speculative decoding.
 It serves DiffuSpace's Clover-35B-A3B block-diffusion MoE in Clover's own
 self-speculative mode; Splash serves the plain Qwen models faster.
-Measured operating points are in [BENCHMARKS.md](BENCHMARKS.md).
+Measured results are on the hardware pages, linked from the
+[README](../README.md#results-by-hardware); investigations are in
+[BENCHMARKS.md](BENCHMARKS.md).
 
 ## Install and run
 

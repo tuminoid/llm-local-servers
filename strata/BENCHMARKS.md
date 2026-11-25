@@ -1,47 +1,9 @@
 # Strata benchmarks
 
-## AuditBench v3: A100-SXM4-80GB
+## A100-SXM4-80GB
 
-Strata 0.2.13 (`d2f09647`) built by `strata-install` for sm_80 against CUDA
-13.2, one slot, context 262,144, int8 KV streamed from pinned RAM past a
-32,768-token window and the n-gram table in RAM (both derived from the
-host's 211 GiB), MTP drafts four deep, every routed expert in VRAM.
-Canonical AuditBench v3 `session` profile at the conf's declared sampling,
-run by llm-audit-bench 2.5.0, whose session code 3.0.0 ships unchanged,
-from the clean trial commit `54822f2` (this pin with
-the same profile files), 2026-11-15. One slot admits one stream, so the
-ladder measured 1x. Sessions/h is the median over 3 samples; complete
-counts sessions whose report ended on its own and named at least 7/8 of its
-findings. JSON files are under `auditbench-trials/2026-11-15-a100/` on the
-host; the 0.2.10 rows are in git history.
-
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
-| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Strata `qwen3.8-flash-next-nvfp4` | 262,144 | 1 | 262,144 | 1x 27.66 | 6,188 | 2,136.0 | 110.2 | 3/3 | unavailable | pass | yes | `20261115T164004.814930+0000_strata_qwen3-8-flash-next-nvfp4_session.json` |
-| Strata `deepseek-v4.1-flash-coder-iq2xxs` | 1,048,576 | 1 | 1,048,576 | 1x 9.77 | 8,571 | 827.5 | 50.3 | 3/3 | unavailable | pass | yes | `20261115T174556.949264+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json` |
-
-- Capability Check v3 passes, 36 of 36 clean, audit aptitude +0.86:
-  `20261119T220514.667979+0000_strata_qwen3-8-flash-next-nvfp4.json`
-  (2026-11-19, llm-audit-bench 3.0.0, fleet commit `a21fd8a`). Against
-  0.2.10 (2026-11-04): 28.76 to 27.66 sessions/h, with
-  6,188 output tokens per session against 5,480; its three samples spread
-  24.89-29.91.
-- Mid-session decode ran 116-137 tok/s; the near-context phase
-  (245,776-token prompt) read 3,389 tok/s (2,796 on 0.2.10).
-- The DeepSeek Coder row runs on the DeepSeek engine, DSpark at a 0.65
-  floor, every routed expert in VRAM. Turn decode 58.7/81.6/76.3 tok/s; the
-  983,045-token near-context prompt read 888 tok/s (1,107 s). 39 calls
-  streamed no reasoning. Capability Check v3 passes, 35 of 36 clean (one
-  leak), audit aptitude +0.86:
-  `20261120T015850.589411+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json`.
-  Against 0.2.10: 9.89 to 9.77 sessions/h.
-- `deepseek-v4.1-flash-q2` has no row: on 0.2.10 8,666 of its 15,360
-  experts were on the GPU at 1,048,576, and `strata-bench` refuses a set
-  with experts off the GPU, so 0.2.13 checked its capability only.
-  Capability Check v3 passes, 36 of 36 clean, audit aptitude +0.86:
-  `20261120T062422.397959+0000_strata_deepseek-v4-1-flash-q2.json`.
-- Strata ends a response at EOS rather than at `max_tokens`, so the
-  reference measurement is unavailable; it is a diagnostic only.
+Results on this hardware are on its page,
+[NVIDIA A100 SXM4 80GB](../docs/hardware/nvidia-a100-sxm4-80gb.md).
 
 ## Pack and setting comparison: A100-SXM4-80GB (exploratory)
 
@@ -52,8 +14,7 @@ without AVX-512). Context 262,144, int8 KV streamed from RAM past a
 harness, llm-audit-bench 2.5.0, ran directly against the server with the
 canonical `session` profile at the checkpoint's sampling (temperature 1.0,
 top_p 0.95, top_k 20). These runs are not publishable: no fleet adapter
-checked identity. Evidence is under
-`~/.local/state/auditbench/trials/2026-11-04-strata-a100/`.
+checked identity.
 
 Every pack kept all 24,576 routed experts in VRAM:
 
@@ -100,8 +61,7 @@ min_p 0. The harness, llm-audit-bench 2.5.0, ran directly against the
 server, so no row is publishable. The 262,144 rows are the canonical
 `session` profile; the 524,288 and 1,048,576 rows are the near-context probe
 plus one session of `AUDIT_BENCH_CONV_MAX_STEPS=200`, which the harness cuts
-to the 50 and 104 steps that fit 7/8 of the context. Evidence is under
-`~/.local/state/auditbench/trials/2026-11-05-strata-ds-a100/`.
+to the 50 and 104 steps that fit 7/8 of the context.
 
 | Set | Context | Experts on the GPU | Sessions/h 1x | Steps | Prefill tok/s | Turn decode first/mid/last | Report decode | Near-context prompt |
 | -- | --: | -- | --: | --: | --: | -- | --: | -- |

@@ -7,7 +7,9 @@ Python server. DeepSeek-V4.1-Flash runs on a second engine from the same
 tree, Strata's port of Project Maya's, with DSpark drafting. Both keep the
 routed experts in VRAM as far as they fit and compute the rest on the CPU;
 on a card that holds every expert, they serve entirely from the GPU.
-Measured operating points are in [BENCHMARKS.md](BENCHMARKS.md).
+Measured results are on the hardware pages, linked from the
+[README](../README.md#results-by-hardware); investigations are in
+[BENCHMARKS.md](BENCHMARKS.md).
 
 ## Install and run
 

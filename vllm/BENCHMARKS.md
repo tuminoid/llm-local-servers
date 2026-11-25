@@ -1,96 +1,15 @@
 # vLLM benchmark results
 
-Measured throughput, memory, context, and concurrency baselines for the two GPU
-generations this tree is verified against. Results are grouped by host because
-models are comparable only when they ran on the same hardware with the same
-harness.
+Investigations behind the vLLM profiles: architectural explanations,
+full-context tests and failure modes. Current results are on the hardware
+pages, linked from the [README](../README.md#results-by-hardware). Every
+measurement section here is AuditBench v1 or older, or exploratory, and
+dated; none is comparable with AuditBench v3.
 
-Use the tables at the top to choose an operating point. The later sections
-preserve the measurements, architectural explanations, full-context tests, and
-failure modes behind those summaries.
+## A100-SXM4-80GB
 
-The A100 rows at the top use canonical [AuditBench
-v2](https://github.com/tuminoid/llm-audit-bench); every later section is
-AuditBench v1 or older history, never comparable with v2. The RTX PRO 3000
-vLLM profiles were dropped on 2026-10-12 (two failed their capability check,
-Nemotron Nano was in no inventory); their rows are in git history. Retired
-A100 measurements remain clearly separated later in this file and must not be
-combined with canonical rates. Their top-level retained JSON on the M5 and
-A100 was removed on 2026-09-30; trial-directory copies remain, and the figures
-stay here and in git history.
-
-## AuditBench v3: A100-SXM4-80GB
-
-sm_80, 81,920 MiB VRAM, vLLM 0.31.0, Transformers 5.15.1, serving-default
-cache pins. Canonical AuditBench v3 `session` profile (llm-audit-bench
-3.0.0; each JSON records its harness hash), run 2026-11-24/25 from fleet
-commit `8ab4e09` at each conf's declared sampling. The harness climbs 1, 2,
-4, 8 streams within admission and the KV pool while each rung completes
-every session and gains 10%: 16 tool steps from 32k evidence, report at
-about 165k. Sessions/h is the median over
-2-3 samples; complete counts sessions whose report ended on its own and
-named at least 7/8 of its findings. pp512/tg128 is the llama-bench-method
-reference (one stream, greedy, depth ~0), not a serving result. JSON files
-are retained under `auditbench-trials/2026-11-24-v3-sessions/` on the host
-and copied under the M5 trial's `a100/`. The llm-audit-bench 2.1.0 rows
-(2026-10-10/11, fleet `ad06c70`, 1x and the top count only) and the vLLM
-0.30.0 rows are in git history.
-
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
-| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| vLLM `mimo-v2.6-9b-awq` | 262,144 | 8 | 2,229,526 | 1x 57.08, incomplete | 3,670 | 5,152.7 | 109.4 | 0/2 | 8,201 / 175.6 | fail | no | `20261125T010833.773202+0000_vllm-cuda_mimo-v2-6-9b-awq_session.json` |
-| vLLM `qwen3.6-35b-a3b-awq` | 262,144 | 8 | 2,797,230 | 1x 38.13 / 2x 50.57 / 4x 55.22 | 5,502 | 6,293.3 | 111.2 | 20/20 | 4,430 / 153.7 | pass | yes | `20261124T204905.089471+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json` |
-| vLLM `gemma4-26b-a4b-awq` | 262,144 | 8 | 1,909,362 | 1x 36.59 / 2x 41.59 / 4x 45.01, incomplete | 1,484 | 2,117.2 | 63.7 | 17/18 | 8,212 / 178.4 | pass | yes | `20261124T212102.018862+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json` |
-| vLLM `qwen3.8-27b-512k` | 524,288 | 8 | 779,829 | 1x 9.38 / 2x 16.00 / 4x 20.52 | 10,844 | 1,740.2 | 36.7 | 16/16 | 2,606 / 49.3 | pass | yes | `20261124T230336.466050+0000_vllm-cuda_qwen3-8-27b-512k_session.json` |
-| vLLM `qwen3.8-27b` | 262,144 | 8 | 954,019 | 1x 12.99 / 2x 17.85 / 4x 20.12 | 9,482 | 1,851.5 | 50.0 | 16/16 | 2,964 / 75.4 | pass | yes | `20261124T220035.364825+0000_vllm-cuda_qwen3-8-27b_session.json` |
-| vLLM `qwen3.8-27b-dflash2` | 262,144 | 8 | 522,956 | 1x 8.86 / 2x 12.63 | 7,509 | 1,759.3 | 22.0 | 9/9 | 2,599 / 108.6 | pass | yes | `20261125T001233.153991+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json` |
-| vLLM `nanbeige4.3-33b-w4a16` | 262,144 | 8 | 284,704 | 1x 7.59 | 10,136 | 930.4 | 27.9 | 2/2 | 2,917 / 71.3 | fail | yes | `20261125T011916.186105+0000_vllm-cuda_nanbeige4-3-33b-w4a16_session.json` |
-
-- Five of seven profiles pass Capability Check v3 (llm-audit-bench 3.0.0,
-  2026-11-19, fleet `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)).
-  `gemma4-26b-a4b-awq` and `qwen3.8-27b-512k` enforce the schema with
-  grammar whitespace forbidden in their confs.
-- `qwen3.6-35b-a3b-awq` is the fastest profile that passes: 38.13
-  sessions/h at one stream and 55.22 at four, every session complete; the
-  ladder stopped at four, where the gain fell under 10%. The 2.1.0 run
-  measured 58.67 at eight.
-- `gemma4-26b-a4b-awq` publishes two streams (41.59): one 4x session left
-  its report incomplete.
-- `qwen3.8-27b` now serves W4A16 (`dbirks/Qwen3.8-27B-W4A16-AutoRound`).
-  Against the FP8 0.30.0 row (12.35 / 17.26) it is 5% faster at one stream
-  and 17% faster at four (20.12); report decode rises from 36.7 to 50.0
-  tok/s and the KV pool from 774,131 to 954,019 tokens.
-  `qwen3.8-27b-512k` keeps FP8 and ties it at four streams (20.52); the
-  2.1.0 run's one-stream 14.49 was a single sample, against 9.38 here.
-- `nanbeige4.3-33b-w4a16` (Nanbeige4.3-33B, dense, AutoRound INT4) fails
-  Capability Check v3 compatibility, 6 of 8 fitness samples clean: one
-  workflow turn emitted tool arguments that are not JSON and one ran out of
-  turn budget. Its selection answers run 33k to 64k tokens. One session fits
-  the 284,704-token pool, so it measures one stream: 7.59 sessions/h, about
-  10.1k output tokens per session with preserved reasoning. The schema
-  check, which never gates, ran into a whitespace runaway.
-- DFlash 2 still loses at the declared sampling: 8.86 / 12.63 sessions/h,
-  report decode 22.0 tok/s. A fixed-depth decode probe of the two profiles
-  as configured (2026-10-22, the vLLM 0.32.0 trial tree, not the pin; 2,048
-  generated tokens per stream, no shared prefix) puts the DFlash 2 profile
-  level with plain at 8k and below it from 32k at the declared sampling:
-  per-stream decode x0.93 / x1.02 / x1.00 at 8k and one, two and four
-  streams, then x0.70, x0.53 and x0.35 at one stream at 32k, 64k and 128k.
-  Its target is still FP8, plain's is now W4A16 and decodes faster (71.0
-  tok/s at 8k against 47.5 for FP8 on 0.31.0), and the drafter's sampled
-  acceptance of about 2.3 tokens does not make up the difference. Greedy,
-  it leads at 8k (x1.28 to x1.31) and ties at 32k with four streams
-  (x1.01). The profile stays for greedy short-context use; serve plain for
-  audits.
-- MiMo measures 57.08 sessions/h at one stream, but neither session
-  finished its report's findings, so the ladder stopped there, and it fails
-  Capability Check v3 compatibility (5 of 8 fitness samples clean): neither
-  its rate nor the model is usable.
-- `qwen3-coder-30b` (36.77 / 38.83 @2x, fails both tool-call checks) and
-  `glm4.7-flash-awq` (11.17 / 11.09 @4x, 9 of 15 sessions incomplete) were
-  also measured; both models were dropped
-  from the A100 on 2026-10-12, and their rows here and below are in git
-  history.
+Results on this hardware are on its page,
+[NVIDIA A100 SXM4 80GB](../docs/hardware/nvidia-a100-sxm4-80gb.md).
 
 ## TL;DR: same-hardware comparisons
 
@@ -166,7 +85,7 @@ about 1.25x at equal verdict length (the 1.45x first published here divided
 verdicts of different lengths), so the deep single-shot penalty measured on
 0.28.0 is confined to the mid-depth 1,024-token shape on 0.29.0. Superseded
 for serving by AuditBench v3 at the declared sampling, where plain qwen3.8
-wins (top of this file).
+wins ([NVIDIA A100 SXM4 80GB](../docs/hardware/nvidia-a100-sxm4-80gb.md)).
 
 These rankings describe serving performance only. They do not establish which
 model gives better answers.
@@ -438,8 +357,7 @@ qwen3.6 ran on a trial copy of the scripts with admission raised to 16
 ## Retired A100 harness notes
 
 The measurements below predate AuditBench v1. They remain only as historical
-architecture and failure evidence; none of their rates feed the canonical
-tables above or the cross-runtime overview.
+architecture and failure evidence; none of their rates feed the hardware pages.
 
 ### `qwen3.6-35b-a3b-awq`
 

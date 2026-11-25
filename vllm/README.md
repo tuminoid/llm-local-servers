@@ -159,8 +159,9 @@ Runtime state (pidfile, log) lives in
 `${XDG_STATE_HOME:-~/.local/state}/vllm/`, never in the repo.
 
 Agent-facing invariants and the "where to change what" map are in
-[AGENTS.md](AGENTS.md); the measured performance baselines for both GPU
-generations are in [BENCHMARKS.md](BENCHMARKS.md).
+[AGENTS.md](AGENTS.md); measured results are on the
+[NVIDIA A100 SXM4 80GB](../docs/hardware/nvidia-a100-sxm4-80gb.md) page, and
+the investigations behind them in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Prerequisites
 

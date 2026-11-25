@@ -1,4 +1,4 @@
-.PHONY: help status lint shellcheck markdownlint pycompile test clean all opencode-config
+.PHONY: help status lint shellcheck markdownlint pycompile test clean all opencode-config results results-import
 .PHONY: audit-bench-check
 .PHONY: ollama-model-check ollama-install ollama-start ollama-pull
 .PHONY: ollama-stop ollama-status ollama-logs ollama-bench ollama-capability
@@ -60,7 +60,7 @@ MODEL           ?=
 # >= 5.10.4, and 5.15 carries the Gemma 4 per-layer head-dim handling
 # (vllm#49797). ninja is a runtime dependency: the DFlash draft head is
 # torch.compiled at engine init and inductor shells out to it.
-# vllm/BENCHMARKS.md names the pin of each row.
+# Each docs/hardware/ page names the pin its rows ran on.
 VLLM_VERSION    ?= 0.31.0
 VLLM_TRANSFORMERS_VERSION ?= 5.15.1
 VLLM_NINJA_VERSION ?= 1.13.2
@@ -218,6 +218,8 @@ help:
 	@echo "  make lint        - Run all linters (shellcheck + markdownlint + pycompile)"
 	@echo "  make test        - Run the unit tests (needs the llm-audit-bench checkout)"
 	@echo "  make opencode-config - Regenerate opencode/*/opencode.json from the model configs"
+	@echo "  make results-import HARDWARE=<slug> FILE=<json> - Import a retained result into docs/hardware"
+	@echo "  make results     - Re-render the docs/hardware page tables from their records"
 	@echo "  make all         - Run lint and test"
 	@echo "  make clean       - Remove Python bytecode and editor droppings"
 	@echo ""
@@ -309,7 +311,7 @@ markdownlint:
 pycompile:
 	@$(call require,python3)
 	@python3 -m compileall -q $(OLLAMA_DIR) $(VLLM_DIR) $(VLLM_METAL_DIR) $(SPLASH_DIR) \
-		$(LMSTUDIO_DIR) $(KAPITSA_DIR) $(STRATA_DIR) opencode tests
+		$(LMSTUDIO_DIR) $(KAPITSA_DIR) $(STRATA_DIR) opencode docs/hardware tests
 
 # --- Test ---
 
@@ -323,6 +325,22 @@ test: audit-bench-check
 opencode-config: audit-bench-check
 	@$(call require,python3)
 	@PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./opencode/generate.py
+
+# --- Results ---
+
+# docs/hardware/<slug>.json holds each hardware's results, imported from the
+# harness row projection of retained JSON; the page tables are rendered from
+# it, and make test fails when they are stale.
+results-import: audit-bench-check
+	@$(call require,python3)
+	@test -n "$(HARDWARE)" && test -n "$(FILE)" || { \
+		echo "error: set HARDWARE=<docs/hardware page slug> FILE=<retained JSON>" >&2; \
+		exit 1; }
+	@PYTHONPATH="$(AUDIT_BENCH_SRC)" python3 ./docs/hardware/results.py import "$(HARDWARE)" "$(FILE)"
+
+results:
+	@$(call require,python3)
+	@python3 ./docs/hardware/results.py render
 
 # --- Clean ---
 

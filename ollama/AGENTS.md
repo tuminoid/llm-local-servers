@@ -143,15 +143,14 @@ in [README.md](README.md); shared server conventions live in
   in README.md). The Ollama copies of Qwen3.6, Qwen3.8 27B and
   Gemma 4 26B lost to their vLLM profiles, and Qwen3 Coder and GLM-4.7-Flash
   failed the gate on both runtimes; all five were dropped on 2026-10-12.
-- New and replacement measurements follow
-  [AuditBench v3](https://github.com/tuminoid/llm-audit-bench).
-  Publish only canonical results and update [../README.md](../README.md)
-  in the same change. Never combine a retired-harness rate with AuditBench
-  or project results between hosts.
-- The overview's `GPU KV pool` column is `-` for Ollama because Ollama does not
-  expose the fungible pool size used by vLLM. Report the measured 1x CPU/GPU
-  allocation in its own column instead; never turn context length into a
-  claimed pool size.
+- New and replacement measurements follow [AuditBench
+  v3](https://github.com/tuminoid/llm-audit-bench). Publish only canonical
+  results, imported into the hardware record (`make results-import`) in the same
+  change. Never combine a retired-harness rate with AuditBench or project
+  results between hosts.
+- Ollama does not expose the fungible pool size used by vLLM: the hardware
+  pages label its KV figure `allocated` (configured context times slots).
+  Never turn context length into a claimed pool size.
 - Keep effective runner slots, measured streams, and residency explicit.
   AuditBench caps every phase at the effective slots and allocated context.
 - Every model config pins the reviewed registry manifest digest plus expected

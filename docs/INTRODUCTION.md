@@ -3,8 +3,8 @@
 A from-scratch reference for how local inference actually works and why the
 servers in this tree are configured the way they are. The numbers used as
 anchors are real measurements from this repository's hosts; the current
-values live in the per-runtime `BENCHMARKS.md` files and the benchmark
-protocol in [the AuditBench protocol](https://github.com/tuminoid/llm-audit-bench).
+values live on the hardware pages under [hardware/](hardware/) and the
+benchmark protocol in [the AuditBench protocol](https://github.com/tuminoid/llm-audit-bench).
 
 ## The three currencies
 

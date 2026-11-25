@@ -455,21 +455,21 @@ deferred; the backend actually chosen appears in vLLM's own log and in
 
 ### Measured baselines
 
-The measured throughput, memory and concurrency numbers live in
-[BENCHMARKS.md](BENCHMARKS.md); only the A100 has current vLLM rows (the
-small-card rows left with the RTX profiles on 2026-10-12). New and replacement
+The measured throughput, memory and concurrency numbers live on the
+[NVIDIA A100 SXM4 80GB](../docs/hardware/nvidia-a100-sxm4-80gb.md) page, the
+investigations behind them in [BENCHMARKS.md](BENCHMARKS.md). New and replacement
 results follow
 [AuditBench v3](https://github.com/tuminoid/llm-audit-bench)
 and must have
 `canonical: true`.
 
-The overview's `GPU KV pool` column copies the raw measured pool size. Do not
+The hardware page's KV pool column is the raw measured pool size. Do not
 replace it with a derived context count or ratio. Keep scheduler admission
 (`max-num-seqs`) distinct from KV capacity.
 
 Benchmarking is on demand when a change affects throughput, context, memory, or
 admission. Tune with the optional 1-through-8 stream sweep, then publish only a
-fresh canonical run. Update [../README.md](../README.md) in the same change and
+fresh canonical run, imported into the hardware record in the same change, and
 never derive a missing metric from a retired-harness rate.
 
 ## Prerequisites

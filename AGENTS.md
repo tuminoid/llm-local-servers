@@ -64,18 +64,20 @@ What this means in practice:
 | `kapitsa/` | Kapitsa native Metal server for DiffuSpace's Clover block-diffusion MoE | `kapitsa-{install,pull,start,stop,status,logs,bench,capability}` |
 | `strata/` | Strata CUDA server for Qwen3.8-Flash-Next and DeepSeek-V4.1-Flash, built from source for the host's GPUs | Local lifecycle, benchmark and capability targets, plus `strata-remote-*` |
 
-[README.md](README.md) is the front page and the cross-runtime, host-oriented
-executive summary of measured results. The per-runtime `BENCHMARKS.md` files
-remain the sources of measurement detail.
+[README.md](README.md) is the front page and links one results page per hardware
+under `docs/hardware/`: the audit ranking, the interactive profiles and the
+capability results, rendered from the page's JSON record. The per-runtime
+`BENCHMARKS.md` files hold investigations: exploratory runs, comparisons,
+pitfalls and root-caused defects, as dated evidence that is never re-synced.
 [CAPABILITIES.md](CAPABILITIES.md) holds the capability campaign runbook,
-host inventory, and the retained cross-host result matrix.
+identity drift and the promotion rule.
 [docs/INTRODUCTION.md](docs/INTRODUCTION.md) is the newcomer-facing primer on
-local serving concepts. `docs/scorecards/` holds each served model's
-published benchmark claims (model cards, leaderboards) as `<model>.json`
-with its rendered `<model>.md`, and [SCORECARDS.md](SCORECARDS.md) ranks
-every model per tier. The model-benchmarks skill generates all of them;
-regenerate through it, never edit the rendered files by hand. They are
-claims, never measurements, and never feed a `BENCHMARKS.md` or README row.
+local serving concepts. `docs/scorecards/` holds each served model's published
+benchmark claims (model cards, leaderboards) as `<model>.json` with its rendered
+`<model>.md`, and [SCORECARDS.md](SCORECARDS.md) ranks every model per tier. The
+model-benchmarks skill generates all of them; regenerate through it, never edit
+the rendered files by hand. They are claims, never measurements, and never feed
+a hardware record.
 
 ## The shared harness
 
@@ -296,13 +298,19 @@ model config, checked model identity, and the live resolved runtime profile.
 Do not remove that distinction: exploratory or dirty runs remain useful
 evidence without becoming publication artifacts.
 
-The overview tables in `README.md` are derived from the runtimes'
-`BENCHMARKS.md` files, and their OWASP vuln score from
-[CAPABILITIES.md](CAPABILITIES.md). Update the matching host overview
-whenever a benchmark source changes a model, context, memory allocation, KV
-pool, active slots, or canonical metric, or a capability run changes a score.
+Published results live in `docs/hardware/<slug>.json`, one record per
+hardware, and are rendered into its page: import each retained session or
+capability JSON with `make results-import` in the same change as the run,
+set the record's hand fields, and let the import render the page. Never edit
+a rendered table or type a measured number into a record. Pages show the
+data and make no picks; a row ranks only when it passes Capability Check
+compatibility. Pages carry no
+local retention paths and no history: the record, the artifact names and
+git hold them.
 
-Use hardware host labels and exact measured tokenizer counts. Personal
+Reader-facing docs say hardware, what readers own; "host" is only the
+machine a launcher runs on. Use hardware labels and exact measured
+tokenizer counts. Personal
 hostnames belong only in retained evidence outside the repository.
 Keep these separate:
 
@@ -328,8 +336,8 @@ pass/fail fixtures out of AuditBench: serving speed cannot compensate for
 malformed agent responses or unfinished work.
 
 Any run intended to update the serving inventory must follow
-[CAPABILITIES.md](CAPABILITIES.md) and update its host row in the same
-change. Do not improvise a campaign by running every
+[CAPABILITIES.md](CAPABILITIES.md) and import its report into the hardware
+record in the same change. Do not improvise a campaign by running every
 config on a host, and do not promote older manual evidence to an automated
 pass.
 
@@ -341,7 +349,7 @@ Never infer them from a parser name or registry capability list.
 A host serves each model from one runtime: the best measured one, judged by
 Capability Check v3 first and the AuditBench session rate second. When a
 second runtime on the same host serves the same model, drop the losing
-profile with its benchmark rows, capability rows and generated provider
+profile with its config, its hardware record entry and its generated provider
 entries; launcher rationale that rests on its measurements stays, marked as
 from a dropped profile. LM Studio is the exception: its profiles stay beside
 the best provider as the entry-level option, because it installs cleanly on
@@ -380,7 +388,8 @@ explicitly asks for it.
 4. Write `<name>/README.md` for usage and host-tuning rationale, and
    `<name>/AGENTS.md` for the file inventory, invariants, and the
    gotchas that a future change could reintroduce.
-5. Update the inventory table above and the overview in README.md.
+5. Update the inventory table above, and import the server's results into
+   the hardware records.
 6. `make lint`, then exercise the full cycle: start, status, bench, a
    real request, stop. Confirm the resource is released at the end.
 
@@ -393,5 +402,5 @@ or that stop actually frees the GPU.
 
 Record measured numbers when a change is meant to affect performance.
 Claims about throughput need a before and after from the same benchmark
-on the same host, with the warmup discarded. Update the matching
-`README.md` host table when the benchmark summary changes.
+on the same host, with the warmup discarded. Import the result into the
+hardware record when it changes a published row.

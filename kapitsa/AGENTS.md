@@ -1,8 +1,8 @@
 # Kapitsa runtime instructions
 
 Root [AGENTS.md](../AGENTS.md) applies. Usage and knobs are in
-[README.md](README.md), measurements and verdicts in
-[BENCHMARKS.md](BENCHMARKS.md).
+[README.md](README.md), results on the hardware pages (`docs/hardware/`),
+investigations in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Files
 

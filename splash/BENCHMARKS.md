@@ -1,80 +1,9 @@
 # Splash benchmarks
 
-## AuditBench v3: Apple M5 Max
+## Apple M5 Max
 
-Splash 1.5.0, each conf's memory need as the native memory cap (64 GiB unless
-the conf declares more), four active slots, DFlash 2, Q8 KV, state/prefix
-caching with the SSD prefix tier at its `auto` default, the dense target's
-Neural Engine FFN split and idle weight release at release defaults; the targets
-and their DFlash2 drafts are pinned in the model configs. Canonical AuditBench
-v3 `session` profile at each conf's declared sampling on the M5 Max (128 GB,
-macOS 27.0.1). `qwen3.6-35b-a3b`, `qwen3.8-27b` and `flint-gguf` ran
-2026-11-24/25 on llm-audit-bench 3.0.0 from fleet commit `8ab4e09`, under
-`.../2026-11-24-v3-sessions/m5/`. Flash-Next IQ3_S, Ornith 1.5 122B and Bonsai 2
-ran 2026-10-31 from `27411b0`, and `ornith1.5-35b-a3b` 2026-11-15 from the clean
-trial commit `54822f2` (this profile, JSON under `.../2026-11-15-m5/splash/`),
-all on llm-audit-bench 2.5.0, whose session code 3.0.0 ships unchanged. Each
-JSON records its commit and harness hash. The harness climbs 1, 2, 4, 8 while
-each rung completes every session and gains 10% over the one below. Tool steps
-from 32k evidence, 16 at 262,144 configured context, report at depth. Sessions/h
-is the median over 2-3 samples; complete counts sessions whose report ended on
-its own and named at least 7/8 of its findings. pp512/tg128 is the
-llama-bench-method reference (one stream, greedy, depth ~0), not a serving
-result. The 2026-10-31 JSON files are retained under
-`~/.local/state/auditbench/trials/2026-10-31-stream-ladder/splash/`; the
-llm-audit-bench 2.4.0 rows they and the 2026-11-24 runs replace are in git
-history. Every later top-level section of this file is AuditBench v1 or older,
-never comparable with v3. Their top-level retained JSON on the M5 and A100 was
-removed on 2026-09-30; trial-directory copies remain, and the figures stay here
-and in git history.
-
-| Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
-| -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Splash `qwen3.8-flash-next-iq3s` | 262,144 | 4 | 1,138,688 | 1x 27.17 / 2x 28.73 | 6,360 | 2,054.0 | 118.3 | 9/9 | 2,014 / 180.4 | pass | yes, 2x | `20261031T121538.911180+0000_splash_qwen3-8-flash-next-iq3s_session.json` |
-| Splash `ornith1.5-35b-a3b` | 262,144 | 4 | 4,448,256 | 1x 28.01 / 2x 30.72 | 8,366 | 2,012.5 | 167.4 | 8/8 | 5,374 / 279.4 | pass | yes, 2x | `20261115T131122.781662+0000_splash_ornith1-5-35b-a3b_session.json` |
-| Splash `flint-gguf` | 262,144 | 4 | 802,816 | 1x 20.59 / 2x 20.11 | 9,857 | 1,568.4 | 146.4 | 9/9 | 5,187 / 201.5 | fail | yes, 1x | `20261125T000229.871788+0000_splash_flint-gguf_session.json` |
-| Splash `ornith1.5-122b` | 262,144 | 4 | 1,974,272 | 1x 11.87 / 2x 11.80 | 6,254 | 744.2 | 73.5 | 6/6 | 1,807 / 170.1 | fail | yes, 1x | `20261031T125002.145677+0000_splash_ornith1-5-122b_session.json` |
-| Splash `bonsai2-27b-pq2` | 262,144 | 4 | 1,675,264 | 1x 8.10 / 2x 8.48 | 9,201 | 534.9 | 58.3 | 9/9 | 1,007 / 77.7 | pass | yes, 2x | `20261031T140229.049761+0000_splash_bonsai2-27b-pq2_session.json` |
-| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 20.58 / 2x 20.29, incomplete | 4,093 | 1,914.0 | 198.3 | 8/9 | 5,488 / 425.3 | pass | yes, 1x | `20261124T212413.351054+0000_splash_qwen3-6-35b-a3b_session.json` |
-| Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 9.16 / 2x 8.86 | 6,590 | 554.7 | 56.8 | 7/7 | 1,011 / 116.5 | pass | yes, 1x | `20261124T221112.414961+0000_splash_qwen3-8-27b_session.json` |
-
-- Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-19/20, fleet
-  `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)): five of seven
-  profiles pass. `flint-gguf` (two tool misuses) and `ornith1.5-122b`
-  (analysis prose around its JSON answers) fail, so their rates cannot
-  promote them.
-- `qwen3.6-35b-a3b` runs 20.58 at one stream, its optimal operating point:
-  one of six sessions at 2x was incomplete, so the 20.29 there is not a
-  serving rate. 120 of its 153 calls streamed no reasoning.
-- `qwen3.8-27b` peaks at one stream (9.16; two streams 0.97x), where 1.3.2
-  gained 1.09x from four.
-- `qwen3.8-flash-next-iq3s` (Qwen3.8-Flash-Next 125B-A6B, ISTA-DASLab's
-  recommended GSQ-RCO IQ3_S build, 83.6 GB) runs 28.73 sessions/h at two
-  streams. Splash's suggested Q2_0 build (66.4 GB) ran 32.27 but scored
-  +0.57 against IQ3_S's +0.79 in Capability Check v3; it was dropped on
-  2026-11-22 and its rows are in git history. Unsloth's UD-IQ4_XS (93.7
-  GB) streamed experts from the SSD under an 88 GiB cap; it has no profile.
-- `ornith1.5-35b-a3b` (DeepReinforce's MLX 4-bit, text-only: the build
-  ships no processor config) runs 30.72 sessions/h at
-  two streams, its optimal point, against 9.15 for the vLLM-Metal profile it
-  replaces. It decodes with the Qwen3.6-35B-A3B DFlash2 draft, trained on
-  the base model's weights: Ornith is a structural twin of Qwen3.6-35B-A3B,
-  and the report decodes at 167.4 tok/s at one stream. Its 245,772-token
-  near-context prefill reads 1,492 tok/s.
-- `flint-gguf` (Recursive Flint 40B-A2.5B, Unsloth UD-Q4_K_XL): Splash
-  documents no thinking-off control
-  for Flint, so that check is skipped. Its KV pool admits three
-  full-context streams; two, its optimal point, is the largest canonical
-  stream count that fits.
-- `ornith1.5-122b` (DeepReinforce's MLX 4-bit, with its vision tower)
-  peaks at one stream (11.87; two streams 0.99x). Its
-  first 2.4.0 bench at a 100 GiB cap was stopped by the campaign's memory
-  watchdog at 12 GiB available.
-- `bonsai2-27b-pq2` (PrismML Ternary Bonsai 2 27B, PQ2_0, 7.2 GB) runs
-  8.48 sessions/h at two streams, 93% of the MLX 4-bit Qwen3.8-27B's 9.16
-  in less than half its weight memory (7.2 against 16.1 GB). Its
-  245,760-token near-context prefill takes 584 s (421 tok/s), level with
-  the MLX 27B's 551 s.
+Results on this hardware are on its page,
+[Apple M5 Max, 128 GB](../docs/hardware/apple-m5-max-128gb.md).
 
 ### Stream ladder against four streams (2026-10-31)
 
@@ -89,16 +18,14 @@ were IQ3_S 28.84, Ornith 12.21 and Bonsai 2 7.99.
 
 ### Against Splash 1.3.2
 
-The 1.3.2 rows (2026-10-19/20, same host and macOS, under
-`~/.local/state/auditbench/trials/2026-10-19-m5-night/splash/` and
-`.../2026-10-20-m5-night/splash/`): `qwen3.6-35b-a3b` 1x 20.29 / 4x 19.78
-(13/15 complete), `qwen3.8-27b` 8.01 / 8.73 (15/15). 1.5.0 is faster at one
-stream on both, by 3% and 7%; `qwen3.8-27b` at four streams falls 3%.
+The 1.3.2 rows (2026-10-19/20, same host and macOS): `qwen3.6-35b-a3b` 1x 20.29
+/ 4x 19.78 (13/15 complete), `qwen3.8-27b` 8.01 / 8.73 (15/15). 1.5.0 is faster
+at one stream on both, by 3% and 7%; `qwen3.8-27b` at four streams falls 3%.
 
 ### Against Splash 1.3.1
 
 The 1.3.1 rows of 2026-10-11/12 (fleet commit `036bfd0`, same host and
-macOS, under `~/.local/state/auditbench/trials/2026-10-11-splash-1.3.1/canonical/`):
+macOS):
 `qwen3.6-35b-a3b` 1x 17.95 / 4x 16.88 (13/15 complete),
 `qwen3.8-27b` 6.73 / 7.47 (15/15). 1.3.2 is faster on both, at 1x by 13%
 and 19%. The SSD tier served about 0.7% of the reused tokens, so the gain is
@@ -109,8 +36,7 @@ the release's own changes, not the new tier.
 - The 1.0 rows of 2026-09-27 served the Splash packages that 1.3.1 no
   longer loads (upstream #335), from fleet commit `bee4a24` on macOS 27.0
   (`20260927T233225.886443+0000_splash_qwen3-6-35b-a3b_session.json` and
-  `20260928T005848.757558+0000_splash_qwen3-8-27b_session.json` under
-  `~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`). Against
+  `20260928T005848.757558+0000_splash_qwen3-8-27b_session.json`). Against
   them one stream fell on both models (qwen3.6 19.77 to 17.95, qwen3.8
   7.70 to 6.73), four streams held or rose (15.93 to 16.88, 7.53 to 7.47),
   and near-context input fell (qwen3.6 1,436 / 1,449 to 1,371 / 1,316
@@ -139,8 +65,7 @@ The canonical `conversation` profile on 1.3.1, from fleet commit
 samples, reading all 16 files and recalling all 16 findings, at 96.0 s
 per conversation (37.5 conversations/h), final prompts of 165,418 to
 165,643 tokens and 90.2% of prompt tokens from cache. It is canonical and
-publishable (`20261012T181255.410214+0000_splash_qwen3-6-35b-a3b_conversation.json`,
-under `~/.local/state/auditbench/trials/2026-10-12-m5-night/results/`).
+publishable (`20261012T181255.410214+0000_splash_qwen3-6-35b-a3b_conversation.json`).
 The 1.0 failure of one sample in two, below, was an AuditBench v1 run;
 two compliant samples do not show that the failure rate fell.
 
@@ -175,7 +100,7 @@ All eight retained reports have `canonical: true`, `publishable: true`
 and no publication reasons. Publication provenance and conversation
 fixture compliance are separate: Qwen3.6 failed one conversation sample.
 Both models passed all eight capability checks, including schema
-enforcement; see [CAPABILITIES.md](../CAPABILITIES.md).
+enforcement.
 
 The operating point was 262,144 configured tokens, a 64 GiB native
 memory cap, four active slots, DFlash 2, Q8 KV and state/prefix caching
@@ -302,15 +227,8 @@ or a short lifecycle alone does not cover it.
 
 ### Retained campaign evidence
 
-Evidence roots under `~/.local/state/auditbench/trials/` on the measured host:
-
-- `2026-09-19-splash-campaign/`: Qwen3.6 full and its capability check.
-- `2026-09-19-splash-campaign-continuation2/`: the other seven reports,
-  Qwen3.8 capability, final `validation.json` and recovery evidence.
-
-Each report is under `<profile-name>-<benchmark-profile>/auditbench/`
-within its root. Campaign manifests record commands, source hashes and
-exit codes; run directories retain native telemetry and server logs.
+Campaign manifests record commands, source hashes and exit codes; run
+directories retain native telemetry and server logs.
 
 | Profile | Benchmark | JSON filename |
 | -- | -- | -- |
@@ -365,8 +283,8 @@ Near-context phases request one output token; audit 32k/half request
 1,024 and audit deep requests 256. These full-profile results use
 cache-neutral evidence prompts. The growing-conversation and replay
 profiles were not measured in these earlier trials; no warm conversation
-rate is inferred from this table. Cross-runtime comparisons are in the root
-[README.md](../README.md#measured-overview).
+rate is inferred from this table. Current results are on the
+[Apple M5 Max](../docs/hardware/apple-m5-max-128gb.md) page.
 
 ### Capacity and stability
 
@@ -402,9 +320,6 @@ recharge; the pause is outside measured request wall times.
 
 ### Retained full-run evidence
 
-Base directory on the measured host:
-`~/.local/state/auditbench/trials/2026-09-19-splash/`.
-
 Qwen3.6:
 
 ```text
@@ -419,8 +334,7 @@ qwen3.8-20260919T151231Z/auditbench/20260919T151238.001212+0000_splash_qwen3-8-s
 
 Each run directory also retains `status-before.json`,
 `status-after.json`, `capacity-plan.json`, `server.log` and
-`teardown.json`. Capability evidence belongs in
-[CAPABILITIES.md](../CAPABILITIES.md), separate from serving rates.
+`teardown.json`. Capability evidence is kept separate from serving rates.
 
 ## Managed integration checks, 2026-09-19
 
@@ -441,7 +355,7 @@ full-run serving results above.
 | `qwen3.6-35b-a3b` | 304.38 / 372.65 / 520.69 |
 | `qwen3.8-27b` | 63.25 / 113.77 / 144.85 |
 
-JSON reports under `~/.local/state/auditbench/`:
+JSON reports:
 
 ```text
 20260919T192354.733745+0000_splash_qwen3-6-35b-a3b_decode.json
