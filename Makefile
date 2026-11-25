@@ -166,7 +166,7 @@ LMSTUDIO_DIR := lmstudio
 # name the release measured here: bench and capability refuse any other, while
 # install and start report the drift and serve it.
 LMSTUDIO_VERSION ?= 0.4.25+1
-LMSTUDIO_SPLASH_ENGINE_VERSION ?= 0.0.5
+LMSTUDIO_SPLASH_ENGINE_VERSION ?= 1.3.0
 LMSTUDIO_MLX_ENGINE_VERSION ?= 1.14.0
 export LMSTUDIO_VERSION LMSTUDIO_SPLASH_ENGINE_VERSION LMSTUDIO_MLX_ENGINE_VERSION
 
