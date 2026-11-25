@@ -6,26 +6,27 @@ rankings. `qwen3.8-flash-next-q4` has a canonical row too, but Splash serves
 the same model for audits faster, so it stays out of the root README's M5
 ranking.
 
-## AuditBench v2: Apple M5 Max
+## AuditBench v3: Apple M5 Max
 
 ds4 `0aaea5a`, `qwen3.8-flash-next-q4` at its conf's 524,288 context (YaRN),
 one slot, MTP at exact sampling, disk KV checkpoints on. Canonical
-AuditBench v2 `session` profile (llm-audit-bench 2.3.0) at the declared
-sampling, run 2026-10-23 from fleet commit `3c3a5ab`; 16 tool steps from
+AuditBench v3 `session` profile (llm-audit-bench 3.0.0) at the declared
+sampling, run 2026-11-24 from fleet commit `8ab4e09`; 16 tool steps from
 32k evidence, report at depth. Sessions/h is the median over the samples;
 complete counts sessions whose report ended on its own and named at least
 7/8 of its findings. Retained under
-`~/.local/state/auditbench/trials/2026-10-22-night/ds4/`.
+`~/.local/state/auditbench/trials/2026-11-24-v3-sessions/m5/`; the 2.3.0
+row (2026-10-23) is in git history.
 
 | Profile | Context | Slots | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| `qwen3.8-flash-next-q4` | 524,288 | 1 | 1x 10.00 | 4,499 | 1,306.2 | 60.8 | 2/2 | unavailable | pass | yes | `20261023T024918.235133+0000_ds4_qwen3-8-flash-next-q4_session.json` |
+| `qwen3.8-flash-next-q4` | 524,288 | 1 | 1x 9.57 | 5,896 | 1,265.0 | 62.7 | 3/3 | unavailable | pass | yes | `20261124T205128.945378+0000_ds4_qwen3-8-flash-next-q4_session.json` |
 
-- The two samples are 8.78 and 11.22 sessions/h; 74-81% of each session's
+- The three samples are 7.82 to 10.07 sessions/h; 76-81% of each session's
   prompt tokens came from cache, against about 90% on Splash, because ds4
   cannot rewind its live state to a shared prefix (see below).
-- The near-context phase prefilled a 491,538-token cold prompt in 416 s
-  (1,182 tok/s). The pp512/tg128 reference is unavailable (64 of 128
+- The near-context phase prefilled a 491,538-token cold prompt in 429 s
+  (1,145 tok/s). The pp512/tg128 reference is unavailable (64 of 128
   tokens).
 - One slot is the only operating point: see "One slot" below.
 

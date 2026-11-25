@@ -173,7 +173,9 @@ Host: MacBook Pro `Mac17,6`, Apple M5 Max, 128 GB unified memory, macOS
 2026-11-19/20 from fleet commit `a21fd8a` on Splash 1.5.0, LM Studio
 0.4.25+1 (mlx-llm 1.14.0 for the MLX profiles), vLLM-Metal 0.31.0, Ollama
 0.40.16, ds4 `0aaea5a` and Kapitsa 0.2.36; reports under
-`~/.local/state/auditbench/trials/2026-11-19-v3-campaign/m5/`. Model
+`~/.local/state/auditbench/trials/2026-11-19-v3-campaign/m5/`. The LM Studio
+Splash-engine rows are the 2026-11-25 re-checks on engine 1.3.0 (fleet
+`5a7c007`), under `.../2026-11-24-v3-sessions/m5-lmstudio/`. Model
 identity shows the first 12 characters of the digest or revision.
 
 | Runtime | Profile | Identity | Reasoning | Thinking off | Tool call | Streaming tool call | Tool loop | JSON | Unaided document | Schema enforced | Clean samples | Compatibility | Audit aptitude | Model identity | Artifact |
@@ -186,9 +188,9 @@ identity shows the first 12 characters of the digest or revision.
 | Splash | `qwen3.8-27b` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 35 of 36 (97%); fitness 8 of 8 | passed | +0.57 [+0.21, +0.79]; sound 8 of 8 | `10c35caafbb8` | `20261119T183126.227604+0000_splash_qwen3-8-27b.json` |
 | Splash | `qwen3.8-flash-next-iq3s` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.79 [+0.44, +0.94]; sound 6 of 8 | `ed59f92082b1` | `20261119T204311.255698+0000_splash_qwen3-8-flash-next-iq3s.json` |
 | LM Studio | `qwen3.6-35b-a3b-mlx` | passed | passed | untested | supported | supported | supported | supported | valid | ignored (broken) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.36 [+0.02, +0.60]; sound 8 of 8 | `38740b847e4c` | `20261120T170233.333159+0000_lmstudio_qwen3-6-35b-a3b-mlx.json` |
-| LM Studio | `qwen3.6-35b-a3b-splash` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.36 [+0.02, +0.60]; sound 8 of 8 | `0f4714b2db37` | `20261120T164513.676448+0000_lmstudio_qwen3-6-35b-a3b-splash.json` |
+| LM Studio | `qwen3.6-35b-a3b-splash` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.43 [+0.08, +0.67]; sound 8 of 8 | `0f4714b2db37` | `20261125T051058.649609+0000_lmstudio_qwen3-6-35b-a3b-splash.json` |
 | LM Studio | `qwen3.8-27b-mlx` | passed | passed | untested | supported | supported | supported | supported | valid | ignored (broken) | 24 of 31 (77%); fitness 7 of 8 | failed (clean_rate) | not scored | `10c35caafbb8` | `20261120T185445.662511+0000_lmstudio_qwen3-8-27b-mlx.json` |
-| LM Studio | `qwen3.8-27b-splash` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.71 [+0.35, +0.90]; sound 8 of 8 | `9d27070b71f7` | `20261120T172619.590802+0000_lmstudio_qwen3-8-27b-splash.json` |
+| LM Studio | `qwen3.8-27b-splash` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.79 [+0.44, +0.94]; sound 8 of 8 | `9d27070b71f7` | `20261125T054544.352552+0000_lmstudio_qwen3-8-27b-splash.json` |
 | vLLM-Metal | `granite4.2-30b-4bit` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.57 [+0.21, +0.79]; sound 8 of 8 | `d3f143b44006` | `20261119T175225.897910+0000_vllm-metal_granite4-2-30b-4bit.json` |
 | Ollama | `gemma4-26b-mlx` | passed | passed | supported | supported | supported | supported | supported | valid | whitespace_runaway (broken) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.64 [+0.28, +0.85]; sound 7 of 8 | `f60799545325` | `20261119T145038.089065+0000_ollama_gemma4-26b-mlx.json` |
 | Ollama | `mimo-v2.6-flash-q2ks` | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 23 of 27 (85%); fitness 7 of 8 | failed (clean_rate) | not scored | `aecb7b7e21a4` | `20261120T042350.276175+0000_ollama_mimo-v2-6-flash-q2ks.json` |

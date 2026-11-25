@@ -33,7 +33,7 @@ make vllm-metal-stop
 ```
 
 The benchmark follows the shared
-[AuditBench v2](https://github.com/tuminoid/llm-audit-bench)
+[AuditBench v3](https://github.com/tuminoid/llm-audit-bench)
 protocol. It proves near-ceiling capacity, then measures agent sessions at 1x
 and the serving concurrency: sessions/hour, and prefill and decode rates as
 the context grows.

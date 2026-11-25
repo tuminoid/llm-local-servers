@@ -7,9 +7,9 @@ Use each host's operating-point table for its measured hardware. The later
 sections preserve the measurements and memory explanations behind those
 recommendations.
 
-The A100, M5 and RTX PRO 3000 sections titled AuditBench v2 use canonical
-[AuditBench v2](https://github.com/tuminoid/llm-audit-bench); every other
-section is AuditBench v1 or older history, never comparable with v2. The
+The A100, M5 and RTX PRO 3000 sections titled AuditBench v3 use canonical
+[AuditBench v3](https://github.com/tuminoid/llm-audit-bench); every other
+section is AuditBench v1 or older history, never comparable with v3. The
 later A100 rows use canonical AuditBench v1. The Apple operating-point
 tables use the retired runtime-specific harness; the Apple AuditBench v1
 sections (Nemotron and the conversation profile)
@@ -19,12 +19,13 @@ rates. Their top-level retained JSON on the M5 and A100 was removed on
 2026-09-30; trial-directory copies remain, and the figures stay here and in
 git history.
 
-## AuditBench v2: A100-SXM4-80GB
+## AuditBench v3: A100-SXM4-80GB
 
 Isolated remote Ollama 0.40.16, the fleet default, Flash Attention, q8 KV.
-Canonical AuditBench v2 `session` profile at each conf's declared sampling, run
-2026-11-15/16 on llm-audit-bench 2.5.0 from the clean trial commit `54822f2`
-(this pin with the same profile files). Each JSON records its harness hash.
+Canonical AuditBench v3 `session` profile at each conf's declared sampling, run
+2026-11-15/16 by llm-audit-bench 2.5.0, whose session code 3.0.0 ships
+unchanged, from the clean trial commit `54822f2` (this pin with the same
+profile files). Each JSON records its harness hash.
 The harness climbs 1, 2, 4, 8 streams within admission and the KV pool while
 each rung completes every session and gains 10%: 16 tool
 steps from 32k evidence, report at about 165k. Sessions/h is the median over 2-3
@@ -73,22 +74,22 @@ stopped before 128 tokens.
   rows, and the A100 AuditBench v1, conversation, replay and pre-v1
   evidence for them, are in git history.
 
-## AuditBench v2: Apple M5 Max
+## AuditBench v3: Apple M5 Max
 
-Managed Ollama 0.40.16, the fleet default (the MLX runner serializes
-requests to one slot). Contexts are the confs': 131,072 for Glimmer, 262,144
-for Lightning, Bolt, MiMo-V2.6-Flash and Nanbeige and 524,288 for Super VL.
-Canonical AuditBench v2 `session` profile at each conf's declared sampling on
-the M5 Max (128 GB, macOS 27.0.1), one stream (one slot): tool steps from 32k
-evidence, 16 at 262,144 and above and 9 at 131,072, report at depth. All rows
-ran 2026-11-15/16 on llm-audit-bench 2.5.0 from the clean trial commit
-`54822f2` (this pin with the same profile files). Each JSON records its
-harness hash. Sessions/h is the median over 2-3 samples; complete counts
-sessions whose report ended on its own and named at least 7/8 of its
-findings. pp512/tg128 is the llama-bench-method reference (one stream,
-greedy, depth ~0), not a serving result. JSON files are retained under
-`~/.local/state/auditbench/trials/2026-11-15-m5/ollama/`; the 0.40.13 and
-0.40.8 rows they replace are in git history.
+Managed Ollama 0.40.16, the fleet default (the MLX runner serializes requests to
+one slot). Contexts are the confs': 131,072 for Glimmer, 262,144 for Lightning,
+Bolt, MiMo-V2.6-Flash and Nanbeige and 524,288 for Super VL. Canonical
+AuditBench v3 `session` profile at each conf's declared sampling on the M5 Max
+(128 GB, macOS 27.0.1), one stream (one slot): tool steps from 32k evidence, 16
+at 262,144 and above and 9 at 131,072, report at depth. All rows ran
+2026-11-15/16 by llm-audit-bench 2.5.0, whose session code 3.0.0 ships
+unchanged, from the clean trial commit `54822f2` (this pin with the same profile
+files). Each JSON records its harness hash. Sessions/h is the median over 2-3
+samples; complete counts sessions whose report ended on its own and named at
+least 7/8 of its findings. pp512/tg128 is the llama-bench-method reference (one
+stream, greedy, depth ~0), not a serving result. JSON files are retained under
+`~/.local/state/auditbench/trials/2026-11-15-m5/ollama/`; the 0.40.13 and 0.40.8
+rows they replace are in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
@@ -110,7 +111,7 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   an earlier digest: the tag moved to `d1e17d7d` (see its conf).
 - The `flint-40b-a2b-qat-int4-mlx` profile (Recursive Flint 40B-A2.5B, QAT
   INT4, MLX runner) was dropped: it ran 11.35 sessions/h on 0.40.13, and
-  Splash's Flint ran 19.49 but fails Capability Check v3. Its rows
+  Splash's Flint ran 20.59 but fails Capability Check v3. Its rows
   are in git history.
 - The MLX runner's post-prefill commit memory runaway, which kept these
   profiles on 0.32.14, did not recur on 0.40.6 or 0.40.8: three cache-busted
@@ -145,7 +146,7 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   cap. Capability Check v3 took about 10 hours on one slot.
   Dense 33B decode on the M5 is slow: 16.9 falling to 6.3 tok/s through a
   session, and the 245,755-token cold prefill takes 2,750 s (89 tok/s). The
-  A100's vLLM profile runs 7.19 sessions/h but fails Capability Check v3.
+  A100's vLLM profile runs 7.59 sessions/h but fails Capability Check v3.
 - `gemma4-26b-mlx` (Gemma 4 26B-A4B, the registry's NVFP4 safetensors on
   the MLX runner) is an interactive profile and has no row. On Apple Silicon
   the plain `gemma4:26b` and `gemma4:31b` tags resolve to these NVFP4 builds,
@@ -167,44 +168,49 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   Super VL: it beats the llama.cpp Q4_0 GGUF tried on 2026-10-16 (5.83
   sessions/h), which is not a fleet runtime.
 
-## AuditBench v2: RTX PRO 3000 Blackwell
+## AuditBench v3: RTX PRO 3000 Blackwell
 
 Local host, RTX PRO 3000 Blackwell laptop GPU with 12,227 MiB VRAM, 62 GiB
 RAM. Ollama 0.40.6 (the 0.40.16 default is not measured here), Flash
-Attention, one slot. Canonical AuditBench v2
-`session` profile (llm-audit-bench v2.1.0 plus `c0dc34a`), run 2026-10-17
-from fleet commit `7fd982d` at each conf's declared sampling: 16 tool steps
-at 262,144 configured context, 13 at 163,840 and 9 at 131,072. Columns as
-in the A100 table. The 0.40.3 rows they replace (2026-10-12/14) are in git
-history.
+Attention, one slot. Canonical AuditBench v3 `session` profile
+(llm-audit-bench 3.0.0), run 2026-11-24 from fleet commit `8ab4e09` at each
+conf's declared sampling: 16 tool steps at 262,144 configured context, 13 at
+163,840 and 9 at 131,072. Columns as in the A100 table. The laptop also ran
+four virtual machines and was on its balanced power profile, the GPU capped
+by software power limits: against the 2026-10-17 llm-audit-bench 2.1.0 rows
+(fleet `7fd982d`, in git history) every profile prefilled 13-17% slower and
+REAP-48 and Saluki decoded their reports 20-31% slower, so these rates are a
+floor. JSON files are under
+`~/.local/state/auditbench/trials/2026-11-24-v3-sessions/` on the host and
+copied under the M5 trial's `rtx/`.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| Ollama `qwen3.6-35b-a3b-reap48` (q4_0 KV) | 262,144 | 1 | 262,144 | 1x 6.74 | 5,144 | 968.1 | 19.3 | 2/2 | unavailable | pass | yes | `20261017T185430.239983+0000_ollama_qwen3-6-35b-a3b-reap48_session.json` |
-| Ollama `lfm2.5-24b-a2b` (f16 KV) | 131,072 | 1 | 131,072 | 1x 7.49 | 19,666 | 1,223.5 | 39.6 | 1/2 | 1,561 / 105.8 | fail | no | `20261017T215853.192531+0000_ollama_lfm2-5-24b-a2b_session.json` |
-| Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 4.56 | 4,039 | 307.2 | 11.4 | 3/3 | unavailable | pass | yes | `20261017T205648.105797+0000_ollama_saluki-27b_session.json` |
+| Ollama `qwen3.6-35b-a3b-reap48` (q4_0 KV) | 262,144 | 1 | 262,144 | 1x 5.74 | 5,464 | 830.3 | 15.4 | 3/3 | unavailable | pass | yes | `20261124T205015.123622+0000_ollama_qwen3-6-35b-a3b-reap48_session.json` |
+| Ollama `lfm2.5-24b-a2b` (f16 KV) | 131,072 | 1 | 131,072 | 1x 8.51 | 14,759 | 1,061.2 | 38.3 | 3/3 | 1,554 / 102.1 | fail | yes | `20261124T221221.273338+0000_ollama_lfm2-5-24b-a2b_session.json` |
+| Ollama `saluki-27b` (q4_0 KV) | 163,840 | 1 | 163,840 | 1x 3.62 | 3,828 | 253.6 | 7.9 | 2/2 | unavailable | pass | yes | `20261124T212700.242161+0000_ollama_saluki-27b_session.json` |
 
 - Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-21, fleet `a21fd8a`; rows
   in [CAPABILITIES.md](../CAPABILITIES.md)): REAP-48 and Saluki pass;
   `lfm2.5-24b-a2b` fails compatibility, 4 of 8 fitness samples clean (four
   format failures).
-- `qwen3.6-35b-a3b-reap48` runs 6.74 sessions/h over 16 steps with all 10.78 GiB
-  on the GPU (7.37 on 0.40.3). Turn decode falls from 58.9 to 30.8 tok/s across
-  the session. q8_0 KV fits entirely only up to 163,840 (196,608 puts 0.7 GB of
-  experts on the CPU); an exploratory 0.40.3 run there measured 11.68 over 13
-  steps. Both KV types completed every session with no truncated tool call and
-  every finding recalled on 0.40.3, so the model card's warning against sub-bf16
-  KV did not reproduce, and the profile keeps 262,144 with q4_0. Its sessions
-  skip reasoning on most tool calls (24 of 34 unreasoned); the count never
-  gates.
-- `saluki-27b` runs 4.56 sessions/h over 13 steps, all 65 layers and its 10.92
-  GiB on the GPU, 1.4x its 3.26 on 0.40.3. Turn decode falls from 19.6 to 10.8
-  tok/s across the session.
-- `lfm2.5-24b-a2b` fails Capability Check v3, so its 7.49 sessions/h over 9
-  steps cannot rank it, and one of two reports hit the output cap, so the run is
-  unpublishable; it is the host's interactive profile. Its 19,666 output tokens
-  per session are 3.8x REAP-48's at half the steps, and every call counts as
-  unreasoned, its reasoning reaching the client unseparated.
+- `qwen3.6-35b-a3b-reap48` runs 5.74 sessions/h over 16 steps with all 10.78 GiB
+  on the GPU (6.74 on 2.1.0, 7.37 on 0.40.3). Turn decode falls from 51.5 to
+  20.0 tok/s across the session. q8_0 KV fits entirely only up to 163,840
+  (196,608 puts 0.7 GB of experts on the CPU); an exploratory 0.40.3 run there
+  measured 11.68 over 13 steps. Both KV types completed every session with no
+  truncated tool call and every finding recalled on 0.40.3, so the model card's
+  warning against sub-bf16 KV did not reproduce, and the profile keeps 262,144
+  with q4_0. Its sessions skip reasoning on most tool calls (37 of 51
+  unreasoned); the count never gates.
+- `saluki-27b` runs 3.62 sessions/h over 13 steps, all 65 layers and its 10.92
+  GiB on the GPU (4.56 on 2.1.0, 3.26 on 0.40.3). Turn decode falls from 12.7
+  to 8.1 tok/s across the session.
+- `lfm2.5-24b-a2b` fails Capability Check v3, so its 8.51 sessions/h over 9
+  steps cannot rank it; it is the host's interactive profile. Every session
+  completed this time (one of two hit the output cap on 2.1.0). Its 14,759
+  output tokens per session are 2.7x REAP-48's at half the steps, and every
+  call counts as unreasoned, its reasoning reaching the client unseparated.
 - The byteshape IQ2_S Qwen3.6 35B-A3B also ran entirely on the GPU at 262,144
   with q4_0 KV (4.32 sessions/h, unpublishable); it was not committed.
 - The 2026-10-11 campaign also measured `gemma4-e2b` (40.98 sessions/h),

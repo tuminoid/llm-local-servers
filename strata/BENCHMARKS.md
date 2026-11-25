@@ -1,13 +1,14 @@
 # Strata benchmarks
 
-## AuditBench v2: A100-SXM4-80GB
+## AuditBench v3: A100-SXM4-80GB
 
 Strata 0.2.13 (`d2f09647`) built by `strata-install` for sm_80 against CUDA
 13.2, one slot, context 262,144, int8 KV streamed from pinned RAM past a
 32,768-token window and the n-gram table in RAM (both derived from the
 host's 211 GiB), MTP drafts four deep, every routed expert in VRAM.
-Canonical AuditBench v2 `session` profile at the conf's declared sampling,
-llm-audit-bench 2.5.0, from the clean trial commit `54822f2` (this pin with
+Canonical AuditBench v3 `session` profile at the conf's declared sampling,
+run by llm-audit-bench 2.5.0, whose session code 3.0.0 ships unchanged,
+from the clean trial commit `54822f2` (this pin with
 the same profile files), 2026-11-15. One slot admits one stream, so the
 ladder measured 1x. Sessions/h is the median over 3 samples; complete
 counts sessions whose report ended on its own and named at least 7/8 of its

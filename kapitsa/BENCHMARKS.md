@@ -1,22 +1,22 @@
 # Kapitsa benchmarks
 
-## AuditBench v2: Apple M5 Max
+## AuditBench v3: Apple M5 Max
 
-Kapitsa 0.2.36 (release archive), the engine's own slot and memory plan
-(four slots at 262,144 on this host), in-memory prefix reuse, SSD prefix
-cache off. Clover decodes self-speculatively (`NI_CLOVER_DECODE=spec`,
-threshold acceptance, the checkpoint's penalties, the conf's ramps).
-Canonical AuditBench v2 `session` profile at the conf's declared sampling
-on the M5 Max (128 GB, macOS 27.0.1), llm-audit-bench 2.5.0, from the clean
-trial commit `54822f2` (this pin with the same profile files), 2026-11-15.
-The harness climbs 1, 2, 4, 8 streams within admission and the KV pool while
-each rung completes every session and gains 10%: tool steps from 32k
-evidence, 16 at 262,144 configured context, report at depth. Sessions/h is
-the median over 3 samples; complete counts sessions whose report ended on
-its own and named at least 7/8 of its findings. pp512/tg128 is the
+Kapitsa 0.2.36 (release archive), the engine's own slot and memory plan (four
+slots at 262,144 on this host), in-memory prefix reuse, SSD prefix cache off.
+Clover decodes self-speculatively (`NI_CLOVER_DECODE=spec`, threshold
+acceptance, the checkpoint's penalties, the conf's ramps). Canonical AuditBench
+v3 `session` profile at the conf's declared sampling on the M5 Max (128 GB,
+macOS 27.0.1), run by llm-audit-bench 2.5.0, whose session code 3.0.0 ships
+unchanged, from the clean trial commit `54822f2` (this pin with the same profile
+files), 2026-11-15. The harness climbs 1, 2, 4, 8 streams within admission and
+the KV pool while each rung completes every session and gains 10%: tool steps
+from 32k evidence, 16 at 262,144 configured context, report at depth. Sessions/h
+is the median over 3 samples; complete counts sessions whose report ended on its
+own and named at least 7/8 of its findings. pp512/tg128 is the
 llama-bench-method reference, not a serving result. JSON files are under
-`~/.local/state/auditbench/trials/2026-11-15-m5/kapitsa/`; the 0.2.24 row
-is in git history.
+`~/.local/state/auditbench/trials/2026-11-15-m5/kapitsa/`; the 0.2.24 row is in
+git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |

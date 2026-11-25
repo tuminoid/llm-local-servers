@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run AuditBench v2 against the CUDA vLLM server."""
+"""Run AuditBench v3 against the CUDA vLLM server."""
 
 import json
 import os

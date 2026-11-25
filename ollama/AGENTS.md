@@ -15,7 +15,7 @@ in [README.md](README.md); shared server conventions live in
 | `pull.sh` | Model pull through the running server |
 | `preflight.sh` | Remote managed-server and idle-GPU guard |
 | `status.sh` | API allocation, CPU/GPU split, RAM, VRAM, and process report |
-| `bench.py` | Ollama adapter, live artifact identity and effective-slot guards for shared AuditBench v2 |
+| `bench.py` | Ollama adapter, live artifact identity and effective-slot guards for shared AuditBench v3 |
 | `capability.py` | Native Ollama adapter for the shared Capability Check |
 | `stop.sh` | Recorded-process-group teardown and GPU release check |
 | `models/*.conf` | Portable model facts |
@@ -144,7 +144,7 @@ in [README.md](README.md); shared server conventions live in
   Gemma 4 26B lost to their vLLM profiles, and Qwen3 Coder and GLM-4.7-Flash
   failed the gate on both runtimes; all five were dropped on 2026-10-12.
 - New and replacement measurements follow
-  [AuditBench v2](https://github.com/tuminoid/llm-audit-bench).
+  [AuditBench v3](https://github.com/tuminoid/llm-audit-bench).
   Publish only canonical results and update [../README.md](../README.md)
   in the same change. Never combine a retired-harness rate with AuditBench
   or project results between hosts.

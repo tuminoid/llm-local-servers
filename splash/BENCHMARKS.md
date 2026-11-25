@@ -1,57 +1,53 @@
 # Splash benchmarks
 
-## AuditBench v2: Apple M5 Max
+## AuditBench v3: Apple M5 Max
 
 Splash 1.5.0, each conf's memory need as the native memory cap (64 GiB unless
 the conf declares more), four active slots, DFlash 2, Q8 KV, state/prefix
 caching with the SSD prefix tier at its `auto` default, the dense target's
 Neural Engine FFN split and idle weight release at release defaults; the targets
 and their DFlash2 drafts are pinned in the model configs. Canonical AuditBench
-v2 `session` profile at each conf's declared sampling on the M5 Max (128 GB,
-macOS 27.0.1), on llm-audit-bench 2.4.0 from clean trees. `qwen3.6-35b-a3b` and
-`qwen3.8-27b` ran 2026-10-31, and Bonsai 2, Flint and Ornith 1.5 122B
-2026-10-30, from the trial tree `18bf1a9`, Flash-Next IQ3_S from `d5c9a46`;
-those trees predate the conf's memory need, so the cap each conf now declares
-was passed as `SPLASH_MAX_MEMORY`, and their lifecycle hashes differ from this
-tree's. Flash-Next IQ3_S, Ornith 1.5 122B and Bonsai 2 ran again
-2026-10-31 on llm-audit-bench 2.5.0 from `27411b0`, at their declared needs.
-`ornith1.5-35b-a3b` ran 2026-11-15 on llm-audit-bench 2.5.0 from the clean trial
-commit `54822f2` (this profile), its JSON under `.../2026-11-15-m5/splash/`.
-Each JSON records its commit and harness hash. The 2.4.0 rows measured 1 stream
-and the largest of 2/4/8 that fits admission and the KV pool; the 2.5.0 rows
-climb 1, 2, 4, 8 while each rung completes every session and gains 10% over the
-one below. Tool steps from 32k evidence, 16 at 262,144 configured context,
-report at depth. Sessions/h is the median over 2-3 samples; complete counts
-sessions whose report ended on its own and named at least 7/8 of its findings.
-pp512/tg128 is the llama-bench-method reference (one stream, greedy, depth ~0),
-not a serving result. JSON files are retained under
-`~/.local/state/auditbench/trials/2026-10-30-m5-night/splash/` and, for the
-2.5.0 rows, `.../2026-10-31-stream-ladder/splash/`. Every later top-level
-section of this file is AuditBench v1 or older, never comparable with v2. Their
-top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
-trial-directory copies remain, and the figures stay here and in git history.
+v3 `session` profile at each conf's declared sampling on the M5 Max (128 GB,
+macOS 27.0.1). `qwen3.6-35b-a3b`, `qwen3.8-27b` and `flint-gguf` ran
+2026-11-24/25 on llm-audit-bench 3.0.0 from fleet commit `8ab4e09`, under
+`.../2026-11-24-v3-sessions/m5/`. Flash-Next IQ3_S, Ornith 1.5 122B and Bonsai 2
+ran 2026-10-31 from `27411b0`, and `ornith1.5-35b-a3b` 2026-11-15 from the clean
+trial commit `54822f2` (this profile, JSON under `.../2026-11-15-m5/splash/`),
+all on llm-audit-bench 2.5.0, whose session code 3.0.0 ships unchanged. Each
+JSON records its commit and harness hash. The harness climbs 1, 2, 4, 8 while
+each rung completes every session and gains 10% over the one below. Tool steps
+from 32k evidence, 16 at 262,144 configured context, report at depth. Sessions/h
+is the median over 2-3 samples; complete counts sessions whose report ended on
+its own and named at least 7/8 of its findings. pp512/tg128 is the
+llama-bench-method reference (one stream, greedy, depth ~0), not a serving
+result. The 2026-10-31 JSON files are retained under
+`~/.local/state/auditbench/trials/2026-10-31-stream-ladder/splash/`; the
+llm-audit-bench 2.4.0 rows they and the 2026-11-24 runs replace are in git
+history. Every later top-level section of this file is AuditBench v1 or older,
+never comparable with v3. Their top-level retained JSON on the M5 and A100 was
+removed on 2026-09-30; trial-directory copies remain, and the figures stay here
+and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
 | Splash `qwen3.8-flash-next-iq3s` | 262,144 | 4 | 1,138,688 | 1x 27.17 / 2x 28.73 | 6,360 | 2,054.0 | 118.3 | 9/9 | 2,014 / 180.4 | pass | yes, 2x | `20261031T121538.911180+0000_splash_qwen3-8-flash-next-iq3s_session.json` |
 | Splash `ornith1.5-35b-a3b` | 262,144 | 4 | 4,448,256 | 1x 28.01 / 2x 30.72 | 8,366 | 2,012.5 | 167.4 | 8/8 | 5,374 / 279.4 | pass | yes, 2x | `20261115T131122.781662+0000_splash_ornith1-5-35b-a3b_session.json` |
-| Splash `flint-gguf` | 262,144 | 4 | 802,816 | 1x 17.19 / 2x 19.49 | 14,971 | 1,593.9 | 152.9 | 9/9 | 5,086 / 215.2 | fail | yes | `20261030T163459.898585+0000_splash_flint-gguf_session.json` |
+| Splash `flint-gguf` | 262,144 | 4 | 802,816 | 1x 20.59 / 2x 20.11 | 9,857 | 1,568.4 | 146.4 | 9/9 | 5,187 / 201.5 | fail | yes, 1x | `20261125T000229.871788+0000_splash_flint-gguf_session.json` |
 | Splash `ornith1.5-122b` | 262,144 | 4 | 1,974,272 | 1x 11.87 / 2x 11.80 | 6,254 | 744.2 | 73.5 | 6/6 | 1,807 / 170.1 | fail | yes, 1x | `20261031T125002.145677+0000_splash_ornith1-5-122b_session.json` |
 | Splash `bonsai2-27b-pq2` | 262,144 | 4 | 1,675,264 | 1x 8.10 / 2x 8.48 | 9,201 | 534.9 | 58.3 | 9/9 | 1,007 / 77.7 | pass | yes, 2x | `20261031T140229.049761+0000_splash_bonsai2-27b-pq2_session.json` |
-| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 20.90 / 4x 20.18 | 4,320 | 1,906.2 | 211.5 | 14/15 | 5,507 / 421.6 | pass | yes, 1x | `20261031T011046.486492+0000_splash_qwen3-6-35b-a3b_session.json` |
-| Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 8.57 / 4x 8.49 | 7,164 | 557.4 | 63.0 | 15/15 | 1,010 / 116.6 | pass | yes | `20261031T022632.490447+0000_splash_qwen3-8-27b_session.json` |
+| Splash `qwen3.6-35b-a3b` | 262,144 | 4 | 4,358,144 | 1x 20.58 / 2x 20.29, incomplete | 4,093 | 1,914.0 | 198.3 | 8/9 | 5,488 / 425.3 | pass | yes, 1x | `20261124T212413.351054+0000_splash_qwen3-6-35b-a3b_session.json` |
+| Splash `qwen3.8-27b` | 262,144 | 4 | 1,433,600 | 1x 9.16 / 2x 8.86 | 6,590 | 554.7 | 56.8 | 7/7 | 1,011 / 116.5 | pass | yes, 1x | `20261124T221112.414961+0000_splash_qwen3-8-27b_session.json` |
 
 - Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-19/20, fleet
   `a21fd8a`; rows in [CAPABILITIES.md](../CAPABILITIES.md)): five of seven
   profiles pass. `flint-gguf` (two tool misuses) and `ornith1.5-122b`
   (analysis prose around its JSON answers) fail, so their rates cannot
   promote them.
-- `qwen3.6-35b-a3b` leads the
-  host's Splash rows at 20.90 at one stream, its optimal operating point:
-  one of 12 sessions at 4x was incomplete, so the 20.18 there is not a
-  serving rate. 212 of its 255 calls streamed no reasoning.
-- `qwen3.8-27b` now peaks at one stream (8.57; four streams 0.99x), where
-  1.3.2 gained 1.09x from four.
+- `qwen3.6-35b-a3b` runs 20.58 at one stream, its optimal operating point:
+  one of six sessions at 2x was incomplete, so the 20.29 there is not a
+  serving rate. 120 of its 153 calls streamed no reasoning.
+- `qwen3.8-27b` peaks at one stream (9.16; two streams 0.97x), where 1.3.2
+  gained 1.09x from four.
 - `qwen3.8-flash-next-iq3s` (Qwen3.8-Flash-Next 125B-A6B, ISTA-DASLab's
   recommended GSQ-RCO IQ3_S build, 83.6 GB) runs 28.73 sessions/h at two
   streams. Splash's suggested Q2_0 build (66.4 GB) ran 32.27 but scored
@@ -75,10 +71,10 @@ trial-directory copies remain, and the figures stay here and in git history.
   first 2.4.0 bench at a 100 GiB cap was stopped by the campaign's memory
   watchdog at 12 GiB available.
 - `bonsai2-27b-pq2` (PrismML Ternary Bonsai 2 27B, PQ2_0, 7.2 GB) runs
-  8.48 sessions/h at two streams, 99% of the MLX 4-bit Qwen3.8-27B's
-  8.57 in less than half its weight memory (7.2 against 16.1 GB). Its 245,760-token
-  near-context prefill takes 584 s (421 tok/s), level with the MLX 27B's 560
-  s.
+  8.48 sessions/h at two streams, 93% of the MLX 4-bit Qwen3.8-27B's 9.16
+  in less than half its weight memory (7.2 against 16.1 GB). Its
+  245,760-token near-context prefill takes 584 s (421 tok/s), level with
+  the MLX 27B's 551 s.
 
 ### Stream ladder against four streams (2026-10-31)
 
