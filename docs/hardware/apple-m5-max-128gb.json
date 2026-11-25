@@ -1088,22 +1088,22 @@
       },
       "tier": "hybrid MoE"
     },
-    "splash/bonsai2-27b-pq2": {
+    "splash/bonsai2.5-27b-pq2": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T191858.346786+0000_splash_bonsai2-27b-pq2.json",
+        "artifact": "20261126T011514.131637+0000_splash_bonsai2-5-27b-pq2.json",
         "audit_aptitude": {
           "interval": [
             0.29727972009101566,
             0.8277202799089843
           ],
-          "judged_samples": 7,
+          "judged_samples": 8,
           "scored": true,
-          "sound_samples": 7,
+          "sound_samples": 8,
           "vuln_score": 0.6428571428571428
         },
-        "clean_rate": 0.9722222222222222,
-        "clean_samples": 35,
+        "clean_rate": 1.0,
+        "clean_samples": 36,
         "failed_checks": [],
         "features": {
           "json_schema": "supported",
@@ -1113,12 +1113,12 @@
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
-        "fitness_clean": 7,
+        "fitness_clean": 8,
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
-        "model": "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0",
-        "model_identity": "b072e1d3b35a0a630cece372c2127528e0994386",
+        "model": "prism-ml/Ternary-Bonsai-2.5-27B-GGUF:PQ2_0",
+        "model_identity": "28a7093cc25bc151cc2b284c5570f12ce343fdcf",
         "protocol": "capability-v3",
         "reasoning": "passed",
         "runtime": "splash",
@@ -1126,7 +1126,7 @@
         "schema_enforcement": "enforced",
         "schema_version": 8,
         "status": "passed",
-        "tag": "bonsai2-27b-pq2",
+        "tag": "bonsai2.5-27b-pq2",
         "unaided_document": "valid"
       },
       "engine": "Splash",
@@ -1134,67 +1134,71 @@
       "role": "audit",
       "session": {
         "active_slots": 4,
-        "artifact": "20261031T140229.049761+0000_splash_bonsai2-27b-pq2_session.json",
+        "artifact": "20261126T083600.610103+0000_splash_bonsai2-5-27b-pq2_session.json",
         "canonical": true,
         "configured_context": 262144,
-        "kv_pool_tokens": 1675264,
-        "model": "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0",
-        "model_identity": "b072e1d3b35a0a630cece372c2127528e0994386",
+        "kv_pool_tokens": 1671168,
+        "model": "prism-ml/Ternary-Bonsai-2.5-27B-GGUF:PQ2_0",
+        "model_identity": "28a7093cc25bc151cc2b284c5570f12ce343fdcf",
         "optimal_streams": 2,
         "optimal_streams_source": "stored",
         "protocol": "audit-v2",
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 1006.5954579771173,
-          "tg128": 77.65055226957249
+          "pp512": 1050.5146717236034,
+          "tg128": 205.2275963271718
         },
         "runtime": "splash",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 9201,
-            "prefill_tokens_per_second": 534.8887322208313,
-            "report_decode_tokens_per_second": 58.31737909330057,
+            "output_tokens_per_session": 9483,
+            "prefill_tokens_per_second": 618.536127695804,
+            "report_decode_tokens_per_second": 73.6974736809064,
             "sessions": 3,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 8.099900150765366
+            "sessions_per_hour": 9.470429327814369
           },
           "2": {
-            "output_tokens_per_session": 8348.5,
-            "prefill_tokens_per_second": 243.613437614764,
-            "report_decode_tokens_per_second": 41.883831377912685,
-            "sessions": 6,
+            "output_tokens_per_session": 10593.75,
+            "prefill_tokens_per_second": 291.1364194926937,
+            "report_decode_tokens_per_second": 54.40851917224248,
+            "sessions": 4,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 8.479077774753256
+            "sessions_per_hour": 9.887410436652331
           }
         },
-        "tag": "bonsai2-27b-pq2"
+        "tag": "bonsai2.5-27b-pq2"
       },
       "tier": "dense"
     },
     "splash/flint-gguf": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T162756.796595+0000_splash_flint-gguf.json",
+        "artifact": "20261125T215934.907846+0000_splash_flint-gguf.json",
         "audit_aptitude": {
-          "scored": false
+          "interval": [
+            -0.07410453560541236,
+            0.5741045356054124
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.2857142857142856
         },
-        "clean_rate": 0.75,
-        "clean_samples": 6,
-        "failed_checks": [
-          "fitness_clean",
-          "clean_rate"
-        ],
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
         "features": {
-          "json_schema": "supported",
+          "json_schema": "broken",
           "streaming_tool_call": "supported",
           "structured_json": "supported",
           "thinking_disabled": "untested",
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
-        "fitness_clean": 6,
+        "fitness_clean": 8,
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
@@ -1203,10 +1207,10 @@
         "protocol": "capability-v3",
         "reasoning": "passed",
         "runtime": "splash",
-        "samples": 8,
-        "schema_enforcement": "enforced",
+        "samples": 36,
+        "schema_enforcement": "whitespace_runaway",
         "schema_version": 8,
-        "status": "failed",
+        "status": "passed",
         "tag": "flint-gguf",
         "unaided_document": "valid"
       },
@@ -1215,7 +1219,7 @@
       "role": "audit",
       "session": {
         "active_slots": 4,
-        "artifact": "20261125T000229.871788+0000_splash_flint-gguf_session.json",
+        "artifact": "20261126T015113.461985+0000_splash_flint-gguf_session.json",
         "canonical": true,
         "configured_context": 262144,
         "kv_pool_tokens": 802816,
@@ -1227,42 +1231,127 @@
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 5187.242675349373,
-          "tg128": 201.5183205618617
+          "pp512": 5183.131593242732,
+          "tg128": 228.5314395474921
         },
         "runtime": "splash",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 9857,
-            "prefill_tokens_per_second": 1568.3801867966486,
-            "report_decode_tokens_per_second": 146.40049454877044,
+            "output_tokens_per_session": 10108,
+            "prefill_tokens_per_second": 1872.0579519102375,
+            "report_decode_tokens_per_second": 147.2713126852992,
             "sessions": 3,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 20.586900759640614
+            "sessions_per_hour": 23.813299117711384
           },
           "2": {
-            "output_tokens_per_session": 11830.5,
-            "prefill_tokens_per_second": 728.9743166358519,
-            "report_decode_tokens_per_second": 97.01249445291995,
+            "output_tokens_per_session": 10974.0,
+            "prefill_tokens_per_second": 936.7378786049761,
+            "report_decode_tokens_per_second": 114.06539717414074,
             "sessions": 6,
-            "sessions_incomplete": 0,
-            "sessions_per_hour": 20.106893718193003
+            "sessions_incomplete": 1,
+            "sessions_per_hour": 25.39204429947713
           }
         },
         "tag": "flint-gguf"
       },
       "tier": "MoE"
     },
+    "splash/inkling-2-mini": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261125T222933.339127+0000_splash_inkling-2-mini.json",
+        "audit_aptitude": {
+          "interval": [
+            0.28349297163870585,
+            0.8415070283612942
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.6428571428571428
+        },
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "supported",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "untested",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "unsloth/Inkling-2-Mini-GGUF:UD-Q4_K_M",
+        "model_identity": "8078d149286eec7193795413b9e0643da6d11fa1",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "splash",
+        "samples": 36,
+        "schema_enforcement": "enforced",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "inkling-2-mini",
+        "unaided_document": "valid"
+      },
+      "engine": "Splash",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 4,
+        "artifact": "20261126T031224.963713+0000_splash_inkling-2-mini_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 477184,
+        "model": "unsloth/Inkling-2-Mini-GGUF:UD-Q4_K_M",
+        "model_identity": "8078d149286eec7193795413b9e0643da6d11fa1",
+        "optimal_streams": 2,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 2856.2418882229554,
+          "tg128": 115.17214413788358
+        },
+        "runtime": "splash",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 4705.5,
+            "prefill_tokens_per_second": 1760.6452707972794,
+            "report_decode_tokens_per_second": 91.82259975031386,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 25.955990630616075
+          },
+          "2": {
+            "output_tokens_per_session": 4776.5,
+            "prefill_tokens_per_second": 844.6828389840982,
+            "report_decode_tokens_per_second": 57.86887269393432,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 27.902948819172227
+          }
+        },
+        "tag": "inkling-2-mini"
+      },
+      "tier": "MoE"
+    },
     "splash/ornith1.5-122b": {
       "campaign": true,
       "capability": {
-        "artifact": "20261120T044622.588519+0000_splash_ornith1-5-122b.json",
+        "artifact": "20261125T231824.661553+0000_splash_ornith1-5-122b.json",
         "audit_aptitude": {
           "scored": false
         },
-        "clean_rate": 0.7586206896551724,
-        "clean_samples": 22,
+        "clean_rate": 0.7368421052631579,
+        "clean_samples": 14,
         "failed_checks": [
           "clean_rate"
         ],
@@ -1283,7 +1372,7 @@
         "protocol": "capability-v3",
         "reasoning": "passed",
         "runtime": "splash",
-        "samples": 29,
+        "samples": 19,
         "schema_enforcement": "enforced",
         "schema_version": 8,
         "status": "failed",
@@ -1337,16 +1426,16 @@
     "splash/ornith1.5-35b-a3b": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T162142.304315+0000_splash_ornith1-5-35b-a3b.json",
+        "artifact": "20261125T221226.947488+0000_splash_ornith1-5-35b-a3b.json",
         "audit_aptitude": {
           "interval": [
-            0.21271203471081496,
-            0.7872879652891851
+            0.3580174397081337,
+            0.8919825602918663
           ],
           "judged_samples": 8,
           "scored": true,
-          "sound_samples": 7,
-          "vuln_score": 0.5714285714285716
+          "sound_samples": 8,
+          "vuln_score": 0.7142857142857144
         },
         "clean_rate": 1.0,
         "clean_samples": 36,
@@ -1380,39 +1469,39 @@
       "role": "audit",
       "session": {
         "active_slots": 4,
-        "artifact": "20261115T131122.781662+0000_splash_ornith1-5-35b-a3b_session.json",
+        "artifact": "20261126T024425.195684+0000_splash_ornith1-5-35b-a3b_session.json",
         "canonical": true,
         "configured_context": 262144,
         "kv_pool_tokens": 4448256,
         "model": "ornith-ai/Ornith-1.5-35B-A3B-MLX-4bit",
         "model_identity": "19504d912fa8fc7622bf6b1de3db5d5d890b1f02",
-        "optimal_streams": 2,
+        "optimal_streams": 1,
         "optimal_streams_source": "stored",
         "protocol": "audit-v2",
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 5374.094783818147,
-          "tg128": 279.39325989659784
+          "pp512": 6433.072751491459,
+          "tg128": 336.16506246413536
         },
         "runtime": "splash",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 8366.5,
-            "prefill_tokens_per_second": 2012.4860752677903,
-            "report_decode_tokens_per_second": 167.40435298108235,
-            "sessions": 2,
+            "output_tokens_per_session": 7262,
+            "prefill_tokens_per_second": 2554.793290943901,
+            "report_decode_tokens_per_second": 176.89282652068363,
+            "sessions": 3,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 28.007879820893965
+            "sessions_per_hour": 36.04914999686593
           },
           "2": {
-            "output_tokens_per_session": 6990.5,
-            "prefill_tokens_per_second": 926.1012716776702,
-            "report_decode_tokens_per_second": 104.06955442158865,
-            "sessions": 6,
+            "output_tokens_per_session": 8066.0,
+            "prefill_tokens_per_second": 1274.4198705639608,
+            "report_decode_tokens_per_second": 108.41033779379752,
+            "sessions": 4,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 30.72440688502116
+            "sessions_per_hour": 35.7842941822756
           }
         },
         "tag": "ornith1.5-35b-a3b"
@@ -1422,19 +1511,19 @@
     "splash/qwen3.6-35b-a3b": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T142240.648293+0000_splash_qwen3-6-35b-a3b.json",
+        "artifact": "20261125T214029.579805+0000_splash_qwen3-6-35b-a3b.json",
         "audit_aptitude": {
           "interval": [
             0.08125531919709594,
             0.6687446808029041
           ],
-          "judged_samples": 7,
+          "judged_samples": 8,
           "scored": true,
-          "sound_samples": 7,
+          "sound_samples": 6,
           "vuln_score": 0.4285714285714286
         },
-        "clean_rate": 0.9444444444444444,
-        "clean_samples": 34,
+        "clean_rate": 1.0,
+        "clean_samples": 36,
         "failed_checks": [],
         "features": {
           "json_schema": "supported",
@@ -1444,7 +1533,7 @@
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
-        "fitness_clean": 7,
+        "fitness_clean": 8,
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
@@ -1465,7 +1554,7 @@
       "role": "audit",
       "session": {
         "active_slots": 4,
-        "artifact": "20261124T212413.351054+0000_splash_qwen3-6-35b-a3b_session.json",
+        "artifact": "20261126T011537.996892+0000_splash_qwen3-6-35b-a3b_session.json",
         "canonical": true,
         "configured_context": 262144,
         "kv_pool_tokens": 4358144,
@@ -1477,27 +1566,27 @@
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 5487.504393736399,
-          "tg128": 425.27641254670203
+          "pp512": 6613.097487339126,
+          "tg128": 464.7679729392638
         },
         "runtime": "splash",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 4093,
-            "prefill_tokens_per_second": 1913.992082521301,
-            "report_decode_tokens_per_second": 198.30303501246112,
+            "output_tokens_per_session": 5768,
+            "prefill_tokens_per_second": 2478.51346378561,
+            "report_decode_tokens_per_second": 207.11842977236702,
             "sessions": 3,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 20.5776715723888
+            "sessions_per_hour": 25.60671587159728
           },
           "2": {
-            "output_tokens_per_session": 5977.0,
-            "prefill_tokens_per_second": 1030.4376859883612,
-            "report_decode_tokens_per_second": 158.44194818135998,
+            "output_tokens_per_session": 5042.0,
+            "prefill_tokens_per_second": 1364.119999545788,
+            "report_decode_tokens_per_second": 167.0520291735952,
             "sessions": 6,
             "sessions_incomplete": 1,
-            "sessions_per_hour": 20.29377849444623
+            "sessions_per_hour": 26.918915326990895
           }
         },
         "tag": "qwen3.6-35b-a3b"
@@ -1507,16 +1596,16 @@
     "splash/qwen3.8-27b": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T183126.227604+0000_splash_qwen3-8-27b.json",
+        "artifact": "20261125T235459.370786+0000_splash_qwen3-8-27b.json",
         "audit_aptitude": {
           "interval": [
-            0.21271203471081496,
-            0.7872879652891851
+            0.5208234850600961,
+            0.9791765149399039
           ],
-          "judged_samples": 8,
+          "judged_samples": 7,
           "scored": true,
-          "sound_samples": 8,
-          "vuln_score": 0.5714285714285716
+          "sound_samples": 6,
+          "vuln_score": 0.8571428571428572
         },
         "clean_rate": 0.9722222222222222,
         "clean_samples": 35,
@@ -1529,7 +1618,7 @@
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
-        "fitness_clean": 8,
+        "fitness_clean": 7,
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
@@ -1550,39 +1639,47 @@
       "role": "audit",
       "session": {
         "active_slots": 4,
-        "artifact": "20261124T221112.414961+0000_splash_qwen3-8-27b_session.json",
+        "artifact": "20261126T041444.959567+0000_splash_qwen3-8-27b_session.json",
         "canonical": true,
         "configured_context": 262144,
-        "kv_pool_tokens": 1433600,
+        "kv_pool_tokens": 1417216,
         "model": "mlx-community/Qwen3.8-27B-4bit",
         "model_identity": "10c35caafbb80f7dc6a7a432cdd11af10a6d4818",
-        "optimal_streams": 1,
+        "optimal_streams": 4,
         "optimal_streams_source": "stored",
         "protocol": "audit-v2",
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 1010.9247202748618,
-          "tg128": 116.54745543024548
+          "pp512": 1361.1803397291737,
+          "tg128": 146.5317916608783
         },
         "runtime": "splash",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 6590,
-            "prefill_tokens_per_second": 554.7314006638649,
-            "report_decode_tokens_per_second": 56.778636187764484,
+            "output_tokens_per_session": 9769,
+            "prefill_tokens_per_second": 736.6821006931679,
+            "report_decode_tokens_per_second": 66.52544925293364,
             "sessions": 3,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 9.155280887113053
+            "sessions_per_hour": 9.866143171666746
           },
           "2": {
-            "output_tokens_per_session": 10234.75,
-            "prefill_tokens_per_second": 257.0227902490084,
-            "report_decode_tokens_per_second": 46.027208127769555,
-            "sessions": 4,
+            "output_tokens_per_session": 10526.5,
+            "prefill_tokens_per_second": 373.06988904193247,
+            "report_decode_tokens_per_second": 44.87651380888666,
+            "sessions": 6,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 8.85841894789379
+            "sessions_per_hour": 11.139926598504474
+          },
+          "4": {
+            "output_tokens_per_session": 9440.0,
+            "prefill_tokens_per_second": 166.05736203657492,
+            "report_decode_tokens_per_second": 30.219503947356955,
+            "sessions": 12,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 11.756481106434512
           }
         },
         "tag": "qwen3.8-27b"
@@ -1592,7 +1689,7 @@
     "splash/qwen3.8-flash-next-iq3s": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T204311.255698+0000_splash_qwen3-8-flash-next-iq3s.json",
+        "artifact": "20261125T230437.201806+0000_splash_qwen3-8-flash-next-iq3s.json",
         "audit_aptitude": {
           "interval": [
             0.4368235713614062,
@@ -1600,7 +1697,7 @@
           ],
           "judged_samples": 8,
           "scored": true,
-          "sound_samples": 6,
+          "sound_samples": 7,
           "vuln_score": 0.7857142857142856
         },
         "clean_rate": 1.0,
@@ -1635,10 +1732,10 @@
       "role": "audit",
       "session": {
         "active_slots": 4,
-        "artifact": "20261031T121538.911180+0000_splash_qwen3-8-flash-next-iq3s_session.json",
+        "artifact": "20261126T033856.107930+0000_splash_qwen3-8-flash-next-iq3s_session.json",
         "canonical": true,
         "configured_context": 262144,
-        "kv_pool_tokens": 1138688,
+        "kv_pool_tokens": 3309568,
         "model": "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF:IQ3_S",
         "model_identity": "ed59f92082b1e93c0e96d60a8b11aab089b52f09",
         "optimal_streams": 2,
@@ -1647,27 +1744,27 @@
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 2014.2238073481537,
-          "tg128": 180.42965610684826
+          "pp512": 2153.419587828352,
+          "tg128": 152.2145628796172
         },
         "runtime": "splash",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 6360,
-            "prefill_tokens_per_second": 2054.0198918940264,
-            "report_decode_tokens_per_second": 118.34130610270924,
+            "output_tokens_per_session": 6451,
+            "prefill_tokens_per_second": 2025.072343453935,
+            "report_decode_tokens_per_second": 112.89493917553855,
             "sessions": 3,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 27.1661725741088
+            "sessions_per_hour": 27.013579076174462
           },
           "2": {
-            "output_tokens_per_session": 5858.0,
-            "prefill_tokens_per_second": 930.5833368359345,
-            "report_decode_tokens_per_second": 75.92697792586345,
+            "output_tokens_per_session": 6510.0,
+            "prefill_tokens_per_second": 974.3730391267068,
+            "report_decode_tokens_per_second": 77.50621821405022,
             "sessions": 6,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 28.732894072132034
+            "sessions_per_hour": 27.78039096456966
           }
         },
         "tag": "qwen3.8-flash-next-iq3s"
