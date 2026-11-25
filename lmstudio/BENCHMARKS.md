@@ -7,46 +7,48 @@ Checkpoints and revisions were those of the native `splash/` and
 `vllm-metal/` profiles; the vLLM-Metal comparison rows are in
 `vllm-metal/BENCHMARKS.md` at `a7e8f3f`.
 
-## AuditBench v2: Apple M5 Max
+## AuditBench v3: Apple M5 Max
 
-LM Studio 0.4.25+1, Splash engine 0.0.5 (one request at a time) and mlx-llm
-1.11.0. Canonical AuditBench v2 `session` profile (llm-audit-bench v2.0.0
-plus the amendments released as v2.1.0; each JSON records its harness hash),
-run 2026-09-27 to 2026-09-29 on the M5 Max (128 GB, macOS 27.0) from fleet
-commit `bee4a24` at each conf's declared sampling. The harness measured 1
-stream and the largest of 2/4/8 that fits admission and the KV pool: tool
+LM Studio 0.4.25+1, Splash engine 1.3.0 (one request at a time) and mlx-llm
+1.14.0. Canonical AuditBench v3 `session` profile (llm-audit-bench 3.0.0;
+each JSON records its harness hash), run 2026-11-25 on the M5 Max (128 GB,
+macOS 27.0.1) at each conf's declared sampling, the Splash-engine profiles
+from fleet commit `5a7c007` (the engine 1.3.0 pin) and `qwen3.6-35b-a3b-mlx`
+from `8ab4e09`. The harness climbs 1, 2, 4, 8 streams within admission while
+each rung completes every session and gains 10%: tool
 steps from 32k evidence, 16 at 262,144 configured context and 9 at 131,072,
 report at depth. Sessions/h is the median over 2-3 samples; complete counts
 sessions whose report ended on its own and named at least 7/8 of its
 findings. pp512/tg128 is the llama-bench-method reference (one stream,
 greedy, depth ~0), not a serving result. JSON files are retained under
-`~/.local/state/auditbench/trials/2026-09-27-v2-canonical/m5/`. Every later
-section of this file is AuditBench v1 or older, never comparable with v2.
+`~/.local/state/auditbench/trials/2026-11-24-v3-sessions/`, in `m5-lmstudio/`
+and `m5/`; the llm-audit-bench 2.0.0 rows (2026-09-27/29, fleet `bee4a24`,
+Splash engine 0.0.5, mlx-llm 1.11.0) are in git history. Every later section
+of this file is AuditBench v1 or older, never comparable with v3.
 Their top-level retained JSON on the M5 and A100 was removed on 2026-09-30;
 trial-directory copies remain, and the figures stay here and in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
-| LM Studio `qwen3.6-35b-a3b-splash` | 262,144 | 1 | 262,144 | 1x 18.70 | 6,648 | - | 177.0 | 2/2 | 3,778 / 333.7 | pass | yes | `20260929T150023.857701+0000_lmstudio_qwen3-6-35b-a3b-splash_session.json` |
-| LM Studio `qwen3.6-35b-a3b-mlx` | 262,144 | 4 | 1,048,576 | 1x 11.02 / 4x 9.15 | 5,622 | - | 64.1 | 9/10 | 1,868 / 141.3 | pass | no | `20260929T151009.883116+0000_lmstudio_qwen3-6-35b-a3b-mlx_session.json` |
-| LM Studio `qwen3.8-27b-splash` | 262,144 | 1 | 262,144 | 1x 8.12 | 6,547 | - | 53.5 | 3/3 | unavailable | pass | yes | `20260928T040933.905525+0000_lmstudio_qwen3-8-27b-splash_session.json` |
+| LM Studio `qwen3.6-35b-a3b-splash` | 262,144 | 1 | 262,144 | 1x 19.59 | 5,552 | - | 196.2 | 3/3 | 3,784 / 411.5 | pass | yes | `20261125T051059.051941+0000_lmstudio_qwen3-6-35b-a3b-splash_session.json` |
+| LM Studio `qwen3.6-35b-a3b-mlx` | 262,144 | 4 | 1,048,576 | 1x 16.05 / 2x 11.05, incomplete | 4,440 | - | 71.6 | 5/6 | 2,754 / 148.8 | pass | no | `20261125T013213.017922+0000_lmstudio_qwen3-6-35b-a3b-mlx_session.json` |
+| LM Studio `qwen3.8-27b-splash` | 262,144 | 1 | 262,144 | 1x 9.42 | 3,967 | - | 56.3 | 3/3 | unavailable | pass | yes | `20261125T054544.743268+0000_lmstudio_qwen3-8-27b-splash_session.json` |
 
 - Capability Check v3 (llm-audit-bench 3.0.0, 2026-11-20, fleet `a21fd8a`;
   rows in [CAPABILITIES.md](../CAPABILITIES.md)) passes every profile but
   `qwen3.8-27b-mlx`, whose mlx-llm 1.14.0 engine crashed on a Metal
-  resource limit mid-check.
-- `qwen3.8-27b-splash` passes and is publishable at
-  8.12 sessions/h, beside native Splash's 7.70 on the same Splash 1.0
-  package; native Splash now serves the mlx-community target, at 6.73
+  resource limit mid-check. The two Splash-engine profiles were re-checked
+  on engine 1.3.0 (2026-11-25, `5a7c007`) and pass again.
+- `qwen3.8-27b-splash` passes and is publishable at 9.42 sessions/h,
+  beside native Splash's 9.16 on the mlx-community target
   ([../splash/BENCHMARKS.md](../splash/BENCHMARKS.md)).
 - The MLX-engine profiles declare the protocol's off-by-one token
   allowance, so their runs are `canonical: false` by design. They ignore
   the schema, which never gates. `qwen3.8-27b-mlx`'s bench was
-  stopped to give the campaign's time to canonical runs. These sessions ran
-  on mlx-llm 1.11.0; the pin moved to 1.13.1 on its capability rerun
-  (2026-10-14) and to 1.14.0 on the v3 campaign (2026-11-20), without a
-  session rerun.
-- `qwen3.6-35b-a3b-splash` publishes 18.70 sessions/h and passes.
+  stopped to give the campaign's time to canonical runs.
+  `qwen3.6-35b-a3b-mlx` re-ran on mlx-llm 1.14.0: one of four 2x sessions
+  was incomplete, so one stream is its operating point.
+- `qwen3.6-35b-a3b-splash` publishes 19.59 sessions/h and passes.
 
 ## Decode smoke
 

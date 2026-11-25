@@ -156,7 +156,7 @@ DFlash 2 loses to plain qwen3.8 at the declared sampling (8.86 / 12.63 @2x); see
 
 ### Apple M5 Max (128 GB unified memory)
 
-Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0. vLLM-Metal
+Local host: MacBook Pro `Mac17,6`, 40 GPU cores, macOS 27.0.1. vLLM-Metal
 0.31.0, Splash 1.5.0, LM Studio 0.4.25+1, Ollama 0.40.16, ds4, Kapitsa
 0.2.36. Context, slots, KV pool,
 completion, the pp512/tg128 reference and the retained JSON names are in
@@ -175,18 +175,18 @@ completion, the pp512/tg128 reference and the retained JSON names are in
 | 2 | `ornith1.5-35b-a3b` | Splash | Splash | MoE | 262,144 | +0.57 [+0.21, +0.79] | 30.72 @2x | 167.4 |
 | 3 | `qwen3.8-flash-next-iq3s` | Splash | Splash | MoE | 262,144 | +0.79 [+0.44, +0.94] | 28.73 @2x | 118.3 |
 | 4 | `clover-35b-a3b` | Kapitsa | Kapitsa, Metal | MoE | 262,144 | +0.36 [+0.00, +0.62] | 27.58 @1x | 84.4 |
-| 5 | `qwen3.6-35b-a3b` | Splash | Splash | MoE | 262,144 | +0.43 [+0.08, +0.67] | 20.90 @1x | 211.5 |
+| 5 | `qwen3.6-35b-a3b` | Splash | Splash | MoE | 262,144 | +0.43 [+0.08, +0.67] | 20.58 @1x | 198.3 |
 | 6 | `muse-glimmer-30b-mlx` | Ollama | MLX | dense | 131,072 | +0.64 [+0.28, +0.84] | 20.12 @1x | 44.0 |
-| 7 | `qwen3.6-35b-a3b-splash` | LM Studio | Splash | MoE | 262,144 | +0.36 [+0.02, +0.60] | 18.70 @1x | 177.0 |
+| 7 | `qwen3.6-35b-a3b-splash` | LM Studio | Splash | MoE | 262,144 | +0.43 [+0.08, +0.67] | 19.59 @1x | 196.2 |
 | 8 | `nemotron-3.5-super-mlx` | Ollama | MLX | hybrid MoE | 524,288 | +0.57 [+0.21, +0.79] | 12.79 @1x | 55.3 |
-| 9 | `nemotron-3.5-bolt-74b-a9b-q3kxl` | Ollama | llama.cpp | hybrid MoE | 262,144 | +0.36 [-0.01, +0.64] | 9.09 @1x | 32.2 |
-| 10 | `qwen3.8-27b` | Splash | Splash | dense | 262,144 | +0.57 [+0.21, +0.79] | 8.57 @1x | 63.0 |
-| 11 | `bonsai2-27b-pq2` | Splash | Splash | dense | 262,144 | +0.64 [+0.30, +0.83] | 8.48 @2x | 58.3 |
-| 12 | `qwen3.8-27b-splash` | LM Studio | Splash | dense | 262,144 | +0.71 [+0.35, +0.90] | 8.12 @1x | 53.5 |
-| 13 | `granite4.2-30b-4bit` | vLLM-Metal | vLLM, MLX | hybrid MoE | 131,072 | +0.57 [+0.21, +0.79] | 3.18 @2x | 10.5 |
+| 9 | `qwen3.8-27b-splash` | LM Studio | Splash | dense | 262,144 | +0.79 [+0.44, +0.94] | 9.42 @1x | 56.3 |
+| 10 | `qwen3.8-27b` | Splash | Splash | dense | 262,144 | +0.57 [+0.21, +0.79] | 9.16 @1x | 56.8 |
+| 11 | `nemotron-3.5-bolt-74b-a9b-q3kxl` | Ollama | llama.cpp | hybrid MoE | 262,144 | +0.36 [-0.01, +0.64] | 9.09 @1x | 32.2 |
+| 12 | `bonsai2-27b-pq2` | Splash | Splash | dense | 262,144 | +0.64 [+0.30, +0.83] | 8.48 @2x | 58.3 |
+| 13 | `granite4.2-30b-4bit` | vLLM-Metal | vLLM, MLX | hybrid MoE | 131,072 | +0.57 [+0.21, +0.79] | 2.94 @2x | 10.8 |
 | 14 | `nanbeige4.3-33b-q4km` | Ollama | llama.cpp | dense | 262,144 | +0.43 [+0.06, +0.69] | 1.47 @1x | 6.0 |
 
-Unranked: Splash `flint-gguf` (19.49 @2x) and `ornith1.5-122b` (11.87),
+Unranked: Splash `flint-gguf` (20.59 @1x) and `ornith1.5-122b` (11.87),
 Ollama `mimo-v2.6-flash-q2ks` (5.29) and LM Studio `qwen3.8-27b-mlx` fail
 Capability Check v3 compatibility; their rates cannot promote them. LM
 Studio `qwen3.6-35b-a3b-mlx` passes but its runs are noncanonical by design
@@ -203,8 +203,8 @@ sessions/h in an unpublishable session run, one report recalling no
 findings). Details are in [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md).
 
 ds4 serves large MoE models, one slot. `qwen3.8-flash-next-q4` passes
-Capability Check v3 and runs 10.00 sessions/h; Splash serves the same model for
-audits 2.9x faster, so ds4 keeps it for interactive use. Speed is from the
+Capability Check v3 and runs 9.57 sessions/h; Splash serves the same model for
+audits 3.0x faster, so ds4 keeps it for interactive use. Speed is from the
 262,144 runs, one stream, in tok/s. At 524,288 a 50-step session to about 445k
 tokens took Qwen 14 min (report 57.0 tok/s) and V4 Flash 2.2 h, its
 checkpoints evicted at depth. ds4 has no `response_format`, so schema
