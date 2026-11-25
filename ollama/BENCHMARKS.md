@@ -19,12 +19,13 @@ rates. Their top-level retained JSON on the M5 and A100 was removed on
 2026-09-30; trial-directory copies remain, and the figures stay here and in
 git history.
 
-## AuditBench v2: A100-SXM4-80GB
+## AuditBench v3: A100-SXM4-80GB
 
 Isolated remote Ollama 0.40.16, the fleet default, Flash Attention, q8 KV.
-Canonical AuditBench v2 `session` profile at each conf's declared sampling, run
-2026-11-15/16 on llm-audit-bench 2.5.0 from the clean trial commit `54822f2`
-(this pin with the same profile files). Each JSON records its harness hash.
+Canonical AuditBench v3 `session` profile at each conf's declared sampling, run
+2026-11-15/16 by llm-audit-bench 2.5.0, whose session code 3.0.0 ships
+unchanged, from the clean trial commit `54822f2` (this pin with the same
+profile files). Each JSON records its harness hash.
 The harness climbs 1, 2, 4, 8 streams within admission and the KV pool while
 each rung completes every session and gains 10%: 16 tool
 steps from 32k evidence, report at about 165k. Sessions/h is the median over 2-3
@@ -73,22 +74,22 @@ stopped before 128 tokens.
   rows, and the A100 AuditBench v1, conversation, replay and pre-v1
   evidence for them, are in git history.
 
-## AuditBench v2: Apple M5 Max
+## AuditBench v3: Apple M5 Max
 
-Managed Ollama 0.40.16, the fleet default (the MLX runner serializes
-requests to one slot). Contexts are the confs': 131,072 for Glimmer, 262,144
-for Lightning, Bolt, MiMo-V2.6-Flash and Nanbeige and 524,288 for Super VL.
-Canonical AuditBench v2 `session` profile at each conf's declared sampling on
-the M5 Max (128 GB, macOS 27.0.1), one stream (one slot): tool steps from 32k
-evidence, 16 at 262,144 and above and 9 at 131,072, report at depth. All rows
-ran 2026-11-15/16 on llm-audit-bench 2.5.0 from the clean trial commit
-`54822f2` (this pin with the same profile files). Each JSON records its
-harness hash. Sessions/h is the median over 2-3 samples; complete counts
-sessions whose report ended on its own and named at least 7/8 of its
-findings. pp512/tg128 is the llama-bench-method reference (one stream,
-greedy, depth ~0), not a serving result. JSON files are retained under
-`~/.local/state/auditbench/trials/2026-11-15-m5/ollama/`; the 0.40.13 and
-0.40.8 rows they replace are in git history.
+Managed Ollama 0.40.16, the fleet default (the MLX runner serializes requests to
+one slot). Contexts are the confs': 131,072 for Glimmer, 262,144 for Lightning,
+Bolt, MiMo-V2.6-Flash and Nanbeige and 524,288 for Super VL. Canonical
+AuditBench v3 `session` profile at each conf's declared sampling on the M5 Max
+(128 GB, macOS 27.0.1), one stream (one slot): tool steps from 32k evidence, 16
+at 262,144 and above and 9 at 131,072, report at depth. All rows ran
+2026-11-15/16 by llm-audit-bench 2.5.0, whose session code 3.0.0 ships
+unchanged, from the clean trial commit `54822f2` (this pin with the same profile
+files). Each JSON records its harness hash. Sessions/h is the median over 2-3
+samples; complete counts sessions whose report ended on its own and named at
+least 7/8 of its findings. pp512/tg128 is the llama-bench-method reference (one
+stream, greedy, depth ~0), not a serving result. JSON files are retained under
+`~/.local/state/auditbench/trials/2026-11-15-m5/ollama/`; the 0.40.13 and 0.40.8
+rows they replace are in git history.
 
 | Runtime and profile | Context | Slots | KV pool | Sessions/h by streams | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | Complete | pp512 / tg128 | Capability v3 | Publishable | JSON |
 | -- | --: | --: | --: | -- | --: | --: | --: | -- | -- | -- | -- | -- |
@@ -145,7 +146,7 @@ greedy, depth ~0), not a serving result. JSON files are retained under
   cap. Capability Check v3 took about 10 hours on one slot.
   Dense 33B decode on the M5 is slow: 16.9 falling to 6.3 tok/s through a
   session, and the 245,755-token cold prefill takes 2,750 s (89 tok/s). The
-  A100's vLLM profile runs 7.19 sessions/h but fails Capability Check v3.
+  A100's vLLM profile runs 7.59 sessions/h but fails Capability Check v3.
 - `gemma4-26b-mlx` (Gemma 4 26B-A4B, the registry's NVFP4 safetensors on
   the MLX runner) is an interactive profile and has no row. On Apple Silicon
   the plain `gemma4:26b` and `gemma4:31b` tags resolve to these NVFP4 builds,

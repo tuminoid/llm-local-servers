@@ -128,31 +128,30 @@ only, and a MoE or hybrid row and a dense row are not comparable.
 
 Remote host: sm_80, 81,920 MiB VRAM; vLLM 0.31.0 with Transformers 5.15.1,
 isolated Ollama 0.40.16 (its rows), Strata 0.2.13 built for sm_80 (its rows).
-Sessions per hour by stream count: the vLLM rows ran 1 stream and the largest
-of 2/4/8 the pool admits, the Ollama rows the 2.5.0 stream ladder, the Strata
-rows their one slot; context, slots, KV pool, completion, the pp512/tg128
-reference and the retained JSON names are in
+Sessions per hour at the optimal stream count: the vLLM and Ollama rows ran the
+stream ladder, the Strata rows their one slot; context, slots, KV pool,
+completion, the pp512/tg128 reference and the retained JSON names are in
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md),
 [ollama/BENCHMARKS.md](ollama/BENCHMARKS.md) and
 [strata/BENCHMARKS.md](strata/BENCHMARKS.md).
 
 | Rank | Model | Runtime | Engine | Tier | Context | OWASP vuln score [95% CI] | Best sessions/h | Report decode 1x |
 | --: | -- | -- | -- | -- | --: | -- | --: | --: |
-| 1 | `qwen3.6-35b-a3b-awq` | vLLM | vLLM, CUDA | MoE | 262,144 | +0.50 [+0.15, +0.73] | 58.67 @8x | 111.4 |
-| 2 | `gemma4-26b-a4b-awq` | vLLM | vLLM, CUDA | MoE | 262,144 | +0.71 [+0.36, +0.89] | 45.99 @8x | 63.6 |
+| 1 | `qwen3.6-35b-a3b-awq` | vLLM | vLLM, CUDA | MoE | 262,144 | +0.50 [+0.15, +0.73] | 55.22 @4x | 111.2 |
+| 2 | `gemma4-26b-a4b-awq` | vLLM | vLLM, CUDA | MoE | 262,144 | +0.71 [+0.36, +0.89] | 41.59 @2x | 63.7 |
 | 3 | `qwen3.8-flash-next-nvfp4` | Strata | Strata | MoE | 262,144 | +0.86 [+0.52, +0.98] | 27.66 @1x | 110.2 |
-| 4 | `qwen3.8-27b` | vLLM | vLLM, CUDA | dense | 262,144 | +0.71 [+0.35, +0.90] | 21.48 @4x | 49.8 |
-| 5 | `qwen3.8-27b-512k` | vLLM | vLLM, CUDA | dense | 524,288 | +0.64 [+0.28, +0.85] | 19.55 @4x | 36.7 |
+| 4 | `qwen3.8-27b-512k` | vLLM | vLLM, CUDA | dense | 524,288 | +0.64 [+0.28, +0.85] | 20.52 @4x | 36.7 |
+| 5 | `qwen3.8-27b` | vLLM | vLLM, CUDA | dense | 262,144 | +0.71 [+0.35, +0.90] | 20.12 @4x | 50.0 |
 | 6 | `nemotron-3.5-bolt-74b-a9b-iq2` | Ollama | llama.cpp | hybrid MoE | 262,144 | +0.43 [+0.05, +0.70] | 15.53 @1x | 119.6 |
-| 7 | `qwen3.8-27b-dflash2` | vLLM | vLLM, CUDA | dense | 262,144 | +0.64 [+0.28, +0.85] | 13.04 @2x | 22.8 |
+| 7 | `qwen3.8-27b-dflash2` | vLLM | vLLM, CUDA | dense | 262,144 | +0.64 [+0.28, +0.85] | 12.63 @2x | 22.0 |
 | 8 | `flint-40b-a2b-nvfp4` | Ollama | llama.cpp | MoE | 262,144 | +0.29 [-0.08, +0.58] | 9.94 @1x | 40.7 |
 | 9 | `deepseek-v4.1-flash-coder-iq2xxs` | Strata | Strata DeepSeek | MoE | 1,048,576 | +0.86 [+0.52, +0.98] | 9.77 @1x | 50.3 |
 
-Unranked: vLLM `mimo-v2.6-9b-awq` (58.97 / 93.99 @8x) and
-`nanbeige4.3-33b-w4a16` (7.19/h) and Ollama `ornith1.5-35b-a3b` (32.21/h)
+Unranked: vLLM `mimo-v2.6-9b-awq` (57.08/h at 1x, incomplete) and
+`nanbeige4.3-33b-w4a16` (7.59/h) and Ollama `ornith1.5-35b-a3b` (32.21/h)
 fail Capability Check v3 compatibility. Strata `deepseek-v4.1-flash-q2`
 passes but has no serving rate: part of its experts run on the CPU.
-DFlash 2 loses to plain qwen3.8 at the declared sampling (8.40 / 13.04 @2x); see
+DFlash 2 loses to plain qwen3.8 at the declared sampling (8.86 / 12.63 @2x); see
 [vllm/BENCHMARKS.md](vllm/BENCHMARKS.md).
 
 ### Apple M5 Max (128 GB unified memory)
