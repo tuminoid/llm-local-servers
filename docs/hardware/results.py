@@ -30,7 +30,8 @@ PARTS = {"audit-v2": ("session", "audit_bench"),
 
 # Runtime directory: the name a reader knows it by.
 RUNTIMES = {"vllm": "vLLM", "vllm-metal": "vLLM-Metal", "splash": "Splash", "lmstudio": "LM Studio",
-            "ollama": "Ollama", "ds4": "ds4", "kapitsa": "Kapitsa", "strata": "Strata"}
+            "ollama": "Ollama", "ds4": "ds4", "kapitsa": "Kapitsa", "strata": "Strata",
+            "freetoken": "FreeToken"}
 
 # Harness runtime name -> runtime directory, where they differ.
 DIRECTORIES = {"vllm-cuda": "vllm"}

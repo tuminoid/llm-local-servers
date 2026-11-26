@@ -63,6 +63,7 @@ What this means in practice:
 | `ds4/` | ds4 (DwarfStar) native Metal server for large MoE models; interactive use | `ds4-{install,pull,start,stop,status,logs,bench,capability}` |
 | `kapitsa/` | Kapitsa native Metal server for DiffuSpace's Clover block-diffusion MoE | `kapitsa-{install,pull,start,stop,status,logs,bench,capability}` |
 | `strata/` | Strata CUDA server for Qwen3.8-Flash-Next and Inkling 2 Mini, built from source for the host's GPUs | Local lifecycle, benchmark and capability targets, plus `strata-remote-*` |
+| `freetoken/` | FreeToken CUDA MoE server with agent-session prefix caching, from its pinned release wheels | Local lifecycle, benchmark and capability targets, plus `freetoken-remote-*` |
 
 [README.md](README.md) is the front page and links one results page per hardware
 under `docs/hardware/`: the audit ranking, the interactive profiles and the
@@ -307,6 +308,10 @@ data and make no picks; a row ranks only when it passes Capability Check
 compatibility. Pages carry no
 local retention paths and no history: the record, the artifact names and
 git hold them.
+Committed files never cite a commit of this repository or of
+llm-audit-bench: a run's provenance in prose is its date and its runtime and
+harness versions, and each retained artifact records its own commit.
+Upstream source pins, such as ds4's, are pins, not citations.
 
 Reader-facing docs say hardware, what readers own; "host" is only the
 machine a launcher runs on. Use hardware labels and exact measured
@@ -356,6 +361,16 @@ the best provider as the entry-level option, because it installs cleanly on
 every platform. ds4 is the other: its profiles are interactive-only
 (see its AGENTS.md) and stay when another runtime serves the same model for
 audits.
+
+### Interactive tier for models that do not fit
+
+A model whose served quant and full-context KV do not fit entirely in the
+host's GPU memory is an interactive profile on that host: role
+`interactive`, never ranked for audits, and its goal is one stream.
+It runs admission 1 and passes Capability Check v3 at concurrency 1 like
+any other profile. Its session is measured at one stream; higher stream
+counts are recorded when they complete and never disqualify it. The
+best-provider rule judges it at one stream.
 
 ### Client configs are generated
 

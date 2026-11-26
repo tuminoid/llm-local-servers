@@ -5,12 +5,12 @@ Silicon. Current results are on the hardware pages, linked from the
 [README](../README.md#results-by-hardware). The
 qwen3.6, qwen3.8 and nemotron profiles left this runtime on 2026-10-12
 (Splash serves both Qwen models on the M5 and passes the gate, Ollama MLX
-serves nemotron faster); their records are in this file at commit
-`a7e8f3f`. `ornith1.5-35b-a3b-4bit` left on 2026-11-16 (Splash serves
+serves nemotron faster); their records are in this file's git
+history. `ornith1.5-35b-a3b-4bit` left on 2026-11-16 (Splash serves
 Ornith 1.5 35B at 30.72 sessions/h against its 9.15), and so did
 `gemma4-31b-4bit` (1.89 sessions/h; Gemma 4 stays on the M5 as Ollama's
 interactive 26B-A4B MLX profile) and `mimo-v2.6-9b-4bit` (both tool calls
-failed); their records are in this file at commit `3daa808`.
+failed); their records are in this file's git history.
 
 The AuditBench v1 sections below (operating-point, conversation and
 replay profiles) are
@@ -30,7 +30,7 @@ The conversation profile (AuditBench protocol) is the production-shaped
 workload: 32k evidence, a sequential 16-file tool chain resent in full
 every turn, findings-ledger verdict at ~164k depth. All rows run at
 their serving-default cache pins on the finalized control-free
-fixture at plugin 0.29.0 (repo commit `705c493`). Medians over
+fixture at plugin 0.29.0. Medians over
 compliant samples; cached fraction from the engine's own counters.
 
 | Profile | Cache pin | Compliant | Conversations/hour | Cached | Recall |
@@ -44,13 +44,12 @@ Findings:
 
 ## Audit replay profile: M5 Max
 
-Canonical replay runs (AuditBench protocol) at the
-serving-default cache pins (align APC on the hybrids), repo commit
-`705c493`, plugin 0.29.0, Dell brick at the 140 W contract,
-dedicated server lifecycle per model. Replays/hour is never comparable
-to conversations/hour: granite filled the forced 16,384-token verdict
-(`finish_reason: length`). The server-comparable columns are the turn
-walls and the verdict decode rate.
+Canonical replay runs (AuditBench protocol) at the serving-default cache pins
+(align APC on the hybrids), plugin 0.29.0, Dell brick at the 140 W contract,
+dedicated server lifecycle per model. Replays/hour is never comparable to
+conversations/hour: granite filled the forced 16,384-token verdict
+(`finish_reason: length`). The server-comparable columns are the turn walls and
+the verdict decode rate.
 
 | Profile | Replays/h | Turn walls (16 turns) | Cached | Verdict decode at ~164k depth |
 | -- | --: | -- | --: | -- |
@@ -67,7 +66,7 @@ plugin pin.
 
 ### granite -- AuditBench v1 canonical
 
-Plugin 0.29.0, repo commit `705c493`, serving-default cache pins,
+Plugin 0.29.0, serving-default cache pins,
 `max-num-seqs` 5, Dell brick at the 140 W contract, dedicated server
 lifecycle per model (2026-09-21/22). Medians; the audit columns name
 the best stream count.

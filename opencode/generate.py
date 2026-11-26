@@ -28,6 +28,7 @@ RUNTIMES = {
     "ds4": ("DS4_SERVED_NAME", "DS4_CTX", "DS4", "reasoning_content"),
     "kapitsa": ("KAPITSA_SERVED_NAME", "KAPITSA_CTX", "KAPITSA", "reasoning_content"),
     "strata": ("STRATA_SERVED_NAME", "STRATA_CTX", "STRATA", "reasoning_content"),
+    "freetoken": ("FREETOKEN_SERVED_NAME", "FREETOKEN_CTX", "FREETOKEN", "reasoning_content"),
 }
 
 # Provider: runtime, display name, base URL on the launcher's default port,
@@ -51,6 +52,9 @@ PROVIDERS = {
     "strata": ("strata", "Strata", "http://127.0.0.1:8025/v1", None),
     "strata-remote": ("strata", "Strata remote (make strata-remote-tunnel)",
                       "http://127.0.0.1:8026/v1", None),
+    "freetoken": ("freetoken", "FreeToken", "http://127.0.0.1:8027/v1", None),
+    "freetoken-remote": ("freetoken", "FreeToken remote (make freetoken-remote-tunnel)",
+                         "http://127.0.0.1:8028/v1", None),
 }
 FORMATS = {"gguf", "safetensors"}
 

@@ -1,12 +1,12 @@
 # llm-local-servers
 
-Measured, Makefile-driven local LLM serving. Eight managed runtimes -- vLLM
-(CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio, ds4, Kapitsa and
-Strata (CUDA) -- with one portable config per model, host-adaptive launchers,
-isolated remote-host operation, and benchmark and capability results per
-hardware ([Results by hardware](#results-by-hardware)). The workload everything
-is tuned for is deep-context security-audit calls; [AGENTS.md](AGENTS.md) states
-the mission and the invariants.
+Measured, Makefile-driven local LLM serving. Nine managed runtimes -- vLLM
+(CUDA), Ollama, vLLM-Metal, Splash (Apple Silicon), LM Studio, ds4, Kapitsa,
+Strata and FreeToken (CUDA) -- with one portable config per model,
+host-adaptive launchers, isolated remote-host operation, and benchmark and
+capability results per hardware ([Results by hardware](#results-by-hardware)).
+The workload everything is tuned for is deep-context security-audit calls;
+[AGENTS.md](AGENTS.md) states the mission and the invariants.
 
 Each hardware keeps the best provider per model: one runtime, chosen by
 Capability Check v3 and then the AuditBench session rate. LM Studio is kept
@@ -43,8 +43,9 @@ the concepts these documents assume.
    [splash/README.md](splash/README.md),
    [lmstudio/README.md](lmstudio/README.md),
    [ds4/README.md](ds4/README.md),
-   [kapitsa/README.md](kapitsa/README.md), and
-   [strata/README.md](strata/README.md).
+   [kapitsa/README.md](kapitsa/README.md),
+   [strata/README.md](strata/README.md), and
+   [freetoken/README.md](freetoken/README.md).
 
 Development needs `shellcheck`, `markdownlint-cli2`, and Python 3.10 or
 newer for `make lint` and `make test`. CI installs the linters at the
@@ -65,10 +66,11 @@ prints the full list. The lifecycle verbs are uniform across runtimes:
 | `make <runtime>-capability MODEL=<name>` | Run Capability Check v3 |
 
 where `<runtime>` is `vllm`, `ollama`, `vllm-metal`, `splash`, `lmstudio`,
-`ds4`, `kapitsa` or `strata` (plus `ollama-install`, `vllm-metal-install`,
+`ds4`, `kapitsa`, `strata` or `freetoken` (plus `ollama-install`, `vllm-metal-install`,
 `vllm-metal-pull`, `splash-install`, `splash-pull`, `lmstudio-install`,
 `lmstudio-pull`, `ds4-install`, `ds4-pull`, `kapitsa-install`,
-`kapitsa-pull`, `strata-install`, and `strata-pull` for runtime and model
+`kapitsa-pull`, `strata-install`, `strata-pull`, `freetoken-install`, and
+`freetoken-pull` for runtime and model
 installation).
 `MODEL` names a config file in that runtime's `models/` directory, never a
 served model ID or registry tag; there is deliberately no default model.

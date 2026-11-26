@@ -1,5 +1,183 @@
 {
   "profiles": {
+    "freetoken/glm5.3-flash-q2kxl": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261127T104314.518530+0000_freetoken_glm5-3-flash-q2kxl.json",
+        "audit_aptitude": {
+          "interval": [
+            0.4368235713614062,
+            0.9381764286385939
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.7857142857142856
+        },
+        "clean_rate": 0.9444444444444444,
+        "clean_samples": 34,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "refused",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "untested",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "glm5.3-flash-q2kxl",
+        "model_identity": "a38483c8cd5df544f53d70fb281afe97369d5ab6",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "freetoken",
+        "samples": 36,
+        "schema_enforcement": "unsupported",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "glm5.3-flash-q2kxl",
+        "unaided_document": "valid"
+      },
+      "engine": "FreeToken",
+      "note": null,
+      "role": "interactive",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261127T104905.324636+0000_freetoken_glm5-3-flash-q2kxl_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262400,
+        "model": "glm5.3-flash-q2kxl",
+        "model_identity": "a38483c8cd5df544f53d70fb281afe97369d5ab6",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 125.41082678961776,
+          "tg128": 40.14709409840862
+        },
+        "runtime": "freetoken",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 6814.0,
+            "prefill_tokens_per_second": null,
+            "report_decode_tokens_per_second": 38.10473946779713,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 8.834932977648961
+          }
+        },
+        "tag": "glm5.3-flash-q2kxl"
+      },
+      "tier": "MoE"
+    },
+    "freetoken/ornith1.5-35b-a3b": {
+      "campaign": true,
+      "capability": {
+        "artifact": "20261127T021855.172418+0000_freetoken_ornith1-5-35b-a3b.json",
+        "audit_aptitude": {
+          "interval": [
+            0.08125531919709594,
+            0.6687446808029041
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.4285714285714286
+        },
+        "clean_rate": 0.9166666666666666,
+        "clean_samples": 33,
+        "failed_checks": [],
+        "features": {
+          "json_schema": "refused",
+          "streaming_tool_call": "supported",
+          "structured_json": "supported",
+          "thinking_disabled": "supported",
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
+        },
+        "fitness_clean": 8,
+        "fitness_samples": 8,
+        "halted": false,
+        "identity_check": "passed",
+        "model": "ornith1.5-35b-a3b",
+        "model_identity": "12393612fd4f730ff5aadc23e9b8f9648aa49ceb",
+        "protocol": "capability-v3",
+        "reasoning": "passed",
+        "runtime": "freetoken",
+        "samples": 36,
+        "schema_enforcement": "unsupported",
+        "schema_version": 8,
+        "status": "passed",
+        "tag": "ornith1.5-35b-a3b",
+        "unaided_document": "valid"
+      },
+      "engine": "FreeToken",
+      "note": null,
+      "role": "audit",
+      "session": {
+        "active_slots": 8,
+        "artifact": "20261127T022039.640235+0000_freetoken_ornith1-5-35b-a3b_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 2526012,
+        "model": "ornith1.5-35b-a3b",
+        "model_identity": "12393612fd4f730ff5aadc23e9b8f9648aa49ceb",
+        "optimal_streams": 8,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 5201.020482959145,
+          "tg128": 161.45444007309612
+        },
+        "runtime": "freetoken",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 4399.5,
+            "prefill_tokens_per_second": null,
+            "report_decode_tokens_per_second": 121.4267788858223,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 49.938585086148585
+          },
+          "2": {
+            "output_tokens_per_session": 3703.0,
+            "prefill_tokens_per_second": null,
+            "report_decode_tokens_per_second": 87.65171878638712,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 69.05072682657116
+          },
+          "4": {
+            "output_tokens_per_session": 4213.0,
+            "prefill_tokens_per_second": 1898.44817449225,
+            "report_decode_tokens_per_second": 49.74804769872143,
+            "sessions": 12,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 79.10484499651196
+          },
+          "8": {
+            "output_tokens_per_session": 4356.0,
+            "prefill_tokens_per_second": 1753.762073035884,
+            "report_decode_tokens_per_second": 35.261062866151114,
+            "sessions": 24,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 87.66898138346333
+          }
+        },
+        "tag": "ornith1.5-35b-a3b"
+      },
+      "tier": "MoE"
+    },
     "ollama/flint-40b-a2b-nvfp4": {
       "campaign": true,
       "capability": {
@@ -155,75 +333,6 @@
         "tag": "nemotron-3.5-bolt-74b-a9b-iq2"
       },
       "tier": "hybrid MoE"
-    },
-    "ollama/ornith1.5-35b-a3b": {
-      "campaign": true,
-      "capability": {
-        "artifact": "20261119T175309.862604+0000_ollama_ornith1-5-35b-a3b.json",
-        "audit_aptitude": {
-          "scored": false
-        },
-        "clean_rate": 0.8260869565217391,
-        "clean_samples": 19,
-        "failed_checks": [
-          "clean_rate"
-        ],
-        "features": {
-          "json_schema": "supported",
-          "streaming_tool_call": "supported",
-          "structured_json": "supported",
-          "thinking_disabled": "supported",
-          "tool_call": "supported",
-          "tool_round_trip": "supported"
-        },
-        "fitness_clean": 8,
-        "fitness_samples": 8,
-        "halted": false,
-        "identity_check": "passed",
-        "model": "ornith-1.5:35b",
-        "model_identity": "9f3b89b2521908dd2e6f7a11fa368e62c8f89e1075f22604e4d1a76dd1240fcc",
-        "protocol": "capability-v3",
-        "reasoning": "passed",
-        "runtime": "ollama",
-        "samples": 23,
-        "schema_enforcement": "enforced",
-        "schema_version": 8,
-        "status": "failed",
-        "tag": "ornith1.5-35b-a3b",
-        "unaided_document": "valid"
-      },
-      "engine": "llama.cpp",
-      "note": null,
-      "role": "audit",
-      "session": {
-        "active_slots": 1,
-        "artifact": "20261115T194107.762686+0000_ollama_ornith1-5-35b-a3b_session.json",
-        "canonical": true,
-        "configured_context": 262144,
-        "kv_pool_tokens": 262144,
-        "model": "ornith-1.5:35b",
-        "model_identity": "9f3b89b2521908dd2e6f7a11fa368e62c8f89e1075f22604e4d1a76dd1240fcc",
-        "optimal_streams": 1,
-        "optimal_streams_source": "stored",
-        "protocol": "audit-v2",
-        "publication_reasons": [],
-        "publishable": true,
-        "reference": null,
-        "runtime": "ollama",
-        "schema_version": 9,
-        "streams": {
-          "1": {
-            "output_tokens_per_session": 3967.5,
-            "prefill_tokens_per_second": 3051.3901490963904,
-            "report_decode_tokens_per_second": 59.9489661402571,
-            "sessions": 2,
-            "sessions_incomplete": 0,
-            "sessions_per_hour": 32.20724643961424
-          }
-        },
-        "tag": "ornith1.5-35b-a3b"
-      },
-      "tier": "MoE"
     },
     "strata/inkling-2-mini": {
       "campaign": true,

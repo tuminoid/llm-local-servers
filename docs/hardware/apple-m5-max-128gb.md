@@ -16,17 +16,14 @@ table by hand.
 Canonical [AuditBench v3](https://github.com/tuminoid/llm-audit-bench)
 `session` profile at each conf's declared sampling: tool steps from 32k
 evidence, 16 at 262,144 and above and 9 at 131,072, report at depth. The
-Splash rows ran 2026-11-26 on Splash 1.7.3 and llm-audit-bench 3.0.0 from
-the clean trial commit `7f87c58`, except Ornith 1.5 122B's (2026-10-31, Splash
-1.5.0, from `27411b0`). The LM Studio, vLLM-Metal and ds4 rows ran
-2026-11-24/25 on llm-audit-bench 3.0.0 from `8ab4e09`, the LM Studio
-Splash-engine rows from `5a7c007`. The Ollama and Kapitsa rows ran
-2026-11-15/16 from the clean trial commit `54822f2` on llm-audit-bench
-2.5.0, whose session code 3.0.0 ships unchanged. Runtimes: LM Studio
-0.4.25+1 (Splash engine 1.3.0, mlx-llm 1.14.0), vLLM-Metal 0.31.0, Ollama
-0.40.16, ds4 `0aaea5a` and Kapitsa 0.2.36. The ds4 `glm5.3-flash-q2` row
-ran 2026-11-26 on ds4 `0aaea5a` with `ds4/glm-tool-args.patch` from the
-clean trial commit `300117d`. The harness climbs 1, 2, 4, 8
+Splash rows ran 2026-11-26 on Splash 1.7.3 and llm-audit-bench 3.0.0,
+except Ornith 1.5 122B's (2026-10-31, Splash 1.5.0). The LM Studio,
+vLLM-Metal and ds4 rows ran 2026-11-24/25 on llm-audit-bench 3.0.0. The
+Ollama and Kapitsa rows ran 2026-11-15/16 on llm-audit-bench 2.5.0, whose
+session code 3.0.0 ships unchanged. Runtimes: LM Studio 0.4.25+1 (Splash
+engine 1.3.0, mlx-llm 1.14.0), vLLM-Metal 0.31.0, Ollama 0.40.16, ds4
+`0aaea5a` and Kapitsa 0.2.36. The ds4 `glm5.3-flash-q2` row ran 2026-11-26
+with `ds4/glm-tool-args.patch`. The harness climbs 1, 2, 4, 8
 streams within admission and the KV pool while each rung completes every
 session and gains 10%.
 
@@ -129,12 +126,10 @@ measurements are in [ds4/BENCHMARKS.md](../../ds4/BENCHMARKS.md).
 
 ## Capability Check
 
-Capability Check v3 (llm-audit-bench 3.0.0, `365510b`), run 2026-11-19/22
-from fleet commit `a21fd8a` on the runtimes above, the LM Studio
-Splash-engine rows re-checked on engine 1.3.0 on 2026-11-25 from `5a7c007`,
-the Splash rows on Splash 1.7.3 on 2026-11-25/26 from trial commit
-`7f87c58`, ds4 `glm5.3-flash-q2` on 2026-11-26 with the GLM tool-argument
-patch from `300117d`.
+Capability Check v3 (llm-audit-bench 3.0.0), run 2026-11-19/22 on the
+runtimes above, the LM Studio Splash-engine rows re-checked on engine 1.3.0
+on 2026-11-25, the Splash rows on Splash 1.7.3 on 2026-11-25/26, ds4
+`glm5.3-flash-q2` on 2026-11-26 with the GLM tool-argument patch.
 The protocol and the column mapping are in llm-audit-bench
 `docs/CAPABILITY.md`, the campaign runbook in
 [CAPABILITIES.md](../../CAPABILITIES.md). Campaign marks the profiles this

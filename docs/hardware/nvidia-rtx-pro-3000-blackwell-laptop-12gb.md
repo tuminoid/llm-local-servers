@@ -15,7 +15,7 @@ a table by hand.
 
 Canonical [AuditBench v3](https://github.com/tuminoid/llm-audit-bench)
 `session` profile on Ollama 0.40.6, Flash Attention, one slot
-(llm-audit-bench 3.0.0), run 2026-11-24 from fleet commit `8ab4e09` at each
+(llm-audit-bench 3.0.0), run 2026-11-24 at each
 conf's declared sampling: 16 tool steps at 262,144 configured context, 13 at
 163,840 and 9 at 131,072. A later Ollama pin is not measured here. The
 laptop also ran four virtual machines and was on its balanced power profile,
@@ -75,8 +75,8 @@ intervals span about +-0.3, so rows stay ranked by rate.
 
 ## Capability Check
 
-Capability Check v3 (llm-audit-bench 3.0.0, `365510b`), run 2026-11-21 from
-fleet commit `a21fd8a` on Ollama 0.40.6. The protocol and the column mapping are
+Capability Check v3 (llm-audit-bench 3.0.0), run 2026-11-21 on Ollama
+0.40.6. The protocol and the column mapping are
 in llm-audit-bench `docs/CAPABILITY.md`, the campaign runbook in
 [CAPABILITIES.md](../../CAPABILITIES.md). Campaign marks the profiles this
 hardware's campaigns run. Model identity shows the first 12 characters of the

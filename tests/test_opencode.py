@@ -27,6 +27,8 @@ PORTS = {
     "kapitsa": ("kapitsa/runtime.py", 'os.environ.get("KAPITSA_PORT", "8024")'),
     "strata": ("strata/runtime.py", 'os.environ.get("STRATA_PORT", "8025")'),
     "strata-remote": ("Makefile", "STRATA_TUNNEL_PORT ?= 8026"),
+    "freetoken": ("freetoken/runtime.py", 'os.environ.get("FREETOKEN_PORT", "8027")'),
+    "freetoken-remote": ("Makefile", "FREETOKEN_TUNNEL_PORT ?= 8028"),
 }
 
 ENTRY = {"name": "Qwen3.8 27B", "tool_call": True,

@@ -28,6 +28,11 @@
 .PHONY: strata-remote-check strata-remote-deploy strata-remote-harness strata-remote-bootstrap
 .PHONY: strata-remote-pull strata-remote-start strata-remote-stop strata-remote-status
 .PHONY: strata-remote-logs strata-remote-bench strata-remote-capability strata-remote-tunnel
+.PHONY: freetoken-model-check freetoken-install freetoken-pull freetoken-start freetoken-stop
+.PHONY: freetoken-status freetoken-logs freetoken-bench freetoken-capability
+.PHONY: freetoken-remote-check freetoken-remote-deploy freetoken-remote-harness freetoken-remote-bootstrap
+.PHONY: freetoken-remote-pull freetoken-remote-start freetoken-remote-stop freetoken-remote-status
+.PHONY: freetoken-remote-logs freetoken-remote-bench freetoken-remote-capability freetoken-remote-tunnel
 
 # Every target here is phony, so GNU Make's built-in rules can only do harm.
 # Left on, a mistyped target matches the built-in `%: %.sh` rule and silently
@@ -160,6 +165,19 @@ STRATA_REMOTE_DIR ?= tmp/strata
 STRATA_REMOTE_PORT ?= 8025
 STRATA_TUNNEL_PORT ?= 8026
 
+FREETOKEN_DIR := freetoken
+# FreeToken's release wheels (Linux x86_64, CUDA 13): the engine for Python
+# 3.12 and the prebuilt kernel cache, each pinned by its release digest.
+FREETOKEN_VERSION ?= 0.2.3
+FREETOKEN_WHEEL_SHA256 ?= 283e42d23c8a7b845039cca14a02af9097b612198d49f0e0fa5d741332327f46
+FREETOKEN_KERNEL_CACHE_SHA256 ?= 5f62a419096098d2a2db35cf7523dfec2cb46af48ebd9432f7109e6ed55e4dfe
+FREETOKEN_NINJA_VERSION ?= 1.13.2
+export FREETOKEN_VERSION FREETOKEN_WHEEL_SHA256 FREETOKEN_KERNEL_CACHE_SHA256 FREETOKEN_NINJA_VERSION
+FREETOKEN_MODEL_CONF ?= $(FREETOKEN_DIR)/models/$(MODEL).conf
+FREETOKEN_REMOTE_DIR ?= tmp/freetoken
+FREETOKEN_REMOTE_PORT ?= 8027
+FREETOKEN_TUNNEL_PORT ?= 8028
+
 LMSTUDIO_DIR := lmstudio
 # The operator installs and updates the desktop app and its engines, so the pins
 # name the release measured here: bench and capability refuse any other, while
@@ -265,6 +283,9 @@ help:
 	@echo "    strata      Strata on Linux NVIDIA, port 8025; install builds the engine for this host's GPUs"
 	@$(call print_models,$(STRATA_DIR))
 	@echo ""
+	@echo "    freetoken   FreeToken on Linux NVIDIA (CUDA 13), port 8027"
+	@$(call print_models,$(FREETOKEN_DIR))
+	@echo ""
 	@echo "    lmstudio    LM Studio, port 1234; install checks the user-installed app and engines"
 	@$(call print_models,$(LMSTUDIO_DIR))
 	@echo ""
@@ -272,12 +293,13 @@ help:
 	@echo "    vllm-remote    vllm verbs, bootstrap for install, plus tunnel (localhost:$(VLLM_TUNNEL_PORT))"
 	@echo "    ollama-remote  ollama verbs, bootstrap for install, plus tunnel (localhost:$(OLLAMA_TUNNEL_PORT) to $(OLLAMA_REMOTE_PORT)); start needs an idle GPU"
 	@echo "    strata-remote  strata verbs, bootstrap for install, plus tunnel (localhost:$(STRATA_TUNNEL_PORT) to $(STRATA_REMOTE_PORT)); start needs an idle GPU"
+	@echo "    freetoken-remote  freetoken verbs, bootstrap for install, plus tunnel (localhost:$(FREETOKEN_TUNNEL_PORT) to $(FREETOKEN_REMOTE_PORT)); start needs an idle GPU"
 	@echo ""
 
 # Every local runtime's server and model lines, one after another; a failing
 # one does not hide the rest, but fails the target.
 status:
-	@rc=0; for r in vllm vllm-metal splash lmstudio ollama ds4 kapitsa strata; do \
+	@rc=0; for r in vllm vllm-metal splash lmstudio ollama ds4 kapitsa strata freetoken; do \
 		echo "== $$r"; out="$$($(MAKE) --no-print-directory $$r-status)" || rc=1; \
 		printf '%s\n' "$$out" | grep -E '^(server|model): '; \
 	done; exit $$rc
@@ -881,6 +903,130 @@ strata-remote-tunnel: strata-remote-check
 	@echo "forwarding localhost:$(STRATA_TUNNEL_PORT) -> $(HOST):$(STRATA_REMOTE_PORT) (Ctrl-C to stop)"
 	@ssh -N -T -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
 		-L 127.0.0.1:$(STRATA_TUNNEL_PORT):127.0.0.1:$(STRATA_REMOTE_PORT) \
+		$(HOST)
+
+# --- FreeToken (Linux x86_64, NVIDIA, CUDA 13) ---
+
+freetoken-model-check:
+	@test -n "$(MODEL)" -a -f "$(FREETOKEN_MODEL_CONF)" || { \
+		echo "error: set MODEL to a FreeToken config name:" >&2; \
+		echo "  $(patsubst $(FREETOKEN_DIR)/models/%.conf,%,$(wildcard $(FREETOKEN_DIR)/models/*.conf))" >&2; \
+		exit 1; }
+
+freetoken-install:
+	@$(call require,python3 nvidia-smi)
+	@./$(FREETOKEN_DIR)/install.sh
+
+freetoken-pull: freetoken-model-check
+	@$(call require,python3)
+	@FREETOKEN_MODEL_CONF="$(FREETOKEN_MODEL_CONF)" ./$(FREETOKEN_DIR)/pull.sh $(MODEL)
+
+freetoken-start: freetoken-model-check
+	@$(call require,python3 nvidia-smi)
+	@FREETOKEN_MODEL_CONF="$(FREETOKEN_MODEL_CONF)" ./$(FREETOKEN_DIR)/run.sh $(MODEL)
+
+freetoken-stop:
+	@$(call require,python3 nvidia-smi)
+	@./$(FREETOKEN_DIR)/stop.sh
+
+freetoken-status:
+	@$(call require,python3)
+	@./$(FREETOKEN_DIR)/status.sh
+
+freetoken-logs:
+	@tail -f "$${FREETOKEN_STATE_DIR:-$${XDG_STATE_HOME:-$${HOME}/.local/state}/freetoken}/server.log"
+
+freetoken-bench: freetoken-model-check audit-bench-check
+	@$(call require,python3)
+	@FREETOKEN_MODEL_CONF="$(FREETOKEN_MODEL_CONF)" $(AUDIT_BENCH_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source freetoken/lib.sh; exec python3 freetoken/bench.py "$$1"' bash $(MODEL)
+
+freetoken-capability: freetoken-model-check audit-bench-check
+	@$(call require,python3)
+	@FREETOKEN_MODEL_CONF="$(FREETOKEN_MODEL_CONF)" $(CAPABILITY_ENV) PYTHONPATH="$(AUDIT_BENCH_SRC)" \
+		bash -c 'source freetoken/lib.sh; exec python3 freetoken/capability.py "$$1"' bash $(MODEL)
+
+# --- Isolated remote FreeToken ---
+#
+# The remote tree owns the venv, the wheels, the model files and the state,
+# and serves on its own port; deploy excludes data/ and state/ so rsync
+# --delete never touches them. The fixed values cannot be overridden from the
+# caller's environment; FREETOKEN_ENV forwards only the caller's model
+# overrides. start/pull/bench/capability deploy; stop/status/logs/tunnel never
+# do, as for the other remote runtimes.
+override FREETOKEN_REMOTE_FIXED_ENV = \
+	FREETOKEN_DATA_DIR=$$HOME/$(FREETOKEN_REMOTE_DIR)/data \
+	FREETOKEN_STATE_DIR=$$HOME/$(FREETOKEN_REMOTE_DIR)/state \
+	FREETOKEN_PORT=$(FREETOKEN_REMOTE_PORT) \
+	FREETOKEN_VERSION=$(FREETOKEN_VERSION) FREETOKEN_WHEEL_SHA256=$(FREETOKEN_WHEEL_SHA256) \
+	FREETOKEN_KERNEL_CACHE_SHA256=$(FREETOKEN_KERNEL_CACHE_SHA256) \
+	FREETOKEN_NINJA_VERSION=$(FREETOKEN_NINJA_VERSION)
+override FREETOKEN_RESERVED := FREETOKEN_DIR FREETOKEN_VERSION FREETOKEN_WHEEL_SHA256 \
+	FREETOKEN_KERNEL_CACHE_SHA256 FREETOKEN_NINJA_VERSION FREETOKEN_MODEL_CONF \
+	FREETOKEN_REMOTE_% FREETOKEN_TUNNEL_PORT FREETOKEN_RESERVED FREETOKEN_ENV \
+	FREETOKEN_DATA_DIR FREETOKEN_STATE_DIR FREETOKEN_PORT
+override FREETOKEN_ENV = $(strip $(foreach v, \
+	$(filter-out $(FREETOKEN_RESERVED),$(filter FREETOKEN_%,$(.VARIABLES))), \
+	$(if $(filter environment% command line,$(origin $(v))),$(v)='\''$($(v))'\'')))
+
+freetoken-remote-check:
+	@test -n "$(HOST)" || { \
+		echo "error: set HOST=<ssh-host> (see .envrc.example)" >&2; \
+		exit 1; }
+	@$(call require,ssh)
+	@test "$(FREETOKEN_TUNNEL_PORT)" != "$(FREETOKEN_REMOTE_PORT)" || { \
+		echo "error: use distinct local and remote FreeToken ports" >&2; \
+		exit 1; }
+
+freetoken-remote-deploy: freetoken-remote-check
+	@$(call require,rsync)
+	@rsync -a --delete --exclude data --exclude state --exclude __pycache__ \
+		./$(FREETOKEN_DIR)/ $(HOST):$(FREETOKEN_REMOTE_DIR)/
+	@ssh $(HOST) 'chmod +x $(FREETOKEN_REMOTE_DIR)/*.sh $(FREETOKEN_REMOTE_DIR)/*.py'
+	@echo "deployed to $(HOST):$(FREETOKEN_REMOTE_DIR)"
+
+# bench and capability only, as ollama-remote-harness.
+freetoken-remote-harness: freetoken-remote-check audit-bench-check
+	@rsync -a "$(AUDIT_BENCH_SRC)/audit_bench.py" "$(AUDIT_BENCH_SRC)/capability_check.py" \
+		$(HOST):$(FREETOKEN_REMOTE_DIR)/
+
+# Install refuses a live managed server itself (runtime.py require_stopped).
+freetoken-remote-bootstrap: freetoken-remote-check freetoken-remote-deploy
+	@ssh $(HOST) '$(call require,python3 nvidia-smi) $(FREETOKEN_REMOTE_FIXED_ENV) \
+		$(FREETOKEN_REMOTE_DIR)/install.sh'
+
+freetoken-remote-pull: freetoken-remote-check freetoken-model-check freetoken-remote-deploy
+	@ssh $(HOST) '$(call require,python3) $(FREETOKEN_ENV) $(FREETOKEN_REMOTE_FIXED_ENV) \
+		$(FREETOKEN_REMOTE_DIR)/pull.sh $(MODEL)'
+
+freetoken-remote-start: freetoken-remote-check freetoken-model-check freetoken-remote-deploy
+	@ssh $(HOST) '$(call require,python3 nvidia-smi) $(FREETOKEN_ENV) $(FREETOKEN_REMOTE_FIXED_ENV) \
+		$(FREETOKEN_REMOTE_DIR)/run.sh $(MODEL)'
+
+freetoken-remote-stop: freetoken-remote-check
+	@ssh $(HOST) '$(FREETOKEN_REMOTE_FIXED_ENV) $(FREETOKEN_REMOTE_DIR)/stop.sh'
+
+freetoken-remote-status: freetoken-remote-check
+	@ssh $(HOST) '$(FREETOKEN_REMOTE_FIXED_ENV) $(FREETOKEN_REMOTE_DIR)/status.sh'
+
+freetoken-remote-logs: freetoken-remote-check
+	@ssh $(HOST) 'tail -f $(FREETOKEN_REMOTE_DIR)/state/server.log'
+
+freetoken-remote-bench: freetoken-remote-check freetoken-model-check freetoken-remote-deploy \
+	freetoken-remote-harness
+	@ssh $(HOST) '$(call require,python3) $(FREETOKEN_ENV) $(AUDIT_BENCH_ENV) $(FREETOKEN_REMOTE_FIXED_ENV) \
+		python3 $(FREETOKEN_REMOTE_DIR)/bench.py $(MODEL)'
+
+freetoken-remote-capability: freetoken-remote-check freetoken-model-check freetoken-remote-deploy \
+	freetoken-remote-harness
+	@ssh $(HOST) '$(call require,python3) $(FREETOKEN_ENV) $(CAPABILITY_ENV) $(FREETOKEN_REMOTE_FIXED_ENV) \
+		python3 $(FREETOKEN_REMOTE_DIR)/capability.py $(MODEL)'
+
+# Both ends bind loopback; the server has no authentication.
+freetoken-remote-tunnel: freetoken-remote-check
+	@echo "forwarding localhost:$(FREETOKEN_TUNNEL_PORT) -> $(HOST):$(FREETOKEN_REMOTE_PORT) (Ctrl-C to stop)"
+	@ssh -N -T -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+		-L 127.0.0.1:$(FREETOKEN_TUNNEL_PORT):127.0.0.1:$(FREETOKEN_REMOTE_PORT) \
 		$(HOST)
 
 # --- ds4 (DwarfStar, Apple Silicon) ---

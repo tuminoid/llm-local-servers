@@ -126,7 +126,6 @@ results are on the
 
 | Ollama config | Ollama model | Context | Slots |
 | -- | -- | --: | --: |
-| `ornith1.5-35b-a3b` | `ornith-1.5:35b` | 262,144 | 1 |
 | `nemotron-3.5-bolt-74b-a9b-iq2` | `nemotron-3.5-bolt:74b-a9b-iq2` | 262,144 | 1 |
 
 ### Remote workflow
@@ -141,9 +140,9 @@ Only after the host is confirmed idle, the isolated lifecycle is:
 
 ```bash
 make ollama-remote-bootstrap HOST=<ssh-host>
-make ollama-remote-start MODEL=ornith1.5-35b-a3b HOST=<ssh-host>
-make ollama-remote-pull MODEL=ornith1.5-35b-a3b HOST=<ssh-host>
-make ollama-remote-bench MODEL=ornith1.5-35b-a3b HOST=<ssh-host>
+make ollama-remote-start MODEL=nemotron-3.5-bolt-74b-a9b-iq2 HOST=<ssh-host>
+make ollama-remote-pull MODEL=nemotron-3.5-bolt-74b-a9b-iq2 HOST=<ssh-host>
+make ollama-remote-bench MODEL=nemotron-3.5-bolt-74b-a9b-iq2 HOST=<ssh-host>
 make ollama-remote-stop HOST=<ssh-host>
 ```
 

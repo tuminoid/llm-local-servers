@@ -183,7 +183,7 @@ Findings:
 The replay profile (AuditBench protocol) scripts every
 turn of the same audit-shaped conversation, so the server is measured
 with zero dependence on the model holding the tool-loop protocol.
-Harness commit `03b9b2c`, vLLM 0.27.1, serving-default cache pins unless
+vLLM 0.27.1, serving-default cache pins unless
 stated. Replays/hour is not comparable to conversations/hour: probe
 turns decode almost nothing and the verdict decode is forced toward the
 full 16,384-token cap.
