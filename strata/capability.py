@@ -10,10 +10,11 @@ from capability_check import (
 import bench
 
 
-def control(mode):
+def control(mode, disable=False):
     # Strata reads chat_template_kwargs (enable_thinking, reasoning_effort).
+    # A model with no off switch declares the disable control none.
     options, prefix = openai_control(mode)
-    if prefix or options is None:
+    if prefix or (options is None and not disable):
         raise ValueError(f"unsupported Strata thinking control: {mode}")
     return options
 
@@ -31,7 +32,7 @@ def main():
             config=CapabilityConfig(
                 reasoning=values["STRATA_CAP_REASONING"], tools=values["STRATA_CAP_TOOLS"],
                 reasoning_options=control(values["STRATA_CAP_REASONING_MODE"]),
-                disable_options=control(values["STRATA_CAP_DISABLE_MODE"]),
+                disable_options=control(values["STRATA_CAP_DISABLE_MODE"], disable=True),
                 system_prompt=values["STRATA_CAP_SYSTEM_PROMPT"] or None,
                 sampling=parse_sampling(values["STRATA_SAMPLING"]),
                 concurrency=bench.capacity(owner, health)[0],

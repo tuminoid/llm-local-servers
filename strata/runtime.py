@@ -30,9 +30,12 @@ STATE = Path(os.environ.get("STRATA_STATE_DIR", Path(os.environ.get(
 VERSION = os.environ.get("STRATA_VERSION", "")
 COMMIT = os.environ.get("STRATA_COMMIT", "")
 SOURCE = DATA / "source" / COMMIT
-# Flash Next runs on the main engine; DeepSeek V4.1 (GGUF architecture
-# deepseek41) on the port of Project Maya's engine, a build of its own.
-ENGINES = {"qwen": SOURCE / "build" / "strata", "deepseek41": SOURCE / "build-dsv41" / "strata-dsv41"}
+# Flash Next runs on the main engine; Inkling 2 Mini (GGUF architecture
+# inkling2_loop) on its own shape engine, a build of its own.
+ENGINES = {"qwen": SOURCE / "build" / "strata", "inkling": SOURCE / "build-inkling2" / "strata-inkling"}
+# 0.2.16 moved the server, its tools and data under terminal/, the engine's
+# CMake project under engine/.
+TERMINAL = SOURCE / "terminal"
 PYTHON = SOURCE / ".venv" / "bin" / "python"
 RECEIPT = SOURCE / "llm-local-servers.json"
 MODELS = DATA / "models"
@@ -40,15 +43,11 @@ PIDFILE = STATE / "server.json"
 LOG = STATE / "server.log"
 ENGINE_LOG = STATE / "engine.log"
 RUN_CONFIG = STATE / "run.json"
-# Strata's server has the DeepSeek engine keep set-aside conversations in a
-# folder beside the engine log and restore them on later starts: run state.
-SLOTS = STATE / "ds4-slots"
 REPOSITORY = "https://github.com/Niko1221/Strata"
-LLAMA_REPOSITORY = "https://github.com/ggml-org/llama.cpp"
 HF_HUB = "huggingface_hub[hf_xet]==" + os.environ.get("HF_HUB_VERSION", "1.33.0")
 CONFIG_KEYS = tuple("STRATA_" + name for name in (
     "FAMILY", "SERVED_NAME", "MODEL_REPO", "MODEL_REVISION", "PACK", "DENSE_GGUF", "PLE_GGUF", "EMBD_GGUF",
-    "SHARDS", "ENGRAM", "ENGRAM_META", "DRAFTER", "EXPERT_PROFILE",
+    "GGUF", "DRAFTER",
     "CTX", "PARALLEL", "ENGINE_ARGS", "CAP_REASONING", "CAP_TOOLS", "CAP_REASONING_MODE",
     "CAP_DISABLE_MODE", "CAP_SYSTEM_PROMPT", "SAMPLING",
 ))
@@ -56,7 +55,7 @@ CONFIG_KEYS = tuple("STRATA_" + name for name in (
 # context, slots, and the host-derived memory placement.
 ENGINE_FLAGS = {"qwen": {"--spec": r"[0-9]+", "--spec-min-p": r"[0-9.]+", "--kv": r"int8|k8v4|q4_0",
                          "--expert-cache": r"auto", "--prefill": r"auto|[0-9]+"},
-                "deepseek41": {"--dspark": r"auto|none", "--dspark-conf": r"[0-9.]+"}}
+                "inkling": {"--kv": r"fp16|fp8|k8v8|k8v4"}}
 NAME = r"[a-zA-Z0-9_][a-zA-Z0-9_.-]*"
 # A file of another repository: owner/name@commit:path.
 REFERENCE = re.compile(rf"([a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+)@([0-9a-f]{{40}}):({NAME}(?:/{NAME})*)")
@@ -108,14 +107,9 @@ def config(tag):
             if not re.fullmatch(NAME, values[key]):
                 raise ValueError(f"{key} must be a file or folder name in the repository's top level")
     else:
-        shards = values["STRATA_SHARDS"].split()
-        if not shards or not all(re.fullmatch(rf"(?:{NAME}/)?{NAME}", shard) for shard in shards) \
-                or len({str(Path(shard).parent) for shard in shards}) != 1:
-            raise ValueError("STRATA_SHARDS must name the set's files, all in one folder of the repository")
-        for key in ("STRATA_ENGRAM", "STRATA_ENGRAM_META", "STRATA_DRAFTER"):
-            reference(values[key], key)
-        if not re.fullmatch(NAME, values["STRATA_EXPERT_PROFILE"]):
-            raise ValueError("STRATA_EXPERT_PROFILE must name a profile in the source tree's data/dsv41")
+        if not re.fullmatch(rf"{NAME}\.gguf", values["STRATA_GGUF"]):
+            raise ValueError("STRATA_GGUF must name a GGUF file in the repository's top level")
+        reference(values["STRATA_DRAFTER"], "STRATA_DRAFTER")
     if int(values["STRATA_CTX"]) <= 0:
         raise ValueError("STRATA_CTX must be positive")
     if not 1 <= int(values["STRATA_PARALLEL"]) <= 8:
@@ -203,18 +197,14 @@ def fetch(path, repository, commit):
     stage.rename(path)
 
 
-def pinned(name):
-    """A pin the source tree states once: setup.py's llama.cpp commit, the
-    MTP tensors' checkpoint revision in tools/mtp_fetch.py."""
-    files = {"LLAMA_CPP_COMMIT": SOURCE / "setup.py", "PINNED_REVISION": SOURCE / "tools" / "mtp_fetch.py"}
-    match = re.search(rf'^{name} = "([0-9a-f]{{40}})"', files[name].read_text(), re.MULTILINE)
+def pinned_mtp_revision():
+    """The MTP tensors' checkpoint revision, a pin the source tree states once
+    in terminal/tools/mtp_fetch.py."""
+    path = TERMINAL / "tools" / "mtp_fetch.py"
+    match = re.search(r'^PINNED_REVISION = "([0-9a-f]{40})"', path.read_text(), re.MULTILINE)
     if not match:
-        raise RuntimeError(f"no {name} pin in {files[name]}")
+        raise RuntimeError(f"no PINNED_REVISION pin in {path}")
     return match.group(1)
-
-
-def llama_dir():
-    return DATA / "llama.cpp" / pinned("LLAMA_CPP_COMMIT")
 
 
 def verify_source():
@@ -225,8 +215,6 @@ def verify_source():
     receipt = json.loads(RECEIPT.read_text())
     if receipt.get("engines_sha256") != {family: digest(path) for family, path in ENGINES.items()}:
         raise RuntimeError("engine checksum mismatch; run make strata-install")
-    if git_head(llama_dir()) != receipt["llama_cpp"]:
-        raise RuntimeError("the llama.cpp checkout differs from the install")
     return receipt
 
 
@@ -242,44 +230,38 @@ def install():
     fetch(SOURCE, REPOSITORY, COMMIT)
     if git_head(SOURCE) != COMMIT:
         raise RuntimeError(f"{SOURCE} is not at the pin {COMMIT}; remove it and run make strata-install")
-    llama = llama_dir()
-    fetch(llama, LLAMA_REPOSITORY, llama.name)
     # The server, the model tools and the build tools (cmake, ninja) at the
     # versions the release pins, in the tree's own venv.
     if not PYTHON.exists():
         subprocess.run(["python3", "-m", "venv", str(SOURCE / ".venv")], check=True)
     # Plus the root Makefile's pinned Hugging Face client, for the pull.
-    subprocess.run([str(PYTHON), "-m", "pip", "install", "-q", "-r", str(SOURCE / "requirements.txt"),
-                    "-r", str(SOURCE / "requirements-build.txt"), HF_HUB], check=True)
+    subprocess.run([str(PYTHON), "-m", "pip", "install", "-q", "-r", str(TERMINAL / "requirements.txt"),
+                    "-r", str(TERMINAL / "requirements-build.txt"), HF_HUB], check=True)
     cuda, archs = cuda_root(), gpu_archs()
     bin_dir = SOURCE / ".venv" / "bin"
-    # The options Strata's own source setup passes for an NVIDIA build, for
-    # the GPUs in this host; vision is off in the fleet's profiles.
-    subprocess.run([str(bin_dir / "cmake"), "-G", "Ninja", f"-DCMAKE_MAKE_PROGRAM={bin_dir / 'ninja'}",
-                    "-S", str(SOURCE), "-B", str(SOURCE / "build"), "-DCMAKE_BUILD_TYPE=Release",
-                    "-DSTRATA_ENABLE_CUDA=ON", "-DSTRATA_BUILD_TESTS=OFF", "-DSTRATA_Q6K_EXPERTS=ON",
-                    "-DSTRATA_MMQ_KQUANTS=ON", f"-DCMAKE_CUDA_ARCHITECTURES={';'.join(map(str, archs))}",
-                    f"-DCMAKE_CUDA_COMPILER={cuda / 'bin' / 'nvcc'}", f"-DCUDAToolkit_ROOT={cuda}",
-                    f"-DSTRATA_GGML_DIR={llama}"], check=True)
-    subprocess.run([str(bin_dir / "cmake"), "--build", str(SOURCE / "build"), "--target", "strata",
-                    "-j", str(os.cpu_count() or 4)], check=True)
-    # The DeepSeek engine with the options of Strata's DeepSeek build notes,
-    # portable CPU code for its CPU expert lane.
-    subprocess.run([str(bin_dir / "cmake"), "-G", "Ninja", f"-DCMAKE_MAKE_PROGRAM={bin_dir / 'ninja'}",
-                    "-S", str(SOURCE), "-B", str(SOURCE / "build-dsv41"), "-DCMAKE_BUILD_TYPE=Release",
-                    "-DSTRATA_ENABLE_CUDA=ON", "-DSTRATA_BUILD_TESTS=OFF", "-DSTRATA_BUILD_DSV41=ON",
-                    "-DSTRATA_NATIVE_EXPERTS=ON", "-DSTRATA_PORTABLE=ON",
-                    f"-DCMAKE_CUDA_ARCHITECTURES={';'.join(map(str, archs))}",
-                    f"-DCMAKE_CUDA_COMPILER={cuda / 'bin' / 'nvcc'}", f"-DCUDAToolkit_ROOT={cuda}",
-                    f"-DSTRATA_GGML_DIR={llama}"], check=True)
-    subprocess.run([str(bin_dir / "cmake"), "--build", str(SOURCE / "build-dsv41"), "--target", "strata-dsv41",
-                    "-j", str(os.cpu_count() or 4)], check=True)
-    save(RECEIPT, {"version": VERSION, "commit": COMMIT, "llama_cpp": git_head(llama),
-                   "cuda": str(cuda), "archs": archs,
+    # Strata setup's NVIDIA options for the host's GPUs, on its vendored ggml.
+    # A ccache or sccache on PATH breaks nvcc, so CMake is told to use none.
+    common = ["-G", "Ninja", f"-DCMAKE_MAKE_PROGRAM={bin_dir / 'ninja'}", "-S", str(SOURCE / "engine"),
+              "-DCMAKE_BUILD_TYPE=Release", "-DSTRATA_ENABLE_CUDA=ON", "-DSTRATA_BUILD_TESTS=OFF",
+              "-DGGML_CCACHE=OFF", f"-DCMAKE_CUDA_ARCHITECTURES={';'.join(map(str, archs))}",
+              f"-DCMAKE_CUDA_COMPILER={cuda / 'bin' / 'nvcc'}", f"-DCUDAToolkit_ROOT={cuda}"]
+    for family, flags in (("qwen", ["-DSTRATA_Q6K_EXPERTS=ON"]),
+                          ("inkling", ["-DSTRATA_BUILD_INKLING=ON", "-DSTRATA_BUILD_HY4=OFF"])):
+        build = ENGINES[family].parent
+        subprocess.run([str(bin_dir / "cmake"), *common, "-B", str(build), *flags], check=True)
+        # As Strata setup does: CUDA 13's ptxas fails a parse now and then,
+        # so a failed build is run once more before it counts.
+        argv = [str(bin_dir / "cmake"), "--build", str(build), "--target", ENGINES[family].name,
+                "-j", str(os.cpu_count() or 4)]
+        if subprocess.run(argv).returncode:
+            subprocess.run(argv, check=True)
+        if family == "inkling" and not ENGINES[family].exists():
+            shutil.copy2(build / "src" / "inkling2" / ENGINES[family].name, ENGINES[family])
+    save(RECEIPT, {"version": VERSION, "commit": COMMIT, "cuda": str(cuda), "archs": archs,
                    "engines_sha256": {family: digest(path) for family, path in ENGINES.items()}})
     receipt = verify_source()
     print(f"Strata {VERSION} ({COMMIT}) built for sm_{','.join(map(str, archs))}: "
-          f"{', '.join(map(str, ENGINES.values()))}; CUDA {receipt['cuda']}, llama.cpp {receipt['llama_cpp']}")
+          f"{', '.join(map(str, ENGINES.values()))}; CUDA {receipt['cuda']}")
 
 
 def hf_command():
@@ -297,40 +279,38 @@ def model_dir(values):
     return repo_dir(values["STRATA_MODEL_REPO"], values["STRATA_MODEL_REVISION"])
 
 
-def dsv41_sources(values):
-    """A DeepSeek set's downloads as (repository, revision, path): its shards,
-    the Engram table, the metadata shard pack_gguf reads it with, the DSpark
-    drafter. Configs naming the same file share one copy."""
-    repository, revision = values["STRATA_MODEL_REPO"], values["STRATA_MODEL_REVISION"]
-    return [(repository, revision, shard) for shard in values["STRATA_SHARDS"].split()] + [
-        reference(values[key], key) for key in ("STRATA_ENGRAM", "STRATA_ENGRAM_META", "STRATA_DRAFTER")]
-
-
 def source_path(source):
     return repo_dir(source[0], source[1]) / source[2]
 
 
-def dsv41_pack(values):
-    """The pack holds hash tables and paths taken from its inputs, so its
-    folder is named by them and the source pin: another input is a new pack."""
-    inputs = json.dumps([COMMIT, *dsv41_sources(values)]).encode()
-    return model_dir(values) / ("pack-" + hashlib.sha256(inputs).hexdigest()[:16])
+def inkling_sources(values):
+    """An Inkling build's downloads as (repository, revision, path): the GGUF,
+    the DSpark drafter (the original checkpoint's mtp.safetensors, which an
+    engine that reports dspark_f32_widen reads), and that checkpoint's
+    tokenizer and chat template, from which the server's tokenizer is made."""
+    repository, revision, drafter = reference(values["STRATA_DRAFTER"], "STRATA_DRAFTER")
+    return [(values["STRATA_MODEL_REPO"], values["STRATA_MODEL_REVISION"], values["STRATA_GGUF"]),
+            (repository, revision, drafter), (repository, revision, "tokenizer.json"),
+            (repository, revision, "chat_template.jinja")]
+
+
+def tokenizer_dir(values):
+    return model_dir(values) / "tokenizer"
 
 
 def mtp_dir():
     """The MTP draft layer every Flash-Next pack shares, built from the
     original checkpoint's MTP tensors at the source tree's pinned revision."""
-    return DATA / "mtp" / pinned("PINNED_REVISION")
+    return DATA / "mtp" / pinned_mtp_revision()
 
 
 def model_files(values):
     """Every file the engine reads from the model folder."""
-    if values["STRATA_FAMILY"] == "deepseek41":
-        pack = dsv41_pack(values)
-        files = sorted(path for path in pack.rglob("*") if path.is_file())
-        if not files:
-            raise RuntimeError(f"{pack} holds no pack; run make strata-pull")
-        return [source_path(source) for source in dsv41_sources(values)] + files
+    if values["STRATA_FAMILY"] == "inkling":
+        tokenizer = sorted(path for path in tokenizer_dir(values).rglob("*") if path.is_file())
+        if not tokenizer:
+            raise RuntimeError(f"{tokenizer_dir(values)} holds no tokenizer; run make strata-pull")
+        return [source_path(source) for source in inkling_sources(values)] + tokenizer
     root = model_dir(values)
     pack = root / values["STRATA_PACK"]
     files = sorted(path for path in pack.rglob("*") if path.is_file())
@@ -340,7 +320,7 @@ def model_files(values):
 
 
 def identity_record(values):
-    if values["STRATA_FAMILY"] == "deepseek41":
+    if values["STRATA_FAMILY"] == "inkling":
         return {"source": values["STRATA_MODEL_REPO"], "revision": values["STRATA_MODEL_REVISION"],
                 "files": {str(path.relative_to(MODELS)): digest(path) for path in model_files(values)}}
     root, mtp = model_dir(values), mtp_dir() / "rt"
@@ -352,8 +332,6 @@ def identity_record(values):
 
 
 def identity_path(values):
-    if values["STRATA_FAMILY"] == "deepseek41":
-        return model_dir(values) / f"llm-local-servers-{values['STRATA_SERVED_NAME']}.json"
     return model_dir(values) / "llm-local-servers.json"
 
 
@@ -367,8 +345,7 @@ def verify_model(values):
 
 
 def tool(name, *argv):
-    environment = {**os.environ, "STRATA_GGUF_PY": str(llama_dir() / "gguf-py")}
-    subprocess.run([str(PYTHON), str(SOURCE / "tools" / name), *argv], check=True, env=environment)
+    subprocess.run([str(PYTHON), str(TERMINAL / "tools" / name), *argv], check=True)
 
 
 def download(repository, revision, paths):
@@ -378,23 +355,21 @@ def download(repository, revision, paths):
                    check=True, stdout=subprocess.DEVNULL)
 
 
-def pull_dsv41(values):
-    sources = dsv41_sources(values)
+def pull_inkling(values):
+    sources = inkling_sources(values)
     for repository, revision in dict.fromkeys(source[:2] for source in sources):
         download(repository, revision, [path for *pin, path in sources if pin == [repository, revision]])
-    pack = dsv41_pack(values)
-    if not pack.is_dir():
-        # Strata setup's recipe for the ISTA-DAS sets, the drafter's noise
-        # token and markov rank stated as it states them: the pack holds the
-        # tensor map, hash tables and tokenizer and points at the shards.
-        shards, (engram, meta, drafter) = [source_path(s) for s in sources[:-3]], map(source_path, sources[-3:])
-        stage = pack.with_name(pack.name + ".partial")
+    out = tokenizer_dir(values)
+    if not out.is_dir():
+        # Strata setup's recipe: the checkpoint's tokenizer.json and chat
+        # template converted into the server's tokenizer folder, staged.
+        stage = out.with_name(out.name + ".partial")
         if stage.exists():
             shutil.rmtree(stage)
-        tool("dsv41/pack_gguf.py", "--model", str(shards[0].parent), "--shards", *[path.name for path in shards],
-             "--engram", str(engram), "--engram-meta", str(meta), "--dspark-gguf", str(drafter),
-             "--dspark-noise-token", "128799", "--dspark-markov-rank", "256", "--out", str(stage))
-        stage.rename(pack)
+        script = "import sys; sys.path.insert(0, sys.argv[1]); import inkling_tokenizer as t; t.convert_files(*sys.argv[2:5])"
+        subprocess.run([str(PYTHON), "-c", script, str(TERMINAL / "tools"),
+                        *[str(source_path(source)) for source in sources[2:]], str(stage)], check=True)
+        stage.rename(out)
 
 
 def pull(values):
@@ -402,11 +377,11 @@ def pull(values):
     verify_source()
     MODELS.mkdir(parents=True, exist_ok=True)
     root = model_dir(values)
-    if values["STRATA_FAMILY"] == "deepseek41":
-        pull_dsv41(values)
+    if values["STRATA_FAMILY"] == "inkling":
+        pull_inkling(values)
         save(identity_path(values), identity_record(values))
         identity = verify_model(values)
-        print(f"Verified {identity['source']} at {identity['revision']} and {dsv41_pack(values)}")
+        print(f"Verified {identity['source']} at {identity['revision']} and its drafter and tokenizer")
         return
     subprocess.run([*hf_command(), "download", values["STRATA_MODEL_REPO"],
                     "--revision", values["STRATA_MODEL_REVISION"], "--local-dir", str(root),
@@ -463,27 +438,31 @@ def run_config(values, receipt):
     common = {"model_name": values["STRATA_SERVED_NAME"], "log": str(ENGINE_LOG),
               "lib_dirs": [str(cuda / "bin"), str(cuda / "lib64")],
               "port": port(), "gpu": 0, "parallel": int(values["STRATA_PARALLEL"]), "open_browser": False}
-    if values["STRATA_FAMILY"] == "deepseek41":
-        # Strata setup's DeepSeek launch: the end-of-text token, pictures off
-        # as in every fleet profile, its load allowance. The shipped hot-expert
-        # profile is read only, so the engine never rewrites a pinned input.
-        pack = dsv41_pack(values)
-        args = ["--pack", str(pack), "--max-context", values["STRATA_CTX"], "--eos", "1", "--vision", "off",
-                "--expert-profile", str(SOURCE / "data" / "dsv41" / values["STRATA_EXPERT_PROFILE"]),
-                "--profile-readonly", *engine_flags(values)]
-        return {**common, "exe": str(ENGINES["deepseek41"]), "args": args, "cwd": str(SOURCE),
-                "tokenizer": str(pack / "tokenizer"), "arch": "deepseek41", "engine_ready_s": 3600,
-                "lib_dirs": [*common["lib_dirs"], str(ENGINES["deepseek41"].parent)]}
+    if values["STRATA_FAMILY"] == "inkling":
+        # Strata setup's Inkling launch on a card that holds every expert:
+        # all of them in VRAM, no RAM tier; the DSpark drafter on, as the
+        # setup's probe turns it on for a CUDA card. No thinking budget: the
+        # model thinks as long as its request lets it, as on every runtime.
+        gguf, drafter = (source_path(source) for source in inkling_sources(values)[:2])
+        experts = -(-gguf.stat().st_size // 1024 ** 3) + 1
+        args = ["--native", str(gguf), "--max-context", values["STRATA_CTX"], "--dspark", str(drafter),
+                "--vram-experts-gb", f"{experts}.00", *engine_flags(values)]
+        return {**common, "exe": str(ENGINES["inkling"]), "args": args, "cwd": str(TERMINAL),
+                "tokenizer": str(tokenizer_dir(values)), "arch": "inkling2_loop", "drafting": "dspark",
+                "inkling_thinking_budget": 0,
+                "lib_dirs": [*common["lib_dirs"], str(ENGINES["inkling"].parent)]}
     root = model_dir(values)
     dense = str(root / values["STRATA_DENSE_GGUF"])
     args = ["--pack", str(root / values["STRATA_PACK"]), "--native", dense, "--native-dense-gguf", dense,
             "--ple-gguf", str(root / values["STRATA_PLE_GGUF"]),
             "--embd-gguf", str(root / values["STRATA_EMBD_GGUF"]),
-            "--expert-profile", str(SOURCE / "data" / "expert-profile.bin"),
+            "--expert-profile", str(TERMINAL / "data" / "expert-profile.bin"),
             "--mtp", str(mtp_dir() / "rt"), "--max-context", values["STRATA_CTX"],
             *engine_flags(values), *placement(values)]
-    return {**common, "exe": str(ENGINES["qwen"]), "args": args, "cwd": str(SOURCE),
-            "tokenizer": str(root / values["STRATA_PACK"] / "tokenizer")}
+    # MTP as set up for this pack: the server's auto drafting would choose
+    # by the served name, which is no model fact.
+    return {**common, "exe": str(ENGINES["qwen"]), "args": args, "cwd": str(TERMINAL),
+            "tokenizer": str(root / values["STRATA_PACK"] / "tokenizer"), "drafting": "mtp"}
 
 
 def port():
@@ -496,7 +475,7 @@ def port():
 def command():
     # 127.0.0.1 is the server's default bind; --offline refuses image URLs
     # and MCP subprocesses. Remote use goes through an ssh tunnel.
-    return [str(PYTHON), str(SOURCE / "serve" / "server.py"), "--engine", "strata", "--config", str(RUN_CONFIG),
+    return [str(PYTHON), str(TERMINAL / "serve" / "server.py"), "--engine", "strata", "--config", str(RUN_CONFIG),
             "--host", "127.0.0.1", "--port", str(port()), "--offline"]
 
 
@@ -555,7 +534,7 @@ def server_owned(owner):
     # Until the handshake completes the session leader is start.sh, then
     # runtime.py serve; both exec into the server.
     try:
-        return owned(owner, str(SOURCE / "serve" / "server.py"))
+        return owned(owner, str(TERMINAL / "serve" / "server.py"))
     except RuntimeError:
         if any(os.fsencode(str(ROOT / name)) in arguments(owner["pid"]) for name in ("start.sh", "runtime.py")):
             return True
@@ -592,10 +571,11 @@ def engine_child(server_pid, engine):
 def residency():
     """The engine's own report of where the routed experts live."""
     log = ENGINE_LOG.read_text()
-    # DeepSeek, on the one card a run uses: "experts 73.45 GB (8064 of 8064 in VRAM)".
-    match = re.search(r"experts [0-9.]+ GB \(([0-9]+) of ([0-9]+) in VRAM\)", log)
+    # Inkling: "experts=3072 GPU0 + 0 GPU-1 / 0 host".
+    match = re.search(r"experts=([0-9]+) GPU0 \+ ([0-9]+) GPU-1 / ([0-9]+) host", log)
     if match:
-        return {"experts_in_vram": int(match.group(1)), "experts": int(match.group(2))}
+        gpu0, gpu1, host = map(int, match.groups())
+        return {"experts_in_vram": gpu0 + gpu1, "experts": gpu0 + gpu1 + host}
     match = re.search(r"every expert is in the GPU cache \(([0-9]+) of ([0-9]+)\)", log)
     if match:
         return {"experts_in_vram": int(match.group(1)), "experts": int(match.group(2))}
@@ -635,7 +615,6 @@ def start(tag, values):
     STATE.mkdir(parents=True, exist_ok=True)
     save(RUN_CONFIG, run_config(values, receipt))
     ENGINE_LOG.unlink(missing_ok=True)
-    shutil.rmtree(SLOTS, ignore_errors=True)
     argv = command()
     with LOG.open("w") as log:
         log.write("starting " + shlex.join(argv) + "\n")
@@ -718,7 +697,6 @@ def stop(preserve_log=False):
     port_free(owner["port"])
     PIDFILE.unlink()
     RUN_CONFIG.unlink(missing_ok=True)
-    shutil.rmtree(SLOTS, ignore_errors=True)
     if not running:
         print(f"Strata was not running; removed its pidfile and kept the logs in {STATE} as evidence.")
         return
@@ -754,7 +732,7 @@ def main():
         owner = json.loads(PIDFILE.read_text())
         if owner["pid"] != os.getpid() or os.getpgrp() != os.getpid():
             raise RuntimeError("foreground child does not own the managed session")
-        os.chdir(SOURCE)
+        os.chdir(TERMINAL)
         os.execve(owner["command"][0], owner["command"], serve_environment())
     DATA.mkdir(parents=True, exist_ok=True)
     with (DATA / ".lifecycle.lock").open("a") as lock:

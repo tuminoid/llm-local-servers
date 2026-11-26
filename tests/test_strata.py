@@ -12,7 +12,7 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1] / "strata"
 TAG = "qwen3.8-flash-next-nvfp4"
-DS = "deepseek-v4.1-flash-q2"
+INK = "inkling-2-mini"
 
 
 def load(name, file):
@@ -44,29 +44,42 @@ class StrataTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             runtime.config("../kapitsa/models/clover-35b-a3b")
 
-    def test_deepseek_config_rejects_unpinned_references_and_foreign_flags(self):
+    def test_inkling_config_rejects_unpinned_references_and_foreign_flags(self):
         for variable, value, message in (
-                ("STRATA_ENGRAM", "ISTA-DASLab/x@main:engram.gguf", "owner/name@commit:path"),
+                ("STRATA_DRAFTER", "thinkingmachines/x@main:mtp.safetensors", "owner/name@commit:path"),
                 ("STRATA_DRAFTER", "unsloth/x@" + "0" * 40 + ":../drafter.gguf", "owner/name@commit:path"),
-                ("STRATA_SHARDS", "a/one.gguf b/two.gguf", "one folder"),
-                ("STRATA_EXPERT_PROFILE", "../profile.bin", "data/dsv41"),
+                ("STRATA_GGUF", "../model.gguf", "GGUF"),
                 ("STRATA_ENGINE_ARGS", "--spec 4", "STRATA_ENGINE_ARGS"),
-                ("STRATA_FAMILY", "glm", "STRATA_FAMILY"),
+                ("STRATA_FAMILY", "deepseek41", "STRATA_FAMILY"),
                 ("STRATA_SERVED_NAME", "x/../../tmp/y", "plain model name")):
             with self.subTest(variable=variable, value=value):
                 with mock.patch.dict(os.environ, {variable: value}):
                     with self.assertRaisesRegex(ValueError, message):
-                        runtime.config(DS)
+                        runtime.config(INK)
 
-    def test_deepseek_launch_reads_the_shipped_profile_read_only(self):
-        values = runtime.config(DS)
-        config = runtime.run_config(values, {"cuda": "/usr/local/cuda"})
+    def test_inkling_launch_holds_every_expert_with_the_drafter_and_no_budget(self):
+        values = runtime.config(INK)
+        with tempfile.TemporaryDirectory() as temporary:
+            with mock.patch.object(runtime, "MODELS", Path(temporary)):
+                gguf = runtime.source_path(runtime.inkling_sources(values)[0])
+                gguf.parent.mkdir(parents=True)
+                gguf.write_bytes(b"\0" * 1000)
+                config = runtime.run_config(values, {"cuda": "/usr/local/cuda"})
         args = config["args"]
-        self.assertEqual((config["exe"], config["arch"]), (str(runtime.ENGINES["deepseek41"]), "deepseek41"))
+        self.assertEqual((config["exe"], config["arch"]), (str(runtime.ENGINES["inkling"]), "inkling2_loop"))
+        self.assertEqual((config["drafting"], config["inkling_thinking_budget"]), ("dspark", 0))
         self.assertEqual(args[args.index("--max-context") + 1], values["STRATA_CTX"])
-        self.assertEqual(Path(args[args.index("--expert-profile") + 1]).name, values["STRATA_EXPERT_PROFILE"])
-        self.assertIn("--profile-readonly", args)
-        self.assertEqual(args[args.index("--pack") + 1], str(runtime.dsv41_pack(values)))
+        self.assertTrue(args[args.index("--dspark") + 1].endswith("mtp.safetensors"))
+        self.assertEqual(args[args.index("--vram-experts-gb") + 1], "2.00")
+        self.assertNotIn("--ram-experts-gb", args)
+
+    def test_qwen_launch_pins_its_drafter(self):
+        values = runtime.config(TAG)
+        with mock.patch.object(runtime, "placement", return_value=[]), \
+                mock.patch.object(runtime, "mtp_dir", return_value=Path("/mtp")):
+            config = runtime.run_config(values, {"cuda": "/usr/local/cuda"})
+        self.assertEqual(config["drafting"], "mtp")
+        self.assertEqual(config["cwd"], str(runtime.TERMINAL))
 
     def test_placement_follows_available_memory_and_context(self):
         values = runtime.config(TAG)
@@ -102,48 +115,46 @@ class StrataTest(unittest.TestCase):
         self.assertIn("--offline", argv)
         self.assertEqual(argv[argv.index("--port") + 1], "8025")
 
-    def test_deepseek_identity_covers_shared_files_and_the_pack(self):
-        values = runtime.config(DS)
+    def test_inkling_identity_covers_model_drafter_and_tokenizer(self):
+        values = runtime.config(INK)
         with tempfile.TemporaryDirectory() as temporary:
             with mock.patch.object(runtime, "MODELS", Path(temporary)):
-                for source in runtime.dsv41_sources(values):
+                for source in runtime.inkling_sources(values):
                     runtime.source_path(source).parent.mkdir(parents=True, exist_ok=True)
                     runtime.source_path(source).write_bytes(source[2].encode())
-                runtime.dsv41_pack(values).mkdir(parents=True)
-                (runtime.dsv41_pack(values) / "tensors.txt").write_text("map")
+                runtime.tokenizer_dir(values).mkdir(parents=True)
+                (runtime.tokenizer_dir(values) / "vocab.json").write_text("{}")
                 runtime.save(runtime.identity_path(values), runtime.identity_record(values))
                 self.assertTrue(runtime.verify_model(values)["full_artifact_hash_verification"])
-                engram = runtime.source_path(runtime.reference(values["STRATA_ENGRAM"], "STRATA_ENGRAM"))
-                engram.write_bytes(b"changed")
+                drafter = runtime.source_path(runtime.inkling_sources(values)[1])
+                drafter.write_bytes(b"changed")
                 with self.assertRaisesRegex(RuntimeError, "strata-pull"):
                     runtime.verify_model(values)
 
-    def test_deepseek_pull_downloads_per_repository_and_packs_into_a_stage(self):
-        values = runtime.config(DS)
+    def test_inkling_pull_downloads_per_repository_and_converts_into_a_stage(self):
+        values = runtime.config(INK)
         with tempfile.TemporaryDirectory() as temporary:
             with mock.patch.object(runtime, "MODELS", Path(temporary)), \
                     mock.patch.object(runtime, "download") as download, \
-                    mock.patch.object(runtime, "tool") as tool:
-                pack = runtime.dsv41_pack(values)
-                stage = pack.with_name(pack.name + ".partial")
+                    mock.patch.object(runtime.subprocess, "run") as run:
+                out = runtime.tokenizer_dir(values)
+                stage = out.with_name(out.name + ".partial")
                 stage.mkdir(parents=True)
-                tool.side_effect = lambda *argv: (stage.is_dir() and self.fail("stale stage kept"),
-                                                  stage.mkdir())
-                runtime.pull_dsv41(values)
-                self.assertTrue(pack.is_dir() and not stage.exists())
-                self.assertEqual(tool.call_args.args[tool.call_args.args.index("--out") + 1], str(stage))
+                run.side_effect = lambda argv, check: (stage.is_dir() and self.fail("stale stage kept"),
+                                                       stage.mkdir())
+                runtime.pull_inkling(values)
+                self.assertTrue(out.is_dir() and not stage.exists())
+                self.assertEqual(run.call_args.args[0][-1], str(stage))
                 repositories = [call.args[:2] for call in download.call_args_list]
                 self.assertEqual(len(repositories), len(set(repositories)))
                 self.assertEqual(len(repositories), 2)
-                runtime.pull_dsv41(values)
-                self.assertEqual(tool.call_count, 1)
-        with mock.patch.dict(os.environ, {"STRATA_DRAFTER": "unsloth/x@" + "1" * 40 + ":d.gguf"}):
-            self.assertNotEqual(runtime.dsv41_pack(runtime.config(DS)), runtime.dsv41_pack(values))
+                runtime.pull_inkling(values)
+                self.assertEqual(run.call_count, 1)
 
     def test_bench_refuses_a_cpu_lane_server_that_capability_accepts(self):
         owner = {"residency": {"experts_in_vram": 8666, "experts": 15360}}
         with mock.patch.object(bench, "evidence", return_value=({}, owner, "", {}, {})), \
-                mock.patch.object(sys, "argv", ["bench.py", DS]):
+                mock.patch.object(sys, "argv", ["bench.py", INK]):
             with self.assertRaisesRegex(RuntimeError, "not all in VRAM"):
                 bench.main()
 
@@ -183,8 +194,7 @@ class StrataTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             state = Path(temporary)
             paths = {"STATE": state, "PIDFILE": state / "server.json", "LOG": state / "server.log",
-                     "ENGINE_LOG": state / "engine.log", "RUN_CONFIG": state / "run.json",
-                     "SLOTS": state / "ds4-slots"}
+                     "ENGINE_LOG": state / "engine.log", "RUN_CONFIG": state / "run.json"}
             with mock.patch.multiple(runtime, **paths), \
                     mock.patch.object(runtime, "gpu_processes", return_value=set()), \
                     mock.patch.object(runtime, "port_free"):
@@ -192,12 +202,10 @@ class StrataTest(unittest.TestCase):
                          "run_config": {"exe": str(runtime.ENGINES["qwen"])}}
                 for name in ("LOG", "ENGINE_LOG", "RUN_CONFIG"):
                     paths[name].write_text("evidence")
-                paths["SLOTS"].mkdir()
-                (paths["SLOTS"] / "conversation.bin").write_bytes(b"kv")
                 runtime.save(paths["PIDFILE"], owner)
                 with mock.patch.object(runtime, "started", return_value=None):
                     runtime.stop()
-                self.assertFalse(paths["PIDFILE"].exists() or paths["SLOTS"].exists())
+                self.assertFalse(paths["PIDFILE"].exists())
                 self.assertTrue(paths["LOG"].exists() and paths["ENGINE_LOG"].exists())
                 runtime.save(paths["PIDFILE"], owner)
                 with mock.patch.object(runtime, "started", return_value=999):
@@ -220,9 +228,9 @@ class StrataTest(unittest.TestCase):
                 self.assertEqual(runtime.residency(), {"experts_in_vram": 24576, "experts": 24576})
                 log.write_text("strata generate: expert cache 8350 slots, 31.64 GiB of VRAM\n")
                 self.assertEqual(runtime.residency(), {"experts_in_vram": 8350, "experts": None})
-                log.write_text("ds4: CUDA0 layers [0, 39] + head: weights 5.86 GB, experts 74.84 GB "
-                               "(8666 of 15360 in VRAM), caches 0.97 GB, 538 MiB free\n")
-                self.assertEqual(runtime.residency(), {"experts_in_vram": 8666, "experts": 15360})
+                log.write_text("[InkCUDA] Loaded m.gguf (GGUF-NVFP4, fmt=gguf): trunk=3.93 GB (2.26s), "
+                               "experts=3040 GPU0 + 0 GPU-1 / 32 host (1.1s)\n")
+                self.assertEqual(runtime.residency(), {"experts_in_vram": 3040, "experts": 3072})
 
 
 if __name__ == "__main__":

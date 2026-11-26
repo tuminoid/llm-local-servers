@@ -225,28 +225,28 @@
       },
       "tier": "MoE"
     },
-    "strata/deepseek-v4.1-flash-coder-iq2xxs": {
+    "strata/inkling-2-mini": {
       "campaign": true,
       "capability": {
-        "artifact": "20261120T015850.589411+0000_strata_deepseek-v4-1-flash-coder-iq2xxs.json",
+        "artifact": "20261126T081237.149195+0000_strata_inkling-2-mini.json",
         "audit_aptitude": {
           "interval": [
-            0.5208234850600961,
-            0.9791765149399039
+            0.4368235713614062,
+            0.9381764286385939
           ],
           "judged_samples": 8,
           "scored": true,
-          "sound_samples": 7,
-          "vuln_score": 0.8571428571428572
+          "sound_samples": 8,
+          "vuln_score": 0.7857142857142856
         },
-        "clean_rate": 0.9722222222222222,
-        "clean_samples": 35,
+        "clean_rate": 1.0,
+        "clean_samples": 36,
         "failed_checks": [],
         "features": {
           "json_schema": "supported",
           "streaming_tool_call": "supported",
           "structured_json": "supported",
-          "thinking_disabled": "supported",
+          "thinking_disabled": "untested",
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
@@ -254,8 +254,8 @@
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
-        "model": "deepseek-v4.1-flash-coder-iq2xxs",
-        "model_identity": "0b1d5da5734d76375bdad4e72af85a420fde7af7",
+        "model": "inkling-2-mini",
+        "model_identity": "800c946d7b9c830c86290df49afbbe91db8455f5",
         "protocol": "capability-v3",
         "reasoning": "passed",
         "runtime": "strata",
@@ -263,20 +263,20 @@
         "schema_enforcement": "enforced",
         "schema_version": 8,
         "status": "passed",
-        "tag": "deepseek-v4.1-flash-coder-iq2xxs",
+        "tag": "inkling-2-mini",
         "unaided_document": "valid"
       },
-      "engine": "Strata DeepSeek",
+      "engine": "Strata",
       "note": null,
       "role": "audit",
       "session": {
-        "active_slots": 1,
-        "artifact": "20261115T174556.949264+0000_strata_deepseek-v4-1-flash-coder-iq2xxs_session.json",
+        "active_slots": 4,
+        "artifact": "20261126T093907.575568+0000_strata_inkling-2-mini_session.json",
         "canonical": true,
-        "configured_context": 1048576,
+        "configured_context": 262144,
         "kv_pool_tokens": 1048576,
-        "model": "deepseek-v4.1-flash-coder-iq2xxs",
-        "model_identity": "0b1d5da5734d76375bdad4e72af85a420fde7af7",
+        "model": "inkling-2-mini",
+        "model_identity": "800c946d7b9c830c86290df49afbbe91db8455f5",
         "optimal_streams": 1,
         "optimal_streams_source": "stored",
         "protocol": "audit-v2",
@@ -287,77 +287,39 @@
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 8571,
-            "prefill_tokens_per_second": 827.4734207393162,
-            "report_decode_tokens_per_second": 50.31617478401522,
+            "output_tokens_per_session": 2150,
+            "prefill_tokens_per_second": 1395.0886725133525,
+            "report_decode_tokens_per_second": 37.471555976637156,
             "sessions": 3,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 9.771000179818682
+            "sessions_per_hour": 22.085499670443085
+          },
+          "2": {
+            "output_tokens_per_session": 2164.5,
+            "prefill_tokens_per_second": 1208.2282709521605,
+            "report_decode_tokens_per_second": 17.535998116317987,
+            "sessions": 6,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 21.17895819348093
           }
         },
-        "tag": "deepseek-v4.1-flash-coder-iq2xxs"
+        "tag": "inkling-2-mini"
       },
-      "tier": "MoE"
-    },
-    "strata/deepseek-v4.1-flash-q2": {
-      "campaign": true,
-      "capability": {
-        "artifact": "20261120T062422.397959+0000_strata_deepseek-v4-1-flash-q2.json",
-        "audit_aptitude": {
-          "interval": [
-            0.5208234850600961,
-            0.9791765149399039
-          ],
-          "judged_samples": 8,
-          "scored": true,
-          "sound_samples": 8,
-          "vuln_score": 0.8571428571428572
-        },
-        "clean_rate": 1.0,
-        "clean_samples": 36,
-        "failed_checks": [],
-        "features": {
-          "json_schema": "supported",
-          "streaming_tool_call": "supported",
-          "structured_json": "supported",
-          "thinking_disabled": "supported",
-          "tool_call": "supported",
-          "tool_round_trip": "supported"
-        },
-        "fitness_clean": 8,
-        "fitness_samples": 8,
-        "halted": false,
-        "identity_check": "passed",
-        "model": "deepseek-v4.1-flash-q2",
-        "model_identity": "cb02422c900df489cea5833e8a92171224059b3c",
-        "protocol": "capability-v3",
-        "reasoning": "passed",
-        "runtime": "strata",
-        "samples": 36,
-        "schema_enforcement": "enforced",
-        "schema_version": 8,
-        "status": "passed",
-        "tag": "deepseek-v4.1-flash-q2",
-        "unaided_document": "valid"
-      },
-      "engine": "Strata DeepSeek",
-      "note": null,
-      "role": "audit",
       "tier": "MoE"
     },
     "strata/qwen3.8-flash-next-nvfp4": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T220514.667979+0000_strata_qwen3-8-flash-next-nvfp4.json",
+        "artifact": "20261126T093740.926300+0000_strata_qwen3-8-flash-next-nvfp4.json",
         "audit_aptitude": {
           "interval": [
-            0.5208234850600961,
-            0.9791765149399039
+            0.4368235713614062,
+            0.9381764286385939
           ],
           "judged_samples": 8,
           "scored": true,
           "sound_samples": 8,
-          "vuln_score": 0.8571428571428572
+          "vuln_score": 0.7857142857142856
         },
         "clean_rate": 1.0,
         "clean_samples": 36,
@@ -391,7 +353,7 @@
       "role": "audit",
       "session": {
         "active_slots": 1,
-        "artifact": "20261115T164004.814930+0000_strata_qwen3-8-flash-next-nvfp4_session.json",
+        "artifact": "20261126T102849.790130+0000_strata_qwen3-8-flash-next-nvfp4_session.json",
         "canonical": true,
         "configured_context": 262144,
         "kv_pool_tokens": 262144,
@@ -407,12 +369,12 @@
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 6188,
-            "prefill_tokens_per_second": 2136.0190930150675,
-            "report_decode_tokens_per_second": 110.19731212138255,
-            "sessions": 3,
+            "output_tokens_per_session": 6011.0,
+            "prefill_tokens_per_second": 3577.257359875284,
+            "report_decode_tokens_per_second": 106.80194615718729,
+            "sessions": 2,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 27.65900258471118
+            "sessions_per_hour": 36.508861538252425
           }
         },
         "tag": "qwen3.8-flash-next-nvfp4"
@@ -422,16 +384,16 @@
     "vllm/gemma4-26b-a4b-awq": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T145100.047835+0000_vllm-cuda_gemma4-26b-a4b-awq.json",
+        "artifact": "20261125T221013.298634+0000_vllm-cuda_gemma4-26b-a4b-awq.json",
         "audit_aptitude": {
           "interval": [
-            0.3580174397081337,
-            0.8919825602918663
+            0.20307960873324982,
+            0.7969203912667502
           ],
           "judged_samples": 8,
           "scored": true,
           "sound_samples": 8,
-          "vuln_score": 0.7142857142857144
+          "vuln_score": 0.5714285714285714
         },
         "clean_rate": 1.0,
         "clean_samples": 36,
@@ -465,47 +427,47 @@
       "role": "audit",
       "session": {
         "active_slots": 8,
-        "artifact": "20261124T212102.018862+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json",
+        "artifact": "20261126T020906.470981+0000_vllm-cuda_gemma4-26b-a4b-awq_session.json",
         "canonical": true,
         "configured_context": 262144,
-        "kv_pool_tokens": 1909362,
+        "kv_pool_tokens": 1867958,
         "model": "gemma4-26b-a4b-awq",
         "model_identity": "0ef577a5710035bd2d3a3f27e4f5cb2e86a9a9ba",
-        "optimal_streams": 2,
+        "optimal_streams": 4,
         "optimal_streams_source": "stored",
         "protocol": "audit-v2",
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 8211.965039624263,
-          "tg128": 178.37159612412395
+          "pp512": 8078.875320833366,
+          "tg128": 176.60772619001605
         },
         "runtime": "vllm-cuda",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 1484.5,
-            "prefill_tokens_per_second": 2117.1809212656713,
-            "report_decode_tokens_per_second": 63.650139442811536,
+            "output_tokens_per_session": 1661.5,
+            "prefill_tokens_per_second": 2246.5970117310335,
+            "report_decode_tokens_per_second": 65.75495630687342,
             "sessions": 2,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 36.5908096780723
+            "sessions_per_hour": 37.47915900852368
           },
           "2": {
-            "output_tokens_per_session": 1591.5,
-            "prefill_tokens_per_second": 1039.7525697058227,
-            "report_decode_tokens_per_second": 52.527967314787674,
+            "output_tokens_per_session": 1493.0,
+            "prefill_tokens_per_second": 1098.0048885065096,
+            "report_decode_tokens_per_second": 55.660249005355865,
             "sessions": 4,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 41.59056289651677
+            "sessions_per_hour": 44.54757613855733
           },
           "4": {
-            "output_tokens_per_session": 1590.0,
-            "prefill_tokens_per_second": 705.2579846849119,
-            "report_decode_tokens_per_second": 48.67692686267967,
+            "output_tokens_per_session": 1522.5,
+            "prefill_tokens_per_second": 517.4409161341075,
+            "report_decode_tokens_per_second": 50.056006006627236,
             "sessions": 12,
-            "sessions_incomplete": 1,
-            "sessions_per_hour": 45.008495248793416
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 45.74362794132936
           }
         },
         "tag": "gemma4-26b-a4b-awq"
@@ -515,12 +477,12 @@
     "vllm/mimo-v2.6-9b-awq": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T143611.513989+0000_vllm-cuda_mimo-v2-6-9b-awq.json",
+        "artifact": "20261126T000929.109418+0000_vllm-cuda_mimo-v2-6-9b-awq.json",
         "audit_aptitude": {
           "scored": false
         },
-        "clean_rate": 0.625,
-        "clean_samples": 5,
+        "clean_rate": 0.75,
+        "clean_samples": 6,
         "failed_checks": [
           "fitness_clean",
           "clean_rate"
@@ -533,7 +495,7 @@
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
-        "fitness_clean": 5,
+        "fitness_clean": 6,
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
@@ -590,16 +552,20 @@
     "vllm/nanbeige4.3-33b-w4a16": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T205316.035551+0000_vllm-cuda_nanbeige4-3-33b-w4a16.json",
+        "artifact": "20261126T011317.419806+0000_vllm-cuda_nanbeige4-3-33b-w4a16.json",
         "audit_aptitude": {
-          "scored": false
+          "interval": [
+            0.05673566410921882,
+            0.6932643358907812
+          ],
+          "judged_samples": 8,
+          "scored": true,
+          "sound_samples": 8,
+          "vuln_score": 0.4285714285714286
         },
-        "clean_rate": 0.75,
-        "clean_samples": 6,
-        "failed_checks": [
-          "fitness_clean",
-          "clean_rate"
-        ],
+        "clean_rate": 1.0,
+        "clean_samples": 36,
+        "failed_checks": [],
         "features": {
           "json_schema": "broken",
           "streaming_tool_call": "supported",
@@ -608,7 +574,7 @@
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
-        "fitness_clean": 6,
+        "fitness_clean": 8,
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
@@ -617,10 +583,10 @@
         "protocol": "capability-v3",
         "reasoning": "passed",
         "runtime": "vllm-cuda",
-        "samples": 8,
+        "samples": 36,
         "schema_enforcement": "whitespace_runaway",
         "schema_version": 8,
-        "status": "failed",
+        "status": "passed",
         "tag": "nanbeige4.3-33b-w4a16",
         "unaided_document": "valid"
       },
@@ -629,10 +595,10 @@
       "role": "audit",
       "session": {
         "active_slots": 8,
-        "artifact": "20261125T011916.186105+0000_vllm-cuda_nanbeige4-3-33b-w4a16_session.json",
+        "artifact": "20261126T060737.628810+0000_vllm-cuda_nanbeige4-3-33b-w4a16_session.json",
         "canonical": true,
         "configured_context": 262144,
-        "kv_pool_tokens": 284704,
+        "kv_pool_tokens": 282112,
         "model": "nanbeige4.3-33b",
         "model_identity": "1c1666af6d964ac8f315fba6a6fcb2efa6abdc23",
         "optimal_streams": 1,
@@ -641,19 +607,19 @@
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 2916.8656426537655,
-          "tg128": 71.29150055250166
+          "pp512": 2720.388721396019,
+          "tg128": 72.03405889823023
         },
         "runtime": "vllm-cuda",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 10136.0,
-            "prefill_tokens_per_second": 930.3826483085888,
-            "report_decode_tokens_per_second": 27.85344595889005,
+            "output_tokens_per_session": 8203.5,
+            "prefill_tokens_per_second": 935.6225504734589,
+            "report_decode_tokens_per_second": 28.088862647889655,
             "sessions": 2,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 7.5864802352760865
+            "sessions_per_hour": 8.02455915670387
           }
         },
         "tag": "nanbeige4.3-33b-w4a16"
@@ -663,16 +629,16 @@
     "vllm/qwen3.6-35b-a3b-awq": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T142313.656730+0000_vllm-cuda_qwen3-6-35b-a3b-awq.json",
+        "artifact": "20261125T215648.514991+0000_vllm-cuda_qwen3-6-35b-a3b-awq.json",
         "audit_aptitude": {
           "interval": [
-            0.14535611956606043,
-            0.7296438804339396
+            -0.05929733873733861,
+            0.5592973387373386
           ],
           "judged_samples": 8,
           "scored": true,
           "sound_samples": 8,
-          "vuln_score": 0.5
+          "vuln_score": 0.2857142857142856
         },
         "clean_rate": 1.0,
         "clean_samples": 36,
@@ -706,47 +672,55 @@
       "role": "audit",
       "session": {
         "active_slots": 8,
-        "artifact": "20261124T204905.089471+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json",
+        "artifact": "20261126T011450.881188+0000_vllm-cuda_qwen3-6-35b-a3b-awq_session.json",
         "canonical": true,
         "configured_context": 262144,
-        "kv_pool_tokens": 2797230,
+        "kv_pool_tokens": 2768962,
         "model": "qwen3.6-35b-a3b-awq",
         "model_identity": "119886a1072372348f73ef0df2d801cdcc0f455b",
-        "optimal_streams": 4,
+        "optimal_streams": 8,
         "optimal_streams_source": "stored",
         "protocol": "audit-v2",
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 4430.194797119197,
-          "tg128": 153.7450972216397
+          "pp512": 4818.49309210065,
+          "tg128": 160.42368860636358
         },
         "runtime": "vllm-cuda",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 5501.5,
-            "prefill_tokens_per_second": 6293.320812491194,
-            "report_decode_tokens_per_second": 111.23142809715222,
+            "output_tokens_per_session": 5090.5,
+            "prefill_tokens_per_second": 6278.075559797242,
+            "report_decode_tokens_per_second": 115.69497859752099,
             "sessions": 2,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 38.13033950348415
+            "sessions_per_hour": 40.4455473547696
           },
           "2": {
-            "output_tokens_per_session": 4982.0,
-            "prefill_tokens_per_second": 4465.08951540845,
-            "report_decode_tokens_per_second": 74.43465007561994,
+            "output_tokens_per_session": 4882.5,
+            "prefill_tokens_per_second": 5112.514981939776,
+            "report_decode_tokens_per_second": 80.69393921560236,
             "sessions": 6,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 50.565180333264664
+            "sessions_per_hour": 50.2299819782043
           },
           "4": {
-            "output_tokens_per_session": 5674.5,
-            "prefill_tokens_per_second": 4038.820112002698,
-            "report_decode_tokens_per_second": 40.35390321488252,
+            "output_tokens_per_session": 5161.5,
+            "prefill_tokens_per_second": 3851.6769555156716,
+            "report_decode_tokens_per_second": 40.50019893999534,
             "sessions": 12,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 55.216342223939314
+            "sessions_per_hour": 56.46331199825698
+          },
+          "8": {
+            "output_tokens_per_session": 5044.5,
+            "prefill_tokens_per_second": 3171.9738578137058,
+            "report_decode_tokens_per_second": 21.819818029150326,
+            "sessions": 24,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 60.38567837818307
           }
         },
         "tag": "qwen3.6-35b-a3b-awq"
@@ -756,19 +730,19 @@
     "vllm/qwen3.8-27b": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T153701.415810+0000_vllm-cuda_qwen3-8-27b.json",
+        "artifact": "20261125T224542.283757+0000_vllm-cuda_qwen3-8-27b.json",
         "audit_aptitude": {
           "interval": [
-            0.3545273234687097,
-            0.8954726765312904
+            0.4368235713614062,
+            0.9381764286385939
           ],
-          "judged_samples": 7,
+          "judged_samples": 8,
           "scored": true,
-          "sound_samples": 7,
-          "vuln_score": 0.7142857142857142
+          "sound_samples": 8,
+          "vuln_score": 0.7857142857142856
         },
-        "clean_rate": 0.9444444444444444,
-        "clean_samples": 34,
+        "clean_rate": 1.0,
+        "clean_samples": 36,
         "failed_checks": [],
         "features": {
           "json_schema": "supported",
@@ -778,7 +752,7 @@
           "tool_call": "supported",
           "tool_round_trip": "supported"
         },
-        "fitness_clean": 7,
+        "fitness_clean": 8,
         "fitness_samples": 8,
         "halted": false,
         "identity_check": "passed",
@@ -799,10 +773,10 @@
       "role": "audit",
       "session": {
         "active_slots": 8,
-        "artifact": "20261124T220035.364825+0000_vllm-cuda_qwen3-8-27b_session.json",
+        "artifact": "20261126T024637.568140+0000_vllm-cuda_qwen3-8-27b_session.json",
         "canonical": true,
         "configured_context": 262144,
-        "kv_pool_tokens": 954019,
+        "kv_pool_tokens": 937042,
         "model": "qwen3.8-27b",
         "model_identity": "1f05c441c4e64ae0549de44fa9ea5a6d43610314",
         "optimal_streams": 4,
@@ -811,35 +785,35 @@
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 2964.1287497858702,
-          "tg128": 75.38459197884744
+          "pp512": 2977.766663716315,
+          "tg128": 75.39220998239344
         },
         "runtime": "vllm-cuda",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 9481.5,
-            "prefill_tokens_per_second": 1851.451160727747,
-            "report_decode_tokens_per_second": 49.96532059947529,
+            "output_tokens_per_session": 11225.0,
+            "prefill_tokens_per_second": 1873.3381069292295,
+            "report_decode_tokens_per_second": 50.231171401288364,
             "sessions": 2,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 12.98960429746289
+            "sessions_per_hour": 11.605947518550428
           },
           "2": {
-            "output_tokens_per_session": 8770.0,
-            "prefill_tokens_per_second": 1408.542590447068,
-            "report_decode_tokens_per_second": 36.803702049354456,
+            "output_tokens_per_session": 9349.5,
+            "prefill_tokens_per_second": 1364.610320656352,
+            "report_decode_tokens_per_second": 37.50783413380583,
             "sessions": 6,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 17.848294599932508
+            "sessions_per_hour": 17.181986584906582
           },
           "4": {
-            "output_tokens_per_session": 8469.5,
-            "prefill_tokens_per_second": 1238.0333490968194,
-            "report_decode_tokens_per_second": 22.80533263694773,
-            "sessions": 8,
+            "output_tokens_per_session": 7363.0,
+            "prefill_tokens_per_second": 1076.103818407255,
+            "report_decode_tokens_per_second": 24.313074523799337,
+            "sessions": 12,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 20.118320230248145
+            "sessions_per_hour": 23.475458392257938
           }
         },
         "tag": "qwen3.8-27b"
@@ -849,16 +823,16 @@
     "vllm/qwen3.8-27b-512k": {
       "campaign": true,
       "capability": {
-        "artifact": "20261119T164755.866465+0000_vllm-cuda_qwen3-8-27b-512k.json",
+        "artifact": "20261125T235732.836908+0000_vllm-cuda_qwen3-8-27b-512k.json",
         "audit_aptitude": {
           "interval": [
-            0.276849016499155,
-            0.848150983500845
+            0.4368235713614062,
+            0.9381764286385939
           ],
           "judged_samples": 8,
           "scored": true,
           "sound_samples": 8,
-          "vuln_score": 0.6428571428571428
+          "vuln_score": 0.7857142857142856
         },
         "clean_rate": 1.0,
         "clean_samples": 36,
@@ -892,10 +866,10 @@
       "role": "audit",
       "session": {
         "active_slots": 8,
-        "artifact": "20261124T230336.466050+0000_vllm-cuda_qwen3-8-27b-512k_session.json",
+        "artifact": "20261126T045503.048019+0000_vllm-cuda_qwen3-8-27b-512k_session.json",
         "canonical": true,
         "configured_context": 524288,
-        "kv_pool_tokens": 779829,
+        "kv_pool_tokens": 765444,
         "model": "qwen3.8-27b-512k",
         "model_identity": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
         "optimal_streams": 4,
@@ -904,123 +878,38 @@
         "publication_reasons": [],
         "publishable": true,
         "reference": {
-          "pp512": 2605.61478089467,
-          "tg128": 49.25898315023868
+          "pp512": 2586.306419512187,
+          "tg128": 49.439055307870674
         },
         "runtime": "vllm-cuda",
         "schema_version": 9,
         "streams": {
           "1": {
-            "output_tokens_per_session": 10844.5,
-            "prefill_tokens_per_second": 1740.1931253940083,
-            "report_decode_tokens_per_second": 36.683687376077586,
+            "output_tokens_per_session": 8734.0,
+            "prefill_tokens_per_second": 1745.3309316889731,
+            "report_decode_tokens_per_second": 36.91775259033544,
             "sessions": 2,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 9.377502776766114
+            "sessions_per_hour": 10.94585896692993
           },
           "2": {
-            "output_tokens_per_session": 7902.0,
-            "prefill_tokens_per_second": 1484.119405353115,
-            "report_decode_tokens_per_second": 29.415963776560687,
-            "sessions": 6,
+            "output_tokens_per_session": 8286.25,
+            "prefill_tokens_per_second": 1420.0808010915703,
+            "report_decode_tokens_per_second": 29.691277541146267,
+            "sessions": 4,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 15.995609376916766
+            "sessions_per_hour": 15.743570308309906
           },
           "4": {
-            "output_tokens_per_session": 7554.0,
-            "prefill_tokens_per_second": 999.4369682848053,
-            "report_decode_tokens_per_second": 21.48213268038203,
-            "sessions": 8,
+            "output_tokens_per_session": 8681.0,
+            "prefill_tokens_per_second": 968.1876530666952,
+            "report_decode_tokens_per_second": 20.079630825944932,
+            "sessions": 12,
             "sessions_incomplete": 0,
-            "sessions_per_hour": 20.52055435447554
+            "sessions_per_hour": 19.55743660629695
           }
         },
         "tag": "qwen3.8-27b-512k"
-      },
-      "tier": "dense"
-    },
-    "vllm/qwen3.8-27b-dflash2": {
-      "campaign": true,
-      "capability": {
-        "artifact": "20261119T160828.532762+0000_vllm-cuda_qwen3-8-27b-dflash2.json",
-        "audit_aptitude": {
-          "interval": [
-            0.276849016499155,
-            0.848150983500845
-          ],
-          "judged_samples": 8,
-          "scored": true,
-          "sound_samples": 8,
-          "vuln_score": 0.6428571428571428
-        },
-        "clean_rate": 1.0,
-        "clean_samples": 36,
-        "failed_checks": [],
-        "features": {
-          "json_schema": "supported",
-          "streaming_tool_call": "supported",
-          "structured_json": "supported",
-          "thinking_disabled": "supported",
-          "tool_call": "supported",
-          "tool_round_trip": "supported"
-        },
-        "fitness_clean": 8,
-        "fitness_samples": 8,
-        "halted": false,
-        "identity_check": "passed",
-        "model": "qwen3.8-27b",
-        "model_identity": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
-        "protocol": "capability-v3",
-        "reasoning": "passed",
-        "runtime": "vllm-cuda",
-        "samples": 36,
-        "schema_enforcement": "enforced",
-        "schema_version": 8,
-        "status": "passed",
-        "tag": "qwen3.8-27b-dflash2",
-        "unaided_document": "valid"
-      },
-      "engine": "vLLM, CUDA",
-      "note": null,
-      "role": "audit",
-      "session": {
-        "active_slots": 8,
-        "artifact": "20261125T001233.153991+0000_vllm-cuda_qwen3-8-27b-dflash2_session.json",
-        "canonical": true,
-        "configured_context": 262144,
-        "kv_pool_tokens": 522956,
-        "model": "qwen3.8-27b",
-        "model_identity": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
-        "optimal_streams": 2,
-        "optimal_streams_source": "stored",
-        "protocol": "audit-v2",
-        "publication_reasons": [],
-        "publishable": true,
-        "reference": {
-          "pp512": 2599.101017731313,
-          "tg128": 108.59416172263941
-        },
-        "runtime": "vllm-cuda",
-        "schema_version": 9,
-        "streams": {
-          "1": {
-            "output_tokens_per_session": 7509,
-            "prefill_tokens_per_second": 1759.3084543750208,
-            "report_decode_tokens_per_second": 21.994014717881015,
-            "sessions": 3,
-            "sessions_incomplete": 0,
-            "sessions_per_hour": 8.862816347971007
-          },
-          "2": {
-            "output_tokens_per_session": 8060.5,
-            "prefill_tokens_per_second": 1316.8586441869402,
-            "report_decode_tokens_per_second": 23.575584025689864,
-            "sessions": 6,
-            "sessions_incomplete": 0,
-            "sessions_per_hour": 12.634811359788133
-          }
-        },
-        "tag": "qwen3.8-27b-dflash2"
       },
       "tier": "dense"
     }
