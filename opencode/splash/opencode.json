@@ -90,8 +90,8 @@
             "output": 65536
           }
         },
-        "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0": {
-          "name": "Bonsai2 27B Pq2",
+        "prism-ml/Ternary-Bonsai-2.5-27B-GGUF:PQ2_0": {
+          "name": "Bonsai2.5 27B Pq2",
           "reasoning": true,
           "interleaved": {
             "field": "reasoning"
@@ -108,6 +108,18 @@
             "xhigh": {
               "reasoningEffort": "xhigh"
             }
+          }
+        },
+        "unsloth/Inkling-2-Mini-GGUF:UD-Q4_K_M": {
+          "name": "Inkling 2 Mini",
+          "reasoning": true,
+          "interleaved": {
+            "field": "reasoning"
+          },
+          "tool_call": true,
+          "limit": {
+            "context": 262144,
+            "output": 65536
           }
         },
         "unsloth/flint-GGUF:UD-Q4_K_XL": {
