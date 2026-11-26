@@ -105,6 +105,7 @@ def main():
         provenance_files={
             "adapter": pathlib.Path(__file__), "model_config": conf,
             "launcher": ROOT / "start.sh", "library": ROOT / "lib.sh",
+            "patch": ROOT / "glm-tool-args.patch",
             "makefile": ROOT.parent / "Makefile",
         },
     )

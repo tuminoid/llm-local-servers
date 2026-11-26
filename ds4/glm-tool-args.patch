@@ -1,0 +1,54 @@
+diff --git a/ds4_server.c b/ds4_server.c
+index 20fba30..ede6a5d 100644
+--- a/ds4_server.c
++++ b/ds4_server.c
+@@ -6325,11 +6325,18 @@ static void trim_const_span(const char **start, const char **end) {
+     while (*end > *start && isspace((unsigned char)(*end)[-1])) (*end)--;
+ }
+ 
++static bool qwen_param_value_is_json(const char *s);
++static bool qwen_param_declared_string(const tool_schema_orders *orders,
++                                       const char *name, const char *key);
++
++/* GLM's <arg_value> carries no type: a value is a string when the request's
++ * schema declares it one or when it is not a JSON value, as on Qwen. */
+ static bool parse_glm_generated_message_ex(const char *text,
+                                            bool require_thinking_closed,
+                                            char **content_out,
+                                            char **reasoning_out,
+-                                           tool_calls *calls) {
++                                           tool_calls *calls,
++                                           const tool_schema_orders *orders) {
+     static const char tool_start[] = "<tool_call>";
+     static const char tool_end[] = "</tool_call>";
+     static const char arg_key_start[] = "<arg_key>";
+@@ -6432,7 +6439,9 @@ static bool parse_glm_generated_message_ex(const char *text,
+             char *raw_value = xstrndup(p, (size_t)(value_end - p));
+             char *value = xstrdup(raw_value);
+             ds4_tool_text_unescape(value, arg_value_end);
+-            tool_call_json_args_add(&args, key, value, "true");
++            const bool is_string = qwen_param_declared_string(orders, name, key) ||
++                                   !qwen_param_value_is_json(value);
++            tool_call_json_args_add(&args, key, value, is_string ? "true" : "false");
+             free(key);
+             free(raw_value);
+             free(value);
+@@ -6679,7 +6688,7 @@ static bool parse_generated_message_ex_for_syntax(server_model_syntax syntax,
+     if (syntax == SERVER_MODEL_SYNTAX_GLM) {
+         return parse_glm_generated_message_ex(text, require_thinking_closed,
+                                               content_out, reasoning_out,
+-                                              calls);
++                                              calls, NULL);
+     }
+     if (syntax == SERVER_MODEL_SYNTAX_QWEN) {
+         return parse_qwen_generated_message_ex(text, require_thinking_closed,
+@@ -6801,6 +6810,9 @@ static bool parse_generated_message_for_response_for_syntax(server_model_syntax
+     bool parsed_ok = syntax == SERVER_MODEL_SYNTAX_QWEN ?
+         parse_qwen_generated_message_ex(text, require_thinking_closed,
+                                          content_out, reasoning_out, calls, orders) :
++        syntax == SERVER_MODEL_SYNTAX_GLM ?
++        parse_glm_generated_message_ex(text ? text : "", require_thinking_closed,
++                                        content_out, reasoning_out, calls, orders) :
+         parse_generated_message_ex_for_syntax(syntax,
+                                                            text ? text : "",
+                                                            require_thinking_closed,

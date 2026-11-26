@@ -33,13 +33,18 @@ The ds4 capability rows are on the
   stated in words.
 - Qwen3.8-Flash-Next scores +0.86, the highest on the M5. V4 Flash passes
   with three format failures (33 of 36 clean) and V4.1 Flash with two (34
-  of 36, the same +0.71), in 10.9 hours from SSD. GLM fails on its tool
-  calls.
+  of 36, the same +0.71), in 10.9 hours from SSD. GLM failed on its tool
+  calls until patched.
 - GLM's tool parser emits every argument as a JSON string
   (`tool_call_json_args_add(..., "true")` in its `<arg_value>` parser), so
   `{"issue_number": 42}` arrives as `"42"`. GLM's tool format carries no
   types and ds4 does not consult the request's schema; DeepSeek's DSML has
-  a per-parameter `string=` attribute and is unaffected.
+  a per-parameter `string=` attribute and is unaffected. Upstream still
+  does this at `b3f5018` (2026-11-03). `glm-tool-args.patch` types each
+  value from the request's schema, else by whether it parses as JSON, as
+  ds4's Qwen parser does; patched, GLM passes (2026-11-26, 33 of 36 clean,
+  fitness 7 of 8: one format, one instruction and one runaway failure) and
+  runs 4.86 sessions/h at one stream.
 
 ## Speed
 
@@ -57,7 +62,7 @@ Qwen only.
 | Session prefill | 1,277 tok/s | 420 tok/s | 364 tok/s | 629 tok/s |
 | 245,760-token cold prompt | 200 s | 657 s | 717 s | 296 s |
 | AuditBench session, diagnostic | 10.83/h (7.99 canonical median without MTP) | 4.80/h | 4.56/h | 2.68/h |
-| Interactive agentic use | yes, the pick | yes, slower, larger model | no: string-typed tool arguments | yes, slow (SSD streaming) |
+| Interactive agentic use | yes, the pick | yes, slower, larger model | yes, with the tool-argument patch | yes, slow (SSD streaming) |
 
 Qwen3.8 Flash Next and V4 Flash now serve 524,288; their deep-context
 runs are in [524,288 context](#524288-context).

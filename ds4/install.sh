@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Build the pinned ds4 commit in DS4_SRC, cloning it there when absent.
+# Build the pinned ds4 commit plus DS4_PATCH in DS4_SRC, cloning it there
+# when absent.
 #
 # shellcheck disable=SC2154  # DS4_* paths come from sourced lib.sh.
 set -euo pipefail
@@ -16,6 +17,9 @@ fi
 if [[ ! -d "${DS4_SRC}" ]]; then
     git clone https://github.com/antirez/ds4.git "${DS4_SRC}"
     git -C "${DS4_SRC}" checkout --detach "${DS4_COMMIT}"
+fi
+if [[ -z "$(ds4_src_diff)" ]]; then
+    git -C "${DS4_SRC}" apply "${DS4_PATCH}"
 fi
 ds4_src_pinned
 # ds4's Makefile relies on built-in rules; drop the flags this repository's
