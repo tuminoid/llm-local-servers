@@ -56,13 +56,12 @@ VLLM_DIR := vllm
 # launched the wrong vLLM model remotely in a way run.sh could not see, costing
 # a full readiness timeout before it gave up.
 MODEL           ?=
-# vLLM 0.31.0 (Model Runner V2). Transformers 5.15.1: vLLM 0.31.0 needs
-# >= 5.10.4, and 5.15 carries the Gemma 4 per-layer head-dim handling
-# (vllm#49797). ninja is a runtime dependency: the DFlash draft head is
-# torch.compiled at engine init and inductor shells out to it.
+# vLLM 0.34.0 (Model Runner V2 only). Transformers 5.22.2: vLLM 0.34.0 needs
+# >= 5.16.1 and < 5.23. ninja is a runtime dependency: the DFlash draft head
+# is torch.compiled at engine init and inductor shells out to it.
 # Each docs/hardware/ page names the pin its rows ran on.
-VLLM_VERSION    ?= 0.31.0
-VLLM_TRANSFORMERS_VERSION ?= 5.15.1
+VLLM_VERSION    ?= 0.34.0
+VLLM_TRANSFORMERS_VERSION ?= 5.22.2
 VLLM_NINJA_VERSION ?= 1.13.2
 VLLM_REMOTE_DIR ?= tmp/vllm
 VLLM_REMOTE_PORT ?= 8000
@@ -151,10 +150,10 @@ KAPITSA_MODEL_CONF ?= $(KAPITSA_DIR)/models/$(MODEL).conf
 STRATA_DIR := strata
 # Strata is built from source on the host that serves it, for that host's
 # GPUs: the release packages carry no sm_80 code. The tag's commit pins the
-# engine, its llama.cpp checkout (setup.py's LLAMA_CPP_COMMIT) and the MTP
-# draft layer's checkpoint revision (tools/mtp_fetch.py).
-STRATA_VERSION ?= 0.2.13
-STRATA_COMMIT ?= d2f096475817d4666c364c820b0ca830f751cfc5
+# engines, their vendored ggml and the MTP draft layer's checkpoint revision
+# (terminal/tools/mtp_fetch.py).
+STRATA_VERSION ?= 0.2.21
+STRATA_COMMIT ?= d46f5f268f8ed797e83a5c63a69bffbd7a581cf6
 export STRATA_VERSION STRATA_COMMIT
 STRATA_MODEL_CONF ?= $(STRATA_DIR)/models/$(MODEL).conf
 STRATA_REMOTE_DIR ?= tmp/strata
