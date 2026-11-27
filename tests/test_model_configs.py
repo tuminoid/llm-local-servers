@@ -103,6 +103,16 @@ class ModelConfigInventoryTest(unittest.TestCase):
                     "STRATA_CAP_SYSTEM_PROMPT",
                 ),
             ),
+            (
+                REPO_DIR / "freetoken" / "models",
+                (
+                    "FREETOKEN_CAP_REASONING",
+                    "FREETOKEN_CAP_TOOLS",
+                    "FREETOKEN_CAP_REASONING_MODE",
+                    "FREETOKEN_CAP_DISABLE_MODE",
+                    "FREETOKEN_CAP_SYSTEM_PROMPT",
+                ),
+            ),
         )
         for directory, names in inventories:
             configs = sorted(directory.glob("*.conf"))
@@ -132,6 +142,7 @@ class ModelConfigInventoryTest(unittest.TestCase):
             (REPO_DIR / "ds4" / "models", "DS4_SAMPLING"),
             (REPO_DIR / "kapitsa" / "models", "KAPITSA_SAMPLING"),
             (REPO_DIR / "strata" / "models", "STRATA_SAMPLING"),
+            (REPO_DIR / "freetoken" / "models", "FREETOKEN_SAMPLING"),
         ):
             configs = sorted(directory.glob("*.conf"))
             self.assertTrue(configs, f"no model configs found in {directory}")

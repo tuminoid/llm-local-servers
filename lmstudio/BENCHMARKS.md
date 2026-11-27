@@ -5,7 +5,7 @@ gate, 2026-09-24. LM Studio 0.4.25+1 with the Splash engine 0.0.5 (Splash
 1.0.2 source) and mlx-llm 1.11.0 (NAX build), 262,144 configured context.
 Checkpoints and revisions were those of the native `splash/` and
 `vllm-metal/` profiles; the vLLM-Metal comparison rows are in
-`vllm-metal/BENCHMARKS.md` at `a7e8f3f`.
+`vllm-metal/BENCHMARKS.md`'s git history.
 
 ## Apple M5 Max
 
@@ -16,8 +16,7 @@ Results on this hardware are on its page,
 
 AuditBench v1 `decode` profile: 1,024 output tokens, short prompt, median
 aggregate output tok/s. A tuning aid, not a serving result: the profile is
-`canonical: false` and so unpublishable. The runs are from a clean `2bbfce7`
-tree on llm-audit-bench `382760d`.
+`canonical: false` and so unpublishable. The runs are from a clean tree.
 
 | Config | Admitted streams | Decode 1 / 2 / 4 tok/s | Native reference |
 | -- | --: | -- | -- |

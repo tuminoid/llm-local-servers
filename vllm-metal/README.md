@@ -79,7 +79,7 @@ On unified memory the utilization fraction is the engine's whole footprint
 budget, resolved against Metal's recommended working-set limit (~106 GB on
 a 128 GB host). The default on hosts with 96 GB or more is 0.91 -- the
 measured four-full-context operating point for the retired qwen3.8 8-bit
-checkpoint on the M5 Max (its records in BENCHMARKS.md at `a7e8f3f`):
+checkpoint on the M5 Max (its records in BENCHMARKS.md's git history):
 a 1,061,760-token paged pool (4.05x a native 262,144 sequence), a 98 GB
 footprint planned at startup, and ~28 GB left over, with memory pressure
 nominal under load. The default admission cap is 5 sequences, the measured
@@ -133,8 +133,8 @@ profile).
 
 The history below was measured mostly on the qwen3.6, qwen3.8 and
 nemotron profiles dropped from this runtime on 2026-10-12, whose confs and
-BENCHMARKS.md tables are at `a7e8f3f`, and on the ornith, gemma4 and MiMo
-profiles dropped on 2026-11-16, at `3daa808`.
+BENCHMARKS.md tables are in git history, and on the ornith, gemma4 and
+MiMo profiles dropped on 2026-11-16.
 
 Correctness was gated on 2026-08-24 with divergent conversations sharing
 a 15k-token prefix at temperature 0: cold compute and cache-hit compute
@@ -225,7 +225,7 @@ startup, which forced the qwen3.8 conf revision to the mlx-community
 Hub fix 10c35caa (processor_config.json only, identical weights); the
 uncensored orcarouter profile, which failed the same load with no Hub
 fix available, was removed from the fleet. Nemotron-H served for the
-first time (conf at `a7e8f3f`).
+first time.
 
 2026-09-27 re-gate at plugin 0.30.0 (paired core vLLM 0.30.0, MLX 0.32.1,
 mlx-lm `9e6acca`). Every profile starts. KV and Gated DeltaNet state now

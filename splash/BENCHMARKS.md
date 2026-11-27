@@ -24,7 +24,7 @@ at one stream on both, by 3% and 7%; `qwen3.8-27b` at four streams falls 3%.
 
 ### Against Splash 1.3.1
 
-The 1.3.1 rows of 2026-10-11/12 (fleet commit `036bfd0`, same host and
+The 1.3.1 rows of 2026-10-11/12 (same host and
 macOS):
 `qwen3.6-35b-a3b` 1x 17.95 / 4x 16.88 (13/15 complete),
 `qwen3.8-27b` 6.73 / 7.47 (15/15). 1.3.2 is faster on both, at 1x by 13%
@@ -34,7 +34,7 @@ the release's own changes, not the new tier.
 ### Splash 1.3.1 against Splash 1.0
 
 - The 1.0 rows of 2026-09-27 served the Splash packages that 1.3.1 no
-  longer loads (upstream #335), from fleet commit `bee4a24` on macOS 27.0
+  longer loads (upstream #335), on macOS 27.0
   (`20260927T233225.886443+0000_splash_qwen3-6-35b-a3b_session.json` and
   `20260928T005848.757558+0000_splash_qwen3-8-27b_session.json`). Against
   them one stream fell on both models (qwen3.6 19.77 to 17.95, qwen3.8
@@ -43,7 +43,7 @@ the release's own changes, not the new tier.
   tok/s at 1x / 4x, qwen3.8 405 / 405 to 376 / 375). The host moved from
   macOS 27.0 to 27.0.1 in between.
 - For `qwen3.6-35b-a3b` that loss is the host on the day, not the
-  release. A same-day 1.0 session from fleet commit `862ec7d`, run on
+  release. A same-day 1.0 session, run on
   2026-10-12 right after the 1.3.1 rows, measured 1x 16.79 / 4x 14.15
   sessions/h, near-context 1,321 / 1,297 tok/s and pp512 3,647, each below
   1.3.1 (`20261012T003601.579185+0000_splash_qwen3-6-35b-a3b_session.json`,
@@ -60,14 +60,14 @@ the release's own changes, not the new tier.
 
 ### Growing conversation (2026-10-12)
 
-The canonical `conversation` profile on 1.3.1, from fleet commit
-`a0bd505` with the same harness: `qwen3.6-35b-a3b` complied in both
-samples, reading all 16 files and recalling all 16 findings, at 96.0 s
-per conversation (37.5 conversations/h), final prompts of 165,418 to
-165,643 tokens and 90.2% of prompt tokens from cache. It is canonical and
-publishable (`20261012T181255.410214+0000_splash_qwen3-6-35b-a3b_conversation.json`).
-The 1.0 failure of one sample in two, below, was an AuditBench v1 run;
-two compliant samples do not show that the failure rate fell.
+The canonical `conversation` profile on 1.3.1, with the same harness:
+`qwen3.6-35b-a3b` complied in both samples, reading all 16 files and recalling
+all 16 findings, at 96.0 s per conversation (37.5 conversations/h), final
+prompts of 165,418 to 165,643 tokens and 90.2% of prompt tokens from cache. It
+is canonical and publishable
+(`20261012T181255.410214+0000_splash_qwen3-6-35b-a3b_conversation.json`). The
+1.0 failure of one sample in two, below, was an AuditBench v1 run; two compliant
+samples do not show that the failure rate fell.
 
 ### Qwen3.8 27B UD-Q4_K_M GGUF, exploratory (2026-10-11)
 
@@ -109,11 +109,10 @@ was 7,200 seconds. Release and package identities match the pinned
 configs and the trials below. Canonical stream candidates remain
 1/2/4/8; native admission excludes eight. No workload overrides were used.
 
-Qwen3.6 `full` used clean fleet commit `9d2e99b`; the other seven
-reports used clean `1e4a42f`, after fixes to teardown polling and the
-adapter's shared conversation/replay transport hook. Runtime, model and
-workload settings did not change. The shared `audit_bench.py` matches
-commit `8b39ee2`, SHA-256
+Qwen3.6 `full` ran from a clean tree before, and the other seven reports
+after, fixes to teardown polling and the adapter's shared
+conversation/replay transport hook. Runtime, model and
+workload settings did not change. The shared `audit_bench.py` has SHA-256
 `ee10944f7b1287bbe382708aee70804731731d0bb92ca93754427057bbf2c98b`.
 Every report retains exact adapter/config hashes, fully checked model
 identity and the live memory plan.
@@ -214,7 +213,7 @@ separate from inference failures and remain in the native telemetry.
 
 Two teardowns required recovery after valid reports had been retained.
 The first Qwen3.6 full run encountered macOS EPERM while checking the
-exiting group; `cf98de4` fixed polling, and later teardowns exercised it.
+exiting group; a polling fix followed, and later teardowns exercised it.
 The final Qwen3.8 concurrent run reached the 30-second escalation check,
 where ownership validation rejected an unrecognized group member. Its
 exact `ps` row was not retained, so the exit-state cause is not proven.
@@ -257,8 +256,8 @@ installer/launcher. The full runs used the Homebrew 1.0 distribution;
 the managed runtime uses the standalone 1.0 archive with the identical
 native engine and metallib hashes. DFlash 2 and state/prefix caching
 were enabled at release defaults. Requests left `reasoning_effort`
-unset, preserving default thinking. The shared harness was commit
-`8b39ee2e48b37eaed2b335e3f4f76bdd82c08aaf`, with `audit_bench.py` SHA-256
+unset, preserving default thinking. The shared harness's `audit_bench.py`
+has SHA-256
 `ee10944f7b1287bbe382708aee70804731731d0bb92ca93754427057bbf2c98b`.
 
 ### Throughput

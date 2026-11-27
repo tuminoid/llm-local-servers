@@ -144,8 +144,7 @@ V4's max-effort prefix and GLM's "Reasoning Effort: Max".
   245,760 waypoint. The 491,518-token cold prompt that precedes the
   session filled part of the budget both times (1,953 s, 252 tok/s).
   `results/20261013T191613.869606+0000_ds4_deepseek-v4-flash-q2_session.json`,
-  and from a clean tree (the JSON records `8200c38`, the merged config
-  before a rebase) `20261014T090808.397409+0000_ds4_deepseek-v4-flash-q2_session.json`.
+  and from a clean tree `20261014T090808.397409+0000_ds4_deepseek-v4-flash-q2_session.json`.
 - **GLM 5.3 deep session:** incomplete; the report from 445,103 prompt
   tokens recalled 0 of 50 findings in 1,989 characters, and 48 of 51 calls
   streamed no reasoning, at cached 0.963. GLM stays at 262,144, where the

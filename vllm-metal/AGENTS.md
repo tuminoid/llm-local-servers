@@ -50,7 +50,7 @@ Serving measurements follow
 - The memory budget default at >= 96 GiB is 0.91 with 5 admitted
   sequences: the measured four-full-context pool for the retired qwen3.8
   8-bit checkpoint on the 128 GB M5 Max (1,061,760 tokens, 98 GB
-  footprint, ~28 GB left, pressure nominal; BENCHMARKS.md at `a7e8f3f`),
+  footprint, ~28 GB left, pressure nominal; in BENCHMARKS.md's git history),
   and the measured decode sweet spot on it (5 streams beat both
   4 and 6; 6 measured consistently below 5 -- a batch-shape effect, so do
   not "round up" the cap without re-measuring).
