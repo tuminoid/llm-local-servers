@@ -24,7 +24,9 @@ Splash-engine rows from `5a7c007`. The Ollama and Kapitsa rows ran
 2026-11-15/16 from the clean trial commit `54822f2` on llm-audit-bench
 2.5.0, whose session code 3.0.0 ships unchanged. Runtimes: LM Studio
 0.4.25+1 (Splash engine 1.3.0, mlx-llm 1.14.0), vLLM-Metal 0.31.0, Ollama
-0.40.16, ds4 `0aaea5a` and Kapitsa 0.2.36. The harness climbs 1, 2, 4, 8
+0.40.16, ds4 `0aaea5a` and Kapitsa 0.2.36. The ds4 `glm5.3-flash-q2` row
+ran 2026-11-26 on ds4 `0aaea5a` with `ds4/glm-tool-args.patch` from the
+clean trial commit `300117d`. The harness climbs 1, 2, 4, 8
 streams within admission and the KV pool while each rung completes every
 session and gains 10%.
 
@@ -110,6 +112,7 @@ measurements are in [ds4/BENCHMARKS.md](../../ds4/BENCHMARKS.md).
 
 | Profile | Runtime | Engine | Tier | Context | Slots | KV pool | Sessions/h by streams | Complete | Out tok/session 1x | Prefill tok/s 1x | Report decode 1x | pp512 / tg128 | Publishable | Session JSON |
 | -- | -- | -- | -- | --: | --: | --: | -- | -- | --: | --: | --: | -- | -- | -- |
+| `glm5.3-flash-q2` | ds4 | ds4, Metal | MoE | 262,144 | 1 | 262,144 | 1x 4.86 | 2/2 | 2,558 | 365.6 | 26.9 | 352 / 35.1 | yes | `20261126T215646.522189+0000_ds4_glm5-3-flash-q2_session.json` |
 | `qwen3.8-flash-next-q4` | ds4 | ds4, Metal | MoE | 524,288 | 1 | 524,288 | 1x 9.57 | 3/3 | 5,896 | 1,265.0 | 62.7 | unavailable | yes | `20261124T205128.945378+0000_ds4_qwen3-8-flash-next-q4_session.json` |
 | `gemma4-26b-mlx` | Ollama | MLX | MoE | 262,144 | 1 | 262,144 allocated | 1x 25.63 | 2/3 | 1,723 | 1,679.1 | 35.0 | unavailable | no (incomplete_sessions) | `20261116T081609.374316+0000_ollama_gemma4-26b-mlx_session.json` |
 
@@ -121,8 +124,8 @@ measurements are in [ds4/BENCHMARKS.md](../../ds4/BENCHMARKS.md).
 - `gemma4-26b-mlx` (Gemma 4 26B-A4B, the registry's NVFP4 build) passes
   Capability Check v3, but one of three reports recalled no findings, so the
   run is unpublishable.
-- ds4 `deepseek-v4-flash-q2`, `glm5.3-flash-q2` and `deepseek-v4.1-flash-q2`
-  have no AuditBench v3 session; their capability rows are below.
+- ds4 `deepseek-v4-flash-q2` and `deepseek-v4.1-flash-q2` have no
+  AuditBench v3 session; their capability rows are below.
 
 ## Capability Check
 
@@ -130,7 +133,8 @@ Capability Check v3 (llm-audit-bench 3.0.0, `365510b`), run 2026-11-19/22
 from fleet commit `a21fd8a` on the runtimes above, the LM Studio
 Splash-engine rows re-checked on engine 1.3.0 on 2026-11-25 from `5a7c007`,
 the Splash rows on Splash 1.7.3 on 2026-11-25/26 from trial commit
-`7f87c58`.
+`7f87c58`, ds4 `glm5.3-flash-q2` on 2026-11-26 with the GLM tool-argument
+patch from `300117d`.
 The protocol and the column mapping are in llm-audit-bench
 `docs/CAPABILITY.md`, the campaign runbook in
 [CAPABILITIES.md](../../CAPABILITIES.md). Campaign marks the profiles this
@@ -162,10 +166,10 @@ its model config. An audit row's score is in the audit ranking.
 | LM Studio | `qwen3.8-27b-mlx` | yes | passed | passed | untested | supported | supported | supported | supported | valid | ignored (broken) | 24 of 31 (77%); fitness 7 of 8 | failed (clean_rate) | not scored | `10c35caafbb8` | `20261120T185445.662511+0000_lmstudio_qwen3-8-27b-mlx.json` |
 | Ollama | `mimo-v2.6-flash-q2ks` | yes | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 23 of 27 (85%); fitness 7 of 8 | failed (clean_rate) | not scored | `aecb7b7e21a4` | `20261120T042350.276175+0000_ollama_mimo-v2-6-flash-q2ks.json` |
 | Splash | `ornith1.5-122b` | yes | passed | passed | supported | supported | supported | supported | supported | valid | enforced (supported) | 14 of 19 (74%); fitness 8 of 8 | failed (clean_rate) | not scored | `06a57aba4fba` | `20261125T231824.661553+0000_splash_ornith1-5-122b.json` |
+| ds4 | `glm5.3-flash-q2` | yes | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 33 of 36 (92%); fitness 7 of 8 | passed | +0.64 [+0.28, +0.84]; sound 7 of 7 | `b2fa29d7a6b4` | `20261126T215646.241610+0000_ds4_glm5-3-flash-q2.json` |
 | ds4 | `qwen3.8-flash-next-q4` | yes | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.86 [+0.52, +0.98]; sound 8 of 8 | `d600fe1a43d2` | `20261119T225509.672284+0000_ds4_qwen3-8-flash-next-q4.json` |
 | ds4 | `deepseek-v4-flash-q2` | no | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 33 of 36 (92%); fitness 7 of 8 | passed | +0.71 [+0.36, +0.89]; sound 6 of 7 | `f71f23d552d6` | `20261120T201931.719098+0000_ds4_deepseek-v4-flash-q2.json` |
 | ds4 | `deepseek-v4.1-flash-q2` | no | passed | passed | supported | supported | supported | supported | supported | valid | ignored (broken) | 34 of 36 (94%); fitness 8 of 8 | passed | +0.71 [+0.36, +0.89]; sound 8 of 8 | `9dcee51692e6` | `20261122T023508.810868+0000_ds4_deepseek-v4-1-flash-q2.json` |
-| ds4 | `glm5.3-flash-q2` | no | passed | passed | supported | broken | broken | untested | supported | valid | ignored (broken) | 19 of 23 (83%); fitness 7 of 8 | failed (tool_call, streaming_tool_call, clean_rate) | not scored | `b2fa29d7a6b4` | `20261120T063720.265124+0000_ds4_glm5-3-flash-q2.json` |
 | Ollama | `gemma4-26b-mlx` | yes | passed | passed | supported | supported | supported | supported | supported | valid | whitespace_runaway (broken) | 36 of 36 (100%); fitness 8 of 8 | passed | +0.64 [+0.28, +0.85]; sound 7 of 8 | `f60799545325` | `20261119T145038.089065+0000_ollama_gemma4-26b-mlx.json` |
 
 <!-- /results:capability -->
@@ -178,9 +182,9 @@ its model config. An audit row's score is in the audit ranking.
   Splash-engine profile of the same model passes 36 of 36.
 - Ollama `mimo-v2.6-flash-q2ks` fails on clean rate, 23 of 27 (two format
   failures, two runaways).
-- ds4 `glm5.3-flash-q2` fails its tool calls: ds4's GLM parser emits every
-  argument as a JSON string; the root cause is in
-  [ds4/BENCHMARKS.md](../../ds4/BENCHMARKS.md#capability-check-v3).
+- ds4 `glm5.3-flash-q2` passes with the repository's GLM tool-argument
+  patch; unpatched ds4 returns every argument as a JSON string (see
+  [ds4/BENCHMARKS.md](../../ds4/BENCHMARKS.md#capability-check-v3)).
 - Schema enforcement never gates. It is broken on Ollama `gemma4-26b-mlx`
   and Splash `flint-gguf` (whitespace runaway), ignored by both LM Studio
   MLX profiles and by ds4, which has no `response_format`, and refused by

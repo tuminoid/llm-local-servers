@@ -11,6 +11,8 @@ DS4_DATA_DIR="${DS4_DATA_DIR:-${XDG_DATA_HOME:-${HOME}/.local/share}/ds4}"
 # ds4 has no releases; the pin is a source commit, built in place.
 DS4_COMMIT="${DS4_COMMIT:-0aaea5a238fb41a35106a551e73c8409dfb751ac}"
 DS4_SRC="${DS4_SRC:-${DS4_DATA_DIR}/src/${DS4_COMMIT}}"
+# Applied on top of the pin: GLM tool arguments typed as on Qwen.
+DS4_PATCH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/glm-tool-args.patch"
 DS4_PORT="${DS4_PORT:-8023}"
 # Serving knobs, host settings; each model config declares DS4_MTP and
 # DS4_KV_DISK_MB.
@@ -18,8 +20,14 @@ DS4_SLOTS="${DS4_SLOTS:-1}"
 DS4_KV_DISK="${DS4_KV_DISK:-1}"
 DS4_KV_DISK_DIR="${DS4_KV_DISK_DIR:-${XDG_CACHE_HOME:-${HOME}/.cache}/ds4/kv}"
 
-# Succeeds when DS4_SRC is a clean tree at the pin. A tree at another
-# commit, or with local edits, would build or serve under the pin's name.
+# The build tree's changes against its HEAD, in the patch's format.
+ds4_src_diff() {
+    git -C "${DS4_SRC}" diff --no-ext-diff --no-color --src-prefix=a/ --dst-prefix=b/ HEAD
+}
+
+# Succeeds when DS4_SRC is the pin plus DS4_PATCH and nothing else. A tree
+# at another commit, or with other edits, would build or serve under the
+# pin's name.
 ds4_src_pinned() {
     local head
     head="$(git -C "${DS4_SRC}" rev-parse HEAD 2> /dev/null || true)"
@@ -28,8 +36,9 @@ ds4_src_pinned() {
             "${DS4_SRC}" "${head:-nothing}" "${DS4_COMMIT}" >&2
         return 1
     fi
-    if [[ -n "$(git -C "${DS4_SRC}" status --porcelain)" ]]; then
-        printf 'error: %s has local changes\n' "${DS4_SRC}" >&2
+    if [[ "$(ds4_src_diff)" != "$(cat "${DS4_PATCH}")" ]] ||
+        git -C "${DS4_SRC}" status --porcelain --untracked-files=all | grep -q -v '^ M '; then
+        printf 'error: %s is not the pin plus %s\n' "${DS4_SRC}" "${DS4_PATCH}" >&2
         return 1
     fi
 }

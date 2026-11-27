@@ -93,26 +93,29 @@
       "tier": "MoE"
     },
     "ds4/glm5.3-flash-q2": {
-      "campaign": false,
+      "campaign": true,
       "capability": {
-        "artifact": "20261120T063720.265124+0000_ds4_glm5-3-flash-q2.json",
+        "artifact": "20261126T215646.241610+0000_ds4_glm5-3-flash-q2.json",
         "audit_aptitude": {
-          "scored": false
+          "interval": [
+            0.28349297163870585,
+            0.8415070283612942
+          ],
+          "judged_samples": 7,
+          "scored": true,
+          "sound_samples": 7,
+          "vuln_score": 0.6428571428571428
         },
-        "clean_rate": 0.8260869565217391,
-        "clean_samples": 19,
-        "failed_checks": [
-          "tool_call",
-          "streaming_tool_call",
-          "clean_rate"
-        ],
+        "clean_rate": 0.9166666666666666,
+        "clean_samples": 33,
+        "failed_checks": [],
         "features": {
           "json_schema": "broken",
-          "streaming_tool_call": "broken",
+          "streaming_tool_call": "supported",
           "structured_json": "supported",
           "thinking_disabled": "supported",
-          "tool_call": "broken",
-          "tool_round_trip": "untested"
+          "tool_call": "supported",
+          "tool_round_trip": "supported"
         },
         "fitness_clean": 7,
         "fitness_samples": 8,
@@ -123,16 +126,47 @@
         "protocol": "capability-v3",
         "reasoning": "passed",
         "runtime": "ds4",
-        "samples": 23,
+        "samples": 36,
         "schema_enforcement": "ignored",
         "schema_version": 8,
-        "status": "failed",
+        "status": "passed",
         "tag": "glm5.3-flash-q2",
         "unaided_document": "valid"
       },
       "engine": "ds4, Metal",
       "note": null,
       "role": "interactive",
+      "session": {
+        "active_slots": 1,
+        "artifact": "20261126T215646.522189+0000_ds4_glm5-3-flash-q2_session.json",
+        "canonical": true,
+        "configured_context": 262144,
+        "kv_pool_tokens": 262144,
+        "model": "glm-5.3-flash",
+        "model_identity": "b2fa29d7a6b410db11221c904973967b80b760f5",
+        "optimal_streams": 1,
+        "optimal_streams_source": "stored",
+        "protocol": "audit-v2",
+        "publication_reasons": [],
+        "publishable": true,
+        "reference": {
+          "pp512": 351.79470440933505,
+          "tg128": 35.074910786376456
+        },
+        "runtime": "ds4",
+        "schema_version": 9,
+        "streams": {
+          "1": {
+            "output_tokens_per_session": 2558.0,
+            "prefill_tokens_per_second": 365.6408836674118,
+            "report_decode_tokens_per_second": 26.920219252722674,
+            "sessions": 2,
+            "sessions_incomplete": 0,
+            "sessions_per_hour": 4.85810707146817
+          }
+        },
+        "tag": "glm5.3-flash-q2"
+      },
       "tier": "MoE"
     },
     "ds4/qwen3.8-flash-next-q4": {

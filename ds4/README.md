@@ -14,9 +14,9 @@ serves Qwen3.8 Flash Next for audits (see [AGENTS.md](AGENTS.md)).
 
 Measured capabilities, speeds and verdicts are in
 [BENCHMARKS.md](BENCHMARKS.md). In short: Qwen3.8 Flash Next is the pick,
-V4 Flash works at half its speed, GLM returns tool arguments as strings,
-and V4.1 Flash 1017 is usable but slow from SSD. No model enforces a JSON
-schema: ds4 does not implement `response_format`.
+V4 Flash works at half its speed, GLM types its tool arguments only with
+`glm-tool-args.patch`, and V4.1 Flash 1017 is usable but slow from SSD. No
+model enforces a JSON schema: ds4 does not implement `response_format`.
 
 ## Use
 
@@ -28,9 +28,10 @@ make ds4-status
 make ds4-stop
 ```
 
-`ds4-install` clones ds4 into `~/.local/share/ds4/src/<commit>` and builds
-it with the Xcode command-line tools. Point `DS4_SRC` at another checkout
-of the pinned commit to build there instead; it must be clean.
+`ds4-install` clones ds4 into `~/.local/share/ds4/src/<commit>`, applies
+`glm-tool-args.patch` and builds it with the Xcode command-line tools. Point
+`DS4_SRC` at another checkout of the pinned commit to build there instead;
+it must be clean or carry only that patch.
 `make ds4-capability` runs the Capability Check. `make ds4-bench` exists for
 diagnosis only.
 

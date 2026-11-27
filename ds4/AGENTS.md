@@ -15,8 +15,12 @@ in [BENCHMARKS.md](BENCHMARKS.md).
 
 ## Invariants and retest conditions
 
-- The pin is the source commit `DS4_COMMIT`; ds4 has no releases. The
-  launcher refuses a build tree at another commit or with local changes.
+- The pin is the source commit `DS4_COMMIT`; ds4 has no releases.
+  `install.sh` applies `glm-tool-args.patch` on top, and the launcher
+  refuses a build tree at another commit or with any other change. The
+  patch types GLM tool arguments from the request's schema, else by
+  whether the value parses as JSON, as ds4 already does on Qwen; upstream
+  returns every GLM argument as a string. Drop it when upstream types them.
   ds4's own Makefile needs GNU Make's built-in rules, so `install.sh`
   clears the `MAKEFLAGS` this repository's Makefile exports.
 - Model identity is the HF cache blob name, which is the LFS sha256 of the
@@ -56,7 +60,6 @@ in [BENCHMARKS.md](BENCHMARKS.md).
 - Metal kernels load relative to the build tree; `start.sh` changes into
   it before exec.
 - ds4 has no `response_format`, so `json_schema` fails on every model; the
-  check is advisory and never fails a model. GLM tool arguments come back
-  as strings. Retest both on a pin move.
+  check is advisory and never fails a model. Retest on a pin move.
 - Validate with `make lint`, `make test` and the managed lifecycle for
   the changed config.
